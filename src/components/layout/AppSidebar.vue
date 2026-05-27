@@ -70,6 +70,14 @@
         <NavSubItem label="Staff" to="/people/staff" />
       </NavGroup>
 
+      <!-- Activity Log -->
+      <NavItem
+        icon="activity"
+        label="Activity Log"
+        to="/activity-log"
+        :collapsed="collapsed"
+      />
+
       <!-- Settings -->
       <NavItem
         icon="settings"

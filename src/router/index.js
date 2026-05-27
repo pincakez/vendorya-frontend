@@ -30,6 +30,7 @@ const router = createRouter({
         { path: 'people/customers',     component: () => import('@/views/people/Customers.vue'),           meta: { store: true } },
         { path: 'people/suppliers',     component: () => import('@/views/people/Suppliers.vue'),           meta: { store: true } },
         { path: 'people/staff',         component: () => import('@/views/people/Staff.vue'),               meta: { store: true } },
+        { path: 'activity-log',         component: () => import('@/views/ActivityLog.vue'),                meta: { store: true } },
         { path: 'settings',             component: () => import('@/views/settings/StoreSettings.vue'),     meta: { store: true } },
         { path: 'settings/policies',    component: () => import('@/views/settings/Policies.vue'),          meta: { store: true } },
         { path: 'settings/taxes',       component: () => import('@/views/settings/Taxes.vue'),             meta: { store: true } },
@@ -40,7 +41,8 @@ const router = createRouter({
         { path: 'admin/dashboard', component: () => import('@/views/admin/AdminDashboard.vue'), meta: { admin: true } },
         { path: 'admin/stores',    component: () => import('@/views/admin/AdminStores.vue'),    meta: { admin: true } },
         { path: 'admin/branches',  component: () => import('@/views/admin/AdminBranches.vue'),  meta: { admin: true } },
-        { path: 'admin/users',     component: () => import('@/views/admin/AdminUsers.vue'),     meta: { admin: true } },
+        { path: 'admin/users',         component: () => import('@/views/admin/AdminUsers.vue'),        meta: { admin: true } },
+        { path: 'admin/activity-log',  component: () => import('@/views/admin/AdminActivityLog.vue'),  meta: { admin: true } },
       ]
     },
     {

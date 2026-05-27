@@ -13,9 +13,10 @@
       <!-- GENERAL ADMIN MODE -->
       <template v-if="!auth.activeStore">
         <NavItem icon="layout-dashboard" label="Overview"    to="/admin/dashboard" :collapsed="collapsed" />
-        <NavItem icon="store"            label="Stores"      to="/admin/stores"    :collapsed="collapsed" />
-        <NavItem icon="building"         label="Branches"    to="/admin/branches"  :collapsed="collapsed" />
-        <NavItem icon="shield"           label="Admin Users" to="/admin/users"     :collapsed="collapsed" />
+        <NavItem icon="store"            label="Stores"       to="/admin/stores"        :collapsed="collapsed" />
+        <NavItem icon="building"         label="Branches"     to="/admin/branches"      :collapsed="collapsed" />
+        <NavItem icon="shield"           label="Admin Users"  to="/admin/users"         :collapsed="collapsed" />
+        <NavItem icon="activity"         label="Activity Log" to="/admin/activity-log"  :collapsed="collapsed" />
       </template>
 
       <!-- STORE MODE (sudo acting as a specific store) -->
@@ -60,7 +61,8 @@
           <NavSubItem label="Staff"     to="/people/staff" />
         </NavGroup>
 
-        <NavItem icon="settings" label="Settings" to="/settings" :collapsed="collapsed" />
+        <NavItem icon="activity" label="Activity Log" to="/activity-log" :collapsed="collapsed" />
+        <NavItem icon="settings" label="Settings"     to="/settings"     :collapsed="collapsed" />
 
         <!-- Exit back to admin -->
         <div v-if="!collapsed" style="padding: 16px 16px 0;">
