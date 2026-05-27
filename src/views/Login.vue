@@ -134,7 +134,7 @@ async function handleLogin() {
   loading.value = true
   try {
     await auth.login(form.value.username, form.value.password)
-    router.push('/dashboard')
+    router.push(auth.isSuperadmin ? '/admin/dashboard' : '/dashboard')
   } catch (err) {
     const status = err.response?.status
     if (status === 401) {

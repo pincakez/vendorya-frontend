@@ -16,7 +16,8 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  LayoutDashboard, Package, CreditCard, Users, Settings, Monitor
+  LayoutDashboard, Package, CreditCard, Users, Settings, Monitor,
+  Store, Building, Shield
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -36,6 +37,9 @@ const iconMap = {
   'users': Users,
   'settings': Settings,
   'monitor': Monitor,
+  'store': Store,
+  'building': Building,
+  'shield': Shield,
 }
 
 const iconComponent = computed(() => iconMap[props.icon] || Settings)

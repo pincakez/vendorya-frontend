@@ -8,6 +8,10 @@ const api = axios.create({
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('vendorya_access')
   if (token) config.headers.Authorization = `Bearer ${token}`
+  // Super-admin scoping: send the selected store on every request when in store mode.
+  // Server ignores this header for non-super-admin users.
+  const storeId = localStorage.getItem('vendorya_active_store')
+  if (storeId) config.headers['X-Store-ID'] = storeId
   return config
 })
 

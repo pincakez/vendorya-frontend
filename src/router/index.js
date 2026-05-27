@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import LayoutSwitch from '@/layouts/LayoutSwitch.vue'
 import POSLayout from '@/layouts/POSLayout.vue'
 
 const router = createRouter({
@@ -9,29 +9,38 @@ const router = createRouter({
     { path: '/login', component: () => import('@/views/Login.vue'), meta: { public: true } },
     {
       path: '/',
-      component: DefaultLayout,
+      component: LayoutSwitch,
       meta: { requiresAuth: true },
       children: [
         { path: '', redirect: '/dashboard' },
-        { path: 'dashboard', component: () => import('@/views/Dashboard.vue') },
-        { path: 'inventory/products', component: () => import('@/views/inventory/Products.vue') },
-        { path: 'inventory/purchases', component: () => import('@/views/inventory/Purchases.vue') },
-        { path: 'inventory/adjustments', component: () => import('@/views/inventory/StockAdjustments.vue') },
-        { path: 'inventory/categories', component: () => import('@/views/inventory/Categories.vue') },
-        { path: 'inventory/attributes', component: () => import('@/views/inventory/Attributes.vue') },
-        { path: 'inventory/reports', component: () => import('@/views/inventory/InventoryReports.vue') },
-        { path: 'finance/invoices', component: () => import('@/views/sales/SalesInvoices.vue') },
-        { path: 'finance/returns', component: () => import('@/views/sales/Returns.vue') },
-        { path: 'finance/expenses', component: () => import('@/views/finance/Expenses.vue') },
-        { path: 'finance/shifts', component: () => import('@/views/finance/Shifts.vue') },
-        { path: 'finance/cash-drawer', component: () => import('@/views/finance/CashDrawer.vue') },
-        { path: 'people/customers', component: () => import('@/views/people/Customers.vue') },
-        { path: 'people/suppliers', component: () => import('@/views/people/Suppliers.vue') },
-        { path: 'people/staff', component: () => import('@/views/people/Staff.vue') },
-        { path: 'settings', component: () => import('@/views/settings/StoreSettings.vue') },
-        { path: 'settings/policies', component: () => import('@/views/settings/Policies.vue') },
-        { path: 'settings/taxes', component: () => import('@/views/settings/Taxes.vue') },
-        { path: 'settings/profile', component: () => import('@/views/settings/Profile.vue') },
+
+        // Store routes — visible to regular users always, to sudo only when a store is selected
+        { path: 'dashboard',            component: () => import('@/views/Dashboard.vue'),                  meta: { store: true } },
+        { path: 'inventory/products',   component: () => import('@/views/inventory/Products.vue'),         meta: { store: true } },
+        { path: 'inventory/purchases',  component: () => import('@/views/inventory/Purchases.vue'),        meta: { store: true } },
+        { path: 'inventory/adjustments',component: () => import('@/views/inventory/StockAdjustments.vue'), meta: { store: true } },
+        { path: 'inventory/categories', component: () => import('@/views/inventory/Categories.vue'),       meta: { store: true } },
+        { path: 'inventory/attributes', component: () => import('@/views/inventory/Attributes.vue'),       meta: { store: true } },
+        { path: 'inventory/reports',    component: () => import('@/views/inventory/InventoryReports.vue'), meta: { store: true } },
+        { path: 'finance/invoices',     component: () => import('@/views/sales/SalesInvoices.vue'),        meta: { store: true } },
+        { path: 'finance/returns',      component: () => import('@/views/sales/Returns.vue'),              meta: { store: true } },
+        { path: 'finance/expenses',     component: () => import('@/views/finance/Expenses.vue'),           meta: { store: true } },
+        { path: 'finance/shifts',       component: () => import('@/views/finance/Shifts.vue'),             meta: { store: true } },
+        { path: 'finance/cash-drawer',  component: () => import('@/views/finance/CashDrawer.vue'),         meta: { store: true } },
+        { path: 'people/customers',     component: () => import('@/views/people/Customers.vue'),           meta: { store: true } },
+        { path: 'people/suppliers',     component: () => import('@/views/people/Suppliers.vue'),           meta: { store: true } },
+        { path: 'people/staff',         component: () => import('@/views/people/Staff.vue'),               meta: { store: true } },
+        { path: 'settings',             component: () => import('@/views/settings/StoreSettings.vue'),     meta: { store: true } },
+        { path: 'settings/policies',    component: () => import('@/views/settings/Policies.vue'),          meta: { store: true } },
+        { path: 'settings/taxes',       component: () => import('@/views/settings/Taxes.vue'),             meta: { store: true } },
+        { path: 'settings/profile',     component: () => import('@/views/settings/Profile.vue'),           meta: { store: true } },
+
+        // Admin routes — sudo only
+        { path: 'admin',           redirect: '/admin/dashboard' },
+        { path: 'admin/dashboard', component: () => import('@/views/admin/AdminDashboard.vue'), meta: { admin: true } },
+        { path: 'admin/stores',    component: () => import('@/views/admin/AdminStores.vue'),    meta: { admin: true } },
+        { path: 'admin/branches',  component: () => import('@/views/admin/AdminBranches.vue'),  meta: { admin: true } },
+        { path: 'admin/users',     component: () => import('@/views/admin/AdminUsers.vue'),     meta: { admin: true } },
       ]
     },
     {
@@ -46,9 +55,27 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
-  if (!to.meta.public && !auth.isAuthenticated) next('/login')
-  else if (to.path === '/login' && auth.isAuthenticated) next('/dashboard')
-  else next()
+
+  // Public routes
+  if (to.meta.public) {
+    if (to.path === '/login' && auth.isAuthenticated) {
+      return next(auth.isSuperadmin ? '/admin/dashboard' : '/dashboard')
+    }
+    return next()
+  }
+
+  // Auth gate
+  if (!auth.isAuthenticated) return next('/login')
+
+  // Admin-only routes: block non-sudo
+  if (to.meta.admin && !auth.isSuperadmin) return next('/dashboard')
+
+  // Sudo visiting a store route without picking a store → bounce to admin dashboard
+  if (to.meta.store && auth.isSuperadmin && !auth.activeStore) {
+    return next('/admin/dashboard')
+  }
+
+  next()
 })
 
 export default router

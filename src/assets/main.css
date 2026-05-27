@@ -35,33 +35,83 @@
 }
 
 .dark {
-  /* Sidebar (dark = deep navy) */
-  --sb-bg:           #0b1120;
-  --sb-bg-deep:      #060c18;
-  --sb-hover:        rgba(255,255,255,0.05);
-  --sb-active:       rgba(99,102,241,0.18);
-  --sb-text:         #4b5f7c;
-  --sb-text-active:  #ffffff;
-  --sb-border:       rgba(255,255,255,0.05);
-  --sb-logo-text:    #e2e8f0;
-  --sb-badge-bg:     rgba(99,102,241,0.25);
-  --sb-badge-text:   #a5b4fc;
+  /* Sidebar (dark = neutral charcoal grey) */
+  --sb-bg:           #18181b;
+  --sb-bg-deep:      #0f0f12;
+  --sb-hover:        rgba(255,255,255,0.06);
+  --sb-active:       rgba(255,255,255,0.10);
+  --sb-text:         #71717a;
+  --sb-text-active:  #fafafa;
+  --sb-border:       rgba(255,255,255,0.06);
+  --sb-logo-text:    #fafafa;
+  --sb-badge-bg:     rgba(255,255,255,0.10);
+  --sb-badge-text:   #e4e4e7;
 
   /* App shell */
-  --bg-app:          #0f172a;
-  --bg-card:         #1e293b;
-  --bg-header:       #0f172a;
-  --border:          #1e293b;
-  --text-primary:    #e2e8f0;
-  --text-secondary:  #94a3b8;
-  --text-muted:      #475569;
-  --text-inverse:    #0f172a;
+  --bg-app:          #18181b;
+  --bg-card:         #27272a;
+  --bg-header:       #1f1f23;
+  --border:          #2a2a30;
+  --text-primary:    #fafafa;
+  --text-secondary:  #a1a1aa;
+  --text-muted:      #71717a;
+  --text-inverse:    #18181b;
 
   /* Footer */
-  --footer-bg:       #0b1120;
-  --footer-border:   #1e293b;
-  --footer-text:     #475569;
+  --footer-bg:       #18181b;
+  --footer-border:   #2a2a30;
+  --footer-text:     #71717a;
 }
+
+/* ── ADMIN LAYOUT (super-admin shell) ──────────────────── */
+/* Sidebar is always dark grey with orange accents, regardless of light/dark.
+   Main content area still follows the global .dark toggle. */
+.admin-shell {
+  --sb-bg:           #18181b;
+  --sb-bg-deep:      #0f0f12;
+  --sb-hover:        rgba(249,115,22,0.10);
+  --sb-active:       rgba(249,115,22,0.18);
+  --sb-text:         #a1a1aa;
+  --sb-text-active:  #fb923c;
+  --sb-border:       rgba(255,255,255,0.06);
+  --sb-logo-text:    #fafafa;
+  --sb-badge-bg:     rgba(249,115,22,0.20);
+  --sb-badge-text:   #fb923c;
+  --admin-accent:        #f97316;
+  --admin-accent-hover:  #ea580c;
+  --admin-accent-soft:   rgba(249,115,22,0.12);
+}
+
+.admin-shell .nav-item.active::before {
+  background: var(--admin-accent);
+}
+
+.admin-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--admin-accent);
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.btn-admin {
+  background: var(--admin-accent);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  transition: background 120ms, transform 80ms;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-admin:hover { background: var(--admin-accent-hover); }
+.btn-admin:active { transform: scale(0.96); }
 
 /* ── BASE ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
