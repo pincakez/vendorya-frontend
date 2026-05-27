@@ -27,7 +27,7 @@
             <td>{{ fmtDate(r.date) }}</td>
             <td class="col-name">{{ r.customer_name || r.customer }}</td>
             <td class="col-ref">{{ r.original_invoice ? `#${r.original_invoice}` : '—' }}</td>
-            <td class="col-refund">{{ auth.currency }} {{ fmtNum(r.total_refunded) }}</td>
+            <td class="col-refund">{{ auth.currency }} {{ formatNumber(r.total_refunded) }}</td>
             <td class="col-reason">{{ r.reason || '—' }}</td>
           </tr>
         </tbody>
@@ -96,6 +96,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import { formatNumber } from '@/utils/format'
 
 const auth = useAuthStore()
 const qab  = useQABStore()
@@ -167,7 +168,6 @@ async function saveReturn() {
 }
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '—' }
-function fmtNum(n)  { return Number(n || 0).toFixed(2) }
 
 onMounted(() => {
   qab.setActions([{ id: 'new', label: 'New Return', icon: 'plus', handler: openModal }])

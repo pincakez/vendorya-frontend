@@ -58,9 +58,9 @@
               <td>{{ fmtDate(inv.date) }}</td>
               <td class="col-name">{{ inv.customer_name || inv.customer }}</td>
               <td><span class="status-badge" :class="`status-${inv.status.toLowerCase()}`">{{ inv.status }}</span></td>
-              <td class="col-amount">{{ auth.currency }} {{ fmtNum(inv.grand_total) }}</td>
-              <td class="col-amount">{{ auth.currency }} {{ fmtNum(inv.paid_amount) }}</td>
-              <td :class="balanceClass(inv)">{{ auth.currency }} {{ fmtNum(inv.grand_total - inv.paid_amount) }}</td>
+              <td class="col-amount">{{ auth.currency }} {{ formatNumber(inv.grand_total) }}</td>
+              <td class="col-amount">{{ auth.currency }} {{ formatNumber(inv.paid_amount) }}</td>
+              <td :class="balanceClass(inv)">{{ auth.currency }} {{ formatNumber(inv.grand_total - inv.paid_amount) }}</td>
               <td>
                 <button v-if="inv.status === 'DRAFT'" class="row-action success" title="Post invoice" @click="postInvoice(inv)">
                   <CheckCircle :size="13" />
@@ -120,9 +120,9 @@
       </div>
 
       <div class="invoice-totals">
-        <div class="totals-row"><span>Subtotal</span><span>{{ auth.currency }} {{ fmtNum(modalSubtotal) }}</span></div>
-        <div class="totals-row"><span>Discount</span><span>- {{ auth.currency }} {{ fmtNum(modal.discount || 0) }}</span></div>
-        <div class="totals-row total-line"><span>Total</span><span>{{ auth.currency }} {{ fmtNum(modalSubtotal - (modal.discount || 0)) }}</span></div>
+        <div class="totals-row"><span>Subtotal</span><span>{{ auth.currency }} {{ formatNumber(modalSubtotal) }}</span></div>
+        <div class="totals-row"><span>Discount</span><span>- {{ auth.currency }} {{ formatNumber(modal.discount || 0) }}</span></div>
+        <div class="totals-row total-line"><span>Total</span><span>{{ auth.currency }} {{ formatNumber(modalSubtotal - (modal.discount || 0)) }}</span></div>
       </div>
 
       <template #footer>
@@ -143,6 +143,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import { formatNumber } from '@/utils/format'
 
 const auth = useAuthStore()
 const qab  = useQABStore()
@@ -263,7 +264,6 @@ function fmtDate(d) {
   if (!d) return '—'
   return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
-function fmtNum(n) { return Number(n || 0).toFixed(2) }
 function balanceClass(inv) {
   const bal = inv.grand_total - inv.paid_amount
   return bal > 0.01 ? 'col-balance-due' : 'col-balance-paid'

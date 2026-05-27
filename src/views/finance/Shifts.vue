@@ -13,7 +13,7 @@
         <div class="banner-dot open-dot" />
         <div>
           <div class="banner-title">Shift Open</div>
-          <div class="banner-sub">Started {{ fmtDateTime(openShift.start_time) }} · Starting cash: {{ auth.currency }} {{ fmtNum(openShift.starting_cash) }}</div>
+          <div class="banner-sub">Started {{ fmtDateTime(openShift.start_time) }} · Starting cash: {{ auth.currency }} {{ formatNumber(openShift.starting_cash) }}</div>
         </div>
       </div>
       <button class="btn-danger" @click="openCloseModal">Close Shift</button>
@@ -46,11 +46,11 @@
             <tr v-for="s in shifts" :key="s.id" class="table-row">
               <td>{{ fmtDateTime(s.start_time) }}</td>
               <td><span class="status-badge" :class="`status-${s.status.toLowerCase()}`">{{ s.status }}</span></td>
-              <td class="col-amount">{{ auth.currency }} {{ fmtNum(s.starting_cash) }}</td>
-              <td class="col-amount">{{ auth.currency }} {{ fmtNum(s.expected_cash) }}</td>
-              <td class="col-amount">{{ auth.currency }} {{ fmtNum(s.closing_cash) }}</td>
+              <td class="col-amount">{{ auth.currency }} {{ formatNumber(s.starting_cash) }}</td>
+              <td class="col-amount">{{ auth.currency }} {{ formatNumber(s.expected_cash) }}</td>
+              <td class="col-amount">{{ auth.currency }} {{ formatNumber(s.closing_cash) }}</td>
               <td :class="diffClass(s.difference)">
-                {{ Number(s.difference) >= 0 ? '+' : '' }}{{ auth.currency }} {{ fmtNum(s.difference) }}
+                {{ Number(s.difference) >= 0 ? '+' : '' }}{{ auth.currency }} {{ formatNumber(s.difference) }}
               </td>
             </tr>
           </tbody>
@@ -81,15 +81,15 @@
     <AppModal :open="closeModal" title="Close Shift" @close="closeModal = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div class="shift-summary">
-          <div class="summary-row"><span>Starting Cash</span><span>{{ auth.currency }} {{ fmtNum(openShift?.starting_cash) }}</span></div>
-          <div class="summary-row"><span>Expected Cash</span><span>{{ auth.currency }} {{ fmtNum(openShift?.expected_cash) }}</span></div>
+          <div class="summary-row"><span>Starting Cash</span><span>{{ auth.currency }} {{ formatNumber(openShift?.starting_cash) }}</span></div>
+          <div class="summary-row"><span>Expected Cash</span><span>{{ auth.currency }} {{ formatNumber(openShift?.expected_cash) }}</span></div>
         </div>
         <div>
           <label class="form-label">Counted Cash in Drawer</label>
           <input v-model="countedCash" type="number" min="0" step="0.01" class="form-input" placeholder="0.00" />
         </div>
         <div v-if="countedCash !== ''" class="diff-preview" :class="diffClass(countedCash - (openShift?.expected_cash || 0))">
-          Difference: {{ Number(countedCash - (openShift?.expected_cash || 0)) >= 0 ? '+' : '' }}{{ auth.currency }} {{ fmtNum(countedCash - (openShift?.expected_cash || 0)) }}
+          Difference: {{ Number(countedCash - (openShift?.expected_cash || 0)) >= 0 ? '+' : '' }}{{ auth.currency }} {{ formatNumber(countedCash - (openShift?.expected_cash || 0)) }}
         </div>
       </div>
       <template #footer>
@@ -108,6 +108,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import { formatNumber } from '@/utils/format'
 
 const auth = useAuthStore()
 const qab  = useQABStore()
@@ -180,7 +181,6 @@ function fmtDateTime(d) {
   if (!d) return '—'
   return new Date(d).toLocaleString(undefined, { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
 }
-function fmtNum(n) { return Number(n || 0).toFixed(2) }
 
 onMounted(async () => {
   await fetchOpenShift()

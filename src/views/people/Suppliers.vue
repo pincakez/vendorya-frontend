@@ -39,7 +39,7 @@
             <td><span class="prefix-badge">{{ s.code_prefix }}</span></td>
             <td class="col-contact">{{ s.contact_info || '—' }}</td>
             <td>
-              <span v-if="Number(s.balance) > 0" class="balance-owe">{{ auth.currency }} {{ fmtNum(s.balance) }}</span>
+              <span v-if="Number(s.balance) > 0" class="balance-owe">{{ auth.currency }} {{ formatNumber(s.balance) }}</span>
               <span v-else class="balance-zero">—</span>
             </td>
             <td>
@@ -86,6 +86,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import { formatNumber } from '@/utils/format'
 
 const auth = useAuthStore()
 const qab  = useQABStore()
@@ -152,7 +153,6 @@ onMounted(() => {
 })
 onUnmounted(() => qab.clearActions())
 
-function fmtNum(n) { return Number(n || 0).toFixed(2) }
 </script>
 
 <style scoped>

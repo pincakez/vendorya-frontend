@@ -24,7 +24,7 @@
         </div>
         <div class="kpi-body">
           <div class="kpi-label">Today's Sales</div>
-          <div class="kpi-value">{{ auth.currency }} {{ fmtNum(data.today_sales_total) }}</div>
+          <div class="kpi-value">{{ auth.currency }} {{ formatNumber(data.today_sales_total) }}</div>
           <div class="kpi-sub">{{ data.today_invoices_count }} invoice{{ data.today_invoices_count !== 1 ? 's' : '' }}</div>
         </div>
       </div>
@@ -35,7 +35,7 @@
         </div>
         <div class="kpi-body">
           <div class="kpi-label">Items Sold Today</div>
-          <div class="kpi-value">{{ fmtQty(data.today_items_sold) }}</div>
+          <div class="kpi-value">{{ formatQty(data.today_items_sold) }}</div>
           <div class="kpi-sub">units dispatched</div>
         </div>
       </div>
@@ -96,7 +96,7 @@
               <tr v-for="inv in data.recent_sales" :key="inv.id" class="table-row">
                 <td class="col-ref">{{ inv.invoice_number }}</td>
                 <td>{{ inv.customer }}</td>
-                <td class="col-amount">{{ auth.currency }} {{ fmtNum(inv.grand_total) }}</td>
+                <td class="col-amount">{{ auth.currency }} {{ formatNumber(inv.grand_total) }}</td>
                 <td class="col-muted">{{ fmtTime(inv.date) }}</td>
               </tr>
             </tbody>
@@ -151,6 +151,7 @@ import { ref, onMounted } from 'vue'
 import { TrendingUp, ShoppingBag, Clock, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
+import { formatNumber, formatQty } from '@/utils/format'
 
 const auth = useAuthStore()
 const loading = ref(false)
@@ -178,8 +179,6 @@ async function fetchData() {
   }
 }
 
-function fmtNum(n) { return Number(n || 0).toFixed(2) }
-function fmtQty(n) { return Number(n || 0) % 1 === 0 ? String(Math.round(Number(n || 0))) : Number(n || 0).toFixed(1) }
 function fmtTime(d) {
   return d ? new Date(d).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '—'
 }

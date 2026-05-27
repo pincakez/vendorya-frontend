@@ -34,7 +34,7 @@
             <tr v-for="e in expenses" :key="e.id" class="table-row">
               <td>{{ fmtDate(e.date) }}</td>
               <td>{{ categoryName(e.category) }}</td>
-              <td class="col-amount">{{ auth.currency }} {{ fmtNum(e.amount) }}</td>
+              <td class="col-amount">{{ auth.currency }} {{ formatNumber(e.amount) }}</td>
               <td class="col-desc">{{ e.description || '—' }}</td>
               <td>
                 <button class="row-action danger" @click="deleteExpense(e.id)"><Trash2 :size="13" /></button>
@@ -128,6 +128,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import { formatNumber } from '@/utils/format'
 
 const auth = useAuthStore()
 const qab  = useQABStore()
@@ -224,7 +225,6 @@ onMounted(() => { fetchExpenses(); fetchCategories() })
 onUnmounted(() => qab.clearActions())
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '—' }
-function fmtNum(n)  { return Number(n || 0).toFixed(2) }
 </script>
 
 <style scoped>

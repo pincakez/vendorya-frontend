@@ -39,8 +39,8 @@
             <td class="col-phone">{{ c.phone_number }}</td>
             <td class="col-notes">{{ c.notes || '—' }}</td>
             <td>
-              <span v-if="Number(c.balance) > 0" class="balance-owe">Owes {{ auth.currency }} {{ fmtNum(c.balance) }}</span>
-              <span v-else-if="Number(c.balance) < 0" class="balance-credit">Credit {{ auth.currency }} {{ fmtNum(Math.abs(c.balance)) }}</span>
+              <span v-if="Number(c.balance) > 0" class="balance-owe">Owes {{ auth.currency }} {{ formatNumber(c.balance) }}</span>
+              <span v-else-if="Number(c.balance) < 0" class="balance-credit">Credit {{ auth.currency }} {{ formatNumber(Math.abs(c.balance)) }}</span>
               <span v-else class="balance-zero">—</span>
             </td>
             <td>
@@ -87,6 +87,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import { formatNumber } from '@/utils/format'
 
 const auth = useAuthStore()
 const qab  = useQABStore()
@@ -149,7 +150,6 @@ onMounted(() => {
 })
 onUnmounted(() => qab.clearActions())
 
-function fmtNum(n) { return Number(n || 0).toFixed(2) }
 </script>
 
 <style scoped>

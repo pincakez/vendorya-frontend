@@ -43,8 +43,8 @@
             <td class="col-ref">{{ p.vendor_reference || '—' }}</td>
             <td>{{ fmtDate(p.date) }}</td>
             <td><span class="status-badge" :class="`status-${p.status.toLowerCase()}`">{{ p.status }}</span></td>
-            <td class="col-amount">{{ auth.currency }} {{ fmtNum(p.total_amount) }}</td>
-            <td class="col-amount">{{ auth.currency }} {{ fmtNum(p.paid_amount) }}</td>
+            <td class="col-amount">{{ auth.currency }} {{ formatNumber(p.total_amount) }}</td>
+            <td class="col-amount">{{ auth.currency }} {{ formatNumber(p.paid_amount) }}</td>
             <td @click.stop>
               <button v-if="p.status === 'DRAFT'" class="row-action success" title="Receive stock" @click="receivePurchase(p)">
                 <PackageCheck :size="13" />
@@ -102,7 +102,7 @@
       <div class="invoice-totals">
         <div class="totals-row total-line">
           <span>Total Cost</span>
-          <span>{{ auth.currency }} {{ fmtNum(modalTotal) }}</span>
+          <span>{{ auth.currency }} {{ formatNumber(modalTotal) }}</span>
         </div>
       </div>
 
@@ -124,6 +124,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import { formatNumber } from '@/utils/format'
 
 const auth = useAuthStore()
 const qab  = useQABStore()
@@ -236,7 +237,6 @@ function fmtDate(d) {
   if (!d) return '—'
   return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
-function fmtNum(n) { return Number(n || 0).toFixed(2) }
 
 onMounted(() => {
   qab.setActions([{ id: 'new', label: 'New Purchase', icon: 'plus', handler: openNew }])

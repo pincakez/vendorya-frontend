@@ -33,14 +33,14 @@
         <div class="kpi-icon" style="background:#dcfce7;color:#16a34a;"><BarChart2 :size="20" /></div>
         <div class="kpi-body">
           <div class="kpi-label">Total Stock Units</div>
-          <div class="kpi-value">{{ fmtQty(summary.totalUnits) }}</div>
+          <div class="kpi-value">{{ formatQty(summary.totalUnits) }}</div>
         </div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon" style="background:#fef3c7;color:#d97706;"><DollarSign :size="20" /></div>
         <div class="kpi-body">
           <div class="kpi-label">Stock Value (Cost)</div>
-          <div class="kpi-value">{{ auth.currency }} {{ fmtNum(summary.totalValue) }}</div>
+          <div class="kpi-value">{{ auth.currency }} {{ formatNumber(summary.totalValue) }}</div>
         </div>
       </div>
     </div>
@@ -73,11 +73,11 @@
               <td class="col-name">{{ row.productName }}</td>
               <td class="col-ref">{{ row.sku }}</td>
               <td class="col-muted">{{ row.branch }}</td>
-              <td :class="Number(row.qty) === 0 ? 'col-zero' : ''">{{ fmtQty(row.qty) }}</td>
-              <td class="col-muted">{{ auth.currency }} {{ fmtNum(row.costPrice) }}</td>
-              <td class="col-value">{{ auth.currency }} {{ fmtNum(row.stockValue) }}</td>
-              <td class="col-muted">{{ auth.currency }} {{ fmtNum(row.sellPrice) }}</td>
-              <td class="col-revenue">{{ auth.currency }} {{ fmtNum(row.potentialRevenue) }}</td>
+              <td :class="Number(row.qty) === 0 ? 'col-zero' : ''">{{ formatQty(row.qty) }}</td>
+              <td class="col-muted">{{ auth.currency }} {{ formatNumber(row.costPrice) }}</td>
+              <td class="col-value">{{ auth.currency }} {{ formatNumber(row.stockValue) }}</td>
+              <td class="col-muted">{{ auth.currency }} {{ formatNumber(row.sellPrice) }}</td>
+              <td class="col-revenue">{{ auth.currency }} {{ formatNumber(row.potentialRevenue) }}</td>
             </tr>
           </tbody>
         </table>
@@ -91,6 +91,7 @@ import { ref, computed, onMounted } from 'vue'
 import { Package, Layers, BarChart2, DollarSign, RefreshCw } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
+import { formatNumber, formatQty } from '@/utils/format'
 
 const auth    = useAuthStore()
 const loading = ref(false)
@@ -154,9 +155,6 @@ const filteredRows = computed(() => {
   const q = search.value.toLowerCase()
   return rows.value.filter(r => r.productName.toLowerCase().includes(q) || r.sku.toLowerCase().includes(q))
 })
-
-function fmtNum(n) { return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
-function fmtQty(n) { return Number(n || 0) % 1 === 0 ? String(Math.round(Number(n || 0))) : Number(n || 0).toFixed(1) }
 
 onMounted(load)
 </script>
