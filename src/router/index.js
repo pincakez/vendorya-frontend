@@ -35,6 +35,11 @@ const router = createRouter({
         { path: 'settings/policies',    component: () => import('@/views/settings/Policies.vue'),          meta: { store: true } },
         { path: 'settings/taxes',       component: () => import('@/views/settings/Taxes.vue'),             meta: { store: true } },
         { path: 'settings/profile',     component: () => import('@/views/settings/Profile.vue'),           meta: { store: true } },
+        { path: 'settings/billing',     component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
+        { path: 'settings/billing/invoices/:id', component: () => import('@/views/settings/Billing.vue'),  meta: { store: true } },
+
+        // Inbox — any authenticated store user
+        { path: 'inbox',                component: () => import('@/views/Inbox.vue'),                      meta: { store: true } },
 
         // Admin routes — sudo only
         { path: 'admin',           redirect: '/admin/dashboard' },
@@ -43,6 +48,8 @@ const router = createRouter({
         { path: 'admin/branches',  component: () => import('@/views/admin/AdminBranches.vue'),  meta: { admin: true } },
         { path: 'admin/users',         component: () => import('@/views/admin/AdminUsers.vue'),        meta: { admin: true } },
         { path: 'admin/activity-log',  component: () => import('@/views/admin/AdminActivityLog.vue'),  meta: { admin: true } },
+        { path: 'admin/plans',         component: () => import('@/views/admin/AdminPlans.vue'),         meta: { admin: true } },
+        { path: 'admin/subscriptions', component: () => import('@/views/admin/AdminSubscriptions.vue'), meta: { admin: true } },
       ]
     },
     {

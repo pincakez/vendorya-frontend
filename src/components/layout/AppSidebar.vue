@@ -78,11 +78,28 @@
         :collapsed="collapsed"
       />
 
+      <!-- Inbox -->
+      <NavItem
+        icon="inbox"
+        label="Inbox"
+        to="/inbox"
+        :collapsed="collapsed"
+      />
+
       <!-- Settings -->
       <NavItem
         icon="settings"
         label="Settings"
         to="/settings"
+        :collapsed="collapsed"
+      />
+
+      <!-- Billing (owner-only — header gates anyway, link is fine for visibility) -->
+      <NavItem
+        v-if="auth.userRole === 'OWNER' || auth.isSuperadmin"
+        icon="receipt"
+        label="Billing"
+        to="/settings/billing"
         :collapsed="collapsed"
       />
 
