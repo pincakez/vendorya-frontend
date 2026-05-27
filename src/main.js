@@ -13,4 +13,12 @@ app.use(router)
 import { useThemeStore } from './stores/theme'
 useThemeStore(pinia).init()
 
+// Load currency + number-formatting prefs from the active store.  No-op if
+// not authenticated yet; it runs again on the next login.
+import { useFormatStore } from './stores/format'
+import { useAuthStore } from './stores/auth'
+const authStore   = useAuthStore(pinia)
+const formatStore = useFormatStore(pinia)
+if (authStore.isAuthenticated) formatStore.loadForStore()
+
 app.mount('#app')

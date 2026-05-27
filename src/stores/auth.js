@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/axios'
 import { useThemeStore } from './theme'
+import { useFormatStore } from './format'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -18,7 +19,11 @@ export const useAuthStore = defineStore('auth', {
     isCashier:       s => s.user?.role === 'CASHIER',
     isManager:       s => s.user?.role === 'MANAGER',
     isOwner:         s => s.user?.role === 'OWNER',
-    currency:        s => s.activeStore?.currency_symbol || s.user?.store?.currency_symbol || 'EGP',
+    currency:        s => (s.activeStore?.currency || s.user?.store?.currency) || null,
+    currencySymbol:  s => (s.activeStore?.currency?.symbol
+                            || s.user?.store?.currency?.symbol
+                            || ''),
+    timezone:        s => s.activeStore?.timezone || s.user?.store?.timezone || 'Africa/Cairo',
     storeName:       s => s.activeStore?.name || s.user?.store?.name || 'Vendorya',
     isPremium:       s => (s.activeStore?.plan || s.user?.store?.plan) === 'PREMIUM',
     displayName:     s => s.user?.full_name || s.user?.username || '—',
@@ -37,6 +42,8 @@ export const useAuthStore = defineStore('auth', {
       // The user identity just changed (sudo vs regular) — apply that user's own theme,
       // not whatever the previous tab session left behind.
       useThemeStore().refresh()
+      // Refresh currency + number-format prefs for the new identity.
+      useFormatStore().loadForStore()
     },
     async fetchMe() {
       const res = await api.get('/api/auth/me/')
@@ -62,6 +69,8 @@ export const useAuthStore = defineStore('auth', {
         localStorage.removeItem('vendorya_active_store_obj')
         localStorage.removeItem('vendorya_active_store')
       }
+      // Currency + decimal rules belong to the active store — reload them.
+      useFormatStore().loadForStore()
     },
     clearActiveStore() {
       this.setActiveStore(null)

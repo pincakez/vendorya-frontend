@@ -46,7 +46,7 @@
             </td>
             <td style="color:var(--text-secondary);font-size:12.5px;">{{ s.owner_username }}</td>
             <td><span class="plan-pill" :class="'plan-' + s.plan.toLowerCase()">{{ s.plan }}</span></td>
-            <td style="font-variant-numeric:tabular-nums;">{{ s.currency_symbol }}</td>
+            <td style="font-variant-numeric:tabular-nums;">{{ s.currency?.symbol || '—' }}</td>
             <td style="font-variant-numeric:tabular-nums;">{{ s.branches_count }}</td>
             <td style="font-variant-numeric:tabular-nums;">{{ s.staff_count }}</td>
             <td>
@@ -83,15 +83,27 @@
           </div>
           <div>
             <label class="form-label">Currency</label>
-            <input v-model="editModal.currency_symbol" class="form-input" placeholder="EGP" />
+            <select v-model="editModal.currency_id" class="form-input">
+              <option v-for="c in currencies" :key="c.id" :value="c.id">
+                {{ c.symbol }} — {{ c.name }} ({{ c.code }})
+              </option>
+            </select>
           </div>
         </div>
-        <div>
-          <label class="form-label">Default Language</label>
-          <select v-model="editModal.default_language" class="form-input">
-            <option value="ar">Arabic</option>
-            <option value="en">English</option>
-          </select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">Default Language</label>
+            <select v-model="editModal.default_language" class="form-input">
+              <option value="ar">Arabic</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Timezone</label>
+            <select v-model="editModal.timezone" class="form-input">
+              <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
+            </select>
+          </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding-top:4px;">
           <label class="form-label" style="margin:0;">Active</label>
@@ -166,15 +178,27 @@
           </div>
           <div>
             <label class="form-label">Currency</label>
-            <input v-model="form.store.currency_symbol" class="form-input" placeholder="EGP" />
+            <select v-model="form.store.currency" class="form-input">
+              <option v-for="c in currencies" :key="c.id" :value="c.id">
+                {{ c.symbol }} — {{ c.name }} ({{ c.code }})
+              </option>
+            </select>
           </div>
         </div>
-        <div>
-          <label class="form-label">Default Language</label>
-          <select v-model="form.store.default_language" class="form-input">
-            <option value="ar">Arabic</option>
-            <option value="en">English</option>
-          </select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">Default Language</label>
+            <select v-model="form.store.default_language" class="form-input">
+              <option value="ar">Arabic</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Timezone</label>
+            <select v-model="form.store.timezone" class="form-input">
+              <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -234,9 +258,19 @@ const auth = useAuthStore()
 const qab = useQABStore()
 
 const stores = ref([])
+const currencies = ref([])
 const loading = ref(false)
 const saving = ref(false)
 const search = ref('')
+
+const timezones = [
+  'Africa/Cairo', 'Africa/Casablanca', 'Africa/Tripoli',
+  'Asia/Riyadh', 'Asia/Dubai', 'Asia/Kuwait', 'Asia/Qatar', 'Asia/Baghdad', 'Asia/Beirut',
+  'Asia/Amman', 'Asia/Damascus', 'Asia/Jerusalem',
+  'Europe/London', 'Europe/Paris', 'Europe/Istanbul',
+  'America/New_York', 'America/Los_Angeles',
+  'UTC',
+]
 
 let searchTimer = null
 function onSearch() {
@@ -258,17 +292,33 @@ async function fetchStores() {
   }
 }
 
+async function fetchCurrencies() {
+  try {
+    const res = await api.get('/api/core/currencies/')
+    const list = Array.isArray(res.data) ? res.data : (res.data.results || [])
+    currencies.value = list.filter(c => c.is_active)
+  } catch { currencies.value = [] }
+}
+
+function defaultCurrencyId() {
+  return currencies.value.find(c => c.code === 'EGP')?.id || currencies.value[0]?.id || ''
+}
+
 // --- Edit modal ---
 const editModal = reactive({
   open: false, id: null,
-  name: '', plan: 'FREE', currency_symbol: 'EGP', default_language: 'ar', is_active: true,
+  name: '', plan: 'FREE', currency_id: '', default_language: 'ar',
+  timezone: 'Africa/Cairo', is_active: true,
 })
 
 function openEdit(s) {
   Object.assign(editModal, {
     open: true, id: s.id,
-    name: s.name, plan: s.plan, currency_symbol: s.currency_symbol,
-    default_language: s.default_language, is_active: s.is_active,
+    name: s.name, plan: s.plan,
+    currency_id: s.currency?.id || defaultCurrencyId(),
+    default_language: s.default_language,
+    timezone: s.timezone || 'Africa/Cairo',
+    is_active: s.is_active,
   })
 }
 
@@ -280,8 +330,9 @@ async function saveEdit() {
     await api.patch(`/api/admin/stores/${editModal.id}/`, {
       name: editModal.name,
       plan: editModal.plan,
-      currency_symbol: editModal.currency_symbol,
+      currency_id: editModal.currency_id || null,
       default_language: editModal.default_language,
+      timezone: editModal.timezone,
       is_active: editModal.is_active,
     })
     closeEdit()
@@ -304,7 +355,7 @@ const createErrors = ref([])
 
 const form = reactive({
   owner:  { first_name: '', last_name: '', email: '', username: '', password: '' },
-  store:  { name: '', plan: 'FREE', currency_symbol: 'EGP', default_language: 'ar' },
+  store:  { name: '', plan: 'FREE', currency: '', default_language: 'ar', timezone: 'Africa/Cairo' },
   branch: { name: 'Main Branch', street_1: '', city: '', country: 'Egypt' },
 })
 
@@ -314,7 +365,7 @@ function openCreate() {
   step.value = 0
   createErrors.value = []
   Object.assign(form.owner,  { first_name: '', last_name: '', email: '', username: '', password: '' })
-  Object.assign(form.store,  { name: '', plan: 'FREE', currency_symbol: 'EGP', default_language: 'ar' })
+  Object.assign(form.store,  { name: '', plan: 'FREE', currency: defaultCurrencyId(), default_language: 'ar', timezone: 'Africa/Cairo' })
   Object.assign(form.branch, { name: 'Main Branch', street_1: '', city: '', country: 'Egypt' })
   createModal.open = true
 }
@@ -378,6 +429,7 @@ function enterStore(store) {
 
 onMounted(() => {
   fetchStores()
+  fetchCurrencies()
   qab.setActions([{ id: 'new-store', label: 'New Store', icon: 'plus', handler: openCreate }])
 })
 onUnmounted(() => qab.clearActions())

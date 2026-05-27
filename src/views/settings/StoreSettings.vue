@@ -24,8 +24,47 @@
             <input v-model="storeForm.name" class="form-input" placeholder="e.g. Trenda Fashion" />
           </div>
           <div class="form-group">
-            <label class="form-label">Currency Symbol</label>
-            <input v-model="storeForm.currency_symbol" class="form-input" placeholder="e.g. EGP" style="width:120px;" />
+            <label class="form-label">Currency</label>
+            <select v-model="storeForm.currency_id" class="form-input" style="width:220px;">
+              <option v-for="c in currencies" :key="c.id" :value="c.id">
+                {{ c.symbol }} — {{ c.name }} ({{ c.code }})
+              </option>
+            </select>
+            <p class="form-hint">Used everywhere this store displays money. Sample: <strong>{{ sampleAmount }}</strong></p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Timezone</label>
+            <select v-model="storeForm.timezone" class="form-input" style="width:220px;">
+              <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
+            </select>
+            <p class="form-hint">Time is set automatically by Vendorya servers — you just pick the zone for display.</p>
+          </div>
+        </div>
+
+        <div class="section-divider">Number Formatting</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Decimal places</label>
+            <select v-model.number="settingsForm.decimals" class="form-input" style="width:120px;">
+              <option :value="0">0 (e.g. 100)</option>
+              <option :value="1">1 (e.g. 100.5)</option>
+              <option :value="2">2 (e.g. 100.50)</option>
+              <option :value="3">3 (e.g. 100.500)</option>
+              <option :value="4">4 (e.g. 100.5000)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thousand separator</label>
+            <div style="display:flex;align-items:center;gap:10px;height:34px;">
+              <button class="toggle-btn" :class="{ on: settingsForm.thousands_separator }"
+                      @click="settingsForm.thousands_separator = !settingsForm.thousands_separator">
+                <span class="toggle-knob" />
+              </button>
+              <span style="font-size:12.5px;color:var(--text-muted);">
+                {{ settingsForm.thousands_separator ? '1,234,567.89' : '1234567.89' }}
+              </span>
+            </div>
+            <p class="form-hint">Off by default — cleaner for short receipts.</p>
           </div>
           <div class="form-group">
             <label class="form-label">Default Language</label>
@@ -238,13 +277,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { Store, Receipt, GitBranch, CreditCard, Pencil, Trash2 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useQABStore } from '@/stores/qab'
+import { useFormatStore } from '@/stores/format'
+import { useAuthStore } from '@/stores/auth'
+import { formatCurrency } from '@/utils/format'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const qab = useQABStore()
+const fmt = useFormatStore()
+const auth = useAuthStore()
 
 const tabs = [
   { id: 'store',    label: 'Store',            icon: Store },
@@ -254,34 +298,98 @@ const tabs = [
 ]
 const activeTab = ref('store')
 
+// Short list — the most useful IANA zones for our target markets.
+const timezones = [
+  'Africa/Cairo', 'Africa/Casablanca', 'Africa/Tripoli',
+  'Asia/Riyadh', 'Asia/Dubai', 'Asia/Kuwait', 'Asia/Qatar', 'Asia/Baghdad', 'Asia/Beirut',
+  'Asia/Amman', 'Asia/Damascus', 'Asia/Jerusalem',
+  'Europe/London', 'Europe/Paris', 'Europe/Istanbul',
+  'America/New_York', 'America/Los_Angeles',
+  'UTC',
+]
+
 // --- Store + Settings ---
 const storeLoading = ref(false)
 const storeSaving  = ref(false)
-const storeForm    = reactive({ name: '', currency_symbol: '', default_language: 'ar' })
-const settingsForm = reactive({ allow_negative_stock: false, enable_agel_selling: true, default_tax: '', tax_id: '', commercial_reg: '', receipt_header: '', receipt_footer: '' })
-const taxes        = ref([])
+const storeForm    = reactive({
+  name: '',
+  currency_id: '',
+  default_language: 'ar',
+  timezone: 'Africa/Cairo',
+})
+const settingsForm = reactive({
+  allow_negative_stock: false, enable_agel_selling: true,
+  decimals: 2, thousands_separator: false,
+  default_tax: '', tax_id: '', commercial_reg: '',
+  receipt_header: '', receipt_footer: '',
+})
+const taxes      = ref([])
+const currencies = ref([])
+
+const sampleAmount = computed(() => {
+  const cur = currencies.value.find(c => c.id === storeForm.currency_id)
+  return formatCurrency(1234.5, {
+    symbol:    cur?.symbol   ?? fmt.symbol,
+    position:  cur?.position ?? fmt.position,
+    decimals:  settingsForm.decimals,
+    separator: settingsForm.thousands_separator,
+  })
+})
 
 async function loadStore() {
   storeLoading.value = true
   try {
-    const [storeRes, settingsRes, taxRes] = await Promise.all([
+    const [storeRes, settingsRes, taxRes, curRes] = await Promise.all([
       api.get('/api/core/store/'),
       api.get('/api/core/settings/'),
       api.get('/api/inventory/taxes/'),
+      api.get('/api/core/currencies/'),
     ])
-    Object.assign(storeForm, { name: storeRes.data.name, currency_symbol: storeRes.data.currency_symbol, default_language: storeRes.data.default_language })
+    Object.assign(storeForm, {
+      name: storeRes.data.name,
+      currency_id: storeRes.data.currency?.id || '',
+      default_language: storeRes.data.default_language,
+      timezone: storeRes.data.timezone || 'Africa/Cairo',
+    })
     Object.assign(settingsForm, settingsRes.data)
-    taxes.value = taxRes.data.results ?? taxRes.data
+    taxes.value      = taxRes.data.results ?? taxRes.data
+    currencies.value = (curRes.data.results ?? curRes.data).filter(c => c.is_active)
   } finally { storeLoading.value = false }
 }
 
 async function saveStore() {
   storeSaving.value = true
   try {
-    await Promise.all([
-      api.patch('/api/core/store/', { name: storeForm.name, currency_symbol: storeForm.currency_symbol, default_language: storeForm.default_language }),
-      api.patch('/api/core/settings/', { allow_negative_stock: settingsForm.allow_negative_stock, enable_agel_selling: settingsForm.enable_agel_selling, default_tax: settingsForm.default_tax || null, tax_id: settingsForm.tax_id, commercial_reg: settingsForm.commercial_reg }),
+    const [storeRes, settingsRes] = await Promise.all([
+      api.patch('/api/core/store/', {
+        name: storeForm.name,
+        currency_id: storeForm.currency_id || null,
+        default_language: storeForm.default_language,
+        timezone: storeForm.timezone,
+      }),
+      api.patch('/api/core/settings/', {
+        allow_negative_stock: settingsForm.allow_negative_stock,
+        enable_agel_selling:  settingsForm.enable_agel_selling,
+        decimals:             settingsForm.decimals,
+        thousands_separator:  settingsForm.thousands_separator,
+        default_tax: settingsForm.default_tax || null,
+        tax_id:         settingsForm.tax_id,
+        commercial_reg: settingsForm.commercial_reg,
+      }),
     ])
+    // Push the new rules through the app immediately.
+    const cur = storeRes.data.currency
+    fmt.apply({
+      symbol:   cur?.symbol,
+      position: cur?.position,
+      decimals: settingsRes.data.decimals,
+      thousands_separator: settingsRes.data.thousands_separator,
+    })
+    // Refresh the cached store payload (login response) so other tabs see it.
+    if (auth.user?.store) {
+      auth.user.store = { ...auth.user.store, currency: cur, timezone: storeRes.data.timezone }
+      localStorage.setItem('vendorya_user', JSON.stringify(auth.user))
+    }
   } finally { storeSaving.value = false }
 }
 

@@ -1,10 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="auto">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>vendorya-frontend</title>
+    <style>
+      /* Layout stays LTR; per-block text direction follows its first strong
+         character (handles AR product names mixed with EN UI cleanly). */
+      body, .app-content, input, textarea, select, [contenteditable] {
+        unicode-bidi: plaintext;
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
