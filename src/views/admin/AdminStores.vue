@@ -66,45 +66,154 @@
       </table>
     </div>
 
-    <!-- Edit modal -->
-    <AppModal :open="modal.open" :title="modal.id ? 'Edit Store' : 'New Store'" @close="closeModal">
+    <!-- Edit modal (single store) -->
+    <AppModal :open="editModal.open" title="Edit Store" @close="closeEdit">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
           <label class="form-label">Store Name</label>
-          <input v-model="modal.name" class="form-input" placeholder="e.g. Trenda Fashion" />
+          <input v-model="editModal.name" class="form-input" placeholder="e.g. Trenda Fashion" />
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
             <label class="form-label">Plan</label>
-            <select v-model="modal.plan" class="form-input">
+            <select v-model="editModal.plan" class="form-input">
               <option value="FREE">Free</option>
               <option value="PREMIUM">Premium</option>
             </select>
           </div>
           <div>
             <label class="form-label">Currency</label>
-            <input v-model="modal.currency_symbol" class="form-input" placeholder="EGP" />
+            <input v-model="editModal.currency_symbol" class="form-input" placeholder="EGP" />
           </div>
         </div>
         <div>
           <label class="form-label">Default Language</label>
-          <select v-model="modal.default_language" class="form-input">
+          <select v-model="editModal.default_language" class="form-input">
             <option value="ar">Arabic</option>
             <option value="en">English</option>
           </select>
         </div>
-        <div v-if="modal.id" style="display:flex;align-items:center;gap:10px;padding-top:4px;">
+        <div style="display:flex;align-items:center;gap:10px;padding-top:4px;">
           <label class="form-label" style="margin:0;">Active</label>
-          <button class="toggle-btn" :class="{ on: modal.is_active }" @click="modal.is_active = !modal.is_active">
+          <button class="toggle-btn" :class="{ on: editModal.is_active }" @click="editModal.is_active = !editModal.is_active">
             <span class="toggle-knob" />
           </button>
-          <span style="font-size:12px;color:var(--text-muted);">{{ modal.is_active ? 'Store is open for use' : 'Store deactivated' }}</span>
+          <span style="font-size:12px;color:var(--text-muted);">{{ editModal.is_active ? 'Store is open for use' : 'Store deactivated' }}</span>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="closeModal">Cancel</button>
-        <button class="btn-admin" :disabled="!modal.name.trim() || saving" @click="save">
+        <button class="btn-ghost" @click="closeEdit">Cancel</button>
+        <button class="btn-admin" :disabled="!editModal.name.trim() || saving" @click="saveEdit">
           {{ saving ? 'Saving…' : 'Save Changes' }}
+        </button>
+      </template>
+    </AppModal>
+
+    <!-- Create Store modal (compound: owner + store + branch) -->
+    <AppModal :open="createModal.open" title="New Store" @close="closeCreate">
+      <!-- Stepper -->
+      <div class="stepper">
+        <div v-for="(s, i) in steps" :key="s.key"
+             class="step" :class="{ active: step === i, done: step > i }"
+             @click="step > i && (step = i)">
+          <span class="step-dot">{{ step > i ? '✓' : (i + 1) }}</span>
+          <span class="step-label">{{ s.label }}</span>
+        </div>
+      </div>
+
+      <!-- Step 1 — Owner -->
+      <div v-show="step === 0" style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">First Name</label>
+            <input v-model="form.owner.first_name" class="form-input" placeholder="Ahmed" />
+          </div>
+          <div>
+            <label class="form-label">Last Name</label>
+            <input v-model="form.owner.last_name" class="form-input" placeholder="Hassan" />
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Email</label>
+          <input v-model="form.owner.email" class="form-input" placeholder="owner@example.com" type="email" />
+        </div>
+        <div>
+          <label class="form-label">Username <span class="req">*</span></label>
+          <input v-model="form.owner.username" class="form-input" placeholder="ahmedh" autocomplete="off" />
+        </div>
+        <div>
+          <label class="form-label">Password <span class="req">*</span> <span class="hint">(min 8 chars)</span></label>
+          <input v-model="form.owner.password" class="form-input" type="password" autocomplete="new-password" />
+        </div>
+        <p class="step-help">
+          This account becomes the store OWNER — full access to all features in the new tenant.
+        </p>
+      </div>
+
+      <!-- Step 2 — Store -->
+      <div v-show="step === 1" style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label class="form-label">Store Name <span class="req">*</span></label>
+          <input v-model="form.store.name" class="form-input" placeholder="Trenda Fashion" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">Plan</label>
+            <select v-model="form.store.plan" class="form-input">
+              <option value="FREE">Free</option>
+              <option value="PREMIUM">Premium</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Currency</label>
+            <input v-model="form.store.currency_symbol" class="form-input" placeholder="EGP" />
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Default Language</label>
+          <select v-model="form.store.default_language" class="form-input">
+            <option value="ar">Arabic</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Step 3 — Main Branch -->
+      <div v-show="step === 2" style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label class="form-label">Branch Name</label>
+          <input v-model="form.branch.name" class="form-input" placeholder="Main Branch" />
+        </div>
+        <div>
+          <label class="form-label">Street Address <span class="req">*</span></label>
+          <input v-model="form.branch.street_1" class="form-input" placeholder="1 Tahrir Square" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">City <span class="req">*</span></label>
+            <input v-model="form.branch.city" class="form-input" placeholder="Cairo" />
+          </div>
+          <div>
+            <label class="form-label">Country</label>
+            <input v-model="form.branch.country" class="form-input" placeholder="Egypt" />
+          </div>
+        </div>
+        <p class="step-help">
+          Every store needs at least one branch to record sales. You can add more after onboarding.
+        </p>
+      </div>
+
+      <!-- Error surface -->
+      <div v-if="createErrors.length" class="error-box">
+        <div v-for="(e, i) in createErrors" :key="i">{{ e }}</div>
+      </div>
+
+      <template #footer>
+        <button class="btn-ghost" @click="closeCreate">Cancel</button>
+        <button v-if="step > 0" class="btn-ghost" @click="step--">Back</button>
+        <button v-if="step < steps.length - 1" class="btn-admin" :disabled="!canAdvance" @click="step++">Next</button>
+        <button v-else class="btn-admin" :disabled="!canSubmit || saving" @click="submitCreate">
+          {{ saving ? 'Creating…' : 'Create Store' }}
         </button>
       </template>
     </AppModal>
@@ -112,15 +221,17 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, Store, Pencil, LogIn } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
+import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
+const qab = useQABStore()
 
 const stores = ref([])
 const loading = ref(false)
@@ -147,36 +258,114 @@ async function fetchStores() {
   }
 }
 
-const modal = reactive({
+// --- Edit modal ---
+const editModal = reactive({
   open: false, id: null,
   name: '', plan: 'FREE', currency_symbol: 'EGP', default_language: 'ar', is_active: true,
 })
 
 function openEdit(s) {
-  Object.assign(modal, {
+  Object.assign(editModal, {
     open: true, id: s.id,
     name: s.name, plan: s.plan, currency_symbol: s.currency_symbol,
     default_language: s.default_language, is_active: s.is_active,
   })
 }
 
-function closeModal() { modal.open = false }
+function closeEdit() { editModal.open = false }
 
-async function save() {
+async function saveEdit() {
   saving.value = true
   try {
-    const payload = {
-      name: modal.name,
-      plan: modal.plan,
-      currency_symbol: modal.currency_symbol,
-      default_language: modal.default_language,
-      is_active: modal.is_active,
-    }
-    if (modal.id) await api.patch(`/api/admin/stores/${modal.id}/`, payload)
-    closeModal()
+    await api.patch(`/api/admin/stores/${editModal.id}/`, {
+      name: editModal.name,
+      plan: editModal.plan,
+      currency_symbol: editModal.currency_symbol,
+      default_language: editModal.default_language,
+      is_active: editModal.is_active,
+    })
+    closeEdit()
     fetchStores()
   } catch (e) {
     alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving store')
+  } finally {
+    saving.value = false
+  }
+}
+
+// --- Create modal (compound) ---
+const steps = [
+  { key: 'owner',  label: 'Owner' },
+  { key: 'store',  label: 'Store' },
+  { key: 'branch', label: 'Main Branch' },
+]
+const step = ref(0)
+const createErrors = ref([])
+
+const form = reactive({
+  owner:  { first_name: '', last_name: '', email: '', username: '', password: '' },
+  store:  { name: '', plan: 'FREE', currency_symbol: 'EGP', default_language: 'ar' },
+  branch: { name: 'Main Branch', street_1: '', city: '', country: 'Egypt' },
+})
+
+const createModal = reactive({ open: false })
+
+function openCreate() {
+  step.value = 0
+  createErrors.value = []
+  Object.assign(form.owner,  { first_name: '', last_name: '', email: '', username: '', password: '' })
+  Object.assign(form.store,  { name: '', plan: 'FREE', currency_symbol: 'EGP', default_language: 'ar' })
+  Object.assign(form.branch, { name: 'Main Branch', street_1: '', city: '', country: 'Egypt' })
+  createModal.open = true
+}
+
+function closeCreate() {
+  createModal.open = false
+}
+
+const canAdvance = computed(() => {
+  if (step.value === 0) {
+    return form.owner.username.trim().length > 0 && form.owner.password.trim().length >= 8
+  }
+  if (step.value === 1) {
+    return form.store.name.trim().length > 0
+  }
+  return true
+})
+
+const canSubmit = computed(() => {
+  return form.owner.username.trim() && form.owner.password.length >= 8
+      && form.store.name.trim()
+      && form.branch.street_1.trim() && form.branch.city.trim()
+})
+
+function flattenErrors(data, prefix = '') {
+  const out = []
+  if (!data) return out
+  if (typeof data === 'string') { out.push(prefix ? `${prefix}: ${data}` : data); return out }
+  if (Array.isArray(data)) { data.forEach(x => out.push(...flattenErrors(x, prefix))); return out }
+  if (typeof data === 'object') {
+    for (const k of Object.keys(data)) {
+      out.push(...flattenErrors(data[k], prefix ? `${prefix}.${k}` : k))
+    }
+  }
+  return out
+}
+
+async function submitCreate() {
+  createErrors.value = []
+  saving.value = true
+  try {
+    await api.post('/api/admin/stores/', {
+      owner: { ...form.owner },
+      store: { ...form.store },
+      branch: { ...form.branch },
+    })
+    closeCreate()
+    fetchStores()
+  } catch (e) {
+    const errs = flattenErrors(e.response?.data)
+    createErrors.value = errs.length ? errs : ['Error creating store']
   } finally {
     saving.value = false
   }
@@ -187,7 +376,11 @@ function enterStore(store) {
   router.push('/dashboard')
 }
 
-onMounted(fetchStores)
+onMounted(() => {
+  fetchStores()
+  qab.setActions([{ id: 'new-store', label: 'New Store', icon: 'plus', handler: openCreate }])
+})
+onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
@@ -236,7 +429,23 @@ onMounted(fetchStores)
 .form-label  { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-input  { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; }
 .form-input:focus { border-color:var(--admin-accent); }
+.req { color:#dc2626; font-weight:700; }
+.hint { color:var(--text-muted); font-weight:400; font-size:11px; }
+
 .btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
 .btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
 .btn-ghost:active { transform:scale(0.95); }
+
+/* Stepper */
+.stepper { display:flex; align-items:center; gap:6px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.step    { display:flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:500; color:var(--text-muted); cursor:default; }
+.step.done { cursor:pointer; }
+.step-dot{ width:20px; height:20px; border-radius:50%; background:var(--border); color:var(--text-muted); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; transition:background 150ms,color 150ms; }
+.step.active .step-dot { background:var(--admin-accent); color:#fff; }
+.step.active .step-label{ color:var(--text-primary); font-weight:600; }
+.step.done .step-dot { background:#16a34a; color:#fff; }
+.step.done .step-label { color:var(--text-secondary); }
+
+.step-help { font-size:12px; color:var(--text-muted); margin:4px 0 0; line-height:1.5; }
+.error-box { margin-top:12px; padding:10px 12px; border:1px solid #fecaca; background:rgba(220,38,38,0.08); border-radius:8px; color:#b91c1c; font-size:12.5px; display:flex; flex-direction:column; gap:3px; }
 </style>
