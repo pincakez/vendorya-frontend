@@ -129,8 +129,8 @@ onMounted(async () => {
 .page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
 .page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
-.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:20px; }
-.kpi-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; align-items:center; gap:14px; transition:border-color 120ms,transform 80ms; }
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr)); gap:14px; margin-bottom:20px; min-width:0; }
+.kpi-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; align-items:center; gap:14px; min-width:0; transition:border-color 120ms,transform 80ms; }
 .kpi-card:hover { border-color: var(--admin-accent); }
 .kpi-icon  { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .kpi-label { font-size:12px; color:var(--text-muted); margin-bottom:2px; }
