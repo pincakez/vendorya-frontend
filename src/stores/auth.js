@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '@/api/axios'
+import { useThemeStore } from './theme'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -33,6 +34,9 @@ export const useAuthStore = defineStore('auth', {
       const res = await api.post('/api/auth/token/', { username, password })
       this.setTokens(res.data.access, res.data.refresh)
       if (res.data.user) this.setUser(res.data.user)
+      // The user identity just changed (sudo vs regular) — apply that user's own theme,
+      // not whatever the previous tab session left behind.
+      useThemeStore().refresh()
     },
     async fetchMe() {
       const res = await api.get('/api/auth/me/')
@@ -67,7 +71,14 @@ export const useAuthStore = defineStore('auth', {
       this.refreshToken = null
       this.user = null
       this.activeStore = null
+      // Keep theme prefs across logout so each user type's setting persists.
+      const adminTheme = localStorage.getItem('vendorya_theme_admin')
+      const userTheme  = localStorage.getItem('vendorya_theme_user')
       localStorage.clear()
+      if (adminTheme) localStorage.setItem('vendorya_theme_admin', adminTheme)
+      if (userTheme)  localStorage.setItem('vendorya_theme_user',  userTheme)
+      // Logged-out state = no user → resolves to the regular-user default (light).
+      useThemeStore().refresh()
     },
   },
 })
