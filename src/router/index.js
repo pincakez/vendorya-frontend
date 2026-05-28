@@ -51,6 +51,7 @@ const router = createRouter({
         { path: 'admin/plans',         component: () => import('@/views/admin/AdminPlans.vue'),         meta: { admin: true } },
         { path: 'admin/subscriptions', component: () => import('@/views/admin/AdminSubscriptions.vue'), meta: { admin: true } },
         { path: 'admin/misc',          component: () => import('@/views/admin/AdminMisc.vue'),          meta: { admin: true } },
+        { path: 'admin/ai-profiles',   component: () => import('@/views/admin/AdminAIProfiles.vue'),   meta: { admin: true } },
       ]
     },
     {

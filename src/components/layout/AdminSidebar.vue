@@ -24,6 +24,7 @@
         <NavItem icon="activity"         label="Activity Log" to="/admin/activity-log"  :collapsed="collapsed" />
 
         <div v-if="!collapsed" class="nav-section-label">AI</div>
+        <NavItem icon="bot"              label="AI Profiles"  to="/admin/ai-profiles"    :collapsed="collapsed" />
         <NavItem icon="wrench"           label="Misc"         to="/admin/misc"           :collapsed="collapsed" />
       </template>
 

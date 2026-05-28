@@ -64,19 +64,29 @@
       <Sun v-if="theme.dark" :size="18" />
       <Moon v-else :size="18" />
     </button>
+
+    <!-- AI Chat toggle -->
+    <button
+      class="header-icon-btn ai-toggle-btn"
+      :class="{ active: chatOpen }"
+      @click="$emit('toggleChat')"
+      title="Toggle AI Assistant"
+    >
+      <Bot :size="18" />
+    </button>
   </header>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { Sun, Moon, Search, ChevronDown, Check, ArrowLeft, PanelLeftOpen, PanelLeftClose } from 'lucide-vue-next'
+import { Sun, Moon, Search, ChevronDown, Check, ArrowLeft, PanelLeftOpen, PanelLeftClose, Bot } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import api from '@/api/axios'
 
-defineProps({ sidebarCollapsed: Boolean })
-defineEmits(['toggleSidebar'])
+defineProps({ sidebarCollapsed: Boolean, chatOpen: Boolean })
+defineEmits(['toggleSidebar', 'toggleChat'])
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -137,6 +147,11 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.ai-toggle-btn.active {
+  background: rgba(249,115,22,0.12);
+  color: var(--admin-accent, #f97316);
+}
+
 .store-picker { position: relative; flex-shrink: 0; }
 
 .store-picker-btn {
