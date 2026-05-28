@@ -34,7 +34,7 @@
             <tr v-for="e in expenses" :key="e.id" class="table-row">
               <td>{{ fmtDate(e.date) }}</td>
               <td>{{ categoryName(e.category) }}</td>
-              <td class="col-amount">{{ auth.currency }} {{ formatNumber(e.amount) }}</td>
+              <td class="col-amount">{{ auth.currencySymbol }} {{ formatNumber(e.amount) }}</td>
               <td class="col-desc">{{ e.description || '—' }}</td>
               <td>
                 <button class="row-action danger" @click="deleteExpense(e.id)"><Trash2 :size="13" /></button>

@@ -40,7 +40,7 @@
         <div class="kpi-icon" style="background:#fef3c7;color:#d97706;"><DollarSign :size="20" /></div>
         <div class="kpi-body">
           <div class="kpi-label">Stock Value (Cost)</div>
-          <div class="kpi-value">{{ auth.currency }} {{ formatNumber(summary.totalValue) }}</div>
+          <div class="kpi-value">{{ auth.currencySymbol }} {{ formatNumber(summary.totalValue) }}</div>
         </div>
       </div>
     </div>
@@ -74,10 +74,10 @@
               <td class="col-ref">{{ row.sku }}</td>
               <td class="col-muted">{{ row.branch }}</td>
               <td :class="Number(row.qty) === 0 ? 'col-zero' : ''">{{ formatQty(row.qty) }}</td>
-              <td class="col-muted">{{ auth.currency }} {{ formatNumber(row.costPrice) }}</td>
-              <td class="col-value">{{ auth.currency }} {{ formatNumber(row.stockValue) }}</td>
-              <td class="col-muted">{{ auth.currency }} {{ formatNumber(row.sellPrice) }}</td>
-              <td class="col-revenue">{{ auth.currency }} {{ formatNumber(row.potentialRevenue) }}</td>
+              <td class="col-muted">{{ auth.currencySymbol }} {{ formatNumber(row.costPrice) }}</td>
+              <td class="col-value">{{ auth.currencySymbol }} {{ formatNumber(row.stockValue) }}</td>
+              <td class="col-muted">{{ auth.currencySymbol }} {{ formatNumber(row.sellPrice) }}</td>
+              <td class="col-revenue">{{ auth.currencySymbol }} {{ formatNumber(row.potentialRevenue) }}</td>
             </tr>
           </tbody>
         </table>

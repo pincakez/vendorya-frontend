@@ -58,9 +58,9 @@
               <td>{{ fmtDate(inv.date) }}</td>
               <td class="col-name">{{ inv.customer_name || inv.customer }}</td>
               <td><span class="status-badge" :class="`status-${inv.status.toLowerCase()}`">{{ inv.status }}</span></td>
-              <td class="col-amount">{{ auth.currency }} {{ formatNumber(inv.grand_total) }}</td>
-              <td class="col-amount">{{ auth.currency }} {{ formatNumber(inv.paid_amount) }}</td>
-              <td :class="balanceClass(inv)">{{ auth.currency }} {{ formatNumber(inv.grand_total - inv.paid_amount) }}</td>
+              <td class="col-amount">{{ auth.currencySymbol }} {{ formatNumber(inv.grand_total) }}</td>
+              <td class="col-amount">{{ auth.currencySymbol }} {{ formatNumber(inv.paid_amount) }}</td>
+              <td :class="balanceClass(inv)">{{ auth.currencySymbol }} {{ formatNumber(inv.grand_total - inv.paid_amount) }}</td>
               <td>
                 <button v-if="inv.status === 'DRAFT'" class="row-action success" title="Post invoice" @click="postInvoice(inv)">
                   <CheckCircle :size="13" />
@@ -120,9 +120,9 @@
       </div>
 
       <div class="invoice-totals">
-        <div class="totals-row"><span>Subtotal</span><span>{{ auth.currency }} {{ formatNumber(modalSubtotal) }}</span></div>
-        <div class="totals-row"><span>Discount</span><span>- {{ auth.currency }} {{ formatNumber(modal.discount || 0) }}</span></div>
-        <div class="totals-row total-line"><span>Total</span><span>{{ auth.currency }} {{ formatNumber(modalSubtotal - (modal.discount || 0)) }}</span></div>
+        <div class="totals-row"><span>Subtotal</span><span>{{ auth.currencySymbol }} {{ formatNumber(modalSubtotal) }}</span></div>
+        <div class="totals-row"><span>Discount</span><span>- {{ auth.currencySymbol }} {{ formatNumber(modal.discount || 0) }}</span></div>
+        <div class="totals-row total-line"><span>Total</span><span>{{ auth.currencySymbol }} {{ formatNumber(modalSubtotal - (modal.discount || 0)) }}</span></div>
       </div>
 
       <template #footer>

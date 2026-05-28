@@ -43,8 +43,8 @@
             <td class="col-ref">{{ p.vendor_reference || '—' }}</td>
             <td>{{ fmtDate(p.date) }}</td>
             <td><span class="status-badge" :class="`status-${p.status.toLowerCase()}`">{{ p.status }}</span></td>
-            <td class="col-amount">{{ auth.currency }} {{ formatNumber(p.total_amount) }}</td>
-            <td class="col-amount">{{ auth.currency }} {{ formatNumber(p.paid_amount) }}</td>
+            <td class="col-amount">{{ auth.currencySymbol }} {{ formatNumber(p.total_amount) }}</td>
+            <td class="col-amount">{{ auth.currencySymbol }} {{ formatNumber(p.paid_amount) }}</td>
             <td @click.stop>
               <button v-if="p.status === 'DRAFT'" class="row-action success" title="Receive stock" @click="receivePurchase(p)">
                 <PackageCheck :size="13" />
@@ -102,7 +102,7 @@
       <div class="invoice-totals">
         <div class="totals-row total-line">
           <span>Total Cost</span>
-          <span>{{ auth.currency }} {{ formatNumber(modalTotal) }}</span>
+          <span>{{ auth.currencySymbol }} {{ formatNumber(modalTotal) }}</span>
         </div>
       </div>
 

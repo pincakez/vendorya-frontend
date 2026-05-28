@@ -18,21 +18,21 @@
           <div class="kpi-icon" style="background:#dbeafe;color:#2563eb;"><Banknote :size="20" /></div>
           <div class="kpi-body">
             <div class="kpi-label">Cash In (Today)</div>
-            <div class="kpi-value">{{ auth.currency }} {{ formatNumber(stats.cash_in) }}</div>
+            <div class="kpi-value">{{ auth.currencySymbol }} {{ formatNumber(stats.cash_in) }}</div>
           </div>
         </div>
         <div class="kpi-card">
           <div class="kpi-icon" style="background:#fee2e2;color:#dc2626;"><ArrowUpFromLine :size="20" /></div>
           <div class="kpi-body">
             <div class="kpi-label">Cash Out (Expenses)</div>
-            <div class="kpi-value">{{ auth.currency }} {{ formatNumber(stats.cash_out) }}</div>
+            <div class="kpi-value">{{ auth.currencySymbol }} {{ formatNumber(stats.cash_out) }}</div>
           </div>
         </div>
         <div class="kpi-card">
           <div class="kpi-icon" style="background:#dcfce7;color:#16a34a;"><Wallet :size="20" /></div>
           <div class="kpi-body">
             <div class="kpi-label">Expected Balance</div>
-            <div class="kpi-value">{{ auth.currency }} {{ formatNumber(stats.expected_balance) }}</div>
+            <div class="kpi-value">{{ auth.currencySymbol }} {{ formatNumber(stats.expected_balance) }}</div>
           </div>
         </div>
         <div class="kpi-card" :class="openShift ? 'card-open' : 'card-closed'">
@@ -63,7 +63,7 @@
               <tr v-for="p in payments" :key="p.id" class="table-row">
                 <td>{{ fmtTime(p.created_at) }}</td>
                 <td class="col-ref">{{ p.invoice }}</td>
-                <td class="col-amount">{{ auth.currency }} {{ formatNumber(p.amount) }}</td>
+                <td class="col-amount">{{ auth.currencySymbol }} {{ formatNumber(p.amount) }}</td>
               </tr>
             </tbody>
           </table>

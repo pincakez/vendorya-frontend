@@ -39,8 +39,8 @@
             <td class="col-phone">{{ c.phone_number }}</td>
             <td class="col-notes">{{ c.notes || '—' }}</td>
             <td>
-              <span v-if="Number(c.balance) > 0" class="balance-owe">Owes {{ auth.currency }} {{ formatNumber(c.balance) }}</span>
-              <span v-else-if="Number(c.balance) < 0" class="balance-credit">Credit {{ auth.currency }} {{ formatNumber(Math.abs(c.balance)) }}</span>
+              <span v-if="Number(c.balance) > 0" class="balance-owe">Owes {{ auth.currencySymbol }} {{ formatNumber(c.balance) }}</span>
+              <span v-else-if="Number(c.balance) < 0" class="balance-credit">Credit {{ auth.currencySymbol }} {{ formatNumber(Math.abs(c.balance)) }}</span>
               <span v-else class="balance-zero">—</span>
             </td>
             <td>

@@ -76,9 +76,9 @@
                 {{ (p.attributes_summary?.[attr.key] || []).join(', ') || '—' }}
               </td>
               <td>{{ p.supplier_name || '—' }}</td>
-              <td>{{ auth.currency }} {{ p.price_display }}</td>
-              <td class="col-retail">{{ auth.currency }} {{ p.price_display }}</td>
-              <td :class="profitClass(p.profit_display)">{{ auth.currency }} {{ p.profit_display }}</td>
+              <td>{{ auth.currencySymbol }} {{ p.price_display }}</td>
+              <td class="col-retail">{{ auth.currencySymbol }} {{ p.price_display }}</td>
+              <td :class="profitClass(p.profit_display)">{{ auth.currencySymbol }} {{ p.profit_display }}</td>
               <td class="col-stock">
                 <span class="stock-badge" :class="stockClass(p.total_stock)">{{ p.total_stock }}</span>
               </td>
