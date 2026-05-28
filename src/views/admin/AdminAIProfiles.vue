@@ -6,423 +6,467 @@
         <h1 class="page-title">AI Profiles</h1>
         <p class="page-sub">Manage up to 3 AI personas. One profile is active at a time.</p>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn-outline" @click="openRefresh" :disabled="refreshing">
-          <RefreshCw :size="14" :class="{'spin': refreshing}" />
-          {{ refreshing ? 'Refreshing…' : 'Refresh Models' }}
-        </button>
-        <button class="btn-primary" @click="startNew" :disabled="profiles.length >= 3">
+      <button class="btn-outline" @click="openRefresh" :disabled="refreshing">
+        <RefreshCw :size="14" :class="{'spin': refreshing}" />
+        {{ refreshing ? 'Refreshing…' : 'Refresh Models' }}
+      </button>
+    </div>
+
+    <div v-if="loading" class="ap-skeleton" />
+
+    <div v-else class="ap-layout">
+
+      <!-- ── Sidebar ── -->
+      <aside class="ap-sidebar">
+        <div class="sidebar-section-label">Profiles</div>
+
+        <nav class="profile-list">
+          <div
+            v-for="p in profiles" :key="p.id"
+            class="profile-item"
+            :class="{ selected: selectedId === p.id, 'is-active': p.is_active }"
+            @click="selectProfile(p.id)"
+          >
+            <div class="pi-avatar" :style="avatarStyle(p.name)">{{ p.name.charAt(0).toUpperCase() }}</div>
+            <div class="pi-info">
+              <div class="pi-name">{{ p.name }}</div>
+              <div v-if="p.is_active" class="active-chip">ACTIVE</div>
+            </div>
+            <button class="pi-delete" title="Delete profile" @click.stop="confirmDelete(p)">
+              <Trash2 :size="13" />
+            </button>
+          </div>
+
+          <div v-if="profiles.length === 0" class="sidebar-empty">No profiles yet.</div>
+        </nav>
+
+        <button v-if="profiles.length < 3" class="add-profile-btn" @click="startNew" :disabled="saving">
           <Plus :size="14" /> New Profile
         </button>
-      </div>
-    </div>
+      </aside>
 
-    <!-- Profile cards row -->
-    <div class="profile-cards-row">
-      <div
-        v-for="p in profiles" :key="p.id"
-        class="profile-card"
-        :class="{ selected: selectedId === p.id, 'is-active': p.is_active }"
-        @click="selectProfile(p.id)"
-      >
-        <div class="pc-avatar" :style="avatarStyle(p.name)">{{ p.name.charAt(0).toUpperCase() }}</div>
-        <div class="pc-name">{{ p.name }}</div>
-        <div v-if="p.is_active" class="active-chip">ACTIVE</div>
-        <button class="pc-delete" title="Delete profile" @click.stop="confirmDelete(p)">
-          <Trash2 :size="13" />
-        </button>
-      </div>
-
-      <div v-if="profiles.length < 3" class="profile-card add-card" @click="startNew">
-        <Plus :size="22" style="opacity:0.45;" />
-        <span style="font-size:12px;opacity:0.55;margin-top:4px;">New Profile</span>
-      </div>
-
-      <div v-if="profiles.length === 0 && !loading" class="profiles-empty">
-        No AI profiles yet. Create your first one.
-      </div>
-    </div>
-
-    <!-- Loading state -->
-    <div v-if="loading" class="skeleton-row" style="height:200px;border-radius:12px;margin-top:16px;" />
-
-    <!-- Profile editor -->
-    <div v-else-if="selectedProfile" class="profile-editor">
-      <!-- Tabs nav -->
-      <div class="tabs-nav">
-        <button
-          v-for="t in TABS" :key="t.key"
-          class="tab-btn"
-          :class="{ active: activeTab === t.key }"
-          @click="activeTab = t.key"
-        >{{ t.label }}</button>
-
-        <div style="flex:1;" />
-
-        <button
-          v-if="!selectedProfile.is_active"
-          class="btn-outline btn-sm"
-          @click="activateProfile"
-          :disabled="activating"
-        >
-          <Zap :size="13" /> {{ activating ? 'Activating…' : 'Set Active' }}
-        </button>
-        <span v-else class="active-chip" style="align-self:center;margin-right:8px;">ACTIVE</span>
-
-        <button class="btn-primary btn-sm" @click="saveProfile" :disabled="saving">
-          {{ saving ? 'Saving…' : 'Save' }}
-        </button>
-      </div>
-
-      <!-- Error / success banners -->
-      <p v-if="saveError" class="banner-error">{{ saveError }}</p>
-      <p v-if="saveOk" class="banner-ok">Saved successfully.</p>
-
-      <!-- ── Tab: Identity ── -->
-      <div v-if="activeTab === 'identity'" class="tab-body">
-        <div class="field-row">
-          <label class="form-label">Profile Name</label>
-          <input v-model="draft.name" class="form-input" style="max-width:340px;" placeholder="e.g. Gemini Assistant" />
+      <!-- ── Main editor panel ── -->
+      <div class="ap-main">
+        <div v-if="!selectedProfile" class="no-selection">
+          <div class="no-sel-icon"><Sparkles :size="32" /></div>
+          <p>Select a profile from the left, or create a new one.</p>
         </div>
 
-        <div class="field-row">
-          <label class="form-label">Avatar</label>
-          <div style="display:flex;align-items:center;gap:12px;">
-            <div class="pc-avatar lg" :style="avatarStyle(draft.name || 'A')">
-              {{ (draft.name || 'A').charAt(0).toUpperCase() }}
+        <div v-else class="profile-editor">
+
+          <!-- Editor top bar: tabs + actions -->
+          <div class="editor-topbar">
+            <div class="tabs-nav">
+              <button
+                v-for="t in TABS" :key="t.key"
+                class="tab-btn"
+                :class="{ active: activeTab === t.key }"
+                @click="activeTab = t.key"
+              >{{ t.label }}</button>
             </div>
-            <div>
-              <label class="btn-outline btn-sm" style="cursor:pointer;">
-                Upload Image
-                <input type="file" accept="image/*" style="display:none;" @change="onAvatarChange" />
-              </label>
-              <p class="hint-text" style="margin-top:4px;">JPG/PNG, max 2 MB. Current: initials if no image.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="field-row">
-          <label class="toggle-label">
-            <span>Global Knowledge</span>
-            <div class="hint-text">When on, RAG searches the entire knowledge base. When off, only chunks tagged with this profile's industries.</div>
-          </label>
-          <label class="toggle-switch">
-            <input type="checkbox" v-model="draft.global_knowledge" />
-            <span class="toggle-track"><span class="toggle-thumb" /></span>
-          </label>
-        </div>
-      </div>
-
-      <!-- ── Tab: Model ── -->
-      <div v-if="activeTab === 'model'" class="tab-body">
-        <!-- Model selector -->
-        <div class="field-row">
-          <label class="form-label">Model</label>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <select v-model="draft.model_id" class="form-select" style="max-width:360px;" @change="onModelChange">
-              <option value="">— Select a model —</option>
-              <option v-for="m in chatModels" :key="m.model_id" :value="m.model_id">
-                {{ m.display_name || m.model_id }}
-              </option>
-            </select>
-            <div v-if="selectedModel" class="quota-chips">
-              <span class="quota-chip rpm">RPM {{ selectedModel.rpm ?? '—' }}</span>
-              <span class="quota-chip rpd">RPD {{ selectedModel.rpd ?? '—' }}</span>
-              <span class="quota-chip tok">Tokens {{ selectedModel.tokens != null ? fmtNum(selectedModel.tokens) : '—' }}</span>
-            </div>
-          </div>
-          <p class="hint-text">Model list sourced from Gemini API. Use Refresh Models to update.</p>
-        </div>
-
-        <!-- Vision Resolution -->
-        <div v-if="selectedModel?.supports_vision" class="field-row">
-          <label class="form-label">Vision Resolution</label>
-          <select v-model="draft.vision_resolution" class="form-select" style="max-width:200px;">
-            <option value="AUTO">Auto</option>
-            <option value="LOW">Low (faster, cheaper)</option>
-            <option value="HIGH">High (more detail)</option>
-          </select>
-          <p class="hint-text">Controls how image inputs are processed. Auto lets the model decide.</p>
-        </div>
-
-        <!-- Max Output Tokens -->
-        <div class="field-row">
-          <label class="form-label">Max Output Tokens</label>
-          <input
-            v-model.number="draft.max_output_tokens"
-            type="number" min="1"
-            class="form-input"
-            style="max-width:160px;"
-            placeholder="Blank = model default"
-          />
-          <p class="hint-text">Leave blank to use the model's default. Out-of-range values are reset on save.</p>
-        </div>
-
-        <!-- Thinking Level -->
-        <div class="field-row">
-          <label class="form-label">
-            Thinking Level
-            <span v-if="selectedModel && !selectedModel.supports_thinking" class="unsupported-label">Not supported by selected model</span>
-          </label>
-          <select
-            v-model="draft.thinking_level"
-            class="form-select"
-            style="max-width:200px;"
-            :disabled="selectedModel && !selectedModel.supports_thinking"
-          >
-            <option value="OFF">Off</option>
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-          </select>
-          <p class="hint-text">Extended thinking improves complex reasoning. Requires a model that supports it.</p>
-        </div>
-
-        <!-- Top-P -->
-        <div class="field-row">
-          <label class="form-label">Top-P <span class="range-hint">0.0 – 1.0</span></label>
-          <input
-            v-model.number="draft.top_p"
-            type="number" min="0" max="1" step="0.01"
-            class="form-input"
-            style="max-width:120px;"
-            placeholder="Blank = default"
-            @blur="clampTopP"
-          />
-          <p class="hint-text">Nucleus sampling threshold. Blank = model default.</p>
-        </div>
-
-        <!-- Top-K -->
-        <div class="field-row">
-          <label class="form-label">Top-K</label>
-          <input
-            v-model.number="draft.top_k"
-            type="number" min="1"
-            class="form-input"
-            style="max-width:120px;"
-            placeholder="Blank = default"
-          />
-          <p class="hint-text">Limits the token pool for sampling. Blank = model default.</p>
-        </div>
-
-        <!-- Temperature slider -->
-        <div class="field-row">
-          <label class="form-label">Temperature <span class="range-hint">0.0 – 2.0</span></label>
-          <div style="display:flex;align-items:center;gap:12px;max-width:380px;">
-            <input
-              v-model.number="draft.temperature"
-              type="range" min="0" max="2" step="0.01"
-              class="temp-slider"
-              style="flex:1;"
-              :disabled="draft.temperature === null || draft.temperature === undefined"
-            />
-            <input
-              v-model.number="draft.temperature"
-              type="number" min="0" max="2" step="0.01"
-              class="form-input"
-              style="width:80px;"
-              placeholder="—"
-              @blur="clampTemp"
-            />
-            <button class="btn-ghost-sm" @click="draft.temperature = null" title="Reset to model default">Reset</button>
-          </div>
-          <p class="hint-text">Controls randomness. 0 = deterministic · 1 = balanced · 2 = creative.</p>
-        </div>
-
-        <!-- Google Grounding -->
-        <div class="field-row">
-          <label class="toggle-label">
-            <span>
-              Google Grounding
-              <span v-if="selectedModel && !selectedModel.supports_grounding" class="unsupported-label">Not supported</span>
-            </span>
-            <div class="hint-text">Grounds responses with real-time Google Search results.</div>
-          </label>
-          <label class="toggle-switch">
-            <input
-              type="checkbox"
-              v-model="draft.google_grounding"
-              :disabled="selectedModel && !selectedModel.supports_grounding"
-            />
-            <span class="toggle-track"><span class="toggle-thumb" /></span>
-          </label>
-        </div>
-      </div>
-
-      <!-- ── Tab: Instructions ── -->
-      <div v-if="activeTab === 'instructions'" class="tab-body">
-        <div class="field-row">
-          <label class="form-label">System Instruction</label>
-          <textarea
-            v-model="draft.system_instruction"
-            class="form-textarea"
-            rows="16"
-            placeholder="You are a helpful ERP assistant for Vendorya. Be concise and professional…"
-            dir="auto"
-          />
-          <p class="hint-text">Prepended to every conversation. Define persona, tone, and constraints.</p>
-        </div>
-      </div>
-
-      <!-- ── Tab: Functions ── -->
-      <div v-if="activeTab === 'functions'" class="tab-body">
-        <div v-if="toolsLoading" class="skeleton-row" style="height:120px;border-radius:8px;" />
-        <template v-else>
-          <div class="functions-header">
-            <span style="font-size:13px;color:var(--text-muted);">
-              {{ enabledCount }} / {{ tools.length }} tools enabled
-            </span>
-            <div style="display:flex;gap:8px;">
-              <button class="btn-ghost-sm" @click="enableAll">Enable All</button>
-              <button class="btn-ghost-sm" @click="disableAll">Disable All</button>
-            </div>
-          </div>
-
-          <div class="tools-list">
-            <div v-for="t in tools" :key="t.name" class="tool-row">
-              <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                  <span class="tool-name">{{ t.name }}</span>
-                  <span class="tool-badge" :class="t.write ? 'write' : 'read'">{{ t.write ? 'WRITE' : 'READ' }}</span>
-                  <span v-if="t.requires_store" class="tool-badge store">STORE</span>
-                </div>
-                <div class="tool-desc">{{ t.description }}</div>
-              </div>
-              <label class="toggle-switch sm">
-                <input type="checkbox" :checked="isToolEnabled(t.name)" @change="toggleTool(t.name)" />
-                <span class="toggle-track sm"><span class="toggle-thumb" /></span>
-              </label>
-            </div>
-          </div>
-        </template>
-      </div>
-
-      <!-- ── Tab: Knowledge Base ── -->
-      <div v-if="activeTab === 'kb'" class="tab-body">
-        <div class="kb-grid">
-          <!-- Left column: upload + doc list -->
-          <div class="kb-left">
-            <!-- Upload zone -->
-            <div
-              class="upload-zone"
-              :class="{ dragover: isDragOver }"
-              @dragover.prevent="isDragOver = true"
-              @dragleave="isDragOver = false"
-              @drop.prevent="onDrop"
-              @click="$refs.fileInput.click()"
-            >
-              <UploadCloud :size="32" style="opacity:0.35;margin-bottom:8px;" />
-              <div style="font-size:13px;font-weight:500;">Drop a file or click to browse</div>
-              <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px;">PDF · DOCX · CSV · TXT</div>
-              <input ref="fileInput" type="file" accept=".pdf,.docx,.csv,.txt" style="display:none;" @change="onFileSelected" />
-            </div>
-
-            <!-- Industries tags -->
-            <div class="field-row" style="margin-top:12px;">
-              <label class="form-label">Industries (tags)</label>
-              <div class="tag-input-row">
-                <div v-for="(tag, i) in uploadIndustries" :key="i" class="tag-chip">
-                  {{ tag }}
-                  <button @click="uploadIndustries.splice(i,1)" class="tag-remove">×</button>
-                </div>
-                <input
-                  v-model="industryInput"
-                  class="tag-input"
-                  placeholder="e.g. retail…  Enter to add"
-                  @keydown.enter.prevent="addIndustry"
-                  @keydown.comma.prevent="addIndustry"
-                />
-              </div>
-            </div>
-
-            <button
-              class="btn-primary"
-              style="margin-top:10px;width:100%;"
-              :disabled="!pendingFile || uploading"
-              @click="uploadFile"
-            >
-              <UploadCloud :size="14" />
-              {{ uploading ? 'Uploading…' : pendingFile ? `Upload "${pendingFile.name}"` : 'Select a file first' }}
-            </button>
-            <p v-if="uploadError" class="banner-error" style="margin-top:8px;">{{ uploadError }}</p>
-            <p v-if="uploadOk" class="banner-ok" style="margin-top:8px;">{{ uploadOk }}</p>
-
-            <!-- Document list -->
-            <div style="margin-top:20px;">
-              <div style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
-                Uploaded Documents
-              </div>
-              <div v-if="kbLoading" class="skeleton-row" style="height:60px;border-radius:8px;" />
-              <div v-else-if="!docGroups.length" style="font-size:13px;color:var(--text-muted);">No documents yet.</div>
-              <div v-else class="doc-list">
-                <div
-                  v-for="doc in docGroups" :key="doc.source_name"
-                  class="doc-row"
-                  :class="{ selected: previewDoc === doc.source_name }"
-                  @click="previewDoc = doc.source_name"
-                >
-                  <FileText :size="14" style="flex-shrink:0;opacity:0.5;" />
-                  <div style="flex:1;min-width:0;">
-                    <div class="doc-name">{{ doc.source_name }}</div>
-                    <div style="font-size:11px;color:var(--text-muted);">{{ doc.count }} chunk{{ doc.count !== 1 ? 's' : '' }}</div>
-                  </div>
-                  <button class="pc-delete" @click.stop="deleteDoc(doc)" title="Delete document">
-                    <Trash2 :size="12" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right column: test retrieval + preview -->
-          <div class="kb-right">
-            <!-- Test retrieval -->
-            <div style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
-              Test Retrieval
-            </div>
-            <div style="display:flex;gap:8px;">
-              <input v-model="searchQuery" class="form-input" placeholder="Ask something…" style="flex:1;" @keydown.enter="runSearch" />
-              <button class="btn-outline" @click="runSearch" :disabled="searching">
-                {{ searching ? '…' : 'Search' }}
+            <div class="editor-actions">
+              <button
+                v-if="!selectedProfile.is_active"
+                class="btn-outline btn-sm"
+                @click="activateProfile"
+                :disabled="activating"
+              >
+                <Zap :size="13" /> {{ activating ? 'Activating…' : 'Set Active' }}
+              </button>
+              <span v-else class="active-chip" style="align-self:center;">ACTIVE</span>
+              <button class="btn-primary btn-sm" @click="saveProfile" :disabled="saving">
+                {{ saving ? 'Saving…' : 'Save Changes' }}
               </button>
             </div>
-            <p v-if="searchError" class="banner-error" style="margin-top:6px;">{{ searchError }}</p>
+          </div>
 
-            <div v-if="searchResults.length" class="search-results">
-              <div
-                v-for="(r, i) in searchResults" :key="r.id"
-                class="search-result"
-                :class="{ selected: previewChunk === r }"
-                @click="previewChunk = r; previewDoc = null"
-              >
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-                  <span style="font-size:11px;font-weight:700;color:var(--admin-accent);">#{{ i+1 }}</span>
-                  <span class="doc-name" style="flex:1;">{{ r.source_name }}</span>
-                  <span style="font-size:11px;color:var(--text-muted);">score: {{ (1 - r.distance).toFixed(3) }}</span>
+          <!-- Banners -->
+          <div v-if="saveError || saveOk" style="padding:0 24px 0;">
+            <p v-if="saveError" class="banner-error">{{ saveError }}</p>
+            <p v-if="saveOk" class="banner-ok">Saved successfully.</p>
+          </div>
+
+          <!-- ── Tab: Identity ── -->
+          <div v-if="activeTab === 'identity'" class="tab-body">
+            <div class="form-section">
+              <div class="form-section-title">Profile Identity</div>
+
+              <div class="field-row">
+                <div class="field-label-col">
+                  <label class="form-label">Profile Name</label>
+                  <p class="hint-text">Used to identify this persona in the UI.</p>
                 </div>
-                <p class="result-excerpt">{{ (r.content || '').slice(0, 180) }}{{ r.content?.length > 180 ? '…' : '' }}</p>
+                <div class="field-control-col">
+                  <input v-model="draft.name" class="form-input" style="max-width:320px;" placeholder="e.g. Gemini Assistant" />
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label-col">
+                  <label class="form-label">Avatar</label>
+                  <p class="hint-text">JPG/PNG, max 2 MB. Falls back to initials.</p>
+                </div>
+                <div class="field-control-col" style="display:flex;align-items:center;gap:14px;">
+                  <div class="pc-avatar lg" :style="avatarStyle(draft.name || 'A')">
+                    {{ (draft.name || 'A').charAt(0).toUpperCase() }}
+                  </div>
+                  <label class="btn-outline btn-sm" style="cursor:pointer;">
+                    Upload Image
+                    <input type="file" accept="image/*" style="display:none;" @change="onAvatarChange" />
+                  </label>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label-col">
+                  <label class="form-label">Global Knowledge</label>
+                  <p class="hint-text">When on, RAG searches the full knowledge base. When off, only industry-tagged chunks.</p>
+                </div>
+                <div class="field-control-col">
+                  <label class="toggle-switch">
+                    <input type="checkbox" v-model="draft.global_knowledge" />
+                    <span class="toggle-track"><span class="toggle-thumb" /></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Tab: Model ── -->
+          <div v-if="activeTab === 'model'" class="tab-body">
+
+            <div class="form-section">
+              <div class="form-section-title">Model Selection</div>
+
+              <div class="field-row">
+                <div class="field-label-col">
+                  <label class="form-label">Model</label>
+                  <p class="hint-text">Sourced from Gemini API. Use Refresh Models to update.</p>
+                </div>
+                <div class="field-control-col">
+                  <select v-model="draft.model_id" class="form-select" style="max-width:320px;" @change="onModelChange">
+                    <option value="">— Select a model —</option>
+                    <option v-for="m in chatModels" :key="m.model_id" :value="m.model_id">
+                      {{ m.display_name || m.model_id }}
+                    </option>
+                  </select>
+                  <div v-if="selectedModel" class="quota-chips" style="margin-top:8px;">
+                    <span class="quota-chip rpm">RPM {{ selectedModel.rpm ?? '—' }}</span>
+                    <span class="quota-chip rpd">RPD {{ selectedModel.rpd ?? '—' }}</span>
+                    <span class="quota-chip tok">Tokens {{ selectedModel.tokens != null ? fmtNum(selectedModel.tokens) : '—' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="selectedModel?.supports_vision" class="field-row">
+                <div class="field-label-col">
+                  <label class="form-label">Vision Resolution</label>
+                  <p class="hint-text">Controls how image inputs are processed.</p>
+                </div>
+                <div class="field-control-col">
+                  <select v-model="draft.vision_resolution" class="form-select" style="max-width:200px;">
+                    <option value="AUTO">Auto</option>
+                    <option value="LOW">Low (faster, cheaper)</option>
+                    <option value="HIGH">High (more detail)</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <!-- Preview panel -->
-            <template v-if="previewChunk || previewDocChunks.length">
-              <div style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:20px;margin-bottom:8px;">
-                Preview
+            <div class="form-section">
+              <div class="form-section-title">Generation Parameters</div>
+
+              <div class="field-row">
+                <div class="field-label-col">
+                  <label class="form-label">Max Output Tokens</label>
+                  <p class="hint-text">Leave blank to use model default.</p>
+                </div>
+                <div class="field-control-col">
+                  <input
+                    v-model.number="draft.max_output_tokens"
+                    type="number" min="1"
+                    class="form-input"
+                    style="max-width:140px;"
+                    placeholder="Model default"
+                  />
+                </div>
               </div>
-              <div class="preview-panel">
-                <template v-if="previewChunk">
-                  <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:6px;">{{ previewChunk.source_name }} · chunk {{ previewChunk.chunk_index }}</div>
-                  <pre class="preview-text">{{ previewChunk.content }}</pre>
-                </template>
-                <template v-else>
-                  <div v-for="c in previewDocChunks" :key="c.id" class="preview-chunk">
-                    <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Chunk {{ c.chunk_index }}</div>
-                    <pre class="preview-text">{{ c.content }}</pre>
+
+              <div class="field-row">
+                <div class="field-label-col">
+                  <label class="form-label">
+                    Thinking Level
+                    <span v-if="selectedModel && !selectedModel.supports_thinking" class="unsupported-label">Not supported</span>
+                  </label>
+                  <p class="hint-text">Extended thinking for complex reasoning.</p>
+                </div>
+                <div class="field-control-col">
+                  <select
+                    v-model="draft.thinking_level"
+                    class="form-select"
+                    style="max-width:180px;"
+                    :disabled="selectedModel && !selectedModel.supports_thinking"
+                  >
+                    <option value="OFF">Off</option>
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label-col">
+                  <label class="form-label">Temperature <span class="range-hint">0.0 – 2.0</span></label>
+                  <p class="hint-text">0 = deterministic · 1 = balanced · 2 = creative</p>
+                </div>
+                <div class="field-control-col">
+                  <div style="display:flex;align-items:center;gap:10px;max-width:340px;">
+                    <input
+                      v-model.number="draft.temperature"
+                      type="range" min="0" max="2" step="0.01"
+                      class="temp-slider"
+                      style="flex:1;"
+                      :disabled="draft.temperature === null || draft.temperature === undefined"
+                    />
+                    <input
+                      v-model.number="draft.temperature"
+                      type="number" min="0" max="2" step="0.01"
+                      class="form-input"
+                      style="width:74px;"
+                      placeholder="—"
+                      @blur="clampTemp"
+                    />
+                    <button class="btn-ghost-sm" @click="draft.temperature = null">Reset</button>
                   </div>
-                </template>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label-col">
+                  <label class="form-label">Top-P <span class="range-hint">0.0 – 1.0</span></label>
+                  <p class="hint-text">Nucleus sampling threshold.</p>
+                </div>
+                <div class="field-control-col">
+                  <input
+                    v-model.number="draft.top_p"
+                    type="number" min="0" max="1" step="0.01"
+                    class="form-input"
+                    style="max-width:120px;"
+                    placeholder="Model default"
+                    @blur="clampTopP"
+                  />
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label-col">
+                  <label class="form-label">Top-K</label>
+                  <p class="hint-text">Limits the token pool for sampling.</p>
+                </div>
+                <div class="field-control-col">
+                  <input
+                    v-model.number="draft.top_k"
+                    type="number" min="1"
+                    class="form-input"
+                    style="max-width:120px;"
+                    placeholder="Model default"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section" style="border-bottom:none;">
+              <div class="form-section-title">Features</div>
+
+              <div class="field-row" style="margin-bottom:0;">
+                <div class="field-label-col">
+                  <label class="form-label">
+                    Google Grounding
+                    <span v-if="selectedModel && !selectedModel.supports_grounding" class="unsupported-label">Not supported</span>
+                  </label>
+                  <p class="hint-text">Grounds responses with real-time Google Search results.</p>
+                </div>
+                <div class="field-control-col">
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      v-model="draft.google_grounding"
+                      :disabled="selectedModel && !selectedModel.supports_grounding"
+                    />
+                    <span class="toggle-track"><span class="toggle-thumb" /></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Tab: Instructions ── -->
+          <div v-if="activeTab === 'instructions'" class="tab-body">
+            <div class="form-section" style="border-bottom:none;">
+              <div class="form-section-title">System Instruction</div>
+              <p class="hint-text" style="margin-bottom:16px;">Prepended to every conversation. Defines the persona's tone, expertise, and constraints.</p>
+              <textarea
+                v-model="draft.system_instruction"
+                class="form-textarea"
+                rows="20"
+                placeholder="You are a helpful ERP assistant for Vendorya. Be concise and professional…"
+                dir="auto"
+              />
+            </div>
+          </div>
+
+          <!-- ── Tab: Functions ── -->
+          <div v-if="activeTab === 'functions'" class="tab-body">
+            <div v-if="toolsLoading" class="ap-skeleton" style="height:120px;" />
+            <template v-else>
+              <div class="functions-header">
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--text-primary);">Tool Access</div>
+                  <div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">{{ enabledCount }} / {{ tools.length }} tools enabled for this profile</div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn-ghost-sm" @click="enableAll">Enable All</button>
+                  <button class="btn-ghost-sm" @click="disableAll">Disable All</button>
+                </div>
+              </div>
+              <div class="tools-list">
+                <div v-for="t in tools" :key="t.name" class="tool-row">
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                      <span class="tool-name">{{ t.name }}</span>
+                      <span class="tool-badge" :class="t.write ? 'write' : 'read'">{{ t.write ? 'WRITE' : 'READ' }}</span>
+                      <span v-if="t.requires_store" class="tool-badge store">STORE</span>
+                    </div>
+                    <div class="tool-desc">{{ t.description }}</div>
+                  </div>
+                  <label class="toggle-switch sm">
+                    <input type="checkbox" :checked="isToolEnabled(t.name)" @change="toggleTool(t.name)" />
+                    <span class="toggle-track"><span class="toggle-thumb" /></span>
+                  </label>
+                </div>
               </div>
             </template>
           </div>
+
+          <!-- ── Tab: Knowledge Base ── -->
+          <div v-if="activeTab === 'kb'" class="tab-body">
+            <div class="kb-grid">
+              <!-- Left: upload + doc list -->
+              <div class="kb-left">
+                <div
+                  class="upload-zone"
+                  :class="{ dragover: isDragOver }"
+                  @dragover.prevent="isDragOver = true"
+                  @dragleave="isDragOver = false"
+                  @drop.prevent="onDrop"
+                  @click="$refs.fileInput.click()"
+                >
+                  <UploadCloud :size="30" style="opacity:0.3;margin-bottom:8px;" />
+                  <div style="font-size:13.5px;font-weight:600;">Drop a file or click to browse</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">PDF · DOCX · CSV · TXT</div>
+                  <input ref="fileInput" type="file" accept=".pdf,.docx,.csv,.txt" style="display:none;" @change="onFileSelected" />
+                </div>
+
+                <div class="field-row" style="margin-top:14px;">
+                  <label class="form-label">Industries (tags)</label>
+                  <div class="tag-input-row">
+                    <div v-for="(tag, i) in uploadIndustries" :key="i" class="tag-chip">
+                      {{ tag }}
+                      <button @click="uploadIndustries.splice(i,1)" class="tag-remove">×</button>
+                    </div>
+                    <input
+                      v-model="industryInput"
+                      class="tag-input"
+                      placeholder="e.g. retail… Enter to add"
+                      @keydown.enter.prevent="addIndustry"
+                      @keydown.comma.prevent="addIndustry"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  class="btn-primary"
+                  style="margin-top:10px;width:100%;"
+                  :disabled="!pendingFile || uploading"
+                  @click="uploadFile"
+                >
+                  <UploadCloud :size="14" />
+                  {{ uploading ? 'Uploading…' : pendingFile ? `Upload "${pendingFile.name}"` : 'Select a file first' }}
+                </button>
+                <p v-if="uploadError" class="banner-error" style="margin-top:8px;">{{ uploadError }}</p>
+                <p v-if="uploadOk" class="banner-ok" style="margin-top:8px;">{{ uploadOk }}</p>
+
+                <div style="margin-top:24px;">
+                  <div class="kb-section-label">Uploaded Documents</div>
+                  <div v-if="kbLoading" class="ap-skeleton" style="height:60px;" />
+                  <div v-else-if="!docGroups.length" style="font-size:13px;color:var(--text-muted);">No documents yet.</div>
+                  <div v-else class="doc-list">
+                    <div
+                      v-for="doc in docGroups" :key="doc.source_name"
+                      class="doc-row"
+                      :class="{ selected: previewDoc === doc.source_name }"
+                      @click="previewDoc = doc.source_name"
+                    >
+                      <FileText :size="14" style="flex-shrink:0;opacity:0.45;" />
+                      <div style="flex:1;min-width:0;">
+                        <div class="doc-name">{{ doc.source_name }}</div>
+                        <div style="font-size:11px;color:var(--text-muted);">{{ doc.count }} chunk{{ doc.count !== 1 ? 's' : '' }}</div>
+                      </div>
+                      <button class="pi-delete visible" @click.stop="deleteDoc(doc)" title="Delete document">
+                        <Trash2 :size="12" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: test retrieval + preview -->
+              <div class="kb-right">
+                <div class="kb-section-label">Test Retrieval</div>
+                <div style="display:flex;gap:8px;">
+                  <input v-model="searchQuery" class="form-input" placeholder="Ask something…" style="flex:1;" @keydown.enter="runSearch" />
+                  <button class="btn-outline" @click="runSearch" :disabled="searching">
+                    {{ searching ? '…' : 'Search' }}
+                  </button>
+                </div>
+                <p v-if="searchError" class="banner-error" style="margin-top:6px;">{{ searchError }}</p>
+
+                <div v-if="searchResults.length" class="search-results">
+                  <div
+                    v-for="(r, i) in searchResults" :key="r.id"
+                    class="search-result"
+                    :class="{ selected: previewChunk === r }"
+                    @click="previewChunk = r; previewDoc = null"
+                  >
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                      <span style="font-size:11px;font-weight:700;color:var(--admin-accent);">#{{ i+1 }}</span>
+                      <span class="doc-name" style="flex:1;">{{ r.source_name }}</span>
+                      <span style="font-size:11px;color:var(--text-muted);">{{ (1 - r.distance).toFixed(3) }}</span>
+                    </div>
+                    <p class="result-excerpt">{{ (r.content || '').slice(0, 180) }}{{ r.content?.length > 180 ? '…' : '' }}</p>
+                  </div>
+                </div>
+
+                <template v-if="previewChunk || previewDocChunks.length">
+                  <div class="kb-section-label" style="margin-top:20px;">Preview</div>
+                  <div class="preview-panel">
+                    <template v-if="previewChunk">
+                      <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:6px;">{{ previewChunk.source_name }} · chunk {{ previewChunk.chunk_index }}</div>
+                      <pre class="preview-text">{{ previewChunk.content }}</pre>
+                    </template>
+                    <template v-else>
+                      <div v-for="c in previewDocChunks" :key="c.id" class="preview-chunk">
+                        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Chunk {{ c.chunk_index }}</div>
+                        <pre class="preview-text">{{ c.content }}</pre>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -476,7 +520,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import {
-  Plus, Trash2, RefreshCw, Zap, UploadCloud, FileText
+  Plus, Trash2, RefreshCw, Zap, UploadCloud, FileText, Sparkles
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
@@ -578,7 +622,6 @@ async function load() {
     profiles.value = Array.isArray(pRes.data) ? pRes.data : (pRes.data.results || [])
     models.value   = Array.isArray(mRes.data) ? mRes.data : (mRes.data.results || [])
 
-    // Auto-select the active profile, or the first one.
     const active = profiles.value.find(p => p.is_active) || profiles.value[0]
     if (active) selectProfile(active.id)
   } catch (e) {
@@ -609,7 +652,6 @@ function selectProfile(id) {
     system_instruction: p.system_instruction,
     enabled_tools:      [...(p.enabled_tools || [])],
   }
-  // Rebuild enabledSet
   if (!p.enabled_tools || p.enabled_tools.length === 0) {
     enabledSet.value = new Set(tools.value.map(t => t.name))
   } else {
@@ -617,14 +659,12 @@ function selectProfile(id) {
   }
 }
 
-// Load tools lazily when Functions tab opens.
 watch(activeTab, async (tab) => {
   if (tab === 'functions' && tools.value.length === 0) {
     toolsLoading.value = true
     try {
       const { data } = await api.get('/api/admin/ai/tools/')
       tools.value = data
-      // Rebuild enabledSet with actual tool names.
       const p = selectedProfile.value
       if (p && (!p.enabled_tools || p.enabled_tools.length === 0)) {
         enabledSet.value = new Set(data.map(t => t.name))
@@ -661,7 +701,6 @@ async function saveProfile() {
 
     const payload = { ...draft.value, enabled_tools: et }
     const { data } = await api.patch(`/api/admin/ai/profiles/${selectedId.value}/`, payload)
-    // Update the profiles list.
     const idx = profiles.value.findIndex(p => p.id === selectedId.value)
     if (idx !== -1) profiles.value[idx] = data
     saveOk.value = true
@@ -678,8 +717,7 @@ async function saveProfile() {
 async function activateProfile() {
   activating.value = true
   try {
-    const { data } = await api.post(`/api/admin/ai/profiles/${selectedId.value}/activate/`)
-    // Flip all profiles' is_active.
+    await api.post(`/api/admin/ai/profiles/${selectedId.value}/activate/`)
     profiles.value = profiles.value.map(p => ({ ...p, is_active: p.id === selectedId.value }))
   } catch (e) {
     saveError.value = 'Could not activate profile.'
@@ -760,15 +798,13 @@ function isToolEnabled(name) {
 function toggleTool(name) {
   const allEnabled = enabledSet.value.size === tools.value.length
   if (allEnabled) {
-    // Move to allowlist mode, excluding this tool.
     enabledSet.value = new Set(tools.value.map(t => t.name).filter(n => n !== name))
   } else if (enabledSet.value.has(name)) {
     enabledSet.value.delete(name)
-    enabledSet.value = new Set(enabledSet.value) // trigger reactivity
+    enabledSet.value = new Set(enabledSet.value)
   } else {
     enabledSet.value.add(name)
     enabledSet.value = new Set(enabledSet.value)
-    // If all tools are now enabled, reset to empty (= all).
     if (enabledSet.value.size === tools.value.length) {
       enabledSet.value = new Set(tools.value.map(t => t.name))
     }
@@ -850,7 +886,6 @@ async function openRefresh() {
     const { data } = await api.post('/api/admin/ai/models/refresh/')
     refreshResult.value   = data
     showRefreshModal.value = true
-    // Reload models for the dropdown.
     const mRes = await api.get('/api/admin/ai/models/')
     models.value = Array.isArray(mRes.data) ? mRes.data : (mRes.data.results || [])
   } catch (e) {
@@ -876,83 +911,274 @@ onMounted(load)
 </script>
 
 <style scoped>
-/* ── Profile cards ─────────────────────────────────────────────────────── */
-.profile-cards-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
-
-.profile-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 130px;
-  min-height: 110px;
+/* ── Page layout ────────────────────────────────────────────────────────── */
+.ap-skeleton {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  cursor: pointer;
-  padding: 14px 12px;
-  transition: border-color 120ms, box-shadow 120ms, transform 80ms;
-  user-select: none;
+  border-radius: 14px;
+  min-height: 480px;
+  animation: pulse 1.5s ease-in-out infinite;
 }
-.profile-card:hover { border-color: var(--admin-accent); }
-.profile-card.selected { border-color: var(--admin-accent); box-shadow: 0 0 0 2px rgba(249,115,22,0.18); }
-.profile-card.is-active { border-color: var(--success, #16a34a); }
-.profile-card:active { transform: scale(0.97); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
 
-.profile-card.add-card {
-  border-style: dashed;
-  color: var(--text-muted);
+.ap-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .ap-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+.ap-sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 12px;
+  display: flex;
   flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 16px;
 }
-.profile-card.add-card:hover { border-color: var(--admin-accent); color: var(--admin-accent); }
 
-.profiles-empty {
-  font-size: 13px;
+.sidebar-section-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  padding: 16px 0;
+  padding: 0 6px;
+  margin-bottom: 6px;
 }
 
-.pc-avatar {
-  width: 40px; height: 40px;
+.profile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 120ms, border-color 120ms;
+  position: relative;
+}
+.profile-item:hover { background: var(--bg-card); }
+.profile-item.selected {
+  background: var(--bg-card);
+  border-color: var(--admin-accent);
+}
+.profile-item.is-active .pi-name::after {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 17px;
+  background: #16a34a;
+  margin-left: 6px;
+  vertical-align: middle;
 }
-.pc-avatar.lg { width: 52px; height: 52px; font-size: 22px; }
 
-.pc-name {
-  font-size: 12.5px;
+.pi-avatar {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+}
+.pc-avatar.lg { width: 52px; height: 52px; font-size: 22px; border-radius: 14px; }
+
+.pi-info {
+  flex: 1;
+  min-width: 0;
+}
+.pi-name {
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
-  text-align: center;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.pc-delete {
-  position: absolute;
-  top: 6px; right: 6px;
-  width: 22px; height: 22px;
+.pi-delete {
+  width: 24px; height: 24px;
   border-radius: 6px;
   display: flex; align-items: center; justify-content: center;
   background: transparent;
   color: var(--text-muted);
   opacity: 0;
-  transition: opacity 100ms, background 100ms;
+  flex-shrink: 0;
+  transition: opacity 100ms, background 100ms, color 100ms;
 }
-.profile-card:hover .pc-delete { opacity: 1; }
-.pc-delete:hover { background: rgba(239,68,68,0.12); color: #ef4444; }
+.profile-item:hover .pi-delete { opacity: 1; }
+.pi-delete:hover { background: rgba(239,68,68,0.12); color: #ef4444; }
+.pi-delete.visible { opacity: 1; }
 
+.sidebar-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.add-profile-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1.5px dashed var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms, background 120ms;
+}
+.add-profile-btn:hover {
+  border-color: var(--admin-accent);
+  color: var(--admin-accent);
+  background: rgba(249,115,22,0.04);
+}
+.add-profile-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Main panel ─────────────────────────────────────────────────────────── */
+.ap-main { min-width: 0; }
+
+.no-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.no-sel-icon {
+  width: 64px; height: 64px;
+  border-radius: 18px;
+  background: var(--bg-card);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* ── Profile editor ─────────────────────────────────────────────────────── */
+.profile-editor {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.editor-topbar {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+  padding: 0 20px 0 4px;
+  gap: 8px;
+}
+
+.tabs-nav {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs-nav::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 120ms, border-color 120ms;
+  flex-shrink: 0;
+}
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--admin-accent); border-bottom-color: var(--admin-accent); }
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tab-body { padding: 0; }
+
+/* ── Form sections ──────────────────────────────────────────────────────── */
+.form-section {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 16px 24px;
+  margin-bottom: 20px;
+  align-items: start;
+}
+@media (max-width: 640px) {
+  .field-row { grid-template-columns: 1fr; }
+}
+
+.field-label-col {}
+.field-control-col {}
+
+.form-label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.hint-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* ── Active chip ─────────────────────────────────────────────────────────── */
 .active-chip {
   display: inline-flex;
   align-items: center;
-  padding: 2px 7px;
+  padding: 3px 8px;
   border-radius: 6px;
   background: rgba(22,163,74,0.12);
   color: #16a34a;
@@ -961,50 +1187,7 @@ onMounted(load)
   letter-spacing: .05em;
 }
 
-/* ── Profile editor ────────────────────────────────────────────────────── */
-.profile-editor {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.tabs-nav {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  border-bottom: 1px solid var(--border);
-  padding: 0 16px;
-  background: var(--bg-card);
-}
-
-.tab-btn {
-  padding: 12px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: transparent;
-  border-bottom: 2px solid transparent;
-  transition: color 120ms, border-color 120ms;
-  white-space: nowrap;
-}
-.tab-btn:hover { color: var(--text-primary); }
-.tab-btn.active { color: var(--admin-accent); border-bottom-color: var(--admin-accent); }
-
-.tab-body {
-  padding: 24px;
-}
-
-.field-row {
-  margin-bottom: 20px;
-}
-
-.toggle-label {
-  display: block;
-  margin-bottom: 10px;
-}
-.toggle-label span:first-child { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
-
+/* ── Toggle ─────────────────────────────────────────────────────────────── */
 .toggle-switch {
   display: inline-flex;
   align-items: center;
@@ -1031,35 +1214,43 @@ onMounted(load)
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 .toggle-switch input:checked + .toggle-track .toggle-thumb { left: 20px; }
-
 .toggle-switch.sm .toggle-track { width: 32px; height: 18px; }
 .toggle-switch.sm .toggle-thumb { width: 12px; height: 12px; }
 .toggle-switch.sm input:checked + .toggle-track .toggle-thumb { left: 17px; }
 
-.hint-text {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  margin-top: 5px;
-}
-
+/* ── Form controls ──────────────────────────────────────────────────────── */
 .form-textarea {
   width: 100%;
-  max-width: 720px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 10px;
+  padding: 12px 14px;
   font-size: 13px;
   color: var(--text-primary);
   resize: vertical;
   font-family: inherit;
-  line-height: 1.6;
+  line-height: 1.65;
   transition: border-color 150ms;
 }
 .form-textarea:focus { outline: none; border-color: var(--admin-accent); }
 
-/* ── Model tab ─────────────────────────────────────────────────────────── */
-.quota-chips { display: flex; gap: 6px; }
+.form-select {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 150ms;
+  appearance: auto;
+}
+.form-select:focus { outline: none; border-color: var(--admin-accent); }
+.form-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Model tab specifics ─────────────────────────────────────────────────── */
+.quota-chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .quota-chip {
   display: inline-flex; align-items: center;
   padding: 3px 9px;
@@ -1105,27 +1296,31 @@ onMounted(load)
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
-/* ── Functions tab ─────────────────────────────────────────────────────── */
+/* ── Functions tab ──────────────────────────────────────────────────────── */
 .functions-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid var(--border);
 }
 
-.tools-list { display: flex; flex-direction: column; gap: 6px; }
+.tools-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 12px 20px 20px;
+}
 
 .tool-row {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 10px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  padding: 10px 10px;
   border-radius: 8px;
-  transition: border-color 120ms;
+  transition: background 100ms;
 }
-.tool-row:hover { border-color: var(--admin-accent); }
+.tool-row:hover { background: var(--bg-card); }
 
 .tool-name {
   font-size: 12.5px;
@@ -1153,14 +1348,33 @@ onMounted(load)
   line-height: 1.5;
 }
 
-/* ── KB tab ────────────────────────────────────────────────────────────── */
+/* ── KB tab ─────────────────────────────────────────────────────────────── */
 .kb-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 0;
 }
-@media (max-width: 900px) {
+.kb-left {
+  padding: 24px 20px 24px 28px;
+  border-right: 1px solid var(--border);
+}
+.kb-right {
+  padding: 24px 28px 24px 20px;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 860px) {
   .kb-grid { grid-template-columns: 1fr; }
+  .kb-left { border-right: none; border-bottom: 1px solid var(--border); }
+}
+
+.kb-section-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
 }
 
 .upload-zone {
@@ -1210,7 +1424,7 @@ onMounted(load)
   font-size: 13px; color: var(--text-primary);
 }
 
-.doc-list { display: flex; flex-direction: column; gap: 4px; }
+.doc-list { display: flex; flex-direction: column; gap: 2px; }
 .doc-row {
   display: flex; align-items: center; gap: 8px;
   padding: 8px 10px;
@@ -1262,7 +1476,7 @@ onMounted(load)
   font-family: inherit;
 }
 
-/* ── Refresh modal ─────────────────────────────────────────────────────── */
+/* ── Refresh modal ──────────────────────────────────────────────────────── */
 .diff-chip {
   display: inline-flex; align-items: center;
   padding: 3px 10px;
@@ -1286,20 +1500,22 @@ onMounted(load)
   text-transform: uppercase; letter-spacing: .05em;
 }
 
-/* ── Misc ──────────────────────────────────────────────────────────────── */
+/* ── Misc ───────────────────────────────────────────────────────────────── */
 .banner-error {
   font-size: 12.5px;
   color: #ef4444;
   background: rgba(239,68,68,0.08);
   border-radius: 7px;
-  padding: 8px 12px;
+  padding: 8px 14px;
+  margin: 12px 28px 0;
 }
 .banner-ok {
   font-size: 12.5px;
   color: var(--success, #16a34a);
   background: rgba(22,163,74,0.08);
   border-radius: 7px;
-  padding: 8px 12px;
+  padding: 8px 14px;
+  margin: 12px 28px 0;
 }
 
 .btn-sm {
@@ -1334,21 +1550,4 @@ onMounted(load)
 
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-.kb-right { display: flex; flex-direction: column; }
-
-.form-select {
-  width: 100%;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 9px 12px;
-  font-size: 13px;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: border-color 150ms;
-  appearance: auto;
-}
-.form-select:focus { outline: none; border-color: var(--admin-accent); }
-.form-select:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>
