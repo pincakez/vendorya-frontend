@@ -10,8 +10,8 @@ export const useAuthStore = defineStore('auth', {
     user: JSON.parse(localStorage.getItem('vendorya_user') || 'null'),
     // Super-admin: the store currently being acted on (null = General Admin mode)
     activeStore: JSON.parse(localStorage.getItem('vendorya_active_store_obj') || 'null'),
-    // Preview mode: sudo sees the store as a real user (DefaultLayout, not persisted)
-    previewMode: false,
+    // Preview mode: sudo sees the store as a real user
+    previewMode: localStorage.getItem('vendorya_preview_mode') === '1',
   }),
   getters: {
     isAuthenticated: s => !!s.accessToken,
@@ -89,11 +89,14 @@ export const useAuthStore = defineStore('auth', {
     },
     enterPreview() {
       this.previewMode = true
+      localStorage.setItem('vendorya_preview_mode', '1')
     },
     exitPreview() {
       this.previewMode = false
+      localStorage.removeItem('vendorya_preview_mode')
     },
     logout() {
+      this.previewMode = false
       // Capture the refresh token, then clear local state immediately so the UI
       // logs out instantly even if callers don't await. The server call (blacklist
       // + clear cookie) is fire-and-forget best-effort.
