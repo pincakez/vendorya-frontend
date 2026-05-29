@@ -19,11 +19,11 @@
 
         <form @submit.prevent="handleLogin">
           <div style="margin-bottom:14px;">
-            <label class="login-label">Username</label>
+            <label class="login-label">Username or email</label>
             <div style="position:relative;">
               <User :size="15" class="login-icon" />
               <input v-model="form.username" type="text" class="form-input" style="padding-left:36px;"
-                placeholder="Enter your username" autocomplete="username" :disabled="loading" />
+                placeholder="Enter your username or email" autocomplete="username" :disabled="loading" />
             </div>
           </div>
 
