@@ -21,7 +21,7 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Code Prefix</th>
+            <th>Prefix</th>
             <th>Contact</th>
             <th>Outstanding Balance</th>
             <th style="width:80px;"></th>
@@ -36,7 +36,12 @@
           </tr>
           <tr v-for="s in suppliers" :key="s.id" class="table-row">
             <td class="col-name">{{ s.name }}</td>
-            <td><span class="prefix-badge">{{ s.code_prefix }}</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span class="prefix-badge">{{ s.code_prefix }}</span>
+                <Lock v-if="s.prefix_locked" :size="11" class="lock-icon" title="Prefix is locked" />
+              </div>
+            </td>
             <td class="col-contact">{{ s.contact_info || '—' }}</td>
             <td>
               <span v-if="Number(s.balance) > 0" class="balance-owe">{{ auth.currencySymbol }} {{ formatNumber(s.balance) }}</span>
@@ -52,26 +57,105 @@
     </div>
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchSuppliers" />
 
-    <!-- MODAL: Add / Edit -->
-    <AppModal :open="modal.open" :title="modal.id ? 'Edit Supplier' : 'New Supplier'" @close="closeModal">
+    <!-- MODAL: New Supplier -->
+    <AppModal :open="newModal.open" title="New Supplier" @close="closeNew">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label class="form-label">Supplier Name</label>
-          <input v-model="modal.name" class="form-input" placeholder="e.g. Al-Nour Textiles" />
+          <label class="form-label">Supplier Name <span class="req">*</span></label>
+          <input v-model="newModal.name" class="form-input" placeholder="e.g. Al-Nour Textiles" />
         </div>
         <div>
-          <label class="form-label">Code Prefix <span class="label-hint">(2 digits, unique)</span></label>
-          <input v-model="modal.code_prefix" class="form-input" placeholder="e.g. 13" maxlength="2" style="width:80px;" />
+          <label class="form-label">
+            Supplier Code Prefix <span class="req">*</span>
+            <span class="label-hint">— 3 digits (100–999), unique in your store</span>
+          </label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input
+              v-model="newModal.code_prefix"
+              class="form-input"
+              placeholder="e.g. 101"
+              maxlength="3"
+              style="width:90px;"
+              @input="newModal.prefixCheck = null"
+            />
+            <button
+              class="btn-check"
+              :disabled="!newModal.code_prefix || newModal.code_prefix.length !== 3 || newModal.checkingPrefix"
+              @click="checkNewPrefix"
+            >
+              {{ newModal.checkingPrefix ? '…' : 'Check' }}
+            </button>
+            <span v-if="newModal.prefixCheck === true"  class="check-ok">Available</span>
+            <span v-else-if="newModal.prefixCheck === false" class="check-taken">Already taken</span>
+          </div>
+          <p class="field-note">Once registered, the prefix is permanent — it's embedded in every SKU of this supplier.</p>
         </div>
         <div>
-          <label class="form-label">Contact Info (optional)</label>
-          <textarea v-model="modal.contact_info" class="form-input" rows="2" placeholder="Phone, email, address…" />
+          <label class="form-label">Contact Info <span class="label-hint">(optional)</span></label>
+          <textarea v-model="newModal.contact_info" class="form-input" rows="2" placeholder="Phone, email, address…" />
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="closeModal">Cancel</button>
-        <button class="btn-primary" :disabled="!modal.name.trim() || !modal.code_prefix.trim() || saving" @click="save">
-          {{ saving ? 'Saving…' : (modal.id ? 'Save Changes' : 'Add Supplier') }}
+        <button class="btn-ghost" @click="closeNew">Cancel</button>
+        <button
+          class="btn-primary"
+          :disabled="!newModal.name.trim() || newModal.prefixCheck !== true"
+          @click="openConfirm"
+        >
+          Register Supplier
+        </button>
+      </template>
+    </AppModal>
+
+    <!-- MODAL: Confirm prefix lock -->
+    <AppModal :open="confirmModal.open" title="Confirm Prefix Registration" @close="confirmModal.open = false">
+      <div class="confirm-body">
+        <div class="confirm-icon">
+          <Lock :size="22" />
+        </div>
+        <p class="confirm-text">
+          Register prefix <strong>{{ newModal.code_prefix }}</strong> for
+          <strong>{{ newModal.name }}</strong>?
+        </p>
+        <p class="confirm-warn">This cannot be changed after confirmation. The prefix will be embedded in all SKUs generated for this supplier.</p>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="confirmModal.open = false">Cancel</button>
+        <button class="btn-primary" :disabled="saving" @click="submitNew">
+          {{ saving ? 'Creating…' : 'Confirm & Register' }}
+        </button>
+      </template>
+    </AppModal>
+
+    <!-- MODAL: Edit Supplier -->
+    <AppModal :open="editModal.open" title="Edit Supplier" @close="closeEdit">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label class="form-label">Supplier Name</label>
+          <input v-model="editModal.name" class="form-input" placeholder="e.g. Al-Nour Textiles" />
+        </div>
+        <div>
+          <label class="form-label">Supplier Code Prefix</label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input
+              :value="editModal.code_prefix"
+              class="form-input locked-input"
+              style="width:90px;"
+              disabled
+            />
+            <Lock :size="13" class="lock-icon" />
+            <span style="font-size:12px;color:var(--text-muted);">Locked — embedded in all SKUs</span>
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Contact Info <span class="label-hint">(optional)</span></label>
+          <textarea v-model="editModal.contact_info" class="form-input" rows="2" placeholder="Phone, email, address…" />
+        </div>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="closeEdit">Cancel</button>
+        <button class="btn-primary" :disabled="!editModal.name.trim() || saving" @click="saveEdit">
+          {{ saving ? 'Saving…' : 'Save Changes' }}
         </button>
       </template>
     </AppModal>
@@ -80,7 +164,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { Search, Building2, Pencil, Trash2 } from 'lucide-vue-next'
+import { Search, Building2, Pencil, Trash2, Lock } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
@@ -127,21 +211,72 @@ async function deleteSupplier(id) {
   }
 }
 
-const modal = reactive({ open: false, id: null, name: '', code_prefix: '', contact_info: '' })
+// --- New Supplier ---
+function suggestPrefix() {
+  return String(Math.floor(Math.random() * 900) + 100)
+}
 
-function openNew()    { Object.assign(modal, { open: true, id: null, name: '', code_prefix: '', contact_info: '' }) }
-function openEdit(s)  { Object.assign(modal, { open: true, id: s.id, name: s.name, code_prefix: s.code_prefix, contact_info: s.contact_info || '' }) }
-function closeModal() { modal.open = false }
+const newModal = reactive({
+  open: false, name: '', code_prefix: '', contact_info: '',
+  prefixCheck: null, checkingPrefix: false,
+})
+const confirmModal = reactive({ open: false })
 
-async function save() {
+function openNew() {
+  Object.assign(newModal, {
+    open: true, name: '', code_prefix: suggestPrefix(),
+    contact_info: '', prefixCheck: null, checkingPrefix: false,
+  })
+}
+
+function closeNew() { newModal.open = false }
+
+async function checkNewPrefix() {
+  newModal.checkingPrefix = true
+  newModal.prefixCheck = null
+  try {
+    const res = await api.get('/api/inventory/suppliers/check-prefix/', { params: { prefix: newModal.code_prefix } })
+    newModal.prefixCheck = res.data.available
+  } catch { newModal.prefixCheck = false }
+  finally { newModal.checkingPrefix = false }
+}
+
+function openConfirm() { confirmModal.open = true }
+
+async function submitNew() {
   saving.value = true
   try {
-    const payload = { name: modal.name, code_prefix: modal.code_prefix, contact_info: modal.contact_info || '' }
-    modal.id
-      ? await api.patch(`/api/inventory/suppliers/${modal.id}/`, payload)
-      : await api.post('/api/inventory/suppliers/', payload)
-    closeModal()
-    fetchSuppliers(modal.id ? page.value : 1)
+    await api.post('/api/inventory/suppliers/', {
+      name: newModal.name,
+      code_prefix: newModal.code_prefix,
+      contact_info: newModal.contact_info || '',
+    })
+    confirmModal.open = false
+    closeNew()
+    fetchSuppliers(1)
+  } catch (e) {
+    alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error creating supplier')
+  } finally { saving.value = false }
+}
+
+// --- Edit Supplier ---
+const editModal = reactive({ open: false, id: null, name: '', code_prefix: '', contact_info: '' })
+
+function openEdit(s) {
+  Object.assign(editModal, { open: true, id: s.id, name: s.name, code_prefix: s.code_prefix, contact_info: s.contact_info || '' })
+}
+
+function closeEdit() { editModal.open = false }
+
+async function saveEdit() {
+  saving.value = true
+  try {
+    await api.patch(`/api/inventory/suppliers/${editModal.id}/`, {
+      name: editModal.name,
+      contact_info: editModal.contact_info || '',
+    })
+    closeEdit()
+    fetchSuppliers(page.value)
   } catch (e) {
     alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving supplier')
   } finally { saving.value = false }
@@ -152,7 +287,6 @@ onMounted(() => {
   qab.setActions([{ id: 'new-supplier', label: 'New Supplier', icon: 'plus', handler: openNew }])
 })
 onUnmounted(() => qab.clearActions())
-
 </script>
 
 <style scoped>
@@ -182,6 +316,7 @@ onUnmounted(() => qab.clearActions())
 .col-contact { color:var(--text-muted); font-size:12px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
 .prefix-badge { display:inline-block; padding:2px 8px; border-radius:6px; background:var(--bg-app); border:1px solid var(--border); font-family:monospace; font-size:12px; font-weight:700; color:var(--text-secondary); }
+.lock-icon    { color:var(--text-muted); flex-shrink:0; }
 
 .balance-owe  { font-weight:600; color:#dc2626; font-variant-numeric:tabular-nums; font-size:12.5px; }
 .balance-zero { color:var(--text-muted); }
@@ -192,8 +327,20 @@ onUnmounted(() => qab.clearActions())
 
 .form-label  { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .label-hint  { font-weight:400; color:var(--text-muted); }
+.req         { color:#dc2626; font-weight:700; }
 .form-input  { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; resize:vertical; }
 .form-input:focus { border-color:#2563eb; }
+.locked-input { opacity:.6; cursor:not-allowed; background:var(--border); }
+
+.field-note  { margin:4px 0 0; font-size:11.5px; color:var(--text-muted); line-height:1.4; }
+
+.btn-check { padding:7px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-primary); font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; transition:background 100ms,border-color 100ms; flex-shrink:0; }
+.btn-check:hover:not(:disabled) { background:rgba(37,99,235,0.08); border-color:#2563eb; color:#2563eb; }
+.btn-check:disabled { opacity:.5; cursor:default; }
+
+.check-ok    { font-size:12px; font-weight:600; color:#16a34a; white-space:nowrap; }
+.check-taken { font-size:12px; font-weight:600; color:#dc2626; white-space:nowrap; }
+
 .btn-ghost   { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
 .btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
 .btn-ghost:active { transform:scale(0.95); }
@@ -201,4 +348,10 @@ onUnmounted(() => qab.clearActions())
 .btn-primary:hover    { background:#1d4ed8; }
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
+
+/* Confirm modal */
+.confirm-body { display:flex; flex-direction:column; align-items:center; gap:12px; padding:8px 0 4px; text-align:center; }
+.confirm-icon { width:48px; height:48px; border-radius:50%; background:rgba(37,99,235,0.1); display:flex; align-items:center; justify-content:center; color:#2563eb; }
+.confirm-text { font-size:15px; font-weight:500; color:var(--text-primary); margin:0; line-height:1.5; }
+.confirm-warn { font-size:12.5px; color:var(--text-muted); margin:0; max-width:320px; line-height:1.5; }
 </style>

@@ -21,6 +21,7 @@
         <thead>
           <tr>
             <th>Store</th>
+            <th>Code</th>
             <th>Owner</th>
             <th>Plan</th>
             <th>Currency</th>
@@ -32,7 +33,7 @@
         </thead>
         <tbody>
           <tr v-if="!stores.length">
-            <td colspan="8" class="table-empty">
+            <td colspan="9" class="table-empty">
               <Store :size="32" style="opacity:.3;margin-bottom:8px;" />
               <div>No stores yet</div>
             </td>
@@ -43,6 +44,10 @@
                 <div class="store-mini-avatar">{{ s.name.charAt(0).toUpperCase() }}</div>
                 <span style="font-weight:600;">{{ s.name }}</span>
               </div>
+            </td>
+            <td>
+              <span v-if="s.store_code" class="code-badge">{{ s.store_code }}</span>
+              <span v-else style="color:var(--text-muted);font-size:12px;">—</span>
             </td>
             <td style="color:var(--text-secondary);font-size:12.5px;">{{ s.owner_username }}</td>
             <td><span class="plan-pill" :class="'plan-' + s.plan.toLowerCase()">{{ s.plan }}</span></td>
@@ -72,6 +77,24 @@
         <div>
           <label class="form-label">Store Name</label>
           <input v-model="editModal.name" class="form-input" placeholder="e.g. Trenda Fashion" />
+        </div>
+        <div>
+          <label class="form-label">Store Code <span class="hint">(3 digits — part of every SKU)</span></label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input
+              v-model="editModal.store_code"
+              class="form-input"
+              placeholder="e.g. 120"
+              maxlength="3"
+              style="width:100px;"
+              @input="codeCheck = null"
+            />
+            <button class="btn-check" :disabled="!editModal.store_code || editModal.store_code.length !== 3 || checkingCode" @click="checkStoreCode">
+              {{ checkingCode ? '…' : 'Check' }}
+            </button>
+            <span v-if="codeCheck === true" class="check-ok">Available</span>
+            <span v-else-if="codeCheck === false" class="check-taken">Already taken</span>
+          </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
@@ -307,14 +330,18 @@ function defaultCurrencyId() {
 // --- Edit modal ---
 const editModal = reactive({
   open: false, id: null,
-  name: '', plan: 'FREE', currency_id: '', default_language: 'ar',
+  name: '', store_code: '', plan: 'FREE', currency_id: '', default_language: 'ar',
   timezone: 'Africa/Cairo', is_active: true,
 })
+const codeCheck = ref(null)   // null = unchecked, true = available, false = taken
+const checkingCode = ref(false)
 
 function openEdit(s) {
+  codeCheck.value = null
   Object.assign(editModal, {
     open: true, id: s.id,
-    name: s.name, plan: s.plan,
+    name: s.name, store_code: s.store_code || '',
+    plan: s.plan,
     currency_id: s.currency?.id || defaultCurrencyId(),
     default_language: s.default_language,
     timezone: s.timezone || 'Africa/Cairo',
@@ -324,17 +351,29 @@ function openEdit(s) {
 
 function closeEdit() { editModal.open = false }
 
+async function checkStoreCode() {
+  checkingCode.value = true
+  codeCheck.value = null
+  try {
+    const res = await api.get('/api/admin/stores/check-code/', { params: { code: editModal.store_code } })
+    codeCheck.value = res.data.available
+  } catch { codeCheck.value = false }
+  finally { checkingCode.value = false }
+}
+
 async function saveEdit() {
   saving.value = true
   try {
-    await api.patch(`/api/admin/stores/${editModal.id}/`, {
+    const payload = {
       name: editModal.name,
       plan: editModal.plan,
       currency_id: editModal.currency_id || null,
       default_language: editModal.default_language,
       timezone: editModal.timezone,
       is_active: editModal.is_active,
-    })
+    }
+    if (editModal.store_code) payload.store_code = editModal.store_code
+    await api.patch(`/api/admin/stores/${editModal.id}/`, payload)
     closeEdit()
     fetchStores()
   } catch (e) {
@@ -500,4 +539,13 @@ onUnmounted(() => qab.clearActions())
 
 .step-help { font-size:12px; color:var(--text-muted); margin:4px 0 0; line-height:1.5; }
 .error-box { margin-top:12px; padding:10px 12px; border:1px solid #fecaca; background:rgba(220,38,38,0.08); border-radius:8px; color:#b91c1c; font-size:12.5px; display:flex; flex-direction:column; gap:3px; }
+
+.code-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:700; letter-spacing:.06em; font-variant-numeric:tabular-nums; background:rgba(249,115,22,0.12); color:var(--admin-accent); border:1px solid rgba(249,115,22,0.25); }
+
+.btn-check { padding:7px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-primary); font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; transition:background 100ms,border-color 100ms; }
+.btn-check:hover:not(:disabled) { background:var(--admin-accent-soft); border-color:var(--admin-accent); color:var(--admin-accent); }
+.btn-check:disabled { opacity:.5; cursor:default; }
+
+.check-ok    { font-size:12px; font-weight:600; color:#16a34a; }
+.check-taken { font-size:12px; font-weight:600; color:#dc2626; }
 </style>

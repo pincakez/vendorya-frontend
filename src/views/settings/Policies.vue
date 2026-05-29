@@ -59,6 +59,34 @@
         </div>
       </div>
 
+      <!-- Product Numbering Mode -->
+      <div class="policy-card">
+        <div class="policy-icon" style="background:#f0fdf4;color:#16a34a;"><Hash :size="20" /></div>
+        <div class="policy-body">
+          <div class="policy-title">Product Numbering Mode</div>
+          <div class="policy-desc">Controls how the 4-digit product counter (last segment of every SKU) is assigned when a new variant is created.</div>
+          <div class="policy-footer" style="gap:8px;">
+            <button
+              class="mode-btn"
+              :class="{ active: form.product_numbering_mode === 'PROGRESSIVE' }"
+              @click="form.product_numbering_mode = 'PROGRESSIVE'"
+            >
+              Progressive
+            </button>
+            <button
+              class="mode-btn"
+              :class="{ active: form.product_numbering_mode === 'RANDOM' }"
+              @click="form.product_numbering_mode = 'RANDOM'"
+            >
+              Random
+            </button>
+            <span style="font-size:12px;color:var(--text-muted);margin-left:4px;">
+              {{ form.product_numbering_mode === 'PROGRESSIVE' ? '0001, 0002, 0003…' : 'random 4-digit slot' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
       <!-- Section: Security -->
       <div class="section-heading">Security</div>
 
@@ -101,7 +129,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Package, CreditCard, Percent, CheckCircle, Clock, Globe } from 'lucide-vue-next'
+import { Package, CreditCard, Percent, CheckCircle, Clock, Globe, Hash } from 'lucide-vue-next'
 import api from '@/api/axios'
 
 const loading = ref(false)
@@ -110,6 +138,7 @@ const saved   = ref(false)
 const taxes   = ref([])
 const form    = reactive({
   allow_negative_stock: false, enable_agel_selling: true, default_tax: '',
+  product_numbering_mode: 'PROGRESSIVE',
   force_2fa_managers: false, session_timeout_minutes: 0, login_ip_allowlist: '',
 })
 
@@ -126,6 +155,7 @@ async function load() {
       allow_negative_stock:    settingsRes.data.allow_negative_stock,
       enable_agel_selling:     settingsRes.data.enable_agel_selling,
       default_tax:             settingsRes.data.default_tax || '',
+      product_numbering_mode:  settingsRes.data.product_numbering_mode || 'PROGRESSIVE',
       force_2fa_managers:      settingsRes.data.force_2fa_managers ?? false,
       session_timeout_minutes: settingsRes.data.session_timeout_minutes ?? 0,
       login_ip_allowlist:      settingsRes.data.login_ip_allowlist || '',
@@ -142,6 +172,7 @@ async function save() {
       allow_negative_stock:    form.allow_negative_stock,
       enable_agel_selling:     form.enable_agel_selling,
       default_tax:             form.default_tax || null,
+      product_numbering_mode:  form.product_numbering_mode,
       force_2fa_managers:      form.force_2fa_managers,
       session_timeout_minutes: form.session_timeout_minutes || 0,
       login_ip_allowlist:      form.login_ip_allowlist || '',
@@ -202,4 +233,8 @@ onMounted(load)
 .btn-primary:hover    { background:#1d4ed8; }
 .btn-primary:active   { transform:scale(.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
+
+.mode-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-muted); font-size:12.5px; font-weight:600; cursor:pointer; transition:background 100ms,border-color 100ms,color 100ms; }
+.mode-btn:hover { border-color:#2563eb; color:#2563eb; }
+.mode-btn.active { background:#2563eb; border-color:#2563eb; color:#fff; }
 </style>
