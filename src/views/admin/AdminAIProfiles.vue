@@ -6,16 +6,10 @@
         <h1 class="page-title">AI Profiles</h1>
         <p class="page-sub">Manage up to 3 AI personas. One profile is active at a time.</p>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span class="api-status-chip" :class="apiStatusClass" @click="checkApiStatus" title="Click to check API status">
-          <span class="api-status-dot" />
-          {{ apiStatusLabel }}
-        </span>
-        <button class="btn-outline" @click="openRefresh" :disabled="refreshing">
-          <RefreshCw :size="14" :class="{'spin': refreshing}" />
-          {{ refreshing ? 'Refreshing…' : 'Refresh Models' }}
-        </button>
-      </div>
+      <button class="btn-api-reload" @click="openRefresh" :disabled="refreshing">
+        <RefreshCw :size="14" :class="{'spin': refreshing}" />
+        {{ refreshing ? 'Reloading…' : 'API Reload' }}
+      </button>
     </div>
 
     <div v-if="loading" class="ap-skeleton" />
@@ -886,33 +880,6 @@ async function runSearch() {
   }
 }
 
-// ── api status ────────────────────────────────────────────────────────────
-const apiStatus = ref('loading')
-
-const apiStatusClass = computed(() => {
-  if (apiStatus.value === 'connected') return 'status-connected'
-  if (apiStatus.value === 'error')     return 'status-error'
-  if (apiStatus.value === 'no_key')    return 'status-nokey'
-  return 'status-loading'
-})
-
-const apiStatusLabel = computed(() => {
-  if (apiStatus.value === 'connected') return 'API Connected'
-  if (apiStatus.value === 'error')     return 'API Error'
-  if (apiStatus.value === 'no_key')    return 'No API Key'
-  return 'Checking…'
-})
-
-async function checkApiStatus() {
-  apiStatus.value = 'loading'
-  try {
-    const { data } = await api.get('/api/admin/ai/status/')
-    apiStatus.value = data.status
-  } catch {
-    apiStatus.value = 'error'
-  }
-}
-
 // ── refresh models ─────────────────────────────────────────────────────────
 async function openRefresh() {
   refreshing.value = true
@@ -941,7 +908,7 @@ function avatarStyle(name) {
   return { background: bg, color }
 }
 
-onMounted(() => { load(); checkApiStatus() })
+onMounted(load)
 </script>
 
 <style scoped>
@@ -1029,8 +996,9 @@ onMounted(() => { load(); checkApiStatus() })
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 14px;
+  overflow: hidden;
 }
-.pc-avatar.lg { width: 52px; height: 52px; font-size: 22px; border-radius: 14px; }
+.pc-avatar.lg { width: 52px; height: 52px; font-size: 22px; border-radius: 14px; overflow: hidden; }
 
 .pi-info {
   flex: 1;
@@ -1552,6 +1520,59 @@ onMounted(() => { load(); checkApiStatus() })
   margin: 12px 28px 0;
 }
 
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 18px;
+  border-radius: 9px;
+  background: var(--admin-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 120ms, transform 80ms, opacity 100ms;
+}
+.btn-primary:hover    { background: #ea6c00; }
+.btn-primary:active   { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms;
+}
+.btn-outline:hover    { background: var(--bg-card); border-color: var(--admin-accent); color: var(--admin-accent); }
+.btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-api-reload {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 9px;
+  background: var(--admin-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 120ms, transform 80ms, opacity 100ms;
+}
+.btn-api-reload:hover    { background: #ea6c00; }
+.btn-api-reload:active   { transform: scale(0.97); }
+.btn-api-reload:disabled { opacity: 0.55; cursor: not-allowed; }
+
 .btn-sm {
   padding: 6px 14px !important;
   font-size: 12.5px !important;
@@ -1585,37 +1606,4 @@ onMounted(() => { load(); checkApiStatus() })
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* ── API Status chip ─────────────────────────────────────────────────────── */
-.api-status-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: background 120ms, border-color 120ms;
-  user-select: none;
-}
-.api-status-chip:hover { background: var(--bg-card); }
-
-.api-status-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.status-connected { color: #16a34a; border-color: rgba(22,163,74,0.3); background: rgba(22,163,74,0.07); }
-.status-connected .api-status-dot { background: #16a34a; }
-
-.status-error { color: #ef4444; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.07); }
-.status-error .api-status-dot { background: #ef4444; }
-
-.status-nokey { color: var(--text-muted); }
-.status-nokey .api-status-dot { background: var(--text-muted); }
-
-.status-loading { color: var(--text-muted); }
-.status-loading .api-status-dot { background: var(--text-muted); opacity: 0.5; }
 </style>
