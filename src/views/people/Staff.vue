@@ -92,6 +92,16 @@
           <label class="form-label">{{ modal.id ? 'New Password (leave blank to keep current)' : 'Password' }}</label>
           <input v-model="modal.password" class="form-input" type="password" :placeholder="modal.id ? 'Leave blank to keep unchanged' : 'Set a password'" />
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">Phone Number</label>
+            <input v-model="modal.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+          <div>
+            <label class="form-label">WhatsApp</label>
+            <input v-model="modal.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+        </div>
         <div v-if="modal.id" style="display:flex;align-items:center;gap:10px;padding-top:4px;">
           <label class="form-label" style="margin:0;">Active</label>
           <button class="toggle-btn" :class="{ on: modal.is_active }" @click="modal.is_active = !modal.is_active">
@@ -146,13 +156,13 @@ async function fetchStaff(p = 1) {
   } catch { staff.value = [] } finally { loading.value = false }
 }
 
-const modal = reactive({ open: false, id: null, username: '', first_name: '', last_name: '', email: '', role: 'CASHIER', password: '', is_active: true })
+const modal = reactive({ open: false, id: null, username: '', first_name: '', last_name: '', email: '', role: 'CASHIER', password: '', is_active: true, phone_number: '', whatsapp_number: '' })
 
 function openNew() {
-  Object.assign(modal, { open: true, id: null, username: '', first_name: '', last_name: '', email: '', role: 'CASHIER', password: '', is_active: true })
+  Object.assign(modal, { open: true, id: null, username: '', first_name: '', last_name: '', email: '', role: 'CASHIER', password: '', is_active: true, phone_number: '', whatsapp_number: '' })
 }
 function openEdit(s) {
-  Object.assign(modal, { open: true, id: s.id, username: s.username, first_name: s.first_name, last_name: s.last_name, email: s.email || '', role: s.role, password: '', is_active: s.is_active })
+  Object.assign(modal, { open: true, id: s.id, username: s.username, first_name: s.first_name, last_name: s.last_name, email: s.email || '', role: s.role, password: '', is_active: s.is_active, phone_number: s.phone_number || '', whatsapp_number: s.whatsapp_number || '' })
 }
 function closeModal() { modal.open = false }
 
@@ -160,10 +170,12 @@ async function save() {
   saving.value = true
   try {
     const payload = {
-      first_name: modal.first_name,
-      last_name:  modal.last_name,
-      email:      modal.email,
-      role:       modal.role,
+      first_name:      modal.first_name,
+      last_name:       modal.last_name,
+      email:           modal.email,
+      role:            modal.role,
+      phone_number:    modal.phone_number,
+      whatsapp_number: modal.whatsapp_number,
     }
     if (!modal.id) payload.username = modal.username
     if (modal.id)  payload.is_active = modal.is_active

@@ -94,6 +94,29 @@
           </div>
         </div>
 
+        <div class="section-divider">Contact Info</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input v-model="storeForm.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp</label>
+            <input v-model="storeForm.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <select v-model="storeForm.city" class="form-input">
+              <option value="">— Select city —</option>
+              <option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Country</label>
+            <input value="Egypt" class="form-input" disabled style="opacity:.55;cursor:not-allowed;" />
+          </div>
+        </div>
+
         <div class="toggle-row">
           <div class="toggle-item">
             <div>
@@ -216,17 +239,34 @@
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
-            <label class="form-label">City</label>
-            <input v-model="branchModal.city" class="form-input" placeholder="e.g. Cairo" />
+            <label class="form-label">City <span class="req">*</span></label>
+            <select v-model="branchModal.city" class="form-input">
+              <option value="">— Select city —</option>
+              <option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option>
+            </select>
           </div>
           <div>
             <label class="form-label">Country</label>
-            <input v-model="branchModal.country" class="form-input" placeholder="Egypt" />
+            <input value="Egypt" class="form-input" disabled style="opacity:.55;cursor:not-allowed;" />
           </div>
         </div>
         <div>
           <label class="form-label">Street Address</label>
           <input v-model="branchModal.street_1" class="form-input" placeholder="Street address" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">Phone <span class="req">*</span></label>
+            <input v-model="branchModal.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+          <div>
+            <label class="form-label">WhatsApp</label>
+            <input v-model="branchModal.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Email <span class="req">*</span></label>
+          <input v-model="branchModal.email" class="form-input" placeholder="branch@example.com" type="email" />
         </div>
         <div class="toggle-row" style="padding:0;">
           <div class="toggle-item" style="padding:0;">
@@ -241,7 +281,7 @@
       </div>
       <template #footer>
         <button class="btn-ghost" @click="branchModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!branchModal.name.trim() || branchSaving" @click="saveBranch">
+        <button class="btn-primary" :disabled="!branchModal.name.trim() || !branchModal.phone_number.trim() || !branchModal.email.trim() || branchSaving" @click="saveBranch">
           {{ branchSaving ? 'Saving…' : (branchModal.id ? 'Save Changes' : 'Add Branch') }}
         </button>
       </template>
@@ -298,6 +338,14 @@ const tabs = [
 ]
 const activeTab = ref('store')
 
+const egyptCities = [
+  'Cairo', 'Alexandria', 'Giza', 'Port Said', 'Suez', 'Luxor', 'Aswan',
+  'Ismailia', 'Mansoura', 'Tanta', 'Asyut', 'Fayoum', 'Zagazig', 'Damanhur',
+  'Minya', 'Beni Suef', 'Sohag', 'Qena', 'Hurghada', 'Sharm El Sheikh',
+  '6th of October City', 'New Cairo', 'Arish', 'Banha', 'Kafr El Sheikh',
+  'Shibin El Kom', 'Marsa Matruh', 'Edfu', 'Kom Ombo', 'Qusair',
+]
+
 // Short list — the most useful IANA zones for our target markets.
 const timezones = [
   'Africa/Cairo', 'Africa/Casablanca', 'Africa/Tripoli',
@@ -316,6 +364,10 @@ const storeForm    = reactive({
   currency_id: '',
   default_language: 'ar',
   timezone: 'Africa/Cairo',
+  phone_number: '',
+  whatsapp_number: '',
+  city: '',
+  country: 'Egypt',
 })
 const settingsForm = reactive({
   allow_negative_stock: false, enable_agel_selling: true,
@@ -350,6 +402,10 @@ async function loadStore() {
       currency_id: storeRes.data.currency?.id || '',
       default_language: storeRes.data.default_language,
       timezone: storeRes.data.timezone || 'Africa/Cairo',
+      phone_number: storeRes.data.phone_number || '',
+      whatsapp_number: storeRes.data.whatsapp_number || '',
+      city: storeRes.data.city || '',
+      country: storeRes.data.country || 'Egypt',
     })
     Object.assign(settingsForm, settingsRes.data)
     taxes.value      = taxRes.data.results ?? taxRes.data
@@ -366,6 +422,10 @@ async function saveStore() {
         currency_id: storeForm.currency_id || null,
         default_language: storeForm.default_language,
         timezone: storeForm.timezone,
+        phone_number: storeForm.phone_number,
+        whatsapp_number: storeForm.whatsapp_number,
+        city: storeForm.city,
+        country: 'Egypt',
       }),
       api.patch('/api/core/settings/', {
         allow_negative_stock: settingsForm.allow_negative_stock,
@@ -404,7 +464,7 @@ async function saveSettings() {
 const branches     = ref([])
 const branchLoading = ref(false)
 const branchSaving  = ref(false)
-const branchModal   = reactive({ open: false, id: null, name: '', city: '', country: 'Egypt', street_1: '', is_main_branch: false })
+const branchModal   = reactive({ open: false, id: null, name: '', city: '', country: 'Egypt', street_1: '', is_main_branch: false, phone_number: '', whatsapp_number: '', email: '' })
 
 async function fetchBranches() {
   branchLoading.value = true
@@ -414,13 +474,18 @@ async function fetchBranches() {
   } finally { branchLoading.value = false }
 }
 
-function openNewBranch()   { Object.assign(branchModal, { open: true, id: null, name: '', city: '', country: 'Egypt', street_1: '', is_main_branch: false }) }
-function openEditBranch(b) { Object.assign(branchModal, { open: true, id: b.id, name: b.name, city: b.address_city, country: b.address_country, street_1: b.address_street_1, is_main_branch: b.is_main_branch }) }
+function openNewBranch()   { Object.assign(branchModal, { open: true, id: null, name: '', city: '', country: 'Egypt', street_1: '', is_main_branch: false, phone_number: '', whatsapp_number: '', email: '' }) }
+function openEditBranch(b) { Object.assign(branchModal, { open: true, id: b.id, name: b.name, city: b.address_city, country: b.address_country, street_1: b.address_street_1, is_main_branch: b.is_main_branch, phone_number: b.phone_number || '', whatsapp_number: b.whatsapp_number || '', email: b.email || '' }) }
 
 async function saveBranch() {
   branchSaving.value = true
   try {
-    const payload = { name: branchModal.name, city: branchModal.city, country: branchModal.country, street_1: branchModal.street_1, is_main_branch: branchModal.is_main_branch }
+    const payload = {
+      name: branchModal.name, city: branchModal.city, country: 'Egypt',
+      street_1: branchModal.street_1, is_main_branch: branchModal.is_main_branch,
+      phone_number: branchModal.phone_number, email: branchModal.email,
+      whatsapp_number: branchModal.whatsapp_number,
+    }
     branchModal.id
       ? await api.patch(`/api/core/branches/${branchModal.id}/`, payload)
       : await api.post('/api/core/branches/', payload)
@@ -549,4 +614,5 @@ onUnmounted(() => qab.clearActions())
 .btn-primary:hover    { background:#1d4ed8; }
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
+.req { color:#dc2626; font-weight:700; }
 </style>

@@ -173,12 +173,28 @@
           <input v-model="form.owner.email" class="form-input" placeholder="owner@example.com" type="email" />
         </div>
         <div>
-          <label class="form-label">Username <span class="req">*</span></label>
+          <label class="form-label">Username <span class="req">*</span> <span class="hint">(min 6 chars, unique)</span></label>
           <input v-model="form.owner.username" class="form-input" placeholder="ahmedh" autocomplete="off" />
+          <span v-if="form.owner.username && form.owner.username.length < 6" style="font-size:11.5px;color:#dc2626;margin-top:3px;display:block;">At least 6 characters required</span>
         </div>
         <div>
           <label class="form-label">Password <span class="req">*</span> <span class="hint">(min 8 chars)</span></label>
           <input v-model="form.owner.password" class="form-input" type="password" autocomplete="new-password" />
+        </div>
+        <div>
+          <label class="form-label">Confirm Password <span class="req">*</span></label>
+          <input v-model="form.owner.password_confirm" class="form-input" type="password" autocomplete="new-password" />
+          <span v-if="form.owner.password_confirm && form.owner.password !== form.owner.password_confirm" style="font-size:11.5px;color:#dc2626;margin-top:3px;display:block;">Passwords do not match</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">Phone Number</label>
+            <input v-model="form.owner.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+          <div>
+            <label class="form-label">WhatsApp</label>
+            <input v-model="form.owner.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
         </div>
         <p class="step-help">
           This account becomes the store OWNER — full access to all features in the new tenant.
@@ -223,6 +239,29 @@
             </select>
           </div>
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">Phone Number</label>
+            <input v-model="form.store.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+          <div>
+            <label class="form-label">WhatsApp</label>
+            <input v-model="form.store.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">City</label>
+            <select v-model="form.store.city" class="form-input">
+              <option value="">— Select city —</option>
+              <option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Country</label>
+            <input value="Egypt" class="form-input" disabled style="opacity:.55;cursor:not-allowed;" />
+          </div>
+        </div>
       </div>
 
       <!-- Step 3 — Main Branch -->
@@ -238,12 +277,29 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
             <label class="form-label">City <span class="req">*</span></label>
-            <input v-model="form.branch.city" class="form-input" placeholder="Cairo" />
+            <select v-model="form.branch.city" class="form-input">
+              <option value="">— Select city —</option>
+              <option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option>
+            </select>
           </div>
           <div>
             <label class="form-label">Country</label>
-            <input v-model="form.branch.country" class="form-input" placeholder="Egypt" />
+            <input value="Egypt" class="form-input" disabled style="opacity:.55;cursor:not-allowed;" />
           </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="form-label">Phone <span class="req">*</span></label>
+            <input v-model="form.branch.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+          <div>
+            <label class="form-label">WhatsApp</label>
+            <input v-model="form.branch.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Email <span class="req">*</span></label>
+          <input v-model="form.branch.email" class="form-input" placeholder="branch@example.com" type="email" />
         </div>
         <p class="step-help">
           Every store needs at least one branch to record sales. You can add more after onboarding.
@@ -293,6 +349,14 @@ const timezones = [
   'Europe/London', 'Europe/Paris', 'Europe/Istanbul',
   'America/New_York', 'America/Los_Angeles',
   'UTC',
+]
+
+const egyptCities = [
+  'Cairo', 'Alexandria', 'Giza', 'Port Said', 'Suez', 'Luxor', 'Aswan',
+  'Ismailia', 'Mansoura', 'Tanta', 'Asyut', 'Fayoum', 'Zagazig', 'Damanhur',
+  'Minya', 'Beni Suef', 'Sohag', 'Qena', 'Hurghada', 'Sharm El Sheikh',
+  '6th of October City', 'New Cairo', 'Arish', 'Banha', 'Kafr El Sheikh',
+  'Shibin El Kom', 'Marsa Matruh', 'Edfu', 'Kom Ombo', 'Qusair',
 ]
 
 let searchTimer = null
@@ -393,9 +457,9 @@ const step = ref(0)
 const createErrors = ref([])
 
 const form = reactive({
-  owner:  { first_name: '', last_name: '', email: '', username: '', password: '' },
-  store:  { name: '', plan: 'FREE', currency: '', default_language: 'ar', timezone: 'Africa/Cairo' },
-  branch: { name: 'Main Branch', street_1: '', city: '', country: 'Egypt' },
+  owner:  { first_name: '', last_name: '', email: '', username: '', password: '', password_confirm: '', phone_number: '', whatsapp_number: '' },
+  store:  { name: '', plan: 'FREE', currency: '', default_language: 'ar', timezone: 'Africa/Cairo', phone_number: '', whatsapp_number: '', city: '', country: 'Egypt' },
+  branch: { name: 'Main Branch', street_1: '', city: '', country: 'Egypt', phone_number: '', whatsapp_number: '', email: '' },
 })
 
 const createModal = reactive({ open: false })
@@ -403,9 +467,9 @@ const createModal = reactive({ open: false })
 function openCreate() {
   step.value = 0
   createErrors.value = []
-  Object.assign(form.owner,  { first_name: '', last_name: '', email: '', username: '', password: '' })
-  Object.assign(form.store,  { name: '', plan: 'FREE', currency: defaultCurrencyId(), default_language: 'ar', timezone: 'Africa/Cairo' })
-  Object.assign(form.branch, { name: 'Main Branch', street_1: '', city: '', country: 'Egypt' })
+  Object.assign(form.owner,  { first_name: '', last_name: '', email: '', username: '', password: '', password_confirm: '', phone_number: '', whatsapp_number: '' })
+  Object.assign(form.store,  { name: '', plan: 'FREE', currency: defaultCurrencyId(), default_language: 'ar', timezone: 'Africa/Cairo', phone_number: '', whatsapp_number: '', city: '', country: 'Egypt' })
+  Object.assign(form.branch, { name: 'Main Branch', street_1: '', city: '', country: 'Egypt', phone_number: '', whatsapp_number: '', email: '' })
   createModal.open = true
 }
 
@@ -415,7 +479,9 @@ function closeCreate() {
 
 const canAdvance = computed(() => {
   if (step.value === 0) {
-    return form.owner.username.trim().length > 0 && form.owner.password.trim().length >= 8
+    return form.owner.username.trim().length >= 6
+        && form.owner.password.trim().length >= 8
+        && form.owner.password === form.owner.password_confirm
   }
   if (step.value === 1) {
     return form.store.name.trim().length > 0
@@ -424,9 +490,12 @@ const canAdvance = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return form.owner.username.trim() && form.owner.password.length >= 8
+  return form.owner.username.trim().length >= 6
+      && form.owner.password.length >= 8
+      && form.owner.password === form.owner.password_confirm
       && form.store.name.trim()
       && form.branch.street_1.trim() && form.branch.city.trim()
+      && form.branch.phone_number.trim() && form.branch.email.trim()
 })
 
 function flattenErrors(data, prefix = '') {
@@ -446,10 +515,11 @@ async function submitCreate() {
   createErrors.value = []
   saving.value = true
   try {
+    const { password_confirm, ...ownerPayload } = form.owner
     await api.post('/api/admin/stores/', {
-      owner: { ...form.owner },
-      store: { ...form.store },
-      branch: { ...form.branch },
+      owner: ownerPayload,
+      store: { ...form.store, country: 'Egypt' },
+      branch: { ...form.branch, country: 'Egypt' },
     })
     closeCreate()
     fetchStores()
