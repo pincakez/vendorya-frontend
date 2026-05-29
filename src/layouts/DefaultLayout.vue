@@ -1,6 +1,6 @@
 <template>
   <div class="app-shell">
-    <AppSidebar :collapsed="sidebarCollapsed" />
+    <AppSidebar :collapsed="sidebarCollapsed" @toggle-collapse="sidebarCollapsed = !sidebarCollapsed" />
 
     <div class="app-main">
       <AppHeader

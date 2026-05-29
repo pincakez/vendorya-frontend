@@ -10,7 +10,7 @@
     <!-- KPI cards -->
     <div class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-icon" style="background: rgba(249,115,22,0.15); color: var(--admin-accent);">
+        <div class="kpi-icon" style="background: rgba(239,68,68,0.15); color: var(--admin-accent);">
           <Store :size="20" />
         </div>
         <div>
@@ -155,5 +155,5 @@ onMounted(async () => {
 
 .plan-pill { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
 .plan-free    { background:#f3f4f6; color:#6b7280; }
-.plan-premium { background:rgba(249,115,22,0.15); color:var(--admin-accent); }
+.plan-premium { background:rgba(239,68,68,0.15); color:var(--admin-accent); }
 </style>

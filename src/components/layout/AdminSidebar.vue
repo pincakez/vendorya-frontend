@@ -2,7 +2,7 @@
   <aside class="sidebar" :class="{ collapsed }">
     <!-- Logo -->
     <div class="sidebar-logo">
-      <div class="sidebar-logo-icon" style="background: rgba(249,115,22,0.20); color: var(--admin-accent);">V</div>
+      <div class="sidebar-logo-icon" style="background: rgba(239,68,68,0.20); color: var(--admin-accent);">V</div>
       <template v-if="!collapsed">
         <span class="sidebar-logo-text">Vendorya</span>
         <span class="sidebar-logo-badge">ADMIN</span>
@@ -92,7 +92,7 @@
 
     <!-- User Card -->
     <div class="sidebar-user" @click="router.push('/admin/users')">
-      <div class="sidebar-avatar" style="background: rgba(249,115,22,0.20); color: var(--admin-accent);">
+      <div class="sidebar-avatar" style="background: rgba(239,68,68,0.20); color: var(--admin-accent);">
         <span>{{ auth.initials }}</span>
       </div>
       <template v-if="!collapsed">
@@ -166,6 +166,6 @@ function handleLogout() {
   font-weight: 600;
   transition: background 120ms, transform 80ms;
 }
-.exit-store-btn:hover { background: rgba(249,115,22,0.22); }
+.exit-store-btn:hover { background: rgba(239,68,68,0.22); }
 .exit-store-btn:active { transform: scale(0.96); }
 </style>

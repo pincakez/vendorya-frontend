@@ -178,12 +178,12 @@ onBeforeUnmount(() => {
   transition: background 120ms, transform 80ms;
   flex-shrink: 0;
 }
-.header-preview-btn:hover  { background: rgba(249,115,22,0.22); }
+.header-preview-btn:hover  { background: rgba(239,68,68,0.22); }
 .header-preview-btn:active { transform: scale(0.96); }
 
 .ai-toggle-btn.active {
-  background: rgba(249,115,22,0.12);
-  color: var(--admin-accent, #f97316);
+  background: rgba(239,68,68,0.12);
+  color: var(--admin-accent, #ef4444);
 }
 
 .store-picker { position: relative; flex-shrink: 0; }

@@ -10,6 +10,10 @@
           <Search :size="14" class="search-icon" />
           <input v-model="search" class="search-input" placeholder="Search store or owner…" @input="onSearch" />
         </div>
+        <button class="btn-admin" @click="openCreate">
+          <Plus :size="15" />
+          New Store
+        </button>
       </div>
     </div>
 
@@ -324,17 +328,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Store, Pencil, LogIn } from 'lucide-vue-next'
+import { Search, Store, Pencil, LogIn, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
-import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
-const qab = useQABStore()
 
 const stores = ref([])
 const currencies = ref([])
@@ -539,9 +541,7 @@ function enterStore(store) {
 onMounted(() => {
   fetchStores()
   fetchCurrencies()
-  qab.setActions([{ id: 'new-store', label: 'New Store', icon: 'plus', handler: openCreate }])
 })
-onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
@@ -572,7 +572,7 @@ onUnmounted(() => qab.clearActions())
 
 .plan-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
 .plan-free    { background:#f3f4f6; color:#6b7280; }
-.plan-premium { background:rgba(249,115,22,0.15); color:var(--admin-accent); }
+.plan-premium { background:rgba(239,68,68,0.15); color:var(--admin-accent); }
 
 .status-active   { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; color:#16a34a; }
 .status-active::before  { content:''; width:6px; height:6px; border-radius:50%; background:#16a34a; }
@@ -610,7 +610,7 @@ onUnmounted(() => qab.clearActions())
 .step-help { font-size:12px; color:var(--text-muted); margin:4px 0 0; line-height:1.5; }
 .error-box { margin-top:12px; padding:10px 12px; border:1px solid #fecaca; background:rgba(220,38,38,0.08); border-radius:8px; color:#b91c1c; font-size:12.5px; display:flex; flex-direction:column; gap:3px; }
 
-.code-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:700; letter-spacing:.06em; font-variant-numeric:tabular-nums; background:rgba(249,115,22,0.12); color:var(--admin-accent); border:1px solid rgba(249,115,22,0.25); }
+.code-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:700; letter-spacing:.06em; font-variant-numeric:tabular-nums; background:rgba(239,68,68,0.12); color:var(--admin-accent); border:1px solid rgba(239,68,68,0.25); }
 
 .btn-check { padding:7px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-primary); font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; transition:background 100ms,border-color 100ms; }
 .btn-check:hover:not(:disabled) { background:var(--admin-accent-soft); border-color:var(--admin-accent); color:var(--admin-accent); }

@@ -393,7 +393,7 @@ onMounted(() => {
 @keyframes shimmer { to { background-position:-200% 0; } }
 
 .mini-avatar { width:28px; height:28px; border-radius:7px; background:var(--admin-accent-soft); color:var(--admin-accent); font-weight:700; display:flex; align-items:center; justify-content:center; font-size:12px; }
-.plan-pill   { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; background:rgba(249,115,22,0.15); color:var(--admin-accent); }
+.plan-pill   { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; background:rgba(239,68,68,0.15); color:var(--admin-accent); }
 
 .status-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
 .status-trial    { background:#dbeafe; color:#1d4ed8; }

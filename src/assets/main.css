@@ -2,17 +2,26 @@
 
 /* ── THEME TOKENS ──────────────────────────────────────── */
 :root {
-  /* Sidebar (light = blue) */
-  --sb-bg:           #1d4ed8;
-  --sb-bg-deep:      #1e3a8a;
-  --sb-hover:        rgba(255,255,255,0.10);
-  --sb-active:       rgba(255,255,255,0.18);
-  --sb-text:         #bfdbfe;
-  --sb-text-active:  #ffffff;
-  --sb-border:       rgba(255,255,255,0.10);
-  --sb-logo-text:    #ffffff;
-  --sb-badge-bg:     rgba(255,255,255,0.15);
-  --sb-badge-text:   #ffffff;
+  /* Sidebar (light = white, orange accent — new design) */
+  --sb-bg:           #ffffff;
+  --sb-bg-deep:      #ffffff;
+  --sb-hover:        rgba(0,0,0,0.05);
+  --sb-active:       rgba(0,0,0,0.06);
+  --sb-text:         #4b5563;
+  --sb-text-active:  #0a0a0a;
+  --sb-border:       #e5e7eb;
+  --sb-logo-text:    #0a0a0a;
+  --sb-badge-bg:     var(--accent-soft);
+  --sb-badge-text:   var(--accent);
+  --sb-group-bg:     #f5f5f7;
+  --sb-group-border: rgba(229,231,235,0.8);
+  --sb-item-active-bg:   #ffffff;
+  --sb-item-active-text: #0a0a0a;
+
+  /* Accent (shared brand orange) */
+  --accent:        #f78f1e;
+  --accent-hover:  #ff9d2e;
+  --accent-soft:   rgba(247,143,30,0.12);
 
   /* App shell */
   --bg-app:          #f1f5f9;
@@ -30,7 +39,7 @@
   --footer-text:     #64748b;
 
   /* Sidebar width */
-  --sb-width:        240px;
+  --sb-width:        260px;
   --sb-collapsed:    64px;
 }
 
@@ -69,17 +78,17 @@
 .admin-shell {
   --sb-bg:           #18181b;
   --sb-bg-deep:      #0f0f12;
-  --sb-hover:        rgba(249,115,22,0.10);
-  --sb-active:       rgba(249,115,22,0.18);
+  --sb-hover:        rgba(239,68,68,0.10);
+  --sb-active:       rgba(239,68,68,0.18);
   --sb-text:         #a1a1aa;
-  --sb-text-active:  #fb923c;
+  --sb-text-active:  #f87171;
   --sb-border:       rgba(255,255,255,0.06);
   --sb-logo-text:    #fafafa;
-  --sb-badge-bg:     rgba(249,115,22,0.20);
-  --sb-badge-text:   #fb923c;
-  --admin-accent:        #f97316;
-  --admin-accent-hover:  #ea580c;
-  --admin-accent-soft:   rgba(249,115,22,0.12);
+  --sb-badge-bg:     rgba(239,68,68,0.20);
+  --sb-badge-text:   #f87171;
+  --admin-accent:        #ef4444;
+  --admin-accent-hover:  #dc2626;
+  --admin-accent-soft:   rgba(239,68,68,0.12);
 }
 
 .admin-shell .nav-item.active::before {

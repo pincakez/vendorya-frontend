@@ -1057,7 +1057,7 @@ onMounted(load)
 .add-profile-btn:hover {
   border-color: var(--admin-accent);
   color: var(--admin-accent);
-  background: rgba(249,115,22,0.04);
+  background: rgba(239,68,68,0.04);
 }
 .add-profile-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -1266,7 +1266,7 @@ onMounted(load)
 }
 .quota-chip.rpm { background: rgba(59,130,246,0.12); color: #3b82f6; }
 .quota-chip.rpd { background: rgba(22,163,74,0.12);  color: #16a34a; }
-.quota-chip.tok { background: rgba(249,115,22,0.12);  color: var(--admin-accent); }
+.quota-chip.tok { background: rgba(239,68,68,0.12);  color: var(--admin-accent); }
 
 .range-hint {
   font-size: 11px;
@@ -1345,7 +1345,7 @@ onMounted(load)
 }
 .tool-badge.write { background: rgba(239,68,68,0.12);  color: #ef4444; }
 .tool-badge.read  { background: rgba(59,130,246,0.12); color: #3b82f6; }
-.tool-badge.store { background: rgba(249,115,22,0.12); color: var(--admin-accent); }
+.tool-badge.store { background: rgba(239,68,68,0.12); color: var(--admin-accent); }
 
 .tool-desc {
   font-size: 12px;
@@ -1397,7 +1397,7 @@ onMounted(load)
 }
 .upload-zone:hover, .upload-zone.dragover {
   border-color: var(--admin-accent);
-  background: rgba(249,115,22,0.04);
+  background: rgba(239,68,68,0.04);
 }
 
 .tag-input-row {
@@ -1414,7 +1414,7 @@ onMounted(load)
 .tag-chip {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 8px 2px 10px;
-  background: rgba(249,115,22,0.12);
+  background: rgba(239,68,68,0.12);
   color: var(--admin-accent);
   border-radius: 99px;
   font-size: 12px; font-weight: 500;
@@ -1460,7 +1460,7 @@ onMounted(load)
   transition: border-color 120ms;
 }
 .search-result:hover { border-color: var(--admin-accent); }
-.search-result.selected { border-color: var(--admin-accent); box-shadow: 0 0 0 1px rgba(249,115,22,0.18); }
+.search-result.selected { border-color: var(--admin-accent); box-shadow: 0 0 0 1px rgba(239,68,68,0.18); }
 .result-excerpt { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
 
 .preview-panel {

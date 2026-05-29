@@ -183,7 +183,7 @@ function genPassword() {
 .search-wrap { position:relative; max-width:520px; margin-bottom:24px; }
 .search-icon { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--text-muted); }
 .search-input { width:100%; box-sizing:border-box; padding:11px 14px 11px 40px; border:1px solid var(--border); border-radius:10px; background:var(--bg-card); color:var(--text-primary); font-size:14px; outline:none; transition:border-color 120ms; }
-.search-input:focus { border-color:var(--admin-accent, #f97316); }
+.search-input:focus { border-color:var(--admin-accent, #ef4444); }
 
 .results { position:absolute; z-index:20; top:calc(100% + 6px); left:0; right:0; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,.18); overflow:hidden; max-height:340px; overflow-y:auto; }
 .result-row { display:flex; align-items:center; gap:12px; width:100%; padding:10px 14px; background:none; border:none; border-bottom:1px solid var(--border); cursor:pointer; text-align:left; transition:background 100ms; }

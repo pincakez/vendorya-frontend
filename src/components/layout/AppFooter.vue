@@ -1,13 +1,6 @@
 <template>
   <footer class="app-footer">
     <span class="footer-item">
-      <span style="font-weight:600;letter-spacing:0.05em;">ERP SYSTEM</span>
-      &nbsp;V2.4.0
-    </span>
-
-    <span class="footer-sep">|</span>
-
-    <span class="footer-item">
       <span class="footer-dot" />
       Server: Optimal
     </span>

@@ -642,7 +642,7 @@ function fmtDate(iso) {
   right: v-bind('width + "px"');
   transition: background 100ms;
 }
-.drag-handle:hover { background: rgba(249,115,22,0.35); }
+.drag-handle:hover { background: rgba(239,68,68,0.35); }
 
 .chat-panel {
   position: fixed;
@@ -670,8 +670,8 @@ function fmtDate(iso) {
 .panel-avatar {
   width: 32px; height: 32px;
   border-radius: 50%;
-  background: rgba(249,115,22,0.12);
-  color: var(--admin-accent, #f97316);
+  background: rgba(239,68,68,0.12);
+  color: var(--admin-accent, #ef4444);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   transition: background 200ms;
@@ -743,7 +743,7 @@ function fmtDate(iso) {
   line-height: 1.55;
 }
 .msg-bubble.user {
-  background: var(--admin-accent, #f97316);
+  background: var(--admin-accent, #ef4444);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
@@ -775,11 +775,11 @@ function fmtDate(iso) {
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
-  background: rgba(249,115,22,0.08);
+  background: rgba(239,68,68,0.08);
   border-radius: 99px;
   font-size: 11.5px;
-  color: var(--admin-accent, #f97316);
-  border: 1px dashed rgba(249,115,22,0.3);
+  color: var(--admin-accent, #ef4444);
+  border: 1px dashed rgba(239,68,68,0.3);
 }
 
 .system-event {
@@ -812,12 +812,12 @@ function fmtDate(iso) {
   cursor: pointer;
   transition: background 80ms;
 }
-.palette-item:hover, .palette-item.focused { background: rgba(249,115,22,0.08); }
+.palette-item:hover, .palette-item.focused { background: rgba(239,68,68,0.08); }
 .palette-cmd {
   font-family: monospace;
   font-size: 13px;
   font-weight: 600;
-  color: var(--admin-accent, #f97316);
+  color: var(--admin-accent, #ef4444);
   min-width: 80px;
 }
 .palette-desc { font-size: 12.5px; color: var(--text-muted); }
@@ -878,7 +878,7 @@ function fmtDate(iso) {
 .send-btn {
   width: 30px; height: 30px;
   border-radius: 8px;
-  background: var(--admin-accent, #f97316);
+  background: var(--admin-accent, #ef4444);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
@@ -918,10 +918,10 @@ function fmtDate(iso) {
   align-items: center;
   gap: 5px;
   font-size: 11px;
-  color: var(--admin-accent, #f97316);
+  color: var(--admin-accent, #ef4444);
   padding: 3px 8px;
   margin-top: 5px;
-  background: rgba(249,115,22,0.08);
+  background: rgba(239,68,68,0.08);
   border-radius: 99px;
 }
 

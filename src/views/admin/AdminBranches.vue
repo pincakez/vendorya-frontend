@@ -181,7 +181,7 @@ onMounted(() => {
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
 @keyframes shimmer { to { background-position:-200% 0; } }
 
-.main-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; background:rgba(249,115,22,0.15); color:var(--admin-accent); }
+.main-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; background:rgba(239,68,68,0.15); color:var(--admin-accent); }
 
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action:hover { background:var(--admin-accent-soft); color:var(--admin-accent); }
