@@ -25,6 +25,10 @@ import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import QAB from '@/components/ui/QAB.vue'
+import { useIdleTimeout } from '@/composables/useIdleTimeout'
+
+// Per-store idle auto-logout (StoreSettings.session_timeout_minutes).
+useIdleTimeout()
 
 const sidebarCollapsed = ref(
   localStorage.getItem('vendorya_sidebar') === 'collapsed'

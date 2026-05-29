@@ -1,8 +1,12 @@
 import axios from 'axios'
 
+const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
-  headers: { 'Content-Type': 'application/json' }
+  baseURL: BASE,
+  headers: { 'Content-Type': 'application/json' },
+  // Send/receive the httpOnly refresh cookie (phased migration).
+  withCredentials: true,
 })
 
 api.interceptors.request.use(config => {
@@ -23,11 +27,17 @@ api.interceptors.response.use(
       original._retry = true
       try {
         const refresh = localStorage.getItem('vendorya_refresh')
+        // Body refresh for the localStorage path; cookie is sent automatically
+        // via withCredentials so this also works once access is memory-only.
         const res = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/auth/token/refresh/`,
-          { refresh }
+          `${BASE}/api/auth/token/refresh/`,
+          { refresh },
+          { withCredentials: true },
         )
         localStorage.setItem('vendorya_access', res.data.access)
+        // ROTATE + BLACKLIST_AFTER_ROTATION: the old refresh is now dead, so we
+        // MUST persist the rotated one returned in the body.
+        if (res.data.refresh) localStorage.setItem('vendorya_refresh', res.data.refresh)
         original.headers.Authorization = `Bearer ${res.data.access}`
         return api(original)
       } catch {

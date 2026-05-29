@@ -35,8 +35,20 @@ export const useAuthStore = defineStore('auth', {
     isInStoreMode: s => !!s.user?.is_superadmin && !!s.activeStore,
   },
   actions: {
-    async login(username, password) {
-      const res = await api.post('/api/auth/token/', { username, password })
+    // Returns a status the Login view branches on:
+    //   { status: 'ok' }              — logged in, tokens set
+    //   { status: 'requires_2fa' }    — re-call with otpToken
+    //   { status: 'enroll_2fa', preAuthToken } — must set up 2FA first
+    async login(username, password, otpToken) {
+      const payload = { username, password }
+      if (otpToken) payload.otp_token = otpToken
+      const res = await api.post('/api/auth/token/', payload)
+      if (res.data.enroll_2fa) {
+        return { status: 'enroll_2fa', preAuthToken: res.data.pre_auth_token }
+      }
+      if (res.data.requires_2fa) {
+        return { status: 'requires_2fa' }
+      }
       this.setTokens(res.data.access, res.data.refresh)
       if (res.data.user) this.setUser(res.data.user)
       // The user identity just changed (sudo vs regular) — apply that user's own theme,
@@ -44,6 +56,7 @@ export const useAuthStore = defineStore('auth', {
       useThemeStore().refresh()
       // Refresh currency + number-format prefs for the new identity.
       useFormatStore().loadForStore()
+      return { status: 'ok' }
     },
     async fetchMe() {
       const res = await api.get('/api/auth/me/')
@@ -76,6 +89,10 @@ export const useAuthStore = defineStore('auth', {
       this.setActiveStore(null)
     },
     logout() {
+      // Capture the refresh token, then clear local state immediately so the UI
+      // logs out instantly even if callers don't await. The server call (blacklist
+      // + clear cookie) is fire-and-forget best-effort.
+      const refresh = localStorage.getItem('vendorya_refresh') || undefined
       this.accessToken = null
       this.refreshToken = null
       this.user = null
@@ -88,6 +105,7 @@ export const useAuthStore = defineStore('auth', {
       if (userTheme)  localStorage.setItem('vendorya_theme_user',  userTheme)
       // Logged-out state = no user → resolves to the regular-user default (light).
       useThemeStore().refresh()
+      api.post('/api/auth/logout/', { refresh }).catch(() => { /* ignore */ })
     },
   },
 })

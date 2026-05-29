@@ -59,6 +59,9 @@
           </button>
         </div>
       </div>
+
+      <!-- Security: 2FA (spans full width below the grid) -->
+      <TwoFactorPanel style="grid-column:1/-1;" />
     </div>
   </div>
 </template>
@@ -67,6 +70,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
+import TwoFactorPanel from '@/components/settings/TwoFactorPanel.vue'
 
 const auth = useAuthStore()
 

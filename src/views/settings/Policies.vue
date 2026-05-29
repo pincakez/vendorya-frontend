@@ -59,6 +59,50 @@
         </div>
       </div>
 
+      <!-- Section: Security -->
+      <div class="section-heading">Security</div>
+
+      <!-- Force 2FA for Managers+ -->
+      <div class="policy-card">
+        <div class="policy-icon" style="background:#fee2e2;color:#dc2626;"><ShieldCheck :size="20" /></div>
+        <div class="policy-body">
+          <div class="policy-title">Require 2FA for Managers &amp; above</div>
+          <div class="policy-desc">When enabled, all staff with role Manager, Admin, or Owner must set up two-factor authentication before they can log in. Owners are always required regardless of this setting.</div>
+          <div class="policy-footer">
+            <span class="policy-status" :class="form.force_2fa_managers ? 'status-on' : 'status-off'">
+              {{ form.force_2fa_managers ? 'Enabled' : 'Disabled' }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.force_2fa_managers }" @click="toggle('force_2fa_managers')">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session Timeout -->
+      <div class="policy-card">
+        <div class="policy-icon" style="background:#e0e7ff;color:#4f46e5;"><Clock :size="20" /></div>
+        <div class="policy-body">
+          <div class="policy-title">Session Timeout</div>
+          <div class="policy-desc">Automatically sign out a user after this many minutes of inactivity. Set to 0 to disable. (Max 1440 = 24h.)</div>
+          <div class="policy-footer" style="gap:12px;">
+            <input v-model.number="form.session_timeout_minutes" type="number" min="0" max="1440" class="num-input" />
+            <span style="font-size:13px;color:var(--text-muted);">minutes</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- IP Allowlist -->
+      <div class="policy-card">
+        <div class="policy-icon" style="background:#dcfce7;color:#16a34a;"><Globe :size="20" /></div>
+        <div class="policy-body">
+          <div class="policy-title">Owner / Admin Login IP Allowlist</div>
+          <div class="policy-desc">Restrict OWNER and ADMIN logins to specific IP addresses or CIDR ranges (one per line or comma-separated). Leave empty to allow login from anywhere. Cashiers and Managers are not affected.</div>
+          <textarea v-model="form.login_ip_allowlist" class="ip-area" rows="3"
+            placeholder="e.g. 197.45.0.0/16&#10;102.40.21.7"></textarea>
+        </div>
+      </div>
+
     </div>
 
     <div class="save-bar">
@@ -72,14 +116,17 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Package, CreditCard, Percent, CheckCircle } from 'lucide-vue-next'
+import { Package, CreditCard, Percent, CheckCircle, ShieldCheck, Clock, Globe } from 'lucide-vue-next'
 import api from '@/api/axios'
 
 const loading = ref(false)
 const saving  = ref(false)
 const saved   = ref(false)
 const taxes   = ref([])
-const form    = reactive({ allow_negative_stock: false, enable_agel_selling: true, default_tax: '' })
+const form    = reactive({
+  allow_negative_stock: false, enable_agel_selling: true, default_tax: '',
+  force_2fa_managers: false, session_timeout_minutes: 0, login_ip_allowlist: '',
+})
 
 function toggle(field) { form[field] = !form[field] }
 
@@ -91,9 +138,12 @@ async function load() {
       api.get('/api/inventory/taxes/'),
     ])
     Object.assign(form, {
-      allow_negative_stock: settingsRes.data.allow_negative_stock,
-      enable_agel_selling:  settingsRes.data.enable_agel_selling,
-      default_tax:          settingsRes.data.default_tax || '',
+      allow_negative_stock:    settingsRes.data.allow_negative_stock,
+      enable_agel_selling:     settingsRes.data.enable_agel_selling,
+      default_tax:             settingsRes.data.default_tax || '',
+      force_2fa_managers:      settingsRes.data.force_2fa_managers ?? false,
+      session_timeout_minutes: settingsRes.data.session_timeout_minutes ?? 0,
+      login_ip_allowlist:      settingsRes.data.login_ip_allowlist || '',
     })
     taxes.value = taxRes.data.results ?? taxRes.data
   } finally { loading.value = false }
@@ -104,12 +154,18 @@ async function save() {
   saved.value  = false
   try {
     await api.patch('/api/core/settings/', {
-      allow_negative_stock: form.allow_negative_stock,
-      enable_agel_selling:  form.enable_agel_selling,
-      default_tax:          form.default_tax || null,
+      allow_negative_stock:    form.allow_negative_stock,
+      enable_agel_selling:     form.enable_agel_selling,
+      default_tax:             form.default_tax || null,
+      force_2fa_managers:      form.force_2fa_managers,
+      session_timeout_minutes: form.session_timeout_minutes || 0,
+      login_ip_allowlist:      form.login_ip_allowlist || '',
     })
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
+  } catch (e) {
+    const data = e.response?.data
+    alert(data ? (typeof data === 'string' ? data : JSON.stringify(data)) : 'Error saving policies')
   } finally { saving.value = false }
 }
 
@@ -145,6 +201,14 @@ onMounted(load)
 
 .tax-select { padding:7px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; min-width:220px; transition:border-color 120ms; }
 .tax-select:focus { border-color:#2563eb; }
+
+.section-heading { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); margin:18px 0 -4px; }
+
+.num-input { padding:7px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; width:90px; transition:border-color 120ms; }
+.num-input:focus { border-color:#2563eb; }
+
+.ip-area { width:100%; box-sizing:border-box; margin-top:6px; padding:9px 11px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; font-family:monospace; outline:none; resize:vertical; transition:border-color 120ms; }
+.ip-area:focus { border-color:#2563eb; }
 
 .save-bar { display:flex; align-items:center; gap:12px; margin-top:24px; }
 .save-confirm { display:inline-flex; align-items:center; gap:5px; font-size:13px; color:#16a34a; font-weight:500; }
