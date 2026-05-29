@@ -35,17 +35,17 @@
 }
 
 .dark {
-  /* Sidebar (dark = neutral charcoal grey) */
-  --sb-bg:           #18181b;
-  --sb-bg-deep:      #0f0f12;
-  --sb-hover:        rgba(255,255,255,0.06);
-  --sb-active:       rgba(255,255,255,0.10);
-  --sb-text:         #71717a;
-  --sb-text-active:  #fafafa;
-  --sb-border:       rgba(255,255,255,0.06);
-  --sb-logo-text:    #fafafa;
-  --sb-badge-bg:     rgba(255,255,255,0.10);
-  --sb-badge-text:   #e4e4e7;
+  /* Sidebar (dark = deep navy #0b1120 with blue accents) */
+  --sb-bg:           #0b1120;
+  --sb-bg-deep:      #070d18;
+  --sb-hover:        rgba(59,130,246,0.10);
+  --sb-active:       rgba(59,130,246,0.20);
+  --sb-text:         #64748b;
+  --sb-text-active:  #93c5fd;
+  --sb-border:       rgba(255,255,255,0.07);
+  --sb-logo-text:    #ffffff;
+  --sb-badge-bg:     rgba(59,130,246,0.20);
+  --sb-badge-text:   #93c5fd;
 
   /* App shell */
   --bg-app:          #18181b;
