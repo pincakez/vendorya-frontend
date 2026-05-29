@@ -95,28 +95,35 @@ export const useAuthStore = defineStore('auth', {
       this.previewMode = false
       localStorage.removeItem('vendorya_preview_mode')
     },
-    // Hard logout. We intentionally do a full-page navigation rather than a
-    // router.push so the whole SPA (reactive layouts, in-flight polls, guards)
-    // is torn down at once. Doing it via router.push left a half-cleared state
-    // that raced the axios refresh interceptor and flickered /login ↔ /dashboard.
-    async logout({ idle = false } = {}) {
+    // Hard logout via a full-page navigation. CRITICAL: we do NOT mutate the
+    // reactive auth state (user / tokens / previewMode) here. Nulling user is
+    // what caused the flash — it reactively flips LayoutSwitch to the store
+    // layout, and Vue paints that frame before the redirect lands. Instead we
+    // only clear (non-reactive) localStorage and reload; the fresh boot reads
+    // the cleared storage and starts logged-out. Nothing ever re-renders.
+    logout({ idle = false } = {}) {
       beginLogout()   // freeze the axios interceptor so a stray 401 can't re-auth us
-      this.previewMode = false
       const refresh = localStorage.getItem('vendorya_refresh') || undefined
-      this.accessToken = null
-      this.refreshToken = null
-      this.user = null
-      this.activeStore = null
+
       // Keep theme prefs across logout so each user type's setting persists.
       const adminTheme = localStorage.getItem('vendorya_theme_admin')
       const userTheme  = localStorage.getItem('vendorya_theme_user')
       localStorage.clear()
       if (adminTheme) localStorage.setItem('vendorya_theme_admin', adminTheme)
       if (userTheme)  localStorage.setItem('vendorya_theme_user',  userTheme)
-      // Best-effort blacklist + clear httpOnly cookie. Await it so the request
-      // completes before the page unloads, but never let a failure block logout.
-      try { await api.post('/api/auth/logout/', { refresh }) } catch { /* ignore */ }
-      // Full reload → clean boot at /login, default (light) theme re-applied.
+
+      // Best-effort blacklist + clear httpOnly cookie. sendBeacon survives the
+      // imminent page unload (a normal XHR would be cancelled by the redirect)
+      // and carries cookies same-origin, so the server can blacklist via the
+      // refresh cookie too. Falls back silently if unsupported.
+      try {
+        const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+        const blob = new Blob([JSON.stringify({ refresh })], { type: 'application/json' })
+        navigator.sendBeacon(`${BASE}/api/auth/logout/`, blob)
+      } catch { /* ignore */ }
+
+      // Synchronous navigation — no awaits, no reactive writes, so no paint of
+      // the wrong layout can sneak in before we leave the page.
       window.location.href = idle ? '/login?idle=1' : '/login'
     },
   },
