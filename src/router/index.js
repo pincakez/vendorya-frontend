@@ -48,7 +48,8 @@ const router = createRouter({
         { path: 'settings/profile',     component: () => import('@/views/settings/Profile.vue'),           meta: { store: true } },
         { path: 'settings/security',    component: () => import('@/views/settings/Security.vue'),          meta: { store: true } },
         { path: 'settings/billing',     component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
-        { path: 'settings/billing/invoices/:id', component: () => import('@/views/settings/Billing.vue'),  meta: { store: true } },
+        { path: 'settings/billing/invoices/:id',   component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
+        { path: 'settings/notifications',         component: () => import('@/views/settings/NotificationPrefs.vue'), meta: { store: true } },
 
         // Inbox — any authenticated store user
         { path: 'inbox',                component: () => import('@/views/Inbox.vue'),                      meta: { store: true } },
@@ -65,6 +66,7 @@ const router = createRouter({
         { path: 'admin/misc',          component: () => import('@/views/admin/AdminMisc.vue'),          meta: { admin: true } },
         { path: 'admin/ai-profiles',   component: () => import('@/views/admin/AdminAIProfiles.vue'),   meta: { admin: true } },
         { path: 'admin/auth-settings', component: () => import('@/views/admin/AdminAuthSettings.vue'),  meta: { admin: true } },
+        { path: 'admin/alerts',        component: () => import('@/views/admin/AdminAlerts.vue'),         meta: { admin: true } },
       ]
     },
     {

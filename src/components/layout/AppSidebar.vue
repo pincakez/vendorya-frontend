@@ -114,6 +114,14 @@
         :collapsed="collapsed"
       />
 
+      <!-- Notification preferences -->
+      <NavItem
+        icon="bell"
+        label="Notifications"
+        to="/settings/notifications"
+        :collapsed="collapsed"
+      />
+
       <!-- Billing (owner-only — header gates anyway, link is fine for visibility) -->
       <NavItem
         v-if="auth.userRole === 'OWNER' || auth.isSuperadmin"

@@ -27,6 +27,9 @@
         <div v-if="!collapsed" class="nav-section-label">AI</div>
         <NavItem icon="bot"              label="AI Profiles"  to="/admin/ai-profiles"    :collapsed="collapsed" />
         <NavItem icon="wrench"           label="Misc"         to="/admin/misc"           :collapsed="collapsed" />
+
+        <div v-if="!collapsed" class="nav-section-label">Communication</div>
+        <NavItem icon="bell"             label="Alerts Center" to="/admin/alerts"        :collapsed="collapsed" />
       </template>
 
       <!-- STORE MODE (sudo acting as a specific store) -->
