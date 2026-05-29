@@ -21,8 +21,8 @@
     <Transition name="preview-badge">
       <div v-if="auth.isSuperadmin && auth.previewMode" class="preview-badge">
         <Eye :size="13" />
-        <span>Admin Preview · {{ auth.activeStore?.name }}</span>
-        <button class="preview-exit" @click="exitPreview">Exit →</button>
+        <span>Store View · {{ auth.activeStore?.name }}</span>
+        <button class="preview-exit" @click="exitPreview">Admin →</button>
       </div>
     </Transition>
   </div>

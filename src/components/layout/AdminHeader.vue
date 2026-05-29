@@ -59,15 +59,15 @@
       </div>
     </div>
 
-    <!-- Preview store as real user -->
+    <!-- Switch to Store View -->
     <button
       v-if="auth.isInStoreMode"
       class="header-preview-btn"
-      title="Preview store as real user"
+      title="Switch to Store View"
       @click="enterPreview"
     >
       <Eye :size="14" />
-      Preview
+      Store View
     </button>
 
     <!-- Theme toggle -->
