@@ -161,7 +161,7 @@ onUnmounted(() => clearInterval(pollTimer))
 .filter-tabs { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
 .filter-tab  { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:12.5px; font-weight:500; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); cursor:pointer; transition:all 120ms; }
 .filter-tab:hover  { background:var(--bg-app); color:var(--text-primary); }
-.filter-tab.active { background:var(--primary,#3b82f6); color:#fff; border-color:var(--primary,#3b82f6); }
+.filter-tab.active { background:var(--primary,var(--accent)); color:#fff; border-color:var(--primary,var(--accent)); }
 .tab-dot { width:8px; height:8px; border-radius:50%; }
 .dot-all     { background:#6b7280; }
 .dot-info    { background:#16a34a; }
@@ -181,8 +181,8 @@ onUnmounted(() => clearInterval(pollTimer))
 .inbox-item     { display:flex; align-items:flex-start; gap:12px; width:100%; padding:12px 16px; border:none; background:none; cursor:pointer; text-align:left; border-bottom:1px solid var(--border); transition:background 120ms; position:relative; overflow:hidden; }
 .inbox-item:last-child  { border-bottom:none; }
 .inbox-item:hover       { background:var(--bg-app); }
-.inbox-item.unread      { background:rgba(59,130,246,0.04); }
-.inbox-item.unread:hover{ background:rgba(59,130,246,0.09); }
+.inbox-item.unread      { background:rgba(247,143,30,0.04); }
+.inbox-item.unread:hover{ background:rgba(247,143,30,0.09); }
 
 .ii-priority-bar { position:absolute; left:0; top:0; bottom:0; width:3px; }
 .bar-info    { background:#16a34a; }
@@ -198,7 +198,7 @@ onUnmounted(() => clearInterval(pollTimer))
 
 .ii-body  { flex:1; min-width:0; padding-left:4px; }
 .ii-title { font-size:13.5px; font-weight:600; color:var(--text-primary); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-.ii-dot   { width:8px; height:8px; border-radius:50%; background:#3b82f6; flex-shrink:0; }
+.ii-dot   { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
 
 .ii-priority-badge { font-size:10px; font-weight:700; padding:1px 6px; border-radius:6px; text-transform:uppercase; letter-spacing:0.03em; }
 .badge-info    { background:rgba(22,163,74,0.12);  color:#16a34a; }
@@ -208,5 +208,5 @@ onUnmounted(() => clearInterval(pollTimer))
 
 .ii-text  { font-size:12.5px; color:var(--text-secondary); margin-top:2px; line-height:1.45; }
 .ii-meta  { display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--text-muted); margin-top:6px; }
-.ii-link  { color:var(--primary,#3b82f6); font-weight:600; }
+.ii-link  { color:var(--primary,var(--accent)); font-weight:600; }
 </style>

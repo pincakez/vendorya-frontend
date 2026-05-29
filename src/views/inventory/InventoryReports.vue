@@ -16,7 +16,7 @@
     </div>
     <div v-else class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-icon" style="background:#dbeafe;color:#2563eb;"><Package :size="20" /></div>
+        <div class="kpi-icon" style="background:var(--accent-soft);color:var(--accent);"><Package :size="20" /></div>
         <div class="kpi-body">
           <div class="kpi-label">Total Products</div>
           <div class="kpi-value">{{ summary.totalProducts }}</div>
@@ -181,7 +181,7 @@ onMounted(load)
 .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
 .section-title  { font-size:14px; font-weight:700; color:var(--text-primary); }
 .search-input   { padding:7px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); font-size:13px; outline:none; width:220px; transition:border-color 120ms; }
-.search-input:focus { border-color:#2563eb; }
+.search-input:focus { border-color:var(--accent); }
 
 .table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .data-table { width:100%; border-collapse:collapse; font-size:13px; }

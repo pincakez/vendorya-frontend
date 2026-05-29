@@ -70,7 +70,7 @@
               </td>
             </tr>
             <tr v-for="p in products" :key="p.id" class="table-row">
-              <td class="col-sku">{{ p.id.slice(0,8).toUpperCase() }}</td>
+              <td class="col-sku">{{ p.sku_display || '—' }}</td>
               <td class="col-name">{{ p.name }}</td>
               <td v-for="attr in summaryAttrs" :key="attr.key" class="col-attr">
                 {{ (p.attributes_summary?.[attr.key] || []).join(', ') || '—' }}
@@ -372,7 +372,7 @@ onMounted(() => {
 .tab-bar { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:20px; }
 .tab-btn { display:flex; align-items:center; gap:6px; padding:9px 16px; font-size:13.5px; font-weight:500; color:var(--text-muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms,border-color 120ms; }
 .tab-btn:hover  { color:var(--text-primary); }
-.tab-btn.active { color:#2563eb; border-bottom-color:#2563eb; font-weight:600; }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
 
 .toolbar { display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
 .search-wrap  { position:relative; flex:1; min-width:200px; max-width:320px; }
@@ -394,17 +394,25 @@ onMounted(() => {
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
 @keyframes shimmer { to { background-position:-200% 0; } }
 
-.col-sku    { font-family:monospace; font-size:11px; color:var(--text-muted); }
-.col-name   { font-weight:500; max-width:200px; }
+.col-sku    { font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.04em; color:var(--text-muted); }
+.col-name   { font-weight:700; color:var(--text-primary); max-width:220px; }
 .col-attr   { color:var(--text-secondary); }
-.col-retail { color:#16a34a; font-weight:600; }
-.profit-pos { color:#16a34a; }
-.profit-neg { color:#dc2626; }
+/* Higher specificity than `.data-table tbody td` so the colour actually wins. */
+.data-table tbody td.col-retail { color:#16a34a; font-weight:600; }
+.data-table tbody td.profit-pos { color:#16a34a; font-weight:700; }
+.data-table tbody td.profit-neg { color:#dc2626; font-weight:700; }
+.dark .data-table tbody td.col-retail,
+.dark .data-table tbody td.profit-pos { color:#4ade80; }
+.dark .data-table tbody td.profit-neg { color:#f87171; }
 
-.stock-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:9999px; font-size:12px; font-weight:600; }
-.stock-ok   { background:#dcfce7; color:#15803d; }
+/* Stock: neutral dark/filled badge for healthy stock (flips with theme),
+   amber/red kept as low/out-of-stock safety signals. */
+.stock-badge { display:inline-flex; align-items:center; min-width:30px; justify-content:center; padding:3px 9px; border-radius:8px; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; }
+.stock-ok   { background:var(--text-primary); color:var(--bg-card); }
 .stock-low  { background:#fef9c3; color:#a16207; }
 .stock-zero { background:#fee2e2; color:#dc2626; }
+.dark .stock-low  { background:rgba(234,179,8,0.18); color:#fde047; }
+.dark .stock-zero { background:rgba(239,68,68,0.18); color:#fca5a5; }
 
 .code-chip { font-family:monospace; font-size:12px; background:var(--bg-app); border:1px solid var(--border); border-radius:5px; padding:2px 7px; color:var(--text-secondary); }
 
@@ -416,8 +424,8 @@ onMounted(() => {
 .btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
 .btn-ghost:active { transform:scale(0.95); }
 
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#2563eb; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:#1d4ed8; }
+.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
+.btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
 

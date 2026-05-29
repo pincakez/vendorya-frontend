@@ -296,8 +296,8 @@ onUnmounted(() => qab.clearActions())
 .btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
 .btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
 .btn-ghost:active { transform:scale(0.95); }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#2563eb; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:#1d4ed8; }
+.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
+.btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
 </style>

@@ -197,7 +197,7 @@ onMounted(load)
 .toggle input { position:absolute; opacity:0; width:0; height:0; }
 .track        { width:38px; height:22px; background:var(--border); border-radius:11px; transition:background 200ms; display:flex; align-items:center; padding:2px; }
 .thumb        { width:18px; height:18px; background:#fff; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:transform 200ms; }
-.toggle.on .track { background:var(--primary,#3b82f6); }
+.toggle.on .track { background:var(--primary,var(--accent)); }
 .toggle.on .thumb { transform:translateX(16px); }
 
 .pt-sound   { }
@@ -205,8 +205,8 @@ onMounted(load)
 .sound-select:disabled { opacity:.5; cursor:not-allowed; }
 
 .form-actions { display:flex; align-items:center; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
-.btn-primary  { display:inline-flex; align-items:center; gap:6px; padding:9px 20px; border-radius:8px; background:var(--primary,#3b82f6); color:#fff; font-size:13.5px; font-weight:600; border:none; cursor:pointer; transition:background 120ms,transform 80ms; }
-.btn-primary:hover   { background:#2563eb; }
+.btn-primary  { display:inline-flex; align-items:center; gap:6px; padding:9px 20px; border-radius:8px; background:var(--primary,var(--accent)); color:#fff; font-size:13.5px; font-weight:600; border:none; cursor:pointer; transition:background 120ms,transform 80ms; }
+.btn-primary:hover   { background:var(--accent); }
 .btn-primary:active  { transform:scale(0.97); }
 .btn-primary:disabled{ opacity:.5; cursor:not-allowed; }
 .save-ok { font-size:13px; color:#16a34a; }

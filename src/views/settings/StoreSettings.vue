@@ -559,7 +559,7 @@ onUnmounted(() => qab.clearActions())
 .tab-bar { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:20px; }
 .tab-btn { display:flex; align-items:center; gap:6px; padding:9px 16px; font-size:13.5px; font-weight:500; color:var(--text-muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms,border-color 120ms; }
 .tab-btn:hover  { color:var(--text-primary); }
-.tab-btn.active { color:#2563eb; border-bottom-color:#2563eb; font-weight:600; }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
 
 .settings-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px; }
 .form-skeleton { height:320px; border-radius:12px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
@@ -570,7 +570,7 @@ onUnmounted(() => qab.clearActions())
 .form-label { font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-hint  { font-size:12px; color:var(--text-muted); margin:0 0 6px; }
 .form-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; width:100%; box-sizing:border-box; transition:border-color 120ms; resize:vertical; }
-.form-input:focus { border-color:#2563eb; }
+.form-input:focus { border-color:var(--accent); }
 
 .section-divider { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); margin:8px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
 
@@ -579,7 +579,7 @@ onUnmounted(() => qab.clearActions())
 .toggle-label { font-size:13px; font-weight:500; color:var(--text-primary); }
 .toggle-desc  { font-size:12px; color:var(--text-muted); margin-top:2px; }
 .toggle-btn  { width:40px; height:22px; border-radius:11px; border:none; background:var(--border); cursor:pointer; position:relative; transition:background 200ms; padding:0; flex-shrink:0; }
-.toggle-btn.on { background:#2563eb; }
+.toggle-btn.on { background:var(--accent); }
 .toggle-knob { position:absolute; width:16px; height:16px; border-radius:50%; background:#fff; top:3px; left:3px; transition:left 200ms; box-shadow:0 1px 3px rgba(0,0,0,.2); }
 .toggle-btn.on .toggle-knob { left:21px; }
 
@@ -599,7 +599,7 @@ onUnmounted(() => qab.clearActions())
 .col-name   { font-weight:500; }
 .col-street { color:var(--text-muted); font-size:12px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-.badge-main    { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:#dbeafe; color:#1d4ed8; }
+.badge-main    { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:var(--accent-soft); color:var(--accent-hover); }
 .badge-cash    { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:#dcfce7; color:#166534; }
 .badge-digital { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:#f3f4f6; color:#6b7280; }
 
@@ -610,8 +610,8 @@ onUnmounted(() => qab.clearActions())
 .btn-ghost   { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
 .btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
 .btn-ghost:active { transform:scale(0.95); }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#2563eb; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:#1d4ed8; }
+.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
+.btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
 .req { color:#dc2626; font-weight:700; }

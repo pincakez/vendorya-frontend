@@ -111,7 +111,7 @@ onMounted(async () => {
   cursor: pointer; transition: all 120ms;
 }
 .preset-btn:hover { color: var(--text-primary); }
-.preset-btn.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+.preset-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 .filter-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
 .filter-field { display: flex; flex-direction: column; gap: 4px; }
@@ -121,5 +121,5 @@ onMounted(async () => {
   background: var(--bg-card); color: var(--text-primary); font-size: 13px; outline: none;
   transition: border-color 120ms;
 }
-.filter-input:focus { border-color: #2563eb; }
+.filter-input:focus { border-color: var(--accent); }
 </style>

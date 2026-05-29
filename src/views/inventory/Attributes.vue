@@ -212,7 +212,7 @@ onUnmounted(() => qab.clearActions())
 
 .type-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
 .type-text   { background:#f3f4f6; color:#4b5563; }
-.type-select { background:#dbeafe; color:#1e40af; }
+.type-select { background:var(--accent-soft); color:var(--accent-hover); }
 .type-number { background:#fef3c7; color:#92400e; }
 
 .options-list { display:flex; flex-wrap:wrap; gap:4px; align-items:center; }
@@ -226,12 +226,12 @@ onUnmounted(() => qab.clearActions())
 .form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .key-hint   { font-size:11px; color:var(--text-muted); font-weight:400; margin-left:4px; }
 .form-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; width:100%; box-sizing:border-box; transition:border-color 120ms; }
-.form-input:focus { border-color:#2563eb; }
+.form-input:focus { border-color:var(--accent); }
 
 .type-picker { display:flex; gap:6px; }
 .type-option { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-muted); font-size:13px; cursor:pointer; transition:all 100ms; }
-.type-option:hover  { border-color:#93c5fd; color:var(--text-primary); }
-.type-option.active { border-color:#2563eb; background:#eff6ff; color:#2563eb; font-weight:600; }
+.type-option:hover  { border-color:var(--accent); color:var(--text-primary); }
+.type-option.active { border-color:var(--accent); background:var(--accent-soft); color:var(--accent); font-weight:600; }
 
 .options-input-row { display:flex; gap:8px; margin-bottom:8px; }
 .btn-add-opt { padding:8px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-secondary); font-size:13px; cursor:pointer; white-space:nowrap; transition:background 100ms; flex-shrink:0; }
@@ -241,8 +241,8 @@ onUnmounted(() => qab.clearActions())
 .btn-ghost   { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,transform 70ms; }
 .btn-ghost:hover  { background:var(--border); }
 .btn-ghost:active { transform:scale(.95); }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#2563eb; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:#1d4ed8; }
+.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
+.btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
 </style>

@@ -12,7 +12,7 @@
 
       <!-- Stock Policy -->
       <div class="policy-card">
-        <div class="policy-icon" style="background:#dbeafe;color:#2563eb;"><Package :size="20" /></div>
+        <div class="policy-icon" style="background:var(--accent-soft);color:var(--accent);"><Package :size="20" /></div>
         <div class="policy-body">
           <div class="policy-title">Allow Negative Stock</div>
           <div class="policy-desc">When enabled, the POS can sell items even if stock reaches zero. When disabled, the POS blocks the sale and forces a stock check first.</div>
@@ -211,30 +211,30 @@ onMounted(load)
 .status-off { background:#f3f4f6; color:#6b7280; }
 
 .toggle-btn  { width:44px; height:24px; border-radius:12px; border:none; background:var(--border); cursor:pointer; position:relative; transition:background 200ms; padding:0; flex-shrink:0; }
-.toggle-btn.on { background:#2563eb; }
+.toggle-btn.on { background:var(--accent); }
 .toggle-knob { position:absolute; width:18px; height:18px; border-radius:50%; background:#fff; top:3px; left:3px; transition:left 200ms; box-shadow:0 1px 3px rgba(0,0,0,.2); }
 .toggle-btn.on .toggle-knob { left:23px; }
 
 .tax-select { padding:7px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; min-width:220px; transition:border-color 120ms; }
-.tax-select:focus { border-color:#2563eb; }
+.tax-select:focus { border-color:var(--accent); }
 
 .section-heading { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); margin:18px 0 -4px; }
 
 .num-input { padding:7px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; width:90px; transition:border-color 120ms; }
-.num-input:focus { border-color:#2563eb; }
+.num-input:focus { border-color:var(--accent); }
 
 .ip-area { width:100%; box-sizing:border-box; margin-top:6px; padding:9px 11px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; font-family:monospace; outline:none; resize:vertical; transition:border-color 120ms; }
-.ip-area:focus { border-color:#2563eb; }
+.ip-area:focus { border-color:var(--accent); }
 
 .save-bar { display:flex; align-items:center; gap:12px; margin-top:24px; }
 .save-confirm { display:inline-flex; align-items:center; gap:5px; font-size:13px; color:#16a34a; font-weight:500; }
 
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:9px 22px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#2563eb; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:#1d4ed8; }
+.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:9px 22px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
+.btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
 
 .mode-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-muted); font-size:12.5px; font-weight:600; cursor:pointer; transition:background 100ms,border-color 100ms,color 100ms; }
-.mode-btn:hover { border-color:#2563eb; color:#2563eb; }
-.mode-btn.active { background:#2563eb; border-color:#2563eb; color:#fff; }
+.mode-btn:hover { border-color:var(--accent); color:var(--accent); }
+.mode-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
 </style>

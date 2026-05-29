@@ -86,9 +86,9 @@ const pagesToShow = computed(() => {
 .pg-btn:active:not(:disabled) { transform: scale(0.93); }
 
 .pg-btn.active {
-  background: #2563eb;
+  background: var(--accent);
   color: #fff;
-  border-color: #2563eb;
+  border-color: var(--accent);
   font-weight: 600;
 }
 

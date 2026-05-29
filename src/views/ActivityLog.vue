@@ -214,7 +214,7 @@ onUnmounted(() => {
 .op-sale       { background:rgba(34,197,94,0.15);  color:#16a34a; }
 .op-return     { background:rgba(239,68,68,0.15);  color:#dc2626; }
 .op-discount   { background:rgba(168,85,247,0.15); color:#a855f7; }
-.op-purchase   { background:rgba(59,130,246,0.15); color:#2563eb; }
+.op-purchase   { background:rgba(247,143,30,0.15); color:var(--accent); }
 .op-adjustment { background:rgba(245,158,11,0.15); color:#d97706; }
 .op-expense    { background:rgba(236,72,153,0.15); color:#ec4899; }
 .op-shift      { background:rgba(14,165,233,0.15); color:#0891b2; }

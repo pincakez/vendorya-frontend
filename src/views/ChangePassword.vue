@@ -2,7 +2,7 @@
   <div class="login-bg">
     <div class="login-card">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
-        <div style="width:40px;height:40px;background:linear-gradient(135deg,#1d4ed8,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--accent-hover),#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;">
           <KeyRound :size="18" color="#fff" />
         </div>
         <div>
@@ -71,6 +71,6 @@ async function submit() {
 .hint { font-size:13px;color:var(--text-muted);margin:0 0 20px;line-height:1.5; }
 .lbl { display:block;font-size:12.5px;font-weight:600;color:var(--text-secondary);margin-bottom:6px; }
 .err { display:flex;align-items:flex-start;gap:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;margin-bottom:16px;color:#dc2626;font-size:13px; }
-.submit { width:100%;height:42px;background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 150ms,transform 80ms; }
+.submit { width:100%;height:42px;background:linear-gradient(135deg,var(--accent-hover),var(--accent-hover));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 150ms,transform 80ms; }
 .submit:active { transform:scale(.97); }
 </style>

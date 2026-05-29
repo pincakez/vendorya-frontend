@@ -219,7 +219,7 @@ function avatarColor(username) {
 .search-wrap  { position:relative; }
 .search-icon  { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-muted); pointer-events:none; }
 .search-input { padding:7px 12px 7px 30px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); font-size:13px; width:220px; outline:none; transition:border-color 120ms; }
-.search-input:focus { border-color:#2563eb; }
+.search-input:focus { border-color:var(--accent); }
 
 .table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .data-table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -242,7 +242,7 @@ function avatarColor(username) {
 
 .role-badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
 .role-owner   { background:#f3e8ff; color:#7c3aed; }
-.role-admin   { background:#dbeafe; color:#1d4ed8; }
+.role-admin   { background:var(--accent-soft); color:var(--accent-hover); }
 .role-manager { background:#fef3c7; color:#b45309; }
 .role-cashier { background:#f3f4f6; color:#6b7280; }
 
@@ -256,19 +256,19 @@ function avatarColor(username) {
 
 /* Toggle switch */
 .toggle-btn { width:40px; height:22px; border-radius:11px; border:none; background:var(--border); cursor:pointer; position:relative; transition:background 200ms; padding:0; flex-shrink:0; }
-.toggle-btn.on { background:#2563eb; }
+.toggle-btn.on { background:var(--accent); }
 .toggle-knob { position:absolute; width:16px; height:16px; border-radius:50%; background:#fff; top:3px; left:3px; transition:left 200ms; box-shadow:0 1px 3px rgba(0,0,0,.2); }
 .toggle-btn.on .toggle-knob { left:21px; }
 
 .form-label  { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-input  { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; }
-.form-input:focus { border-color:#2563eb; }
+.form-input:focus { border-color:var(--accent); }
 .form-input:disabled { opacity:.5; cursor:default; }
 .btn-ghost   { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
 .btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
 .btn-ghost:active { transform:scale(0.95); }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#2563eb; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:#1d4ed8; }
+.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
+.btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
 </style>

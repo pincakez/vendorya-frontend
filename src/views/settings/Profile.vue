@@ -118,7 +118,7 @@ onMounted(() => loadProfile())
 
 .role-badge  { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
 .role-owner   { background:#f3e8ff; color:#7c3aed; }
-.role-admin   { background:#dbeafe; color:#1d4ed8; }
+.role-admin   { background:var(--accent-soft); color:var(--accent-hover); }
 .role-manager { background:#fef3c7; color:#b45309; }
 .role-cashier { background:#f3f4f6; color:#6b7280; }
 
@@ -127,17 +127,17 @@ onMounted(() => loadProfile())
 .form-grid      { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .form-label     { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-input     { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; }
-.form-input:focus { border-color:#2563eb; }
+.form-input:focus { border-color:var(--accent); }
 
 .error-text { font-size:12px; color:#dc2626; margin-top:6px; }
 .saved-msg  { font-size:13px; color:#16a34a; font-weight:500; }
 .security-link { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:11px 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; font-weight:600; text-decoration:none; transition:border-color 120ms, background 120ms; }
 .security-link span { display:inline-flex; align-items:center; gap:8px; }
-.security-link:hover { border-color:#2563eb; background:var(--bg-card); }
+.security-link:hover { border-color:var(--accent); background:var(--bg-card); }
 .form-footer { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
 
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#2563eb; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:#1d4ed8; }
+.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
+.btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
 </style>

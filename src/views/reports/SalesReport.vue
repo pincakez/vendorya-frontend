@@ -95,5 +95,5 @@ async function fetchData() {
 .tab-bar { display:flex; gap:4px; margin-bottom:18px; border-bottom:1px solid var(--border); }
 .tab-btn { padding:9px 16px; border:none; background:transparent; color:var(--text-muted); font-size:13.5px; font-weight:600; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms, border-color 120ms; }
 .tab-btn:hover { color:var(--text-primary); }
-.tab-btn.active { color:#2563eb; border-bottom-color:#2563eb; }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
 </style>

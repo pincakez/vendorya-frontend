@@ -15,7 +15,7 @@
       <!-- KPI Cards -->
       <div class="cards-grid">
         <div class="kpi-card">
-          <div class="kpi-icon" style="background:#dbeafe;color:#2563eb;"><Banknote :size="20" /></div>
+          <div class="kpi-icon" style="background:var(--accent-soft);color:var(--accent);"><Banknote :size="20" /></div>
           <div class="kpi-body">
             <div class="kpi-label">Cash In (Today)</div>
             <div class="kpi-value">{{ auth.currencySymbol }} {{ formatNumber(stats.cash_in) }}</div>

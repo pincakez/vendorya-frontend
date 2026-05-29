@@ -30,7 +30,7 @@
       </div>
 
       <div class="kpi-card">
-        <div class="kpi-icon" style="background:#dbeafe;color:#2563eb;">
+        <div class="kpi-icon" style="background:var(--accent-soft);color:var(--accent);">
           <ShoppingBag :size="20" />
         </div>
         <div class="kpi-body">

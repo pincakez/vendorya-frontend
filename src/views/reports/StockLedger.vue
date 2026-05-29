@@ -107,7 +107,7 @@ onMounted(async () => {
 .filter-field { display:flex; flex-direction:column; gap:4px; max-width:420px; }
 .filter-field span { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
 .filter-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); font-size:13px; outline:none; }
-.filter-input:focus { border-color:#2563eb; }
+.filter-input:focus { border-color:var(--accent); }
 .balance-bar { display:flex; gap:14px; margin-bottom:16px; }
 .bal-item { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:12px 18px; display:flex; flex-direction:column; gap:3px; }
 .bal-item span { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }

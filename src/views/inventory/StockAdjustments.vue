@@ -268,14 +268,14 @@ onUnmounted(() => qab.clearActions())
 .reason-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
 .reason-theft      { background:#fee2e2; color:#991b1b; }
 .reason-damage     { background:#fef3c7; color:#92400e; }
-.reason-correction { background:#dbeafe; color:#1e40af; }
+.reason-correction { background:var(--accent-soft); color:var(--accent-hover); }
 .reason-gift       { background:#f3e8ff; color:#6b21a8; }
 
 /* Form */
 .form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-hint  { font-size:11.5px; color:var(--text-muted); margin:4px 0 0; }
 .form-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; width:100%; box-sizing:border-box; transition:border-color 120ms; resize:vertical; }
-.form-input:focus { border-color:#2563eb; }
+.form-input:focus { border-color:var(--accent); }
 .optional   { font-size:11px; color:var(--text-muted); font-weight:400; margin-left:4px; }
 
 .search-dropdown { position:absolute; z-index:50; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,.12); margin-top:4px; width:calc(100% - 2px); overflow:hidden; }
@@ -289,8 +289,8 @@ onUnmounted(() => qab.clearActions())
 .btn-ghost   { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,transform 70ms; }
 .btn-ghost:hover  { background:var(--border); }
 .btn-ghost:active { transform:scale(.95); }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#2563eb; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:#1d4ed8; }
+.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
+.btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
 </style>
