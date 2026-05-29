@@ -4,7 +4,7 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">AI Profiles</h1>
-        <p class="page-sub">Manage up to 3 AI personas. One profile is active at a time.</p>
+        <p class="page-sub">AI personas and profiles</p>
       </div>
       <button class="btn-api-reload" @click="openRefresh" :disabled="refreshing">
         <RefreshCw :size="14" :class="{'spin': refreshing}" />
@@ -913,6 +913,10 @@ onMounted(load)
 
 <style scoped>
 /* ── Page layout ────────────────────────────────────────────────────────── */
+.page-header  { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:nowrap; gap:12px; }
+.page-title   { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
+.page-sub     { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
+
 .ap-skeleton {
   background: var(--surface);
   border: 1px solid var(--border);
