@@ -62,22 +62,7 @@
       <!-- Section: Security -->
       <div class="section-heading">Security</div>
 
-      <!-- Force 2FA for Managers+ -->
-      <div class="policy-card">
-        <div class="policy-icon" style="background:#fee2e2;color:#dc2626;"><ShieldCheck :size="20" /></div>
-        <div class="policy-body">
-          <div class="policy-title">Require 2FA for Managers &amp; above</div>
-          <div class="policy-desc">When enabled, all staff with role Manager, Admin, or Owner must set up two-factor authentication before they can log in. Owners are always required regardless of this setting.</div>
-          <div class="policy-footer">
-            <span class="policy-status" :class="form.force_2fa_managers ? 'status-on' : 'status-off'">
-              {{ form.force_2fa_managers ? 'Enabled' : 'Disabled' }}
-            </span>
-            <button class="toggle-btn" :class="{ on: form.force_2fa_managers }" @click="toggle('force_2fa_managers')">
-              <span class="toggle-knob" />
-            </button>
-          </div>
-        </div>
-      </div>
+      <!-- Note: 2FA is opt-in per user (Settings › Profile › Two-Factor Authentication). -->
 
       <!-- Session Timeout -->
       <div class="policy-card">
@@ -116,7 +101,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Package, CreditCard, Percent, CheckCircle, ShieldCheck, Clock, Globe } from 'lucide-vue-next'
+import { Package, CreditCard, Percent, CheckCircle, Clock, Globe } from 'lucide-vue-next'
 import api from '@/api/axios'
 
 const loading = ref(false)
