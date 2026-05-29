@@ -7,6 +7,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/login', component: () => import('@/views/Login.vue'), meta: { public: true } },
+    { path: '/change-password', component: () => import('@/views/ChangePassword.vue'), meta: { requiresAuth: true, forceChange: true } },
     {
       path: '/',
       component: LayoutSwitch,
@@ -35,6 +36,7 @@ const router = createRouter({
         { path: 'settings/policies',    component: () => import('@/views/settings/Policies.vue'),          meta: { store: true } },
         { path: 'settings/taxes',       component: () => import('@/views/settings/Taxes.vue'),             meta: { store: true } },
         { path: 'settings/profile',     component: () => import('@/views/settings/Profile.vue'),           meta: { store: true } },
+        { path: 'settings/security',    component: () => import('@/views/settings/Security.vue'),          meta: { store: true } },
         { path: 'settings/billing',     component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
         { path: 'settings/billing/invoices/:id', component: () => import('@/views/settings/Billing.vue'),  meta: { store: true } },
 
@@ -52,6 +54,7 @@ const router = createRouter({
         { path: 'admin/subscriptions', component: () => import('@/views/admin/AdminSubscriptions.vue'), meta: { admin: true } },
         { path: 'admin/misc',          component: () => import('@/views/admin/AdminMisc.vue'),          meta: { admin: true } },
         { path: 'admin/ai-profiles',   component: () => import('@/views/admin/AdminAIProfiles.vue'),   meta: { admin: true } },
+        { path: 'admin/auth-settings', component: () => import('@/views/admin/AdminAuthSettings.vue'),  meta: { admin: true } },
       ]
     },
     {
@@ -77,6 +80,14 @@ router.beforeEach((to, from, next) => {
 
   // Auth gate
   if (!auth.isAuthenticated) return next('/login')
+
+  // Forced password change blocks everything until the user sets a new password.
+  if (auth.user?.force_password_change) {
+    if (to.path !== '/change-password') return next('/change-password')
+    return next()
+  }
+  // Not forced → the change-password gate isn't for them.
+  if (to.meta.forceChange) return next(auth.isSuperadmin ? '/admin/dashboard' : '/dashboard')
 
   // Admin-only routes: block non-sudo
   if (to.meta.admin && !auth.isSuperadmin) return next('/dashboard')

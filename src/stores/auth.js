@@ -36,16 +36,12 @@ export const useAuthStore = defineStore('auth', {
   },
   actions: {
     // Returns a status the Login view branches on:
-    //   { status: 'ok' }              — logged in, tokens set
-    //   { status: 'requires_2fa' }    — re-call with otpToken
-    //   { status: 'enroll_2fa', preAuthToken } — must set up 2FA first
+    //   { status: 'ok' }           — logged in, tokens set
+    //   { status: 'requires_2fa' } — user has 2FA enabled; re-call with otpToken
     async login(username, password, otpToken) {
       const payload = { username, password }
       if (otpToken) payload.otp_token = otpToken
       const res = await api.post('/api/auth/token/', payload)
-      if (res.data.enroll_2fa) {
-        return { status: 'enroll_2fa', preAuthToken: res.data.pre_auth_token }
-      }
       if (res.data.requires_2fa) {
         return { status: 'requires_2fa' }
       }

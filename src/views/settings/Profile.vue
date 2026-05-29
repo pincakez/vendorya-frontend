@@ -39,46 +39,35 @@
           </div>
         </div>
 
-        <div class="section-label" style="margin-top:20px;">Change Password</div>
-        <div class="form-grid">
-          <div>
-            <label class="form-label">New Password</label>
-            <input v-model="form.password" type="password" class="form-input" placeholder="Leave blank to keep current" />
-          </div>
-          <div>
-            <label class="form-label">Confirm Password</label>
-            <input v-model="form.confirmPassword" type="password" class="form-input" placeholder="Repeat new password" />
-          </div>
-        </div>
-        <p v-if="passwordMismatch" class="error-text">Passwords do not match</p>
+        <div class="section-label" style="margin-top:20px;">Password &amp; Security</div>
+        <RouterLink to="/settings/security" class="security-link">
+          <span><ShieldCheck :size="15" /> Change password &amp; two-factor authentication</span>
+          <ChevronRight :size="16" />
+        </RouterLink>
 
         <div class="form-footer">
           <span v-if="saved" class="saved-msg">Saved!</span>
-          <button class="btn-primary" :disabled="saving || passwordMismatch" @click="save">
+          <button class="btn-primary" :disabled="saving" @click="save">
             {{ saving ? 'Saving…' : 'Save Changes' }}
           </button>
         </div>
       </div>
-
-      <!-- Security: 2FA (spans full width below the grid) -->
-      <TwoFactorPanel style="grid-column:1/-1;" />
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
+import { ShieldCheck, ChevronRight } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
-import TwoFactorPanel from '@/components/settings/TwoFactorPanel.vue'
 
 const auth = useAuthStore()
 
-const form = reactive({ first_name: '', last_name: '', email: '', password: '', confirmPassword: '' })
+const form = reactive({ first_name: '', last_name: '', email: '' })
 const saving = ref(false)
 const saved  = ref(false)
-
-const passwordMismatch = computed(() => form.password && form.confirmPassword && form.password !== form.confirmPassword)
 
 const COLORS = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2']
 const avatarColor = computed(() => {
@@ -92,21 +81,15 @@ function loadProfile() {
   form.first_name = auth.user?.first_name || ''
   form.last_name  = auth.user?.last_name  || ''
   form.email      = auth.user?.email      || ''
-  form.password   = ''
-  form.confirmPassword = ''
 }
 
 async function save() {
-  if (passwordMismatch.value) return
   saving.value = true
   saved.value  = false
   try {
     const payload = { first_name: form.first_name, last_name: form.last_name, email: form.email }
-    if (form.password.trim()) payload.password = form.password
     const res = await api.patch('/api/auth/me/', payload)
     auth.user = { ...auth.user, ...res.data }
-    form.password = ''
-    form.confirmPassword = ''
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
@@ -148,6 +131,9 @@ onMounted(() => loadProfile())
 
 .error-text { font-size:12px; color:#dc2626; margin-top:6px; }
 .saved-msg  { font-size:13px; color:#16a34a; font-weight:500; }
+.security-link { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:11px 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; font-weight:600; text-decoration:none; transition:border-color 120ms, background 120ms; }
+.security-link span { display:inline-flex; align-items:center; gap:8px; }
+.security-link:hover { border-color:#2563eb; background:var(--bg-card); }
 .form-footer { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
 
 .btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#2563eb; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }

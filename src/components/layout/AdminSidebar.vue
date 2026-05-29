@@ -16,6 +16,7 @@
         <NavItem icon="store"            label="Stores"       to="/admin/stores"        :collapsed="collapsed" />
         <NavItem icon="building"         label="Branches"     to="/admin/branches"      :collapsed="collapsed" />
         <NavItem icon="shield"           label="Admin Users"  to="/admin/users"         :collapsed="collapsed" />
+        <NavItem icon="key"              label="Auth Settings" to="/admin/auth-settings" :collapsed="collapsed" />
 
         <div v-if="!collapsed" class="nav-section-label">Billing</div>
         <NavItem icon="credit-card"      label="Subscriptions" to="/admin/subscriptions" :collapsed="collapsed" />

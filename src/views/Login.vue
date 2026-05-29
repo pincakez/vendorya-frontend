@@ -84,62 +84,6 @@
         </form>
       </template>
 
-      <!-- ============ STEP 3: ENROLLMENT ============ -->
-      <template v-else-if="step === 'enroll'">
-        <h1 class="login-h1">Set up two-factor auth</h1>
-        <p class="login-sub">Your account requires 2FA. Scan the QR code with Google Authenticator, Authy, or similar.</p>
-
-        <template v-if="!backupCodes">
-          <div v-if="qr" style="display:flex;justify-content:center;margin-bottom:16px;">
-            <img :src="qr" alt="2FA QR code" style="width:180px;height:180px;border:1px solid var(--border);border-radius:10px;" />
-          </div>
-          <div v-else style="text-align:center;margin-bottom:16px;color:var(--text-muted);">
-            <Loader2 :size="20" style="animation:spin 0.8s linear infinite;" />
-          </div>
-
-          <form @submit.prevent="handleEnroll">
-            <div style="margin-bottom:20px;">
-              <label class="login-label">Enter the 6-digit code to confirm</label>
-              <div style="position:relative;">
-                <ShieldCheck :size="15" class="login-icon" />
-                <input v-model="otp" type="text" inputmode="numeric" class="form-input"
-                  style="padding-left:36px;letter-spacing:3px;" placeholder="123456" :disabled="loading" />
-              </div>
-            </div>
-
-            <div v-if="error" class="login-error">
-              <AlertCircle :size="15" style="color:#ef4444;margin-top:1px;flex-shrink:0;" />
-              <span>{{ error }}</span>
-            </div>
-
-            <button type="submit" :disabled="loading || !otp || !qr" class="login-submit" :style="{ opacity: (loading || !otp || !qr) ? '0.6' : '1' }">
-              <Loader2 v-if="loading" :size="16" style="animation:spin 0.8s linear infinite;" />
-              <ShieldCheck v-else :size="16" />
-              {{ loading ? 'Confirming…' : 'Confirm & Enable' }}
-            </button>
-            <button type="button" class="login-back" @click="resetToCredentials">← Cancel</button>
-          </form>
-        </template>
-
-        <!-- Backup codes shown once after enrollment -->
-        <template v-else>
-          <div class="backup-box">
-            <div style="display:flex;align-items:center;gap:6px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">
-              <KeyRound :size="15" /> Save your backup codes
-            </div>
-            <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;">
-              Each code works once if you lose your authenticator. Store them somewhere safe — they won't be shown again.
-            </p>
-            <div class="backup-grid">
-              <code v-for="c in backupCodes" :key="c">{{ c }}</code>
-            </div>
-          </div>
-          <button type="button" class="login-submit" @click="step = 'otp'; otp = ''; error = ''">
-            <ShieldCheck :size="16" /> I've saved them — Continue
-          </button>
-        </template>
-      </template>
-
       <!-- Theme toggle -->
       <div style="margin-top:24px;display:flex;justify-content:center;">
         <button @click="theme.toggle()" class="login-theme">
@@ -155,8 +99,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { User, Lock, Eye, EyeOff, AlertCircle, Loader2, LogIn, Sun, Moon, ShieldCheck, KeyRound } from 'lucide-vue-next'
-import api from '@/api/axios'
+import { User, Lock, Eye, EyeOff, AlertCircle, Loader2, LogIn, Sun, Moon, ShieldCheck } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 
@@ -170,11 +113,8 @@ const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
 
-const step = ref('credentials')   // credentials | otp | enroll
+const step = ref('credentials')   // credentials | otp
 const otp = ref('')
-const qr = ref('')
-const preAuthToken = ref('')
-const backupCodes = ref(null)
 
 onMounted(() => {
   if (route.query.idle) error.value = 'You were signed out due to inactivity.'
@@ -183,9 +123,6 @@ onMounted(() => {
 function resetToCredentials() {
   step.value = 'credentials'
   otp.value = ''
-  qr.value = ''
-  preAuthToken.value = ''
-  backupCodes.value = null
   error.value = ''
 }
 
@@ -208,13 +145,8 @@ async function handleLogin() {
   loading.value = true
   try {
     const res = await auth.login(form.value.username, form.value.password)
-    if (res.status === 'ok') return goHome()
     if (res.status === 'requires_2fa') { step.value = 'otp'; return }
-    if (res.status === 'enroll_2fa') {
-      preAuthToken.value = res.preAuthToken
-      step.value = 'enroll'
-      await startEnroll()
-    }
+    return goHome()
   } catch (err) {
     error.value = mapError(err, 'Server error. Please try again.')
   } finally {
@@ -232,33 +164,6 @@ async function handleOtp() {
     error.value = 'Invalid code. Please try again.'
   } catch (err) {
     error.value = mapError(err, err.response?.data?.detail || 'Invalid code.')
-  } finally {
-    loading.value = false
-  }
-}
-
-const preAuthCfg = () => ({ headers: { Authorization: `Bearer ${preAuthToken.value}` } })
-
-async function startEnroll() {
-  qr.value = ''
-  try {
-    const { data } = await api.post('/api/auth/2fa/setup/', {}, preAuthCfg())
-    qr.value = data.qr
-  } catch (err) {
-    error.value = err.response?.data?.detail || 'Could not start 2FA setup.'
-  }
-}
-
-async function handleEnroll() {
-  if (!otp.value) return
-  error.value = ''
-  loading.value = true
-  try {
-    const { data } = await api.post('/api/auth/2fa/verify-setup/', { token: otp.value.trim() }, preAuthCfg())
-    backupCodes.value = data.backup_codes
-    otp.value = ''
-  } catch (err) {
-    error.value = err.response?.data?.detail || 'Invalid code. Please try again.'
   } finally {
     loading.value = false
   }
@@ -286,8 +191,4 @@ async function handleEnroll() {
 .login-back { width:100%;margin-top:12px;background:none;border:none;color:var(--text-muted);font-size:12.5px;cursor:pointer;padding:6px; }
 .login-theme { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:6px 10px;border-radius:8px;transition:background 120ms; }
 .login-theme:hover { background:var(--border); }
-
-.backup-box { background:var(--bg-app);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px; }
-.backup-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
-.backup-grid code { font-family:monospace;font-size:13px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;text-align:center;color:var(--text-primary);letter-spacing:1px; }
 </style>
