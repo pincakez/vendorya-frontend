@@ -59,6 +59,17 @@
       </div>
     </div>
 
+    <!-- Preview store as real user -->
+    <button
+      v-if="auth.isInStoreMode"
+      class="header-preview-btn"
+      title="Preview store as real user"
+      @click="enterPreview"
+    >
+      <Eye :size="14" />
+      Preview
+    </button>
+
     <!-- Theme toggle -->
     <button class="header-icon-btn" @click="theme.toggle()" :title="theme.dark ? 'Switch to light mode' : 'Switch to dark mode'">
       <Sun v-if="theme.dark" :size="18" />
@@ -80,7 +91,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { Sun, Moon, Search, ChevronDown, Check, ArrowLeft, PanelLeftOpen, PanelLeftClose, Bot } from 'lucide-vue-next'
+import { Sun, Moon, Search, ChevronDown, Check, ArrowLeft, PanelLeftOpen, PanelLeftClose, Bot, Eye } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import api from '@/api/axios'
@@ -125,6 +136,11 @@ function selectStore(store) {
   router.push('/dashboard')
 }
 
+function enterPreview() {
+  auth.enterPreview()
+  router.push('/dashboard')
+}
+
 function selectGeneral() {
   auth.clearActiveStore()
   open.value = false
@@ -147,6 +163,24 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.header-preview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-accent);
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms, transform 80ms;
+  flex-shrink: 0;
+}
+.header-preview-btn:hover  { background: rgba(249,115,22,0.22); }
+.header-preview-btn:active { transform: scale(0.96); }
+
 .ai-toggle-btn.active {
   background: rgba(249,115,22,0.12);
   color: var(--admin-accent, #f97316);

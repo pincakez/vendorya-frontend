@@ -10,6 +10,8 @@ export const useAuthStore = defineStore('auth', {
     user: JSON.parse(localStorage.getItem('vendorya_user') || 'null'),
     // Super-admin: the store currently being acted on (null = General Admin mode)
     activeStore: JSON.parse(localStorage.getItem('vendorya_active_store_obj') || 'null'),
+    // Preview mode: sudo sees the store as a real user (DefaultLayout, not persisted)
+    previewMode: false,
   }),
   getters: {
     isAuthenticated: s => !!s.accessToken,
@@ -82,7 +84,14 @@ export const useAuthStore = defineStore('auth', {
       useFormatStore().loadForStore()
     },
     clearActiveStore() {
+      this.previewMode = false
       this.setActiveStore(null)
+    },
+    enterPreview() {
+      this.previewMode = true
+    },
+    exitPreview() {
+      this.previewMode = false
     },
     logout() {
       // Capture the refresh token, then clear local state immediately so the UI

@@ -1,6 +1,6 @@
 <template>
-  <AdminLayout v-if="auth.isSuperadmin" />
-  <DefaultLayout v-else />
+  <DefaultLayout v-if="!auth.isSuperadmin || auth.previewMode" />
+  <AdminLayout v-else />
 </template>
 
 <script setup>
