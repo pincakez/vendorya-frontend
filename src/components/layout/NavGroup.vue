@@ -31,7 +31,7 @@
 <script setup>
 import { computed } from 'vue'
 import {
-  Package, CreditCard, Users, ChevronRight
+  Package, CreditCard, Users, ChevronRight, BarChart3
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -48,6 +48,7 @@ const iconMap = {
   'package': Package,
   'credit-card': CreditCard,
   'users': Users,
+  'bar-chart-3': BarChart3,
 }
 
 const iconComponent = computed(() => iconMap[props.icon] || Package)

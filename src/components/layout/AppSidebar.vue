@@ -54,6 +54,26 @@
         <NavSubItem label="Cash Drawer" to="/finance/cash-drawer" />
       </NavGroup>
 
+      <!-- Reports -->
+      <NavGroup
+        icon="bar-chart-3"
+        label="Reports"
+        :collapsed="collapsed"
+        :open="openGroup === 'reports'"
+        @toggle="toggleGroup('reports')"
+        :active="route.path.startsWith('/reports')"
+      >
+        <NavSubItem label="Sales" to="/reports/sales" />
+        <NavSubItem label="Profit Margin" to="/reports/profit" />
+        <NavSubItem label="A/R Aging" to="/reports/ar-aging" />
+        <NavSubItem label="A/P Aging" to="/reports/ap-aging" />
+        <NavSubItem label="Profit &amp; Loss" to="/reports/pnl" />
+        <NavSubItem label="Expenses" to="/reports/expenses" />
+        <NavSubItem label="Stock Ledger" to="/reports/stock-ledger" />
+        <NavSubItem label="Cashier Performance" to="/reports/cashiers" />
+        <NavSubItem label="Tax" to="/reports/tax" />
+      </NavGroup>
+
       <div v-if="!collapsed" class="nav-section-label">Management</div>
 
       <!-- People -->
@@ -161,6 +181,7 @@ const icons = {
 const openGroup = ref(
   route.path.startsWith('/inventory') ? 'inventory'
   : route.path.startsWith('/finance') ? 'finance'
+  : route.path.startsWith('/reports') ? 'reports'
   : route.path.startsWith('/people') ? 'people'
   : null
 )
