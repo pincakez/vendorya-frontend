@@ -95,15 +95,33 @@ export const useAuthStore = defineStore('auth', {
       this.previewMode = false
       localStorage.removeItem('vendorya_preview_mode')
     },
-    // Hard logout via a full-page navigation. CRITICAL: we do NOT mutate the
-    // reactive auth state (user / tokens / previewMode) here. Nulling user is
-    // what caused the flash — it reactively flips LayoutSwitch to the store
-    // layout, and Vue paints that frame before the redirect lands. Instead we
-    // only clear (non-reactive) localStorage and reload; the fresh boot reads
-    // the cleared storage and starts logged-out. Nothing ever re-renders.
-    logout({ idle = false } = {}) {
-      beginLogout()   // freeze the axios interceptor so a stray 401 can't re-auth us
+    // Hard logout via a full-page navigation.
+    //
+    // Two independent requirements that earlier attempts wrongly coupled:
+    //  1. SECURITY: the 60-day refresh token MUST be blacklisted server-side.
+    //     So we await a real credentialed request (with a timeout fallback) and
+    //     only give up if the server is unreachable — never silently skip it.
+    //  2. NO FLASH: the flash was caused solely by mutating reactive auth state
+    //     (user = null flips LayoutSwitch to the store layout). The await was
+    //     never the cause. So we leave reactive state untouched; with no reactive
+    //     change nothing re-renders during the await, and the reload boots clean
+    //     from cleared storage.
+    async logout({ idle = false } = {}) {
+      beginLogout()   // freeze the axios interceptor so an in-flight 401 can't re-auth us mid-logout
+
+      // Blacklist + clear the httpOnly cookie. Awaited so we actually confirm it,
+      // but raced against a timeout so a slow/dead server can't trap the user.
       const refresh = localStorage.getItem('vendorya_refresh') || undefined
+      try {
+        await Promise.race([
+          api.post('/api/auth/logout/', { refresh }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('logout-timeout')), 3000)),
+        ])
+      } catch {
+        // Server unreachable/slow: token may outlive this session. We still clear
+        // locally below; the only fully-clean recovery is server-side expiry.
+        console.warn('Logout: could not confirm server-side token blacklist.')
+      }
 
       // Keep theme prefs across logout so each user type's setting persists.
       const adminTheme = localStorage.getItem('vendorya_theme_admin')
@@ -112,18 +130,8 @@ export const useAuthStore = defineStore('auth', {
       if (adminTheme) localStorage.setItem('vendorya_theme_admin', adminTheme)
       if (userTheme)  localStorage.setItem('vendorya_theme_user',  userTheme)
 
-      // Best-effort blacklist + clear httpOnly cookie. sendBeacon survives the
-      // imminent page unload (a normal XHR would be cancelled by the redirect)
-      // and carries cookies same-origin, so the server can blacklist via the
-      // refresh cookie too. Falls back silently if unsupported.
-      try {
-        const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
-        const blob = new Blob([JSON.stringify({ refresh })], { type: 'application/json' })
-        navigator.sendBeacon(`${BASE}/api/auth/logout/`, blob)
-      } catch { /* ignore */ }
-
-      // Synchronous navigation — no awaits, no reactive writes, so no paint of
-      // the wrong layout can sneak in before we leave the page.
+      // Synchronous navigation, no reactive writes anywhere above → the wrong
+      // layout never renders. The reload reads cleared storage and boots logged-out.
       window.location.href = idle ? '/login?idle=1' : '/login'
     },
   },
