@@ -128,10 +128,13 @@ function resetToCredentials() {
 
 function mapError(err, fallback) {
   const status = err.response?.status
-  if (status === 401) return 'Invalid username or password.'
-  if (status === 429) return err.response?.data?.detail || 'Too many attempts. Please try again later.'
-  if (status === 403) return err.response?.data?.detail || 'Login not allowed.'
   if (!navigator.onLine) return 'No internet connection.'
+  if (status === 400) return err.response?.data?.detail || err.response?.data?.non_field_errors?.[0] || 'Invalid username or password.'
+  if (status === 401) return 'Invalid username or password.'
+  if (status === 403) return err.response?.data?.detail || 'Login not allowed from this location.'
+  if (status === 429) return err.response?.data?.detail || 'Too many attempts. Please wait and try again.'
+  if (status >= 500) return 'The server encountered an error. Please try again in a moment.'
+  if (!status) return 'Cannot reach the server. Check your connection.'
   return fallback
 }
 
