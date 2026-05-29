@@ -199,7 +199,7 @@ function toggleGroup(name) {
 }
 
 function handleLogout() {
+  // logout() does a full-page redirect to /login itself.
   auth.logout()
-  router.push('/login')
 }
 </script>

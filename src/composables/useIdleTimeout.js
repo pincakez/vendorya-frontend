@@ -1,5 +1,4 @@
 import { onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 
@@ -14,14 +13,13 @@ import { useAuthStore } from '@/stores/auth'
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll']
 
 export function useIdleTimeout() {
-  const router = useRouter()
   const auth = useAuthStore()
   let timer = null
   let timeoutMs = 0
 
   function doLogout() {
-    auth.logout()
-    router.push({ path: '/login', query: { idle: '1' } })
+    // logout() does a full-page redirect to /login?idle=1 itself.
+    auth.logout({ idle: true })
   }
 
   function reset() {

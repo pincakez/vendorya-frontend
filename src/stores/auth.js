@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import api from '@/api/axios'
+import api, { beginLogout } from '@/api/axios'
 import { useThemeStore } from './theme'
 import { useFormatStore } from './format'
 
@@ -95,11 +95,13 @@ export const useAuthStore = defineStore('auth', {
       this.previewMode = false
       localStorage.removeItem('vendorya_preview_mode')
     },
-    logout() {
+    // Hard logout. We intentionally do a full-page navigation rather than a
+    // router.push so the whole SPA (reactive layouts, in-flight polls, guards)
+    // is torn down at once. Doing it via router.push left a half-cleared state
+    // that raced the axios refresh interceptor and flickered /login ↔ /dashboard.
+    async logout({ idle = false } = {}) {
+      beginLogout()   // freeze the axios interceptor so a stray 401 can't re-auth us
       this.previewMode = false
-      // Capture the refresh token, then clear local state immediately so the UI
-      // logs out instantly even if callers don't await. The server call (blacklist
-      // + clear cookie) is fire-and-forget best-effort.
       const refresh = localStorage.getItem('vendorya_refresh') || undefined
       this.accessToken = null
       this.refreshToken = null
@@ -111,9 +113,11 @@ export const useAuthStore = defineStore('auth', {
       localStorage.clear()
       if (adminTheme) localStorage.setItem('vendorya_theme_admin', adminTheme)
       if (userTheme)  localStorage.setItem('vendorya_theme_user',  userTheme)
-      // Logged-out state = no user → resolves to the regular-user default (light).
-      useThemeStore().refresh()
-      api.post('/api/auth/logout/', { refresh }).catch(() => { /* ignore */ })
+      // Best-effort blacklist + clear httpOnly cookie. Await it so the request
+      // completes before the page unloads, but never let a failure block logout.
+      try { await api.post('/api/auth/logout/', { refresh }) } catch { /* ignore */ }
+      // Full reload → clean boot at /login, default (light) theme re-applied.
+      window.location.href = idle ? '/login?idle=1' : '/login'
     },
   },
 })

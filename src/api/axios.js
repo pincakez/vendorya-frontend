@@ -2,6 +2,13 @@ import axios from 'axios'
 
 const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
+// Set true the moment an intentional logout starts. While true the response
+// interceptor must NOT try to refresh a dead token or re-populate localStorage —
+// otherwise an in-flight 401 races the logout and causes the /login ↔ /dashboard
+// flicker. Reset on a full page load (this module re-initialises).
+let isLoggingOut = false
+export function beginLogout() { isLoggingOut = true }
+
 const api = axios.create({
   baseURL: BASE,
   headers: { 'Content-Type': 'application/json' },
@@ -23,6 +30,10 @@ api.interceptors.response.use(
   response => response,
   async error => {
     const original = error.config
+    // Don't fight an in-progress logout — let the request die quietly.
+    if (error.response?.status === 401 && isLoggingOut) {
+      return Promise.reject(error)
+    }
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true
       try {
@@ -42,7 +53,8 @@ api.interceptors.response.use(
         return api(original)
       } catch {
         localStorage.clear()
-        window.location.href = '/login'
+        // Guard against a reload loop if a request on the login page itself 401s.
+        if (window.location.pathname !== '/login') window.location.href = '/login'
       }
     }
     return Promise.reject(error)
