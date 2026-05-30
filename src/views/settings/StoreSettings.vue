@@ -180,8 +180,9 @@
           <tbody>
             <tr v-if="branches.length === 0">
               <td colspan="5" class="table-empty">
-                <GitBranch :size="28" style="opacity:.3;margin-bottom:8px;" />
-                <div>No branches yet</div>
+                <GitBranch :size="40" style="opacity:.2;margin-bottom:10px;" />
+                <div style="font-size:15px;font-weight:700;color:var(--text-primary);">No branches yet</div>
+                <div style="font-size:13px;">Add a branch to assign staff and manage stock per location.</div>
               </td>
             </tr>
             <tr v-for="b in branches" :key="b.id" class="table-row">

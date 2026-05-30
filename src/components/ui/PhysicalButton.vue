@@ -7,7 +7,8 @@
     @pointerup="onUp"
     @pointerleave="onUp"
     :style="tiltStyle"
-    :class="['pb', `pb-${variant}`, { 'pb-active': active, 'pb-collapsed': collapsed }]"
+    :class="['pb', `pb-${variant}`, { 'pb-active': active, 'pb-collapsed': collapsed, 'pb-has-tip': collapsed && tooltip }]"
+    :data-tip="collapsed && tooltip ? tooltip : null"
   >
     <span class="pb-inner" :class="collapsed ? 'pb-center' : 'pb-between'">
       <span class="pb-lead" :class="{ 'pb-center': collapsed }">
@@ -23,10 +24,11 @@
 import { ref, computed } from 'vue'
 
 const props = defineProps({
-  variant:   { type: String,  default: 'primary' },   // primary | sidebar | icon
+  variant:   { type: String,  default: 'primary' },
   active:    { type: Boolean, default: false },
   badge:     { type: [String, Number], default: null },
   collapsed: { type: Boolean, default: false },
+  tooltip:   { type: String,  default: '' },
 })
 
 const btn = ref(null)
@@ -102,4 +104,27 @@ const tiltStyle = computed(() =>
 }
 .pb-icon:hover { background: var(--sb-active); color: var(--sb-text-active); }
 .pb-icon.pb-collapsed, .pb-sidebar.pb-collapsed { padding-left: 0; padding-right: 0; }
+
+/* CSS tooltip shown when sidebar is collapsed */
+.pb-has-tip { position: relative; }
+.pb-has-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1a1208;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+}
+.pb-has-tip:hover::after { opacity: 1; }
 </style>

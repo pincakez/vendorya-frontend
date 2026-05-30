@@ -46,6 +46,7 @@
                 <PhysicalButton
                   v-for="it in g.items" :key="it.to"
                   variant="sidebar" :collapsed="collapsed" :active="itemActive(it.to)"
+                  :tooltip="it.label"
                   @click="go(it.to)"
                 >
                   <template #icon><component :is="it.icon" :size="16" :class="itemActive(it.to) ? 'ic-active' : 'ic'" /></template>

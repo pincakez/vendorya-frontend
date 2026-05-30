@@ -30,8 +30,9 @@
         <tbody>
           <tr v-if="suppliers.length === 0">
             <td colspan="5" class="table-empty">
-              <Building2 :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No suppliers yet</div>
+              <Building2 :size="40" style="opacity:.2;margin-bottom:10px;" />
+              <div style="font-size:15px;font-weight:700;color:var(--text-primary);">No suppliers yet</div>
+              <div style="font-size:13px;">Add suppliers to link them to purchase invoices.</div>
             </td>
           </tr>
           <tr v-for="s in suppliers" :key="s.id" class="table-row">
