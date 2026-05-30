@@ -34,9 +34,54 @@
           <button v-if="cats.length > catWindow" class="cat-nav" :disabled="catStart >= catMax" @click="catScroll(1)"><ChevronRight :size="18" /></button>
         </div>
 
+        <button v-if="hasAdhoc && !editing" class="dt-filter" title="Reset to assigned layout" @click="resetLayout">
+          <RotateCcw :size="14" />
+        </button>
         <button class="dt-filter" :class="{ on: showFilters }" @click="showFilters = !showFilters">
           <Filter :size="14" /> Filter
         </button>
+        <button v-if="canEdit && !editing" class="dt-filter" @click="enterEdit">
+          <Columns3 :size="14" /> Customize
+        </button>
+        <button v-if="canEdit && !editing" class="dt-filter" title="Assign layouts to staff" @click="openAssign">
+          <UserCog :size="14" />
+        </button>
+      </div>
+
+      <!-- EDIT MODE — column chooser -->
+      <div v-if="editing" class="edit-panel">
+        <div class="edit-head">
+          <span class="edit-title"><Columns3 :size="15" /> Customize columns</span>
+          <div class="edit-actions">
+            <select v-if="presets.length" class="edit-select" @change="(e) => { const p = presets.find(x => x.id === e.target.value); if (p) loadPreset(p); e.target.value = '' }">
+              <option value="">Load preset…</option>
+              <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select>
+            <button class="btn-ghost" @click="resetWorking">Reset</button>
+            <button class="btn-ghost" @click="cancelEdit">Cancel</button>
+            <button class="btn-ghost" @click="saveModal.open = true">Save preset</button>
+            <button class="btn-primary" @click="doneEdit">Done</button>
+          </div>
+        </div>
+        <p class="edit-hint">Drag to reorder · uncheck to hide · SKU and Product are locked.</p>
+        <div class="chooser">
+          <div
+            v-for="key in working.order" :key="key" class="chooser-row"
+            :class="{ disabled: !permittedKeys.includes(key) }"
+            draggable="true" @dragstart="onDragStart(key)" @dragover.prevent @drop="onDrop(key)"
+          >
+            <GripVertical :size="14" class="chooser-grip" />
+            <input
+              type="checkbox" class="chooser-cb"
+              :checked="!working.hidden.includes(key)"
+              :disabled="LOCKED.includes(key) || !permittedKeys.includes(key)"
+              @change="toggleHidden(key)"
+            />
+            <span class="chooser-label">{{ colByKey[key].label }}</span>
+            <Lock v-if="LOCKED.includes(key)" :size="12" class="chooser-tag" />
+            <span v-else-if="!permittedKeys.includes(key)" class="chooser-na">hidden by role</span>
+          </div>
+        </div>
       </div>
 
       <!-- optional advanced (attribute) filters -->
@@ -49,13 +94,13 @@
       </div>
 
       <!-- TABLE -->
-      <div class="dt-card">
+      <div class="dt-card" :class="{ editing }">
         <div class="dt-xscroll">
           <table class="dt" :style="{ minWidth: tableMin + 'px' }">
             <thead :style="{ top: theadTop + 'px' }">
               <tr>
                 <th
-                  v-for="col in visibleColumns" :key="col.key"
+                  v-for="col in displayColumns" :key="col.key"
                   class="dt-th" :class="[col.align === 'right' ? 'ta-right' : '', col.sort ? 'sortable' : '']"
                   :style="{ width: colWidths[col.key] + 'px', top: theadTop + 'px' }"
                   @click="col.sort && handleSort(col)"
@@ -73,13 +118,13 @@
             <Transition :name="rowTransition" mode="out-in">
               <tbody :key="page">
                 <tr v-for="p in products" :key="p.id" class="dt-row">
-                  <td v-for="col in visibleColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '']">
+                  <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '']">
                     <span v-if="col.badge" class="stock-badge">{{ formatQty(p.total_stock) }}</span>
                     <template v-else>{{ cellText(col, p) }}</template>
                   </td>
                 </tr>
                 <tr v-if="!loading && !products.length">
-                  <td :colspan="visibleColumns.length" class="dt-empty">
+                  <td :colspan="displayColumns.length" class="dt-empty">
                     <Package :size="40" class="dt-empty-icon" />
                     <div class="dt-empty-title">No products found</div>
                     <div class="dt-empty-sub">Adjust your search or filter.</div>
@@ -157,6 +202,39 @@
     </div>
 
     <!-- MODALS -->
+    <AppModal :open="saveModal.open" title="Save preset" @close="saveModal.open = false">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label class="form-label">Preset name</label>
+          <input v-model="saveModal.name" class="form-input" placeholder="e.g. Cashier view" />
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer;">
+          <input type="checkbox" v-model="saveModal.is_default" />
+          Make this the store default (for staff without an assigned preset)
+        </label>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="saveModal.open = false">Cancel</button>
+        <button class="btn-primary" :disabled="!saveModal.name.trim()" @click="savePreset">Save</button>
+      </template>
+    </AppModal>
+
+    <AppModal :open="assignModal.open" title="Assign layouts to staff" @close="assignModal.open = false">
+      <div class="assign-list">
+        <div v-for="row in assignModal.rows" :key="row.user_id" class="assign-row">
+          <div class="assign-user">
+            <span class="assign-name">{{ row.full_name }}</span>
+            <span class="assign-role">{{ row.role }}</span>
+          </div>
+          <select v-model="row.preset_id" class="form-input assign-sel" @change="assignTo(row)">
+            <option :value="null">— Default —</option>
+            <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
+          </select>
+        </div>
+        <div v-if="!assignModal.rows.length" style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">No staff yet.</div>
+      </div>
+    </AppModal>
+
     <AppModal :open="catModal.open" :title="catModal.id ? 'Edit Category' : 'New Category'" @close="catModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div><label class="form-label">Name</label><input v-model="catModal.name" class="form-input" placeholder="Category name" /></div>
@@ -192,6 +270,7 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import {
   Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck,
   ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown,
+  Columns3, GripVertical, Lock, UserCog, RotateCcw,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -219,22 +298,133 @@ const columns = [
   { key: 'inStock',   label: 'IN STOCK',  sort: 'o_stock',        align: 'right', field: 'total_stock',   cls: '', badge: true },
 ]
 const DEFAULT_WIDTHS = { sku: 130, product: 300, supplier: 170, wholesale: 120, retail: 120, profit: 120, inStock: 110 }
-const WIDTH_KEY = 'dt_inventory_widths'
-const colWidths = reactive({ ...DEFAULT_WIDTHS, ...(JSON.parse(localStorage.getItem(WIDTH_KEY) || 'null') || {}) })
+const colWidths = reactive({ ...DEFAULT_WIDTHS })
 
-// Layer 1: a column is shown only if its field is present in the data. The server
-// omits role-hidden fields entirely, so hidden columns drop automatically.
-const visibleColumns = computed(() => {
+const TABLE_ID = 'inventory_products'
+const ADHOC_KEY = 'dt_inventory_adhoc'
+const LOCKED = ['sku', 'product']           // can't be hidden
+const colByKey = Object.fromEntries(columns.map(c => [c.key, c]))
+
+const colOrder = ref(columns.map(c => c.key))
+const colHidden = ref([])
+
+// Layer 1: a column is *permitted* only if its field is present in the data.
+// The server omits role-hidden fields, so a preset can never reveal them.
+const permittedKeys = computed(() => {
   const sample = products.value[0]
-  if (!sample) return columns
-  return columns.filter(c => !c.field || sample[c.field] !== undefined)
+  return columns.filter(c => !c.field || !sample || sample[c.field] !== undefined).map(c => c.key)
 })
-const tableMin = computed(() => visibleColumns.value.reduce((a, c) => a + colWidths[c.key], 0))
+
+// Edit mode previews live off the working copy.
+const editing = ref(false)
+const working = reactive({ order: [], hidden: [] })
+const activeOrder = computed(() => (editing.value ? working.order : colOrder.value))
+const activeHidden = computed(() => (editing.value ? working.hidden : colHidden.value))
+
+const displayColumns = computed(() =>
+  activeOrder.value
+    .filter(k => permittedKeys.value.includes(k) && !activeHidden.value.includes(k))
+    .map(k => colByKey[k])
+)
+const tableMin = computed(() => displayColumns.value.reduce((a, c) => a + colWidths[c.key], 0))
+const canEdit = computed(() => ['OWNER', 'ADMIN'].includes(auth.userRole) || auth.isSuperadmin)
 
 function cellText(col, p) {
   const v = p[col.field]
   if (v === undefined || v === null || v === '') return '—'
   return col.money ? (col.plus ? '+' : '') + auth.currencySymbol + v : v
+}
+
+/* ── layout (preset) apply / persist ── */
+const baseConfig = ref(null)   // effective preset config, for Reset
+const hasAdhoc = ref(!!localStorage.getItem(ADHOC_KEY))
+
+function applyLayout(cfg) {
+  if (!cfg) return
+  const known = columns.map(c => c.key)
+  if (Array.isArray(cfg.order) && cfg.order.length) {
+    const ordered = cfg.order.filter(k => known.includes(k))
+    for (const k of known) if (!ordered.includes(k)) ordered.push(k)
+    colOrder.value = ordered
+  }
+  colHidden.value = (cfg.hidden || []).filter(k => !LOCKED.includes(k))
+  if (cfg.widths) Object.assign(colWidths, cfg.widths)
+  if (cfg.sort && cfg.sort.key) { sortKey.value = cfg.sort.key; sortDir.value = cfg.sort.dir || 'asc' }
+  if (cfg.page_size) pageSize.value = cfg.page_size
+}
+function currentConfig() {
+  return {
+    order: colOrder.value, hidden: colHidden.value, widths: { ...colWidths },
+    sort: sortKey.value ? { key: sortKey.value, dir: sortDir.value } : null, page_size: pageSize.value,
+  }
+}
+function saveAdhoc() { if (!editing.value) { localStorage.setItem(ADHOC_KEY, JSON.stringify(currentConfig())); hasAdhoc.value = true } }
+
+async function loadLayout() {
+  const adhoc = JSON.parse(localStorage.getItem(ADHOC_KEY) || 'null')
+  try {
+    const { data } = await api.get('/api/smart/presets/effective/', { params: { table_id: TABLE_ID } })
+    baseConfig.value = data && data.config ? data.config : null
+  } catch { baseConfig.value = null }
+  applyLayout(adhoc || baseConfig.value)
+  fetchProducts(1)
+}
+function resetLayout() {
+  localStorage.removeItem(ADHOC_KEY); hasAdhoc.value = false
+  colOrder.value = columns.map(c => c.key); colHidden.value = []
+  Object.assign(colWidths, DEFAULT_WIDTHS); sortKey.value = null; sortDir.value = 'asc'
+  applyLayout(baseConfig.value)
+  fetchProducts(1)
+}
+function resetWorking() { working.order = columns.map(c => c.key); working.hidden = [] }
+
+/* ── edit mode ── */
+function enterEdit() { working.order = [...colOrder.value]; working.hidden = [...colHidden.value]; editing.value = true; fetchPresets() }
+function cancelEdit() { editing.value = false }
+function doneEdit() { colOrder.value = [...working.order]; colHidden.value = [...working.hidden]; editing.value = false; saveAdhoc() }
+function toggleHidden(key) {
+  if (LOCKED.includes(key)) return
+  const i = working.hidden.indexOf(key)
+  if (i >= 0) working.hidden.splice(i, 1); else working.hidden.push(key)
+}
+let dragKey = null
+function onDragStart(key) { dragKey = key }
+function onDrop(key) {
+  if (!dragKey || dragKey === key) return
+  const arr = working.order
+  arr.splice(arr.indexOf(key), 0, arr.splice(arr.indexOf(dragKey), 1)[0])
+  dragKey = null
+}
+
+/* ── presets + assignment ── */
+const presets = ref([])
+const saveModal = reactive({ open: false, name: '', is_default: false })
+const assignModal = reactive({ open: false, rows: [] })
+
+async function fetchPresets() { try { const { data } = await api.get('/api/smart/presets/', { params: { table_id: TABLE_ID } }); presets.value = data.results ?? data } catch { /* noop */ } }
+function loadPreset(p) {
+  const known = columns.map(c => c.key)
+  const ordered = (p.config.order || known).filter(k => known.includes(k))
+  for (const k of known) if (!ordered.includes(k)) ordered.push(k)
+  working.order = ordered
+  working.hidden = (p.config.hidden || []).filter(k => !LOCKED.includes(k))
+  if (p.config.widths) Object.assign(colWidths, p.config.widths)
+}
+async function savePreset() {
+  if (!saveModal.name.trim()) return
+  const cfg = { order: working.order, hidden: working.hidden, widths: { ...colWidths },
+    sort: sortKey.value ? { key: sortKey.value, dir: sortDir.value } : null, page_size: pageSize.value }
+  await api.post('/api/smart/presets/', { table_id: TABLE_ID, name: saveModal.name.trim(), config: cfg, is_default: saveModal.is_default })
+  saveModal.open = false; saveModal.name = ''; saveModal.is_default = false
+  await fetchPresets(); doneEdit()
+}
+async function openAssign() {
+  if (!presets.value.length) await fetchPresets()
+  const { data } = await api.get('/api/smart/presets/assignments/', { params: { table_id: TABLE_ID } })
+  assignModal.rows = data; assignModal.open = true
+}
+async function assignTo(row) {
+  await api.post('/api/smart/presets/assignments/', { user_id: row.user_id, table_id: TABLE_ID, preset_id: row.preset_id || null })
 }
 
 /* ── sort (server-side) ── */
@@ -245,7 +435,7 @@ function handleSort(col) {
     if (sortDir.value === 'asc') sortDir.value = 'desc'
     else { sortKey.value = null; sortDir.value = 'asc' }
   } else { sortKey.value = col.key; sortDir.value = 'asc' }
-  fetchProducts(1)
+  fetchProducts(1); saveAdhoc()
 }
 function arrowFor(col) {
   if (sortKey.value !== col.key) return ArrowUpDown
@@ -267,7 +457,7 @@ function endResize() {
   rz = null
   document.removeEventListener('mousemove', onResize)
   document.removeEventListener('mouseup', endResize)
-  localStorage.setItem(WIDTH_KEY, JSON.stringify({ ...colWidths }))
+  saveAdhoc()
 }
 
 /* ── data ── */
@@ -368,7 +558,7 @@ async function saveSupplier() {
 async function deleteSupplier(id) { if (!confirm('Delete this supplier?')) return; await api.delete(`/api/inventory/suppliers/${id}/`); fetchSuppliers() }
 
 onMounted(() => {
-  fetchAttributes(); fetchProducts(); fetchCategories(); fetchSuppliers()
+  fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppliers()
   ro = new ResizeObserver(() => { if (toolbarRef.value) theadTop.value = toolbarRef.value.offsetHeight })
   if (toolbarRef.value) ro.observe(toolbarRef.value)
 })
@@ -413,8 +603,34 @@ onUnmounted(() => { ro?.disconnect() })
 .filter-select { max-width: 150px; }
 
 /* ── TABLE ── */
+/* ── EDIT MODE ── */
+.edit-panel { background: var(--bg-card); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 4px 20px var(--accent-soft); }
+.edit-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.edit-title { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.edit-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.edit-select { background: var(--bg-app); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer; outline: none; }
+.edit-hint { font-size: 12px; color: var(--text-muted); margin: 8px 0 10px; }
+.chooser { display: flex; flex-direction: column; gap: 4px; max-width: 380px; }
+.chooser-row { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-app); cursor: grab; transition: border-color 120ms; }
+.chooser-row:hover { border-color: var(--accent); }
+.chooser-row.disabled { opacity: 0.5; }
+.chooser-grip { color: var(--text-muted); flex-shrink: 0; }
+.chooser-cb { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+.chooser-label { flex: 1; font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
+.chooser-tag { color: var(--text-muted); }
+.chooser-na { font-size: 11px; color: var(--text-muted); }
+
+.assign-list { display: flex; flex-direction: column; gap: 8px; }
+.assign-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.assign-row:last-child { border-bottom: none; }
+.assign-user { display: flex; flex-direction: column; }
+.assign-name { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+.assign-role { font-size: 11px; color: var(--text-muted); text-transform: capitalize; }
+.assign-sel { max-width: 180px; }
+
 /* No overflow:hidden — it would trap the sticky thead. Corners rounded via children. */
-.dt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.dt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: box-shadow 150ms; }
+.dt-card.editing { box-shadow: 0 0 0 2px var(--accent), 0 8px 30px var(--accent-soft); }
 .dt thead tr:first-child .dt-th:first-child { border-top-left-radius: 15px; }
 .dt thead tr:first-child .dt-th:last-child  { border-top-right-radius: 15px; }
 .dt-foot { border-radius: 0 0 15px 15px; }
