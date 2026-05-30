@@ -44,32 +44,40 @@
 }
 
 .dark {
-  /* Sidebar (dark = deep navy #0b1120 with blue accents) */
-  --sb-bg:           #0b1120;
-  --sb-bg-deep:      #070d18;
-  --sb-hover:        rgba(59,130,246,0.10);
-  --sb-active:       rgba(59,130,246,0.20);
-  --sb-text:         #64748b;
-  --sb-text-active:  #93c5fd;
-  --sb-border:       rgba(255,255,255,0.07);
-  --sb-logo-text:    #ffffff;
-  --sb-badge-bg:     rgba(59,130,246,0.20);
-  --sb-badge-text:   #93c5fd;
+  /* One coherent neutral dark palette (matches finaldesign):
+     page = #0F0F12 (canvas), every panel (nav / header / table / footer) = #18181A,
+     borders = #27272A, orange accent. No more blue sidebar / clashing shades. */
 
-  /* App shell */
-  --bg-app:          #18181b;
-  --bg-card:         #27272a;
-  --bg-header:       #1f1f23;
-  --border:          #2a2a30;
+  /* Sidebar (zinc panel, orange accent) */
+  --sb-bg:           #18181A;
+  --sb-bg-deep:      #0F0F12;
+  --sb-hover:        rgba(255,255,255,0.05);
+  --sb-active:       rgba(255,255,255,0.08);
+  --sb-text:         #a0a0a2;
+  --sb-text-active:  #ffffff;
+  --sb-border:       #27272A;
+  --sb-logo-text:    #ffffff;
+  --sb-badge-bg:     var(--accent-soft);
+  --sb-badge-text:   var(--accent);
+  --sb-group-bg:     #202024;
+  --sb-group-border: #2d2d32;
+  --sb-item-active-bg:   #EAEAEA;
+  --sb-item-active-text: #0a0a0a;
+
+  /* App shell — panels share one tone; page is one step darker */
+  --bg-app:          #0F0F12;
+  --bg-card:         #18181A;
+  --bg-header:       #18181A;
+  --border:          #27272A;
   --text-primary:    #fafafa;
   --text-secondary:  #a1a1aa;
-  --text-muted:      #71717a;
+  --text-muted:      #8a8a90;
   --text-inverse:    #18181b;
 
   /* Footer */
-  --footer-bg:       #18181b;
-  --footer-border:   #2a2a30;
-  --footer-text:     #71717a;
+  --footer-bg:       #18181A;
+  --footer-border:   #27272A;
+  --footer-text:     #8a8a90;
 }
 
 /* ── ADMIN LAYOUT (super-admin shell) ──────────────────── */
