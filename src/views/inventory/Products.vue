@@ -379,8 +379,6 @@ onUnmounted(() => { ro?.disconnect() })
   position: sticky; top: 0; z-index: 30;
   display: flex; align-items: center; gap: 14px;
   background: var(--bg-app); padding: 14px 0;
-  /* Paints the 24px content-padding band above the bar so rows can't peek through. */
-  box-shadow: 0 -24px 0 var(--bg-app);
 }
 .dt-search { display: flex; align-items: center; gap: 6px; width: 300px; flex-shrink: 0; position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: 11px; padding: 8px 10px; }
 .dt-search-icon { color: var(--text-muted); flex-shrink: 0; }

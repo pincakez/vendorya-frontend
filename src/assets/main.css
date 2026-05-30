@@ -162,7 +162,9 @@ body {
 .app-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  /* No top padding — it created a 24px band above sticky toolbars where rows
+     peeked through. Top spacing lives on .page-wrap instead. */
+  padding: 0 24px 24px;
   background: var(--bg-app);
 }
 

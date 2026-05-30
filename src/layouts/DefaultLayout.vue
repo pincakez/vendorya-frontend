@@ -60,7 +60,7 @@ function exitPreview() {
 
 <style scoped>
 /* Wide, but not wiiide — cap content on ultra-wide screens. */
-.page-wrap { max-width: 1500px; margin: 0 auto; width: 100%; }
+.page-wrap { max-width: 1500px; margin: 0 auto; width: 100%; padding-top: 24px; }
 
 .preview-badge {
   position: fixed;
