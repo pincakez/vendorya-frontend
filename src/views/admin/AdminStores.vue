@@ -139,6 +139,11 @@
           </button>
           <span style="font-size:12px;color:var(--text-muted);">{{ editModal.is_active ? 'Store is open for use' : 'Store deactivated' }}</span>
         </div>
+        <div v-if="editModal.originalActive && !editModal.is_active" style="border-top:1px solid var(--border);padding-top:12px;margin-top:2px;">
+          <label class="form-label">Reason for suspending <span style="color:var(--admin-accent);">*</span></label>
+          <textarea v-model="editModal.suspend_reason" class="form-input" rows="2" placeholder="e.g. Non-payment, terms violation, owner request…" />
+          <p style="font-size:11.5px;color:var(--admin-accent);margin:6px 0 0;">⚠ All staff of this store will be locked out of login until reactivated.</p>
+        </div>
       </div>
       <template #footer>
         <button class="btn-ghost" @click="closeEdit">Cancel</button>
@@ -412,6 +417,7 @@ function openEdit(s) {
     default_language: s.default_language,
     timezone: s.timezone || 'Africa/Cairo',
     is_active: s.is_active,
+    suspend_reason: '', originalActive: s.is_active,
   })
 }
 
@@ -428,6 +434,16 @@ async function checkStoreCode() {
 }
 
 async function saveEdit() {
+  const suspending = editModal.originalActive && !editModal.is_active
+  if (suspending) {
+    if (!editModal.suspend_reason.trim()) {
+      alert('Please enter a reason for suspending this store.')
+      return
+    }
+    if (!confirm(`Suspend "${editModal.name}"? All its staff will be locked out of login until you reactivate it.`)) {
+      return
+    }
+  }
   saving.value = true
   try {
     const payload = {
@@ -439,6 +455,7 @@ async function saveEdit() {
       is_active: editModal.is_active,
     }
     if (editModal.store_code) payload.store_code = editModal.store_code
+    if (suspending) payload.suspend_reason = editModal.suspend_reason.trim()
     await api.patch(`/api/admin/stores/${editModal.id}/`, payload)
     closeEdit()
     fetchStores()
