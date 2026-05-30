@@ -60,9 +60,13 @@
         Nightly Job
       </div>
 
+      <p class="field-hint" style="margin-top:0;margin-bottom:14px;">
+        The billing cycle runs <strong>manually</strong> — press the button below whenever you want to process trials, overdue invoices and suspensions.
+      </p>
+
       <label class="toggle-row">
         <input type="checkbox" v-model="form.nightly_job_enabled" />
-        <span>Run the billing cycle automatically</span>
+        <span>Allow automatic nightly runs (only if a scheduler is set up later)</span>
       </label>
       <p class="field-hint" style="margin-top:6px;">
         Last run:
@@ -108,7 +112,7 @@ const form = reactive({
   grace_days: 7,
   invoice_due_days: 7,
   quota_mode: 'WARN',
-  nightly_job_enabled: true,
+  nightly_job_enabled: false,
 })
 
 const lastRunDisplay = computed(() => {
