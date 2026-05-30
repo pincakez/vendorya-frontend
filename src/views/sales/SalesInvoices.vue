@@ -49,8 +49,9 @@
           <tbody>
             <tr v-if="invoices.length === 0">
               <td colspan="8" class="table-empty">
-                <FileText :size="32" style="opacity:.3;margin-bottom:8px;" />
-                <div>No invoices yet</div>
+                <FileText :size="40" style="opacity:.2;margin-bottom:10px;" />
+                <div style="font-size:15px;font-weight:700;color:var(--text-primary);">No invoices yet</div>
+                <div style="font-size:13px;">Create a new invoice to record a sale.</div>
               </td>
             </tr>
             <tr v-for="inv in invoices" :key="inv.id" class="table-row">

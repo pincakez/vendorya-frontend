@@ -176,6 +176,35 @@ body {
   background: var(--bg-app);
 }
 
+/* ── GLOBAL PAGE STANDARDS ─────────────────────────────── */
+/* Override scoped .page-title/.page-sub across all store views */
+.app-content .page-title { font-size: 28px !important; font-weight: 800 !important; letter-spacing: -0.4px !important; }
+.app-content .page-sub   { font-size: 13px !important; font-weight: 500 !important; margin-top: 4px !important; }
+
+/* Table containers — rounded-2xl + shadow across all views */
+.app-content .table-wrap {
+  border-radius: 16px !important;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+
+/* Table header — bolder, wider tracking */
+.app-content .data-table thead th {
+  font-weight: 800 !important;
+  letter-spacing: .06em !important;
+}
+
+/* Standard empty state */
+.app-content .table-empty {
+  padding: 52px 24px !important;
+  text-align: center;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
 /* ── SIDEBAR ───────────────────────────────────────────── */
 .sidebar {
   width: var(--sb-width);
@@ -497,18 +526,21 @@ body {
 
 .header-role-badge {
   font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
+  font-weight: 700;
+  padding: 4px 10px;
   border-radius: 9999px;
-  background: #eff6ff;
-  color: #2563eb;
-  letter-spacing: 0.02em;
+  background: var(--accent-soft);
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid rgba(247,143,30,0.25);
   flex-shrink: 0;
 }
 
 .dark .header-role-badge {
-  background: rgba(99,102,241,0.15);
-  color: #a5b4fc;
+  background: rgba(247,143,30,0.12);
+  color: var(--accent);
+  border-color: rgba(247,143,30,0.2);
 }
 
 .header-icon-btn {

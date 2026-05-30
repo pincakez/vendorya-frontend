@@ -67,10 +67,10 @@
         <div class="chooser">
           <div
             v-for="(key, idx) in working.order" :key="key" class="chooser-row"
-            :class="{ disabled: !permittedKeys.includes(key) }"
-            draggable="true" @dragstart="onDragStart(key, $event)" @dragover.prevent @drop="onDrop(key)" @dragend="dragKey = null"
+            :class="{ disabled: !permittedKeys.includes(key), 'drag-over': dragOver === key && dragKey !== key }"
+            @pointerenter="dragOver = key"
           >
-            <GripVertical :size="14" class="chooser-grip" />
+            <GripVertical :size="14" class="chooser-grip" @pointerdown.prevent="startDrag(key, $event)" />
             <input
               type="checkbox" class="chooser-cb"
               :checked="!working.hidden.includes(key)"
@@ -391,19 +391,28 @@ function toggleHidden(key) {
   const i = working.hidden.indexOf(key)
   if (i >= 0) working.hidden.splice(i, 1); else working.hidden.push(key)
 }
-let dragKey = null
-function onDragStart(key, e) {
-  dragKey = key
-  if (e?.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', key) }
+const dragKey = ref(null)
+const dragOver = ref(null)
+
+function startDrag(key, e) {
+  dragKey.value = key
+  dragOver.value = key
+  document.addEventListener('pointerup', endDrag, { once: true })
+}
+function endDrag() {
+  if (dragKey.value && dragOver.value && dragKey.value !== dragOver.value) {
+    reorder(dragKey.value, dragOver.value)
+  }
+  dragKey.value = null
+  dragOver.value = null
 }
 function reorder(fromKey, toKey) {
   if (!fromKey || fromKey === toKey) return
   const arr = [...working.order]
-  arr.splice(arr.indexOf(fromKey), 1)          // remove dragged
-  arr.splice(arr.indexOf(toKey), 0, fromKey)   // insert before the drop target
-  working.order = arr                          // reassign → reactive
+  arr.splice(arr.indexOf(fromKey), 1)
+  arr.splice(arr.indexOf(toKey), 0, fromKey)
+  working.order = arr
 }
-function onDrop(key) { reorder(dragKey, key); dragKey = null }
 function moveCol(key, dir) {
   const arr = [...working.order]
   const i = arr.indexOf(key), j = i + dir
@@ -495,6 +504,7 @@ const to = computed(() => Math.min(page.value * pageSize.value, total.value))
 const filterableAttrs = computed(() => attributes.value.filter(a => a.input_type === 'SELECT' && a.options?.length))
 
 async function fetchProducts(p = 1) {
+  if (p === 1) document.querySelector('.app-content')?.scrollTo({ top: 0, behavior: 'instant' })
   loading.value = true
   page.value = p
   try {
@@ -629,6 +639,7 @@ onUnmounted(() => { ro?.disconnect() })
 .chooser { display: flex; flex-direction: column; gap: 4px; max-width: 380px; }
 .chooser-row { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-app); cursor: grab; transition: border-color 120ms; }
 .chooser-row:hover { border-color: var(--accent); }
+.chooser-row.drag-over { border-color: var(--accent); background: var(--accent-soft); }
 .chooser-row.disabled { opacity: 0.5; }
 .chooser-grip { color: var(--text-muted); flex-shrink: 0; }
 .chooser-cb { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }

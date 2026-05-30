@@ -30,8 +30,9 @@
         <tbody>
           <tr v-if="customers.length === 0">
             <td colspan="5" class="table-empty">
-              <Users :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No customers yet</div>
+              <Users :size="40" style="opacity:.2;margin-bottom:10px;" />
+              <div style="font-size:15px;font-weight:700;color:var(--text-primary);">No customers yet</div>
+              <div style="font-size:13px;">Add your first customer to start tracking sales.</div>
             </td>
           </tr>
           <tr v-for="c in customers" :key="c.id" class="table-row">

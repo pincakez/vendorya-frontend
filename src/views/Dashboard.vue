@@ -18,55 +18,35 @@
 
     <!-- KPI Cards -->
     <div v-else class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-icon" style="background:#dcfce7;color:#16a34a;">
-          <TrendingUp :size="20" />
-        </div>
-        <div class="kpi-body">
-          <div class="kpi-label">Today's Sales</div>
-          <div class="kpi-value">{{ auth.currencySymbol }} {{ formatNumber(data.today_sales_total) }}</div>
-          <div class="kpi-sub">{{ data.today_invoices_count }} invoice{{ data.today_invoices_count !== 1 ? 's' : '' }}</div>
-        </div>
+      <div class="kpi-card kpi-green">
+        <div class="kpi-label">Today's Sales</div>
+        <div class="kpi-value">{{ auth.currencySymbol }} {{ formatNumber(data.today_sales_total) }}</div>
+        <div class="kpi-sub">{{ data.today_invoices_count }} invoice{{ data.today_invoices_count !== 1 ? 's' : '' }}</div>
       </div>
 
-      <div class="kpi-card">
-        <div class="kpi-icon" style="background:var(--accent-soft);color:var(--accent);">
-          <ShoppingBag :size="20" />
-        </div>
-        <div class="kpi-body">
-          <div class="kpi-label">Items Sold Today</div>
-          <div class="kpi-value">{{ formatQty(data.today_items_sold) }}</div>
-          <div class="kpi-sub">units dispatched</div>
-        </div>
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-label">Items Sold Today</div>
+        <div class="kpi-value">{{ formatQty(data.today_items_sold) }}</div>
+        <div class="kpi-sub">units dispatched</div>
       </div>
 
-      <div class="kpi-card" :class="data.open_shift ? 'card-open' : ''">
-        <div class="kpi-icon" :style="data.open_shift ? 'background:#dcfce7;color:#16a34a;' : 'background:#f3f4f6;color:#9ca3af;'">
-          <Clock :size="20" />
+      <div class="kpi-card" :class="data.open_shift ? 'kpi-green card-open' : 'kpi-gray'">
+        <div class="kpi-label">Active Shift</div>
+        <div class="kpi-value kpi-value--sm">
+          {{ data.open_shift ? 'Open' : 'No open shift' }}
         </div>
-        <div class="kpi-body">
-          <div class="kpi-label">Active Shift</div>
-          <div class="kpi-value" style="font-size:15px;">
-            {{ data.open_shift ? 'Open' : 'No open shift' }}
-          </div>
-          <div class="kpi-sub" v-if="data.open_shift">
-            since {{ fmtTime(data.open_shift.start_time) }} · {{ data.open_shift.user }}
-          </div>
+        <div class="kpi-sub" v-if="data.open_shift">
+          since {{ fmtTime(data.open_shift.start_time) }} · {{ data.open_shift.user }}
         </div>
         <div v-if="data.open_shift" class="pulse-dot" />
       </div>
 
-      <div class="kpi-card" :class="data.low_stock_count > 0 ? 'card-warn' : ''">
-        <div class="kpi-icon" :style="data.low_stock_count > 0 ? 'background:#fef3c7;color:#d97706;' : 'background:#f3f4f6;color:#9ca3af;'">
-          <AlertTriangle :size="20" />
+      <div class="kpi-card" :class="data.low_stock_count > 0 ? 'kpi-amber card-warn' : 'kpi-gray'">
+        <div class="kpi-label">Low Stock Alerts</div>
+        <div class="kpi-value" :class="data.low_stock_count > 0 ? 'text-amber' : ''">
+          {{ data.low_stock_count }}
         </div>
-        <div class="kpi-body">
-          <div class="kpi-label">Low Stock Alerts</div>
-          <div class="kpi-value" :style="data.low_stock_count > 0 ? 'color:#d97706' : ''">
-            {{ data.low_stock_count }}
-          </div>
-          <div class="kpi-sub">items at or below {{ LOW_STOCK_THRESHOLD }} units</div>
-        </div>
+        <div class="kpi-sub">items at or below {{ LOW_STOCK_THRESHOLD }} units</div>
       </div>
     </div>
 
@@ -91,7 +71,13 @@
             </thead>
             <tbody>
               <tr v-if="data.recent_sales.length === 0">
-                <td colspan="4" class="table-empty">No sales today</td>
+                <td colspan="4">
+                  <div class="empty-state">
+                    <ShoppingBag :size="36" class="empty-icon" />
+                    <p class="empty-title">No sales today</p>
+                    <p class="empty-sub">Sales will appear here once invoices are created.</p>
+                  </div>
+                </td>
               </tr>
               <tr v-for="inv in data.recent_sales" :key="inv.id" class="table-row">
                 <td class="col-ref">{{ inv.invoice_number }}</td>
@@ -122,9 +108,12 @@
             </thead>
             <tbody>
               <tr v-if="data.low_stock_items.length === 0">
-                <td colspan="4" class="table-empty">
-                  <CheckCircle :size="28" style="opacity:.3;margin-bottom:6px;" />
-                  <div>All stock levels healthy</div>
+                <td colspan="4">
+                  <div class="empty-state">
+                    <CheckCircle :size="36" class="empty-icon empty-icon--green" />
+                    <p class="empty-title">All stock healthy</p>
+                    <p class="empty-sub">No items below {{ LOW_STOCK_THRESHOLD }} units.</p>
+                  </div>
                 </td>
               </tr>
               <tr v-for="(item, i) in data.low_stock_items" :key="i" class="table-row">
@@ -191,14 +180,14 @@ onMounted(fetchData)
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
-.page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
-.page-sub   { font-size: 13px; color: var(--text-muted); margin: 3px 0 0; }
+.page-title { font-size: 28px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.5px; }
+.page-sub   { font-size: 13px; color: var(--text-muted); margin: 4px 0 0; font-weight: 500; }
 
 .btn-refresh {
-  width: 34px; height: 34px;
-  border-radius: 8px;
+  width: 36px; height: 36px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-card);
   color: var(--text-muted);
@@ -219,38 +208,45 @@ onMounted(fetchData)
 }
 
 .kpi-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 18px;
+  border-radius: 24px;
+  border-top-width: 3px;
+  padding: 20px 22px 18px;
   position: relative;
-  transition: box-shadow 120ms;
+  transition: box-shadow 150ms, transform 150ms;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-.kpi-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.07); }
-.kpi-card.card-open  { border-color: #86efac; }
-.kpi-card.card-warn  { border-color: #fcd34d; }
+.kpi-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-1px); }
 
-.kpi-icon {
-  width: 42px; height: 42px;
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.kpi-body  { flex: 1; min-width: 0; }
-.kpi-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
-.kpi-value { font-size: 20px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1.2; }
-.kpi-sub   { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+/* accent top borders */
+.kpi-green  { border-top-color: #22c55e; background: linear-gradient(to bottom, rgba(34,197,94,.06) 0%, transparent 60%); }
+.kpi-orange { border-top-color: var(--accent); background: linear-gradient(to bottom, rgba(247,143,30,.07) 0%, transparent 60%); }
+.kpi-amber  { border-top-color: #f59e0b; background: linear-gradient(to bottom, rgba(245,158,11,.07) 0%, transparent 60%); }
+.kpi-gray   { border-top-color: var(--border); }
 
-.skeleton-card { height: 82px; background: var(--border); border-radius: 12px; animation: shimmer 1.4s ease-in-out infinite; }
+.dark .kpi-green  { background: linear-gradient(to bottom, rgba(34,197,94,.08) 0%, transparent 60%); }
+.dark .kpi-orange { background: linear-gradient(to bottom, rgba(247,143,30,.09) 0%, transparent 60%); }
+.dark .kpi-amber  { background: linear-gradient(to bottom, rgba(245,158,11,.09) 0%, transparent 60%); }
+
+.kpi-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.kpi-value { font-size: 32px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1.1; margin-top: 6px; }
+.kpi-value--sm { font-size: 18px; margin-top: 8px; }
+.kpi-sub   { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 4px; }
+.text-amber { color: #d97706; }
+
+.card-open { border-top-color: #22c55e; }
+.card-warn { border-top-color: #f59e0b; }
+
+.skeleton-card { height: 110px; background: var(--border); border-radius: 24px; animation: shimmer 1.4s ease-in-out infinite; }
 @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
 
 /* Pulse dot for open shift */
 .pulse-dot {
   position: absolute;
-  top: 14px; right: 14px;
+  top: 16px; right: 16px;
   width: 9px; height: 9px;
   border-radius: 50%;
   background: #16a34a;
@@ -276,57 +272,61 @@ onMounted(fetchData)
 .panel {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 24px;
   overflow: hidden;
 }
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
 }
-.panel-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-.panel-link  { font-size: 12px; color: var(--accent); text-decoration: none; }
+.panel-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.panel-link  { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
 .panel-link:hover { text-decoration: underline; }
 
 .table-wrap { overflow: hidden; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .data-table thead th {
-  padding: 9px 14px;
+  padding: 10px 16px;
   text-align: left;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: .05em;
-  color: var(--text-muted);
+  letter-spacing: .06em;
+  color: var(--text-secondary);
   background: var(--bg-app);
   border-bottom: 1px solid var(--border);
 }
 .data-table tbody tr.table-row { border-bottom: 1px solid var(--border); transition: background 100ms; }
 .data-table tbody tr.table-row:last-child { border-bottom: none; }
 .data-table tbody tr.table-row:hover { background: var(--bg-app); }
-.data-table tbody td { padding: 9px 14px; color: var(--text-primary); }
+.data-table tbody td { padding: 11px 16px; color: var(--text-primary); }
 
-.table-empty {
-  text-align: center;
-  padding: 32px;
-  color: var(--text-muted);
-  font-size: 13px;
+/* Empty state */
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
 }
+.empty-icon { color: var(--border); margin-bottom: 12px; }
+.empty-icon--green { color: #86efac; }
+.empty-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+.empty-sub   { font-size: 13px; color: var(--text-muted); margin: 0; }
 
 .col-ref    { font-family: monospace; font-size: 12px; color: var(--text-muted); }
 .col-muted  { color: var(--text-muted); font-size: 12px; }
 .col-amount { font-variant-numeric: tabular-nums; color: #16a34a; font-weight: 600; }
 
 .qty-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
