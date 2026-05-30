@@ -15,8 +15,6 @@
       <AppFooter />
     </div>
 
-    <QAB />
-
     <!-- Floating admin preview badge -->
     <Transition name="preview-badge">
       <div v-if="auth.isSuperadmin && auth.previewMode" class="preview-badge">
@@ -36,7 +34,6 @@ import { RouterView } from 'vue-router'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
-import QAB from '@/components/ui/QAB.vue'
 import { useIdleTimeout } from '@/composables/useIdleTimeout'
 import { useAuthStore } from '@/stores/auth'
 
