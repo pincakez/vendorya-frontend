@@ -14,6 +14,7 @@
           <Search :size="14" class="search-icon" />
           <input v-model="search" class="search-input" placeholder="Search branch or store…" @input="onSearch" />
         </div>
+        <button class="btn-admin" @click="openCreate"><Plus :size="15" /> Add Branch</button>
       </div>
     </div>
 
@@ -58,11 +59,22 @@
       </table>
     </div>
 
-    <AppModal :open="modal.open" title="Edit Branch" @close="closeModal">
+    <AppModal :open="modal.open" :title="modal.id ? 'Edit Branch' : 'New Branch'" @close="closeModal">
       <div style="display:flex;flex-direction:column;gap:14px;">
+        <div v-if="!modal.id">
+          <label class="form-label">Store</label>
+          <select v-model="modal.store" class="form-input">
+            <option value="">Select store…</option>
+            <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
+        </div>
         <div>
           <label class="form-label">Branch Name</label>
-          <input v-model="modal.name" class="form-input" />
+          <input v-model="modal.name" class="form-input" placeholder="e.g. Downtown branch" />
+        </div>
+        <div v-if="!modal.id" style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:140px;"><label class="form-label">City</label><input v-model="modal.city" class="form-input" placeholder="Optional" /></div>
+          <div style="flex:1;min-width:140px;"><label class="form-label">Country</label><input v-model="modal.country" class="form-input" placeholder="Egypt" /></div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
           <label class="form-label" style="margin:0;">Main Branch</label>
@@ -73,7 +85,7 @@
       </div>
       <template #footer>
         <button class="btn-ghost" @click="closeModal">Cancel</button>
-        <button class="btn-admin" :disabled="!modal.name.trim() || saving" @click="save">
+        <button class="btn-admin" :disabled="!modal.name.trim() || (!modal.id && !modal.store) || saving" @click="save">
           {{ saving ? 'Saving…' : 'Save' }}
         </button>
       </template>
@@ -83,7 +95,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { Search, Building, Pencil } from 'lucide-vue-next'
+import { Search, Building, Pencil, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
 
@@ -126,10 +138,14 @@ async function fetchStores() {
   } catch { stores.value = [] }
 }
 
-const modal = reactive({ open: false, id: null, name: '', is_main_branch: false })
+const modal = reactive({ open: false, id: null, store: '', name: '', city: '', country: '', is_main_branch: false })
+
+function openCreate() {
+  Object.assign(modal, { open: true, id: null, store: storeFilter.value || '', name: '', city: '', country: '', is_main_branch: false })
+}
 
 function openEdit(b) {
-  Object.assign(modal, { open: true, id: b.id, name: b.name, is_main_branch: b.is_main_branch })
+  Object.assign(modal, { open: true, id: b.id, store: b.store, name: b.name, city: '', country: '', is_main_branch: b.is_main_branch })
 }
 
 function closeModal() { modal.open = false }
@@ -137,10 +153,20 @@ function closeModal() { modal.open = false }
 async function save() {
   saving.value = true
   try {
-    await api.patch(`/api/admin/branches/${modal.id}/`, {
-      name: modal.name,
-      is_main_branch: modal.is_main_branch,
-    })
+    if (modal.id) {
+      await api.patch(`/api/admin/branches/${modal.id}/`, {
+        name: modal.name,
+        is_main_branch: modal.is_main_branch,
+      })
+    } else {
+      await api.post('/api/admin/branches/', {
+        store: modal.store,
+        name: modal.name,
+        city: modal.city,
+        country: modal.country,
+        is_main_branch: modal.is_main_branch,
+      })
+    }
     closeModal()
     fetchBranches()
   } catch (e) {
