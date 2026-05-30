@@ -1,4 +1,9 @@
 <template>
+  <Teleport to="body">
+    <div v-if="colDragMoved && colDragKey" class="col-drag-ghost" :style="{ left: colGhostX + 'px', top: colGhostY + 'px' }">
+      {{ colByKey[colDragKey]?.label }}
+    </div>
+  </Teleport>
   <div class="inv">
     <!-- ── NON-STICKY: title + tabs (scroll away) ── -->
     <div class="inv-head">
@@ -112,7 +117,7 @@
                     col.align === 'right' ? 'ta-right' : '',
                     col.sort ? 'sortable' : '',
                     colDragKey === col.key ? 'col-dragging' : '',
-                    colDragOver === col.key && colDragKey !== col.key ? 'col-drag-over' : ''
+                    colDragOver === col.key && colDragKey !== col.key && colDragMoved ? 'col-drag-over' : ''
                   ]"
                   :style="{ width: colWidths[col.key] + 'px', top: theadTop + 'px' }"
                   @click="col.sort && handleSort(col)"
@@ -463,29 +468,34 @@ async function assignTo(row) {
 }
 
 /* ── column header drag-to-reorder ── */
-const colDragKey = ref(null)
+const colDragKey  = ref(null)
 const colDragOver = ref(null)
-let colDragMoved = false
+const colDragMoved = ref(false)
+const colGhostX   = ref(0)
+const colGhostY   = ref(0)
 let colDragStartX = 0
 let suppressNextSort = false
 
 function startColDrag(key, e) {
   const rect = e.currentTarget.getBoundingClientRect()
-  if (e.clientX > rect.right - 10) return   // let resize handle it
-  colDragKey.value = key
-  colDragOver.value = key
-  colDragMoved = false
-  colDragStartX = e.clientX
+  if (e.clientX > rect.right - 10) return
+  colDragKey.value   = key
+  colDragOver.value  = key
+  colDragMoved.value = false
+  colDragStartX      = e.clientX
   document.addEventListener('pointermove', onColDragMove)
   document.addEventListener('pointerup', onColDragEnd, { once: true })
 }
 function onColDragMove(e) {
-  if (colDragKey.value && !colDragMoved && Math.abs(e.clientX - colDragStartX) > 5)
-    colDragMoved = true
+  if (!colDragKey.value) return
+  colGhostX.value = e.clientX + 14
+  colGhostY.value = e.clientY - 18
+  if (!colDragMoved.value && Math.abs(e.clientX - colDragStartX) > 5)
+    colDragMoved.value = true
 }
 function onColDragEnd() {
   document.removeEventListener('pointermove', onColDragMove)
-  if (colDragMoved && colDragKey.value && colDragOver.value && colDragKey.value !== colDragOver.value) {
+  if (colDragMoved.value && colDragKey.value && colDragOver.value && colDragKey.value !== colDragOver.value) {
     const arr = [...colOrder.value]
     arr.splice(arr.indexOf(colDragKey.value), 1)
     arr.splice(arr.indexOf(colDragOver.value), 0, colDragKey.value)
@@ -494,9 +504,9 @@ function onColDragEnd() {
     suppressNextSort = true
     setTimeout(() => { suppressNextSort = false }, 50)
   }
-  colDragKey.value = null
-  colDragOver.value = null
-  colDragMoved = false
+  colDragKey.value   = null
+  colDragOver.value  = null
+  colDragMoved.value = false
 }
 
 /* ── sort (server-side) ── */
@@ -811,4 +821,25 @@ onUnmounted(() => { ro?.disconnect() })
 .cat-left-leave-to { opacity: 0; transform: translateX(-20px); position: absolute; }
 .cat-right-enter-from { opacity: 0; transform: translateX(-20px); }
 .cat-right-leave-to { opacity: 0; transform: translateX(20px); position: absolute; }
+</style>
+
+<style>
+.col-drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  background: var(--bg-card, #fff);
+  border: 1.5px solid var(--accent, #f78f1e);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--accent, #f78f1e);
+  box-shadow: 0 8px 28px rgba(0,0,0,.18);
+  white-space: nowrap;
+  transform: rotate(-2deg) scale(1.04);
+  transition: none;
+}
 </style>
