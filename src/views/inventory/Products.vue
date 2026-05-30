@@ -51,6 +51,9 @@
         <button v-if="canEdit && !editing" class="dt-filter" title="Assign layouts to staff" @click="openAssign">
           <UserCog :size="14" />
         </button>
+        <button v-if="!editing" class="dt-add" @click="openAddProduct">
+          <Plus :size="15" /> Add Product
+        </button>
       </div>
 
       <!-- EDIT MODE — column chooser -->
@@ -136,7 +139,7 @@
 
             <Transition :name="rowTransition" mode="out-in">
               <tbody :key="page">
-                <tr v-for="p in products" :key="p.id" class="dt-row">
+                <tr v-for="p in products" :key="p.id" class="dt-row" :class="{ clickable: !editing }" @click="!editing && openEditProduct(p)">
                   <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '']">
                     <span v-if="col.badge" class="stock-badge">{{ formatQty(p.total_stock) }}</span>
                     <template v-else>{{ cellText(col, p) }}</template>
@@ -281,13 +284,72 @@
         <button class="btn-primary" @click="saveSupplier" :disabled="!supModal.name.trim() || supModal.code_prefix.length !== 3">Save</button>
       </template>
     </AppModal>
+
+    <!-- ═══════════ PRODUCT ADD / EDIT ═══════════ -->
+    <AppModal :open="prodModal.open" :title="prodModal.id ? 'Edit Product' : 'New Product'" @close="prodModal.open = false">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div><label class="form-label">Name</label><input v-model="prodModal.name" class="form-input" placeholder="Product name" /></div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:160px;">
+            <label class="form-label">Category</label>
+            <select v-model="prodModal.category" class="form-input">
+              <option value="">None</option>
+              <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:160px;">
+            <label class="form-label" style="display:flex;align-items:center;gap:5px;">
+              Supplier <Lock v-if="prodModal.id" :size="11" />
+            </label>
+            <select v-if="!prodModal.id" v-model="prodModal.supplier" class="form-input">
+              <option value="">Select supplier…</option>
+              <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }} ({{ s.code_prefix }})</option>
+            </select>
+            <input v-else class="form-input" :value="prodModal.supplierName" disabled title="Supplier is locked — the SKU is built from it" />
+          </div>
+        </div>
+
+        <div><label class="form-label">Description</label><textarea v-model="prodModal.description" class="form-input" rows="2" placeholder="Optional" /></div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:110px;"><label class="form-label">Base price</label><input v-model.number="prodModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
+          <div style="flex:1;min-width:110px;"><label class="form-label">Cost price</label><input v-model.number="prodModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
+          <div style="flex:1;min-width:110px;"><label class="form-label">Sell price</label><input v-model.number="prodModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
+        </div>
+
+        <div v-if="attributes.length" style="border-top:1px solid var(--border);padding-top:12px;">
+          <div class="form-label" style="margin-bottom:8px;">Attributes</div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;">
+            <div v-for="def in attributes" :key="def.id" style="flex:1;min-width:140px;">
+              <label class="form-label">{{ def.name }}</label>
+              <select v-if="def.options && def.options.length" v-model="prodModal.attrs[def.id]" class="form-input">
+                <option value="">—</option>
+                <option v-for="(o, i) in def.options" :key="i" :value="optText(o)">{{ optText(o) }}</option>
+              </select>
+              <input v-else v-model="prodModal.attrs[def.id]" class="form-input" :placeholder="def.name" />
+            </div>
+          </div>
+        </div>
+
+        <p v-if="prodModal.error" class="form-label" style="color:var(--danger,#dc2626);">{{ prodModal.error }}</p>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="prodModal.open = false">Cancel</button>
+        <button
+          class="btn-primary"
+          :disabled="!prodModal.name.trim() || (!prodModal.id && !prodModal.supplier) || prodModal.saving"
+          @click="saveProduct"
+        >{{ prodModal.saving ? 'Saving…' : 'Save' }}</button>
+      </template>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import {
-  Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck,
+  Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck, Plus,
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ArrowUp, ArrowDown, ArrowUpDown,
   Columns3, GripVertical, Lock, UserCog, RotateCcw,
 } from 'lucide-vue-next'
@@ -641,6 +703,68 @@ async function saveSupplier() {
 }
 async function deleteSupplier(id) { if (!confirm('Delete this supplier?')) return; await api.delete(`/api/inventory/suppliers/${id}/`); fetchSuppliers() }
 
+/* ── product add / edit ── */
+const prodModal = reactive({
+  open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
+  base_price: 0, cost_price: 0, sell_price: 0, attrs: {}, saving: false, error: '',
+})
+function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
+function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
+
+function openAddProduct() {
+  Object.assign(prodModal, {
+    open: true, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
+    base_price: 0, cost_price: 0, sell_price: 0, saving: false, error: '',
+  })
+  resetAttrs()
+}
+
+async function openEditProduct(p) {
+  Object.assign(prodModal, { open: true, id: p.id, saving: false, error: '' })
+  resetAttrs()
+  try {
+    const { data } = await api.get(`/api/inventory/products/${p.id}/`)
+    prodModal.name        = data.name || ''
+    prodModal.description = data.description || ''
+    prodModal.category    = data.category || ''
+    prodModal.supplier    = data.supplier || ''
+    const sup = suppliers.value.find(s => s.id === data.supplier)
+    prodModal.supplierName = sup ? `${sup.name} (${sup.code_prefix})` : '—'
+    prodModal.base_price  = Number(data.base_price || 0)
+    const v = (data.variants && data.variants[0]) || null
+    prodModal.cost_price  = v ? Number(v.cost_price || 0) : 0
+    prodModal.sell_price  = v ? Number(v.sell_price || 0) : 0
+    if (v && v.attributes) for (const a of v.attributes) prodModal.attrs[a.definition] = a.value
+  } catch { prodModal.error = 'Failed to load product details.' }
+}
+
+async function saveProduct() {
+  prodModal.error = ''; prodModal.saving = true
+  const attributes_payload = Object.entries(prodModal.attrs)
+    .filter(([, v]) => v !== '' && v != null)
+    .map(([definition, value]) => ({ definition, value }))
+  const payload = {
+    name: prodModal.name.trim(),
+    description: prodModal.description || '',
+    category: prodModal.category || null,
+    base_price: prodModal.base_price || 0,
+    cost_price: prodModal.cost_price || 0,
+    sell_price: prodModal.sell_price || 0,
+    attributes: attributes_payload,
+  }
+  if (!prodModal.id) payload.supplier = prodModal.supplier   // supplier locked on edit
+  try {
+    if (prodModal.id) await api.patch(`/api/inventory/products/${prodModal.id}/`, payload)
+    else              await api.post('/api/inventory/products/', payload)
+    prodModal.open = false
+    fetchProducts(prodModal.id ? page.value : 1)
+  } catch (e) {
+    prodModal.error = e.response?.data?.detail
+      || e.response?.data?.supplier?.[0]
+      || 'Save failed. Make sure the supplier prefix is confirmed (locked).'
+  } finally { prodModal.saving = false }
+}
+
 onMounted(() => {
   fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppliers()
   ro = new ResizeObserver(() => { if (toolbarRef.value) theadTop.value = toolbarRef.value.offsetHeight })
@@ -682,6 +806,9 @@ onUnmounted(() => { ro?.disconnect() })
 
 .dt-filter { display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 10px 16px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: 11px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background 120ms, color 120ms; }
 .dt-filter:hover, .dt-filter.on { color: var(--text-primary); border-color: var(--accent); }
+.dt-add { display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 10px 16px; border: none; background: var(--accent); color: #fff; border-radius: 11px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background 120ms, transform 70ms; }
+.dt-add:hover { background: var(--accent-hover, var(--accent)); }
+.dt-add:active { transform: scale(0.96); }
 
 .dt-filterpanel { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: center; }
 .filter-select { max-width: 150px; }
@@ -765,6 +892,7 @@ onUnmounted(() => { ro?.disconnect() })
 .dt-row { border-bottom: 1px solid var(--border); transition: background 100ms; }
 .dt-row:last-child { border-bottom: none; }
 .dt-row:hover { background: var(--bg-app); }
+.dt-row.clickable { cursor: pointer; }
 .dt td { padding: 12px 16px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ta-right { text-align: right; }
 
