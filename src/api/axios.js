@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+// Dev: fallback to localhost:8000 (Vite on 5173, Django on 8000).
+// Prod: empty string = same-origin relative URLs (Django serves both).
+const BASE = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8000' : '')
 
 // Set true the moment an intentional logout starts. While true the response
 // interceptor must NOT try to refresh a dead token or re-populate localStorage —
