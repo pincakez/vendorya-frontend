@@ -55,7 +55,7 @@
             <thead :style="{ top: theadTop + 'px' }">
               <tr>
                 <th
-                  v-for="col in columns" :key="col.key"
+                  v-for="col in visibleColumns" :key="col.key"
                   class="dt-th" :class="[col.align === 'right' ? 'ta-right' : '', col.sort ? 'sortable' : '']"
                   :style="{ width: colWidths[col.key] + 'px', top: theadTop + 'px' }"
                   @click="col.sort && handleSort(col)"
@@ -73,16 +73,13 @@
             <Transition :name="rowTransition" mode="out-in">
               <tbody :key="page">
                 <tr v-for="p in products" :key="p.id" class="dt-row">
-                  <td class="c-sku">{{ p.sku_display || '—' }}</td>
-                  <td class="c-name">{{ p.name }}</td>
-                  <td class="c-sup">{{ p.supplier_name || '—' }}</td>
-                  <td class="c-mono c-muted">{{ auth.currencySymbol }}{{ p.cost_display }}</td>
-                  <td class="c-mono c-retail">{{ auth.currencySymbol }}{{ p.price_display }}</td>
-                  <td class="c-mono c-profit">+{{ auth.currencySymbol }}{{ p.profit_display }}</td>
-                  <td class="ta-right"><span class="stock-badge">{{ formatQty(p.total_stock) }}</span></td>
+                  <td v-for="col in visibleColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '']">
+                    <span v-if="col.badge" class="stock-badge">{{ formatQty(p.total_stock) }}</span>
+                    <template v-else>{{ cellText(col, p) }}</template>
+                  </td>
                 </tr>
                 <tr v-if="!loading && !products.length">
-                  <td :colspan="columns.length" class="dt-empty">
+                  <td :colspan="visibleColumns.length" class="dt-empty">
                     <Package :size="40" class="dt-empty-icon" />
                     <div class="dt-empty-title">No products found</div>
                     <div class="dt-empty-sub">Adjust your search or filter.</div>
@@ -213,18 +210,32 @@ const activeTab = ref('products')
 
 /* ── columns ── */
 const columns = [
-  { key: 'sku',       label: 'SKU',       sort: 'o_sku',          align: 'left' },
-  { key: 'product',   label: 'PRODUCT',   sort: 'name',           align: 'left' },
-  { key: 'supplier',  label: 'SUPPLIER',  sort: 'supplier__name', align: 'left' },
-  { key: 'wholesale', label: 'WHOLESALE', sort: 'o_wholesale',    align: 'left' },
-  { key: 'retail',    label: 'RETAIL',    sort: 'o_retail',       align: 'left' },
-  { key: 'profit',    label: 'PROFIT',    sort: 'o_profit',       align: 'left' },
-  { key: 'inStock',   label: 'IN STOCK',  sort: 'o_stock',        align: 'right' },
+  { key: 'sku',       label: 'SKU',       sort: 'o_sku',          align: 'left',  field: 'sku_display',   cls: 'c-sku' },
+  { key: 'product',   label: 'PRODUCT',   sort: 'name',           align: 'left',  field: 'name',          cls: 'c-name' },
+  { key: 'supplier',  label: 'SUPPLIER',  sort: 'supplier__name', align: 'left',  field: 'supplier_name', cls: 'c-sup' },
+  { key: 'wholesale', label: 'WHOLESALE', sort: 'o_wholesale',    align: 'left',  field: 'cost_display',  cls: 'c-mono c-muted', money: true },
+  { key: 'retail',    label: 'RETAIL',    sort: 'o_retail',       align: 'left',  field: 'price_display', cls: 'c-mono c-retail', money: true },
+  { key: 'profit',    label: 'PROFIT',    sort: 'o_profit',       align: 'left',  field: 'profit_display',cls: 'c-mono c-profit', money: true, plus: true },
+  { key: 'inStock',   label: 'IN STOCK',  sort: 'o_stock',        align: 'right', field: 'total_stock',   cls: '', badge: true },
 ]
 const DEFAULT_WIDTHS = { sku: 130, product: 300, supplier: 170, wholesale: 120, retail: 120, profit: 120, inStock: 110 }
 const WIDTH_KEY = 'dt_inventory_widths'
 const colWidths = reactive({ ...DEFAULT_WIDTHS, ...(JSON.parse(localStorage.getItem(WIDTH_KEY) || 'null') || {}) })
-const tableMin = computed(() => Object.values(colWidths).reduce((a, b) => a + b, 0))
+
+// Layer 1: a column is shown only if its field is present in the data. The server
+// omits role-hidden fields entirely, so hidden columns drop automatically.
+const visibleColumns = computed(() => {
+  const sample = products.value[0]
+  if (!sample) return columns
+  return columns.filter(c => !c.field || sample[c.field] !== undefined)
+})
+const tableMin = computed(() => visibleColumns.value.reduce((a, c) => a + colWidths[c.key], 0))
+
+function cellText(col, p) {
+  const v = p[col.field]
+  if (v === undefined || v === null || v === '') return '—'
+  return col.money ? (col.plus ? '+' : '') + auth.currencySymbol + v : v
+}
 
 /* ── sort (server-side) ── */
 const sortKey = ref(null)
