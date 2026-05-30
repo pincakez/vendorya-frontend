@@ -143,14 +143,6 @@
             </button>
           </form>
 
-          <!-- Theme toggle -->
-          <div class="theme-row">
-            <button @click="theme.toggle()" class="theme-btn">
-              <Sun v-if="theme.dark" :size="12" />
-              <Moon v-else :size="12" />
-              {{ theme.dark ? 'Light mode' : 'Dark mode' }}
-            </button>
-          </div>
 
         </div>
       </div>
@@ -179,14 +171,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Mail, Lock, Eye, EyeOff, Key, ArrowRight, ShieldCheck, AlertCircle, Loader2, Sun, Moon } from 'lucide-vue-next'
+import { Mail, Lock, Eye, EyeOff, Key, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
-import { useThemeStore } from '@/stores/theme'
 
 const router = useRouter()
 const route  = useRoute()
 const auth   = useAuthStore()
-const theme  = useThemeStore()
 
 const logoSrc = '/logo-text-dark-mode.png'
 
@@ -630,25 +620,6 @@ async function handleOtp() {
 .btn-arrow { transition: transform 150ms; }
 .submit-btn:hover:not(:disabled) .btn-arrow { transform: translateX(3px); }
 
-/* ── theme toggle ───────────────────────────────────────── */
-.theme-row { display: flex; justify-content: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.07); }
-.theme-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: rgba(161,161,170,0.6);
-  font-size: 11px;
-  font-family: ui-monospace, monospace;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 6px 10px;
-  border-radius: 8px;
-  transition: color 120ms, background 120ms;
-}
-.theme-btn:hover { color: #a1a1aa; background: rgba(255,255,255,0.05); }
 
 /* ── right slideshow pane ───────────────────────────────── */
 .slide-pane {
