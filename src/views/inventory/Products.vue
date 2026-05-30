@@ -23,17 +23,15 @@
         </div>
 
         <div class="cat-slider">
-          <button v-if="cats.length > catWindow" class="cat-nav" @click="catScroll(-1)"><ChevronLeft :size="18" /></button>
+          <button v-if="cats.length > catWindow" class="cat-nav" :disabled="catStart === 0" @click="catScroll(-1)"><ChevronLeft :size="18" /></button>
           <div class="cat-track">
-            <TransitionGroup :name="catDir">
-              <button
-                v-for="c in visibleCats" :key="c.id ?? 'all'"
-                class="cat-pill" :class="{ active: activeCatId === c.id }"
-                @click="setCat(c.id)"
-              >{{ c.name }}</button>
-            </TransitionGroup>
+            <button
+              v-for="c in visibleCats" :key="c.id ?? 'all'"
+              class="cat-pill" :class="{ active: activeCatId === c.id }"
+              @click="setCat(c.id)"
+            >{{ c.name }}</button>
           </div>
-          <button v-if="cats.length > catWindow" class="cat-nav" @click="catScroll(1)"><ChevronRight :size="18" /></button>
+          <button v-if="cats.length > catWindow" class="cat-nav" :disabled="catStart >= catMax" @click="catScroll(1)"><ChevronRight :size="18" /></button>
         </div>
 
         <button class="dt-filter" :class="{ on: showFilters }" @click="showFilters = !showFilters">
@@ -74,25 +72,22 @@
 
             <Transition :name="rowTransition" mode="out-in">
               <tbody :key="page">
-                <tr v-if="loading"><td :colspan="columns.length" class="dt-loading">Loading…</td></tr>
-                <template v-else>
-                  <tr v-for="p in products" :key="p.id" class="dt-row">
-                    <td class="c-sku">{{ p.sku_display || '—' }}</td>
-                    <td class="c-name">{{ p.name }}</td>
-                    <td class="c-sup">{{ p.supplier_name || '—' }}</td>
-                    <td class="c-mono c-muted">{{ auth.currencySymbol }}{{ p.cost_display }}</td>
-                    <td class="c-mono c-retail">{{ auth.currencySymbol }}{{ p.price_display }}</td>
-                    <td class="c-mono c-profit">+{{ auth.currencySymbol }}{{ p.profit_display }}</td>
-                    <td class="ta-right"><span class="stock-badge">{{ formatQty(p.total_stock) }}</span></td>
-                  </tr>
-                  <tr v-if="!products.length">
-                    <td :colspan="columns.length" class="dt-empty">
-                      <Package :size="40" class="dt-empty-icon" />
-                      <div class="dt-empty-title">No products found</div>
-                      <div class="dt-empty-sub">Adjust your search or filter.</div>
-                    </td>
-                  </tr>
-                </template>
+                <tr v-for="p in products" :key="p.id" class="dt-row">
+                  <td class="c-sku">{{ p.sku_display || '—' }}</td>
+                  <td class="c-name">{{ p.name }}</td>
+                  <td class="c-sup">{{ p.supplier_name || '—' }}</td>
+                  <td class="c-mono c-muted">{{ auth.currencySymbol }}{{ p.cost_display }}</td>
+                  <td class="c-mono c-retail">{{ auth.currencySymbol }}{{ p.price_display }}</td>
+                  <td class="c-mono c-profit">+{{ auth.currencySymbol }}{{ p.profit_display }}</td>
+                  <td class="ta-right"><span class="stock-badge">{{ formatQty(p.total_stock) }}</span></td>
+                </tr>
+                <tr v-if="!loading && !products.length">
+                  <td :colspan="columns.length" class="dt-empty">
+                    <Package :size="40" class="dt-empty-icon" />
+                    <div class="dt-empty-title">No products found</div>
+                    <div class="dt-empty-sub">Adjust your search or filter.</div>
+                  </td>
+                </tr>
               </tbody>
             </Transition>
           </table>
@@ -315,17 +310,12 @@ const cats = ref([{ id: null, name: 'All' }])
 const activeCatId = ref(null)
 const catWindow = 5
 const catStart = ref(0)
-const catDir = ref('cat-left')
-const visibleCats = computed(() => {
-  if (cats.value.length <= catWindow) return cats.value
-  const out = []
-  for (let i = 0; i < catWindow; i++) out.push(cats.value[(catStart.value + i) % cats.value.length])
-  return out
-})
+const catMax = computed(() => Math.max(0, cats.value.length - catWindow))
+const visibleCats = computed(() =>
+  cats.value.length <= catWindow ? cats.value : cats.value.slice(catStart.value, catStart.value + catWindow)
+)
 function catScroll(d) {
-  catDir.value = d > 0 ? 'cat-left' : 'cat-right'
-  const n = cats.value.length
-  catStart.value = ((catStart.value + d * catWindow) % n + n) % n
+  catStart.value = Math.min(catMax.value, Math.max(0, catStart.value + d * catWindow))
 }
 function setCat(id) { activeCatId.value = id; fetchProducts(1) }
 
@@ -388,7 +378,9 @@ onUnmounted(() => { ro?.disconnect() })
 .dt-toolbar {
   position: sticky; top: 0; z-index: 30;
   display: flex; align-items: center; gap: 14px;
-  background: var(--bg-app); margin: 0 -24px; padding: 14px 24px;
+  background: var(--bg-app); padding: 14px 0;
+  /* Paints the 24px content-padding band above the bar so rows can't peek through. */
+  box-shadow: 0 -24px 0 var(--bg-app);
 }
 .dt-search { display: flex; align-items: center; gap: 6px; width: 300px; flex-shrink: 0; position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: 11px; padding: 8px 10px; }
 .dt-search-icon { color: var(--text-muted); flex-shrink: 0; }
@@ -398,6 +390,8 @@ onUnmounted(() => { ro?.disconnect() })
 .cat-slider { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; overflow: hidden; }
 .cat-nav { display: flex; flex-shrink: 0; border: none; background: none; cursor: pointer; color: var(--text-muted); border-radius: 8px; padding: 6px; transition: background 120ms, color 120ms; }
 .cat-nav:hover { background: var(--sb-hover, var(--border)); color: var(--text-primary); }
+.cat-nav:disabled { opacity: 0.3; cursor: default; }
+.cat-nav:disabled:hover { background: none; color: var(--text-muted); }
 .cat-track { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; overflow: hidden; }
 .cat-pill { flex: 0 0 auto; padding: 9px 18px; border: 1px solid transparent; background: none; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--text-muted); white-space: nowrap; transition: background 120ms, color 120ms; }
 .cat-pill:hover { background: var(--bg-card); color: var(--text-primary); }
@@ -427,7 +421,9 @@ onUnmounted(() => { ro?.disconnect() })
   white-space: nowrap; user-select: none;
 }
 .dt-th.sortable { cursor: pointer; }
-.dt-th.sortable:hover { background: var(--sb-hover, var(--border)); }
+/* MUST be opaque — a translucent hover lets scrolling rows bleed through the sticky header. */
+.dt-th.sortable:hover { background: #eef2f7; }
+.dark .dt-th.sortable:hover { background: #2a2a2e; }
 .dt-th.ta-right { text-align: right; }
 .dt-th-inner { display: inline-flex; align-items: center; gap: 6px; }
 .dt-th-inner.jend { justify-content: flex-end; }

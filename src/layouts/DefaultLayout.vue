@@ -9,7 +9,9 @@
       />
 
       <main class="app-content">
-        <RouterView />
+        <div class="page-wrap">
+          <RouterView />
+        </div>
       </main>
 
       <AppFooter />
@@ -57,6 +59,9 @@ function exitPreview() {
 </script>
 
 <style scoped>
+/* Wide, but not wiiide — cap content on ultra-wide screens. */
+.page-wrap { max-width: 1500px; margin: 0 auto; width: 100%; }
+
 .preview-badge {
   position: fixed;
   bottom: 20px;
