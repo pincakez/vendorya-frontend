@@ -15,30 +15,18 @@
   </Transition>
 
   <div class="login-root">
-    <!-- Animated wave background -->
+    <!-- Animated background — large soft glows + faint wave lines -->
     <div class="wave-bg" aria-hidden="true">
-      <div class="wave-base"></div>
+      <!-- Soft glow orbs -->
+      <div class="glow-orb glow-orb-a"></div>
+      <div class="glow-orb glow-orb-b"></div>
+      <div class="glow-orb glow-orb-c"></div>
+      <!-- Faint wave lines on top of glows -->
       <svg viewBox="0 0 1000 400" preserveAspectRatio="none" class="wave wave-1">
-        <defs>
-          <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stop-color="#f78f1e" stop-opacity="0" />
-            <stop offset="50%"  stop-color="#f78f1e" stop-opacity="0.8" />
-            <stop offset="100%" stop-color="#f78f1e" stop-opacity="0" />
-          </linearGradient>
-        </defs>
-        <path d="M0,200 C300,350 400,50 600,200 C800,350 900,50 1000,200 L1000,400 L0,400 Z" fill="url(#wg1)" opacity="0.3"/>
-        <path d="M0,200 C300,350 400,50 600,200 C800,350 900,50 1000,200" fill="none" stroke="#f78f1e" stroke-width="3" opacity="0.9"/>
+        <path d="M0,200 C300,350 400,50 600,200 C800,350 900,50 1000,200" fill="none" stroke="#f78f1e" stroke-width="2" opacity="0.35"/>
       </svg>
       <svg viewBox="0 0 1000 400" preserveAspectRatio="none" class="wave wave-2">
-        <defs>
-          <linearGradient id="wg2" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stop-color="#ffffff" stop-opacity="0" />
-            <stop offset="50%"  stop-color="#f78f1e" stop-opacity="0.6" />
-            <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
-          </linearGradient>
-        </defs>
-        <path d="M0,200 C200,50 400,350 700,200 C900,100 950,250 1000,200 L1000,400 L0,400 Z" fill="url(#wg2)" opacity="0.2"/>
-        <path d="M0,200 C200,50 400,350 700,200 C900,100 950,250 1000,200" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.5"/>
+        <path d="M0,200 C200,50 400,350 700,200 C900,100 950,250 1000,200" fill="none" stroke="#f78f1e" stroke-width="1.5" opacity="0.18"/>
       </svg>
     </div>
 
@@ -324,7 +312,8 @@ async function handleOtp() {
   position: relative;
   min-height: 100vh;
   background: #0F0F12;
-  overflow: hidden;
+  /* clip-path instead of overflow:hidden — overflow:hidden kills backdrop-filter */
+  clip-path: inset(0);
   display: flex;
   flex-direction: column;
 }
@@ -334,20 +323,64 @@ async function handleOtp() {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  background: linear-gradient(135deg, #0F0F12 0%, #121216 60%, #0A0A0C 100%);
+  opacity: 0.6;
 }
-.wave-base {
+
+/* Large soft glowing orbs — wide spread, very low opacity */
+.glow-orb {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom right, #0F0F12, #121216, #0A0A0C);
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
 }
+.glow-orb-a {
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(ellipse, rgba(247,143,30,0.22) 0%, transparent 70%);
+  top: -200px;
+  right: -100px;
+  animation: orbDrift1 22s ease-in-out infinite alternate;
+}
+.glow-orb-b {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(247,143,30,0.16) 0%, transparent 70%);
+  bottom: -150px;
+  left: 10%;
+  animation: orbDrift2 28s ease-in-out infinite alternate-reverse;
+}
+.glow-orb-c {
+  width: 500px;
+  height: 300px;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.05) 0%, transparent 70%);
+  top: 40%;
+  left: 30%;
+  animation: orbDrift3 18s ease-in-out infinite alternate;
+}
+
+@keyframes orbDrift1 {
+  0%   { transform: translate(0,    0)    scale(1);    }
+  50%  { transform: translate(-60px, 80px) scale(1.1); }
+  100% { transform: translate(40px, -40px) scale(0.95); }
+}
+@keyframes orbDrift2 {
+  0%   { transform: translate(0,    0)    scale(1);    }
+  50%  { transform: translate(80px, -60px) scale(1.15); }
+  100% { transform: translate(-30px, 50px) scale(0.9);  }
+}
+@keyframes orbDrift3 {
+  0%   { transform: translate(0, 0)    scale(1);   }
+  100% { transform: translate(40px, 30px) scale(1.2); }
+}
+
+/* Faint wave lines */
 .wave {
   position: absolute;
   width: 220vw;
   height: 140vh;
+  top: -20vh;
+  left: -60vw;
 }
 .wave-1 { animation: waveMotion1 20s cubic-bezier(.4,0,.2,1) infinite alternate; }
 .wave-2 { width: 180vw; height: 120vh; animation: waveMotion2 25s cubic-bezier(.4,0,.2,1) infinite alternate-reverse; }
@@ -379,11 +412,12 @@ async function handleOtp() {
   align-items: center;
   justify-content: center;
   padding: 48px;
-  background: rgba(15,15,18,0.40);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border-right: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 20px 0 100px rgba(0,0,0,0.3);
+  /* Enough transparency to let glow show through, strong blur for glass feel */
+  background: rgba(10,10,12,0.55);
+  backdrop-filter: blur(48px) saturate(140%);
+  -webkit-backdrop-filter: blur(48px) saturate(140%);
+  border-right: 1px solid rgba(247,143,30,0.08);
+  box-shadow: inset -1px 0 0 rgba(247,143,30,0.06), 20px 0 80px rgba(0,0,0,0.5);
   z-index: 20;
 }
 .form-inner {
