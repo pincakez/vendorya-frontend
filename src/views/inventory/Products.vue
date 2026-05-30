@@ -134,6 +134,7 @@
                   </span>
                   <span class="dt-resize" @mousedown.stop.prevent="startResize(col.key, $event)" @click.stop></span>
                 </th>
+                <th class="dt-th ta-right dt-actcol">Actions</th>
               </tr>
             </thead>
 
@@ -144,9 +145,12 @@
                     <span v-if="col.badge" class="stock-badge">{{ formatQty(p.total_stock) }}</span>
                     <template v-else>{{ cellText(col, p) }}</template>
                   </td>
+                  <td class="ta-right dt-actcol">
+                    <button class="row-action" title="Edit product" @click.stop="openEditProduct(p)"><Pencil :size="14" /></button>
+                  </td>
                 </tr>
                 <tr v-if="!loading && !products.length">
-                  <td :colspan="displayColumns.length" class="dt-empty">
+                  <td :colspan="displayColumns.length + 1" class="dt-empty">
                     <Package :size="40" class="dt-empty-icon" />
                     <div class="dt-empty-title">No products found</div>
                     <div class="dt-empty-sub">Adjust your search or filter.</div>
@@ -926,6 +930,7 @@ onUnmounted(() => { ro?.disconnect() })
 
 /* reused */
 .code-chip { font-family: ui-monospace, monospace; font-size: 12px; background: var(--bg-app); border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px; color: var(--text-secondary); }
+.dt-actcol { width: 72px; white-space: nowrap; }
 .row-action { width: 28px; height: 28px; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; transition: background 100ms, color 100ms; }
 .row-action:hover { background: var(--border); color: var(--text-primary); }
 .row-action.danger:hover { background: #fee2e2; color: #dc2626; }
