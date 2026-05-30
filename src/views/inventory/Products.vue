@@ -107,9 +107,17 @@
               <tr>
                 <th
                   v-for="col in displayColumns" :key="col.key"
-                  class="dt-th" :class="[col.align === 'right' ? 'ta-right' : '', col.sort ? 'sortable' : '']"
+                  class="dt-th"
+                  :class="[
+                    col.align === 'right' ? 'ta-right' : '',
+                    col.sort ? 'sortable' : '',
+                    colDragKey === col.key ? 'col-dragging' : '',
+                    colDragOver === col.key && colDragKey !== col.key ? 'col-drag-over' : ''
+                  ]"
                   :style="{ width: colWidths[col.key] + 'px', top: theadTop + 'px' }"
                   @click="col.sort && handleSort(col)"
+                  @pointerdown="startColDrag(col.key, $event)"
+                  @pointerenter="colDragKey && (colDragOver = col.key)"
                 >
                   <span class="dt-th-inner" :class="{ jend: col.align === 'right' }">
                     <component v-if="col.align === 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
@@ -454,10 +462,48 @@ async function assignTo(row) {
   await api.post('/api/smart/presets/assignments/', { user_id: row.user_id, table_id: TABLE_ID, preset_id: row.preset_id || null })
 }
 
+/* ── column header drag-to-reorder ── */
+const colDragKey = ref(null)
+const colDragOver = ref(null)
+let colDragMoved = false
+let colDragStartX = 0
+let suppressNextSort = false
+
+function startColDrag(key, e) {
+  const rect = e.currentTarget.getBoundingClientRect()
+  if (e.clientX > rect.right - 10) return   // let resize handle it
+  colDragKey.value = key
+  colDragOver.value = key
+  colDragMoved = false
+  colDragStartX = e.clientX
+  document.addEventListener('pointermove', onColDragMove)
+  document.addEventListener('pointerup', onColDragEnd, { once: true })
+}
+function onColDragMove(e) {
+  if (colDragKey.value && !colDragMoved && Math.abs(e.clientX - colDragStartX) > 5)
+    colDragMoved = true
+}
+function onColDragEnd() {
+  document.removeEventListener('pointermove', onColDragMove)
+  if (colDragMoved && colDragKey.value && colDragOver.value && colDragKey.value !== colDragOver.value) {
+    const arr = [...colOrder.value]
+    arr.splice(arr.indexOf(colDragKey.value), 1)
+    arr.splice(arr.indexOf(colDragOver.value), 0, colDragKey.value)
+    colOrder.value = arr
+    saveAdhoc()
+    suppressNextSort = true
+    setTimeout(() => { suppressNextSort = false }, 50)
+  }
+  colDragKey.value = null
+  colDragOver.value = null
+  colDragMoved = false
+}
+
 /* ── sort (server-side) ── */
 const sortKey = ref(null)
 const sortDir = ref('asc')   // asc | desc
 function handleSort(col) {
+  if (suppressNextSort) return
   if (sortKey.value === col.key) {
     if (sortDir.value === 'asc') sortDir.value = 'desc'
     else { sortKey.value = null; sortDir.value = 'asc' }
@@ -652,6 +698,10 @@ onUnmounted(() => { ro?.disconnect() })
 .edit-hint { font-size: 12px; color: var(--text-muted); margin: 8px 0 10px; }
 .chooser { display: flex; flex-direction: column; gap: 4px; max-width: 380px; }
 .chooser-row { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-app); cursor: grab; transition: border-color 120ms; }
+/* column header drag */
+.dt-th.col-dragging  { opacity: 0.35; cursor: grabbing !important; }
+.dt-th.col-drag-over { border-left: 3px solid var(--accent); background: var(--accent-soft) !important; }
+
 .chooser-row:hover { border-color: var(--accent); }
 .chooser-row.drag-over { border-color: var(--accent); background: var(--accent-soft); }
 .chooser-row.disabled { opacity: 0.5; }
