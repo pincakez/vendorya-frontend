@@ -21,6 +21,7 @@
         <div v-if="!collapsed" class="nav-section-label">Billing</div>
         <NavItem icon="credit-card"      label="Subscriptions" to="/admin/subscriptions" :collapsed="collapsed" />
         <NavItem icon="package"          label="Plans"         to="/admin/plans"         :collapsed="collapsed" />
+        <NavItem icon="sliders-horizontal" label="Billing Settings" to="/admin/billing-settings" :collapsed="collapsed" />
 
         <NavItem icon="activity"         label="Activity Log" to="/admin/activity-log"  :collapsed="collapsed" />
 
