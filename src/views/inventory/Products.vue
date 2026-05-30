@@ -49,6 +49,7 @@
       </div>
 
       <!-- EDIT MODE — column chooser -->
+      <Transition name="edit-slide">
       <div v-if="editing" class="edit-panel">
         <div class="edit-head">
           <span class="edit-title"><Columns3 :size="15" /> Customize columns</span>
@@ -87,6 +88,7 @@
           </div>
         </div>
       </div>
+      </Transition>
 
       <!-- optional advanced (attribute) filters -->
       <div v-if="showFilters && filterableAttrs.length" class="dt-filterpanel">
@@ -630,7 +632,19 @@ onUnmounted(() => { ro?.disconnect() })
 
 /* ── TABLE ── */
 /* ── EDIT MODE ── */
-.edit-panel { background: var(--bg-card); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 4px 20px var(--accent-soft); }
+/* edit panel slide-down animation */
+.edit-slide-enter-active { animation: editSlideDown 220ms cubic-bezier(0.25,0.8,0.25,1) both; }
+.edit-slide-leave-active { animation: editSlideUp   160ms cubic-bezier(0.4,0,1,1)       both; }
+@keyframes editSlideDown {
+  from { opacity: 0; transform: translateY(-10px) scaleY(0.96); }
+  to   { opacity: 1; transform: translateY(0)     scaleY(1); }
+}
+@keyframes editSlideUp {
+  from { opacity: 1; transform: translateY(0)    scaleY(1); }
+  to   { opacity: 0; transform: translateY(-8px) scaleY(0.97); }
+}
+
+.edit-panel { background: var(--bg-card); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 4px 20px var(--accent-soft); transform-origin: top center; }
 .edit-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .edit-title { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; color: var(--text-primary); }
 .edit-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
