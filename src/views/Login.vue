@@ -200,8 +200,7 @@ const route  = useRoute()
 const auth   = useAuthStore()
 const theme  = useThemeStore()
 
-// swap to '/logo.png' once the file is dropped in public/
-const logoSrc = '/logo-text.png'
+const logoSrc = '/logo-text-dark-mode.png'
 
 // ── form state ───────────────────────────────────────────
 const form         = ref({ username: '', password: '' })
