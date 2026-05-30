@@ -66,9 +66,9 @@
         <p class="edit-hint">Drag to reorder · uncheck to hide · SKU and Product are locked.</p>
         <div class="chooser">
           <div
-            v-for="key in working.order" :key="key" class="chooser-row"
+            v-for="(key, idx) in working.order" :key="key" class="chooser-row"
             :class="{ disabled: !permittedKeys.includes(key) }"
-            draggable="true" @dragstart="onDragStart(key)" @dragover.prevent @drop="onDrop(key)"
+            draggable="true" @dragstart="onDragStart(key, $event)" @dragover.prevent @drop="onDrop(key)" @dragend="dragKey = null"
           >
             <GripVertical :size="14" class="chooser-grip" />
             <input
@@ -80,6 +80,10 @@
             <span class="chooser-label">{{ colByKey[key].label }}</span>
             <Lock v-if="LOCKED.includes(key)" :size="12" class="chooser-tag" />
             <span v-else-if="!permittedKeys.includes(key)" class="chooser-na">hidden by role</span>
+            <span class="chooser-move">
+              <button class="chooser-mv" :disabled="idx === 0" title="Move up" @click="moveCol(key, -1)"><ChevronUp :size="14" /></button>
+              <button class="chooser-mv" :disabled="idx === working.order.length - 1" title="Move down" @click="moveCol(key, 1)"><ChevronDown :size="14" /></button>
+            </span>
           </div>
         </div>
       </div>
@@ -269,7 +273,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import {
   Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck,
-  ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown,
+  ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ArrowUp, ArrowDown, ArrowUpDown,
   Columns3, GripVertical, Lock, UserCog, RotateCcw,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
@@ -388,12 +392,24 @@ function toggleHidden(key) {
   if (i >= 0) working.hidden.splice(i, 1); else working.hidden.push(key)
 }
 let dragKey = null
-function onDragStart(key) { dragKey = key }
-function onDrop(key) {
-  if (!dragKey || dragKey === key) return
-  const arr = working.order
-  arr.splice(arr.indexOf(key), 0, arr.splice(arr.indexOf(dragKey), 1)[0])
-  dragKey = null
+function onDragStart(key, e) {
+  dragKey = key
+  if (e?.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', key) }
+}
+function reorder(fromKey, toKey) {
+  if (!fromKey || fromKey === toKey) return
+  const arr = [...working.order]
+  arr.splice(arr.indexOf(fromKey), 1)          // remove dragged
+  arr.splice(arr.indexOf(toKey), 0, fromKey)   // insert before the drop target
+  working.order = arr                          // reassign → reactive
+}
+function onDrop(key) { reorder(dragKey, key); dragKey = null }
+function moveCol(key, dir) {
+  const arr = [...working.order]
+  const i = arr.indexOf(key), j = i + dir
+  if (j < 0 || j >= arr.length) return
+  ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  working.order = arr
 }
 
 /* ── presets + assignment ── */
@@ -619,6 +635,10 @@ onUnmounted(() => { ro?.disconnect() })
 .chooser-label { flex: 1; font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
 .chooser-tag { color: var(--text-muted); }
 .chooser-na { font-size: 11px; color: var(--text-muted); }
+.chooser-move { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; margin-left: auto; }
+.chooser-mv { display: flex; border: none; background: none; cursor: pointer; color: var(--text-muted); padding: 1px; border-radius: 4px; transition: background 120ms, color 120ms; }
+.chooser-mv:hover:not(:disabled) { background: var(--border); color: var(--text-primary); }
+.chooser-mv:disabled { opacity: 0.25; cursor: default; }
 
 .assign-list { display: flex; flex-direction: column; gap: 8px; }
 .assign-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
