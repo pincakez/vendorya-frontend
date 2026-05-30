@@ -21,12 +21,12 @@
       <div class="glow-orb glow-orb-a"></div>
       <div class="glow-orb glow-orb-b"></div>
       <div class="glow-orb glow-orb-c"></div>
-      <!-- Faint wave lines on top of glows -->
+      <!-- Faint wave lines: wave-1 = orange, wave-2 = light grey -->
       <svg viewBox="0 0 1000 400" preserveAspectRatio="none" class="wave wave-1">
-        <path d="M0,200 C300,350 400,50 600,200 C800,350 900,50 1000,200" fill="none" stroke="#f78f1e" stroke-width="2" opacity="0.35"/>
+        <path d="M0,200 C300,350 400,50 600,200 C800,350 900,50 1000,200" fill="none" stroke="#f78f1e" stroke-width="2" opacity="0.40"/>
       </svg>
       <svg viewBox="0 0 1000 400" preserveAspectRatio="none" class="wave wave-2">
-        <path d="M0,200 C200,50 400,350 700,200 C900,100 950,250 1000,200" fill="none" stroke="#f78f1e" stroke-width="1.5" opacity="0.18"/>
+        <path d="M0,200 C200,50 400,350 700,200 C900,100 950,250 1000,200" fill="none" stroke="#c0c0c8" stroke-width="1.5" opacity="0.22"/>
       </svg>
     </div>
 
