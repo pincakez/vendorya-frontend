@@ -27,7 +27,7 @@
             <td>{{ fmtDate(r.date) }}</td>
             <td class="col-name">{{ r.customer_name || r.customer }}</td>
             <td class="col-ref">{{ r.original_invoice ? `#${r.original_invoice}` : '—' }}</td>
-            <td class="col-refund">{{ auth.currencySymbol }} {{ formatNumber(r.total_refunded) }}</td>
+            <td class="col-refund"><Money :value="r.total_refunded" /></td>
             <td class="col-reason">{{ r.reason || '—' }}</td>
           </tr>
         </tbody>

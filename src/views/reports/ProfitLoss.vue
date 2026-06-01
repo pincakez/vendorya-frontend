@@ -12,23 +12,23 @@
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">Revenue (ex-tax)</div>
-        <div class="kpi-value">{{ money(t.revenue) }}</div>
+        <div class="kpi-value"><Money :value="t.revenue ?? 0" /></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">COGS</div>
-        <div class="kpi-value">{{ money(t.cogs) }}</div>
+        <div class="kpi-value"><Money :value="t.cogs ?? 0" /></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Expenses</div>
-        <div class="kpi-value">{{ money(t.expenses) }}</div>
+        <div class="kpi-value"><Money :value="t.expenses ?? 0" /></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Returns</div>
-        <div class="kpi-value">{{ money(t.returns) }}</div>
+        <div class="kpi-value"><Money :value="t.returns ?? 0" /></div>
       </div>
       <div class="kpi-card kpi-net" :class="netClass">
         <div class="kpi-label">Net Profit</div>
-        <div class="kpi-value">{{ money(t.net) }}</div>
+        <div class="kpi-value"><Money :value="t.net ?? 0" /></div>
       </div>
     </div>
 

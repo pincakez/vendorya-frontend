@@ -143,6 +143,7 @@
                 <tr v-for="p in products" :key="p.id" class="dt-row" :class="{ clickable: !editing }" @click="!editing && openEditProduct(p)">
                   <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '']">
                     <span v-if="col.badge" class="stock-badge">{{ formatQty(p.total_stock) }}</span>
+                    <template v-else-if="col.money && p[col.field] !== undefined && p[col.field] !== null && p[col.field] !== ''"><span v-if="col.plus">+</span><Money :value="p[col.field]" /></template>
                     <template v-else>{{ cellText(col, p) }}</template>
                   </td>
                   <td class="ta-right dt-actcol">

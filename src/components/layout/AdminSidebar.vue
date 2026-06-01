@@ -24,6 +24,7 @@
         <NavItem icon="sliders-horizontal" label="Billing Settings" to="/admin/billing-settings" :collapsed="collapsed" />
 
         <NavItem icon="activity"         label="Activity Log" to="/admin/activity-log"  :collapsed="collapsed" />
+        <NavItem icon="trash-2"          label="Trash"        to="/admin/trash"         :collapsed="collapsed" />
 
         <div v-if="!collapsed" class="nav-section-label">AI</div>
         <NavItem icon="bot"              label="AI Profiles"  to="/admin/ai-profiles"    :collapsed="collapsed" />

@@ -20,7 +20,7 @@
     <div v-else class="kpi-grid">
       <div class="kpi-card kpi-green">
         <div class="kpi-label">Today's Sales</div>
-        <div class="kpi-value">{{ auth.currencySymbol }} {{ formatNumber(data.today_sales_total) }}</div>
+        <div class="kpi-value"><Money :value="data.today_sales_total" /></div>
         <div class="kpi-sub">{{ data.today_invoices_count }} invoice{{ data.today_invoices_count !== 1 ? 's' : '' }}</div>
       </div>
 
@@ -82,7 +82,7 @@
               <tr v-for="inv in data.recent_sales" :key="inv.id" class="table-row">
                 <td class="col-ref">{{ inv.invoice_number }}</td>
                 <td>{{ inv.customer }}</td>
-                <td class="col-amount">{{ auth.currencySymbol }} {{ formatNumber(inv.grand_total) }}</td>
+                <td class="col-amount"><Money :value="inv.grand_total" /></td>
                 <td class="col-muted">{{ fmtTime(inv.date) }}</td>
               </tr>
             </tbody>

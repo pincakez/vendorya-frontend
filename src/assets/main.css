@@ -23,6 +23,10 @@
   --accent-hover:  #ff9d2e;
   --accent-soft:   rgba(247,143,30,0.12);
 
+  /* Currency symbol tint — user-configurable (Settings › Localization).
+     Overridden at runtime on <html> by the format store; this is the default. */
+  --currency-color: #16a34a;
+
   /* App shell */
   --bg-app:          #f1f5f9;
   --bg-card:         #ffffff;

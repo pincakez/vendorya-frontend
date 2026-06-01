@@ -229,6 +229,20 @@
           <p class="form-hint">Shown at the bottom — return policy, thank-you message, etc.</p>
           <textarea v-model="settingsForm.receipt_footer" class="form-input" rows="4" placeholder="e.g. No returns after 7 days. Thank you!" />
         </div>
+        <div class="toggle-row">
+          <div class="toggle-item">
+            <div>
+              <div class="toggle-label">Print Tax ID on invoices</div>
+              <div class="toggle-desc">
+                When on, your Tax ID ({{ settingsForm.tax_id || 'set it under Store Info' }}) prints on every invoice.
+                Turn off to omit it entirely — no "N/A" placeholder.
+              </div>
+            </div>
+            <button class="toggle-btn" :class="{ on: settingsForm.print_tax_id }" @click="settingsForm.print_tax_id = !settingsForm.print_tax_id">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
         <div class="form-footer">
           <button class="btn-primary" :disabled="storeSaving" @click="saveSettings">
             {{ storeSaving ? 'Saving…' : 'Save Receipt' }}
@@ -498,7 +512,7 @@ const storeForm    = reactive({
 const settingsForm = reactive({
   allow_negative_stock: false, enable_agel_selling: true,
   decimals: 2, thousands_separator: false,
-  default_tax: '', tax_id: '', commercial_reg: '',
+  default_tax: '', tax_id: '', commercial_reg: '', print_tax_id: true,
   receipt_header: '', receipt_footer: '',
 })
 const taxes      = ref([])
@@ -582,7 +596,11 @@ async function saveStore() {
 async function saveSettings() {
   storeSaving.value = true
   try {
-    await api.patch('/api/core/settings/', { receipt_header: settingsForm.receipt_header, receipt_footer: settingsForm.receipt_footer })
+    await api.patch('/api/core/settings/', {
+      receipt_header: settingsForm.receipt_header,
+      receipt_footer: settingsForm.receipt_footer,
+      print_tax_id:   settingsForm.print_tax_id,
+    })
   } finally { storeSaving.value = false }
 }
 

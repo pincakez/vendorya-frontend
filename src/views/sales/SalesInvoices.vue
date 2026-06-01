@@ -59,15 +59,18 @@
               <td>{{ fmtDate(inv.date) }}</td>
               <td class="col-name">{{ inv.customer_name || inv.customer }}</td>
               <td><span class="status-badge" :class="`status-${inv.status.toLowerCase()}`">{{ inv.status }}</span></td>
-              <td class="col-amount">{{ auth.currencySymbol }} {{ formatNumber(inv.grand_total) }}</td>
-              <td class="col-amount">{{ auth.currencySymbol }} {{ formatNumber(inv.paid_amount) }}</td>
-              <td :class="balanceClass(inv)">{{ auth.currencySymbol }} {{ formatNumber(inv.grand_total - inv.paid_amount) }}</td>
+              <td class="col-amount"><Money :value="inv.grand_total" /></td>
+              <td class="col-amount"><Money :value="inv.paid_amount" /></td>
+              <td :class="balanceClass(inv)"><Money :value="inv.grand_total - inv.paid_amount" /></td>
               <td>
                 <button v-if="inv.status === 'DRAFT'" class="row-action success" title="Post invoice" @click="postInvoice(inv)">
                   <CheckCircle :size="13" />
                 </button>
                 <button v-if="inv.status !== 'VOID'" class="row-action danger" title="Void" @click="voidInvoice(inv)">
                   <Ban :size="13" />
+                </button>
+                <button class="row-action" title="Print invoice" @click="printInvoice(inv)">
+                  <Printer :size="13" />
                 </button>
               </td>
             </tr>
@@ -121,9 +124,9 @@
       </div>
 
       <div class="invoice-totals">
-        <div class="totals-row"><span>Subtotal</span><span>{{ auth.currencySymbol }} {{ formatNumber(modalSubtotal) }}</span></div>
-        <div class="totals-row"><span>Discount</span><span>- {{ auth.currencySymbol }} {{ formatNumber(modal.discount || 0) }}</span></div>
-        <div class="totals-row total-line"><span>Total</span><span>{{ auth.currencySymbol }} {{ formatNumber(modalSubtotal - (modal.discount || 0)) }}</span></div>
+        <div class="totals-row"><span>Subtotal</span><span><Money :value="modalSubtotal" /></span></div>
+        <div class="totals-row"><span>Discount</span><span>- <Money :value="modal.discount || 0" /></span></div>
+        <div class="totals-row total-line"><span>Total</span><span><Money :value="modalSubtotal - (modal.discount || 0)" /></span></div>
       </div>
 
       <template #footer>
@@ -138,7 +141,8 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { FileText, Search, CheckCircle, Ban, Trash2, Plus, Receipt, RotateCcw } from 'lucide-vue-next'
+import { FileText, Search, CheckCircle, Ban, Trash2, Plus, Receipt, RotateCcw, Printer } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
@@ -148,6 +152,11 @@ import { formatNumber } from '@/utils/format'
 
 const auth = useAuthStore()
 const qab  = useQABStore()
+const router = useRouter()
+
+function printInvoice(inv) {
+  router.push(`/finance/invoices/${inv.id}/print`)
+}
 
 const tabs = [
   { id: 'invoices', label: 'Invoices', icon: Receipt },

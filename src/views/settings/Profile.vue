@@ -39,6 +39,24 @@
           </div>
         </div>
 
+        <div class="section-label" style="margin-top:20px;">Display Preferences</div>
+        <label class="form-label">Currency symbol color</label>
+        <p class="pref-hint">
+          Tints the currency symbol next to amounts — e.g. <Money :value="1234.5" />.
+          Saved on this device and applied instantly (no need to press Save).
+        </p>
+        <div class="swatch-row">
+          <button
+            v-for="c in CURRENCY_PRESETS" :key="c"
+            class="swatch" :class="{ active: (fmt.symbolColor || '').toLowerCase() === c }"
+            :style="{ background: c }" :title="c" @click="pickColor(c)"
+          ></button>
+          <label class="swatch custom" :style="{ background: fmt.symbolColor }" title="Custom color">
+            <input type="color" :value="fmt.symbolColor" @input="pickColor($event.target.value)" />
+            <Palette :size="13" color="#fff" />
+          </label>
+        </div>
+
         <div class="section-label" style="margin-top:20px;">Password &amp; Security</div>
         <RouterLink to="/settings/security" class="security-link">
           <span><ShieldCheck :size="15" /> Change password &amp; two-factor authentication</span>
@@ -59,11 +77,17 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ShieldCheck, ChevronRight } from 'lucide-vue-next'
+import { ShieldCheck, ChevronRight, Palette } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
+import { useFormatStore } from '@/stores/format'
 
 const auth = useAuthStore()
+const fmt  = useFormatStore()
+
+// Curated currency-symbol tints; light green is the default.
+const CURRENCY_PRESETS = ['#16a34a', '#22c55e', '#0891b2', '#2563eb', '#f78f1e', '#6b7280']
+function pickColor(c) { fmt.setSymbolColor(c) }
 
 const form = reactive({ first_name: '', last_name: '', email: '' })
 const saving = ref(false)
@@ -134,6 +158,14 @@ onMounted(() => loadProfile())
 .security-link { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:11px 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; font-weight:600; text-decoration:none; transition:border-color 120ms, background 120ms; }
 .security-link span { display:inline-flex; align-items:center; gap:8px; }
 .security-link:hover { border-color:var(--accent); background:var(--bg-card); }
+
+.pref-hint { font-size:12.5px; color:var(--text-muted); margin:0 0 12px; line-height:1.5; }
+.swatch-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.swatch { width:30px; height:30px; border-radius:50%; border:2px solid var(--border); cursor:pointer; padding:0; transition:transform 80ms, box-shadow 120ms; position:relative; display:inline-flex; align-items:center; justify-content:center; }
+.swatch:hover  { transform:scale(1.08); }
+.swatch:active { transform:scale(0.94); }
+.swatch.active { box-shadow:0 0 0 2px var(--bg-card), 0 0 0 4px var(--text-primary); }
+.swatch.custom input[type="color"] { position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; }
 .form-footer { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
 
 .btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }

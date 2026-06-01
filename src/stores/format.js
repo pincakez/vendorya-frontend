@@ -12,12 +12,17 @@ import { useAuthStore } from './auth'
  * Loaded on app boot via `loadForStore()` and refreshed whenever sudo
  * switches stores or the user saves new settings.
  */
+const COLOR_KEY = 'vendorya:currencyColor'
+const DEFAULT_COLOR = '#16a34a'  // light green — keep in sync with --currency-color in main.css
+
 export const useFormatStore = defineStore('format', {
   state: () => ({
     symbol:   '',
     position: 'SUFFIX',
     decimals: 2,
     thousandsSeparator: false,
+    // Currency-symbol tint — a per-user (per-browser) display preference.
+    symbolColor: localStorage.getItem(COLOR_KEY) || DEFAULT_COLOR,
     loaded: false,
   }),
 
@@ -64,12 +69,28 @@ export const useFormatStore = defineStore('format', {
       if (thousands_separator !== undefined) this.thousandsSeparator = !!thousands_separator
     },
 
+    /** Push the chosen currency-symbol colour onto <html> so the CSS var
+     *  (--currency-color), read by every <Money>, updates app-wide. */
+    applyColor() {
+      try {
+        document.documentElement.style.setProperty('--currency-color', this.symbolColor || DEFAULT_COLOR)
+      } catch { /* SSR / no DOM */ }
+    },
+
+    /** Persist + apply a new currency-symbol colour (Settings › Localization). */
+    setSymbolColor(color) {
+      this.symbolColor = color || DEFAULT_COLOR
+      try { localStorage.setItem(COLOR_KEY, this.symbolColor) } catch { /* ignore */ }
+      this.applyColor()
+    },
+
     reset() {
       this.symbol = ''
       this.position = 'SUFFIX'
       this.decimals = 2
       this.thousandsSeparator = false
       this.loaded = false
+      // symbolColor is a user preference — intentionally kept across logout.
     },
   },
 })

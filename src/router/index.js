@@ -68,8 +68,11 @@ const router = createRouter({
         { path: 'admin/ai-profiles',   component: () => import('@/views/admin/AdminAIProfiles.vue'),   meta: { admin: true } },
         { path: 'admin/auth-settings', component: () => import('@/views/admin/AdminAuthSettings.vue'),  meta: { admin: true } },
         { path: 'admin/alerts',        component: () => import('@/views/admin/AdminAlerts.vue'),         meta: { admin: true } },
+        { path: 'admin/trash',         component: () => import('@/views/admin/AdminTrash.vue'),          meta: { admin: true } },
       ]
     },
+    // Bare printable invoice — no app shell, prints clean.
+    { path: '/finance/invoices/:id/print', component: () => import('@/views/sales/InvoicePrint.vue'), meta: { requiresAuth: true } },
     {
       path: '/pos',
       component: POSLayout,

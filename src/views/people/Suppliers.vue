@@ -45,7 +45,7 @@
             </td>
             <td class="col-contact">{{ s.contact_info || '—' }}</td>
             <td>
-              <span v-if="Number(s.balance) > 0" class="balance-owe">{{ auth.currencySymbol }} {{ formatNumber(s.balance) }}</span>
+              <span v-if="Number(s.balance) > 0" class="balance-owe"><Money :value="s.balance" /></span>
               <span v-else class="balance-zero">—</span>
             </td>
             <td>
