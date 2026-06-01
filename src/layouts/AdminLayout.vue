@@ -1,17 +1,23 @@
 <template>
   <div class="app-shell admin-shell" :style="chatOpen ? { paddingRight: chatWidth + 'px' } : {}">
-    <AdminSidebar :collapsed="sidebarCollapsed || chatOpen" />
+    <AppSidebar
+      admin
+      :collapsed="sidebarCollapsed"
+      @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
+    />
 
     <div class="app-main">
-      <AdminHeader
-        :sidebarCollapsed="sidebarCollapsed || chatOpen"
+      <AppHeader
+        admin
+        :sidebarCollapsed="sidebarCollapsed"
         :chatOpen="chatOpen"
-        @toggleSidebar="toggleSidebar"
         @toggleChat="toggleChat"
       />
 
       <main class="app-content">
-        <RouterView />
+        <div class="page-wrap">
+          <RouterView />
+        </div>
       </main>
 
       <AppFooter />
@@ -24,7 +30,7 @@
       <AdminChatPanel
         v-if="chatOpen"
         :width="chatWidth"
-        @close="chatOpen = false; restoreSidebar()"
+        @close="chatOpen = false"
         @resize="chatWidth = $event"
       />
     </Transition>
@@ -34,8 +40,8 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { RouterView } from 'vue-router'
-import AdminSidebar from '@/components/layout/AdminSidebar.vue'
-import AdminHeader from '@/components/layout/AdminHeader.vue'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
+import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import QAB from '@/components/ui/QAB.vue'
 import AdminChatPanel from '@/components/admin/AdminChatPanel.vue'
@@ -47,49 +53,32 @@ const sidebarCollapsed = ref(localStorage.getItem(SIDEBAR_STATE_KEY) === 'collap
 const chatOpen         = ref(false)
 const chatWidth        = ref(parseInt(localStorage.getItem(CHAT_WIDTH_KEY) || '380', 10))
 
-let sidebarWasCollapsed = false
-
 watch(sidebarCollapsed, val => {
   localStorage.setItem(SIDEBAR_STATE_KEY, val ? 'collapsed' : 'open')
 })
-
 watch(chatWidth, val => {
   localStorage.setItem(CHAT_WIDTH_KEY, String(val))
 })
 
-function toggleSidebar() {
-  sidebarCollapsed.value = !sidebarCollapsed.value
-}
-
 function toggleChat() {
   if (!chatOpen.value) {
-    // Opening: remember sidebar state and collapse it.
-    sidebarWasCollapsed    = sidebarCollapsed.value
+    // Opening the assistant auto-collapses the nav to make room —
+    // but it's only a starting state, the user can re-expand it freely.
     sidebarCollapsed.value = true
     chatOpen.value         = true
   } else {
     chatOpen.value = false
-    restoreSidebar()
   }
-}
-
-function restoreSidebar() {
-  sidebarCollapsed.value = sidebarWasCollapsed
 }
 </script>
 
 <style scoped>
-.app-shell {
-  transition: padding-right 200ms ease;
-}
+.page-wrap { max-width: 1500px; margin: 0 auto; width: 100%; padding-top: 24px; }
+
+.app-shell { transition: padding-right 200ms ease; }
 
 .chat-panel-enter-active,
-.chat-panel-leave-active {
-  transition: transform 200ms ease, opacity 200ms ease;
-}
+.chat-panel-leave-active { transition: transform 200ms ease, opacity 200ms ease; }
 .chat-panel-enter-from,
-.chat-panel-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
-}
+.chat-panel-leave-to { transform: translateX(100%); opacity: 0; }
 </style>

@@ -1,87 +1,146 @@
 <template>
   <header class="app-header nhdr">
-    <!-- Global search / command palette -->
-    <div class="nhdr-search" ref="searchRef">
-      <Search :size="15" class="nhdr-search-icon" />
-      <input
-        ref="searchInput"
-        v-model="q"
-        class="nhdr-search-input"
-        placeholder="Search pages — Products, Invoices, Customers…"
-        @focus="searchOpen = true"
-        @keydown.down.prevent="move(1)"
-        @keydown.up.prevent="move(-1)"
-        @keydown.enter.prevent="choose"
-        @keydown.esc="searchOpen = false"
-      />
-      <kbd class="nhdr-kbd">⌘K</kbd>
+    <!-- ─────────────── ADMIN MODE ─────────────── -->
+    <template v-if="admin">
+      <div class="header-greeting" style="display:flex; align-items:center; gap:10px;">
+        <span class="admin-badge" v-if="!auth.activeStore">GENERAL ADMIN</span>
+        <span class="admin-badge" v-else style="background: var(--admin-accent-soft); color: var(--admin-accent);">
+          ACTING AS · {{ auth.activeStore.name }}
+        </span>
+      </div>
 
-      <Transition name="dropdown">
-        <div v-if="searchOpen && q && results.length" class="nhdr-results">
-          <button
-            v-for="(r, i) in results" :key="r.path"
-            class="nhdr-result" :class="{ active: i === idx }"
-            @click="navTo(r.path)" @mouseenter="idx = i"
-          >
-            <component :is="r.icon" :size="15" class="nhdr-result-icon" />
-            <span class="nhdr-result-label">{{ r.label }}</span>
-            <span class="nhdr-result-group">{{ r.group }}</span>
-          </button>
+      <!-- Store picker -->
+      <div class="store-picker" ref="pickerRef">
+        <button class="store-picker-btn" @click="pickerOpen = !pickerOpen" :class="{ open: pickerOpen }">
+          <Search :size="14" />
+          <span>{{ auth.activeStore ? 'Switch store' : 'Pick store' }}</span>
+          <ChevronDown :size="14" />
+        </button>
+
+        <div v-if="pickerOpen" class="store-picker-pop">
+          <div class="store-picker-search">
+            <Search :size="14" style="opacity:0.5;" />
+            <input v-model="storeQuery" type="text" placeholder="Search stores..." @input="onStoreSearch" />
+          </div>
+          <div class="store-picker-list">
+            <button v-if="auth.activeStore" class="store-picker-item exit" @click="selectGeneral">
+              <ArrowLeft :size="14" />
+              <span>Back to General Admin</span>
+            </button>
+            <div v-if="storesLoading" class="store-picker-empty">Loading...</div>
+            <div v-else-if="!stores.length" class="store-picker-empty">No stores</div>
+            <button
+              v-for="s in stores" :key="s.id"
+              class="store-picker-item" :class="{ active: auth.activeStore?.id === s.id }"
+              @click="selectStore(s)"
+            >
+              <div class="sp-avatar">{{ s.name.charAt(0).toUpperCase() }}</div>
+              <div class="sp-info">
+                <div class="sp-name">{{ s.name }}</div>
+                <div class="sp-meta">{{ s.owner_username }} · {{ s.plan }}</div>
+              </div>
+              <Check v-if="auth.activeStore?.id === s.id" :size="14" style="color: var(--admin-accent);" />
+            </button>
+          </div>
         </div>
-      </Transition>
-    </div>
+      </div>
 
-    <div class="nhdr-spacer" />
-
-    <!-- Store brand: client logo + PREMIUM badge -->
-    <div v-if="storeLogo || auth.isPremium" class="nhdr-brand">
-      <img
-        v-if="storeLogo"
-        :src="storeLogo"
-        :alt="auth.storeName"
-        class="nhdr-store-logo"
-      />
-      <span v-if="auth.isPremium" class="nhdr-premium-badge">PREMIUM</span>
-    </div>
-
-    <!-- Role badge -->
-    <span v-if="auth.userRole" class="header-role-badge">{{ auth.userRole }}</span>
-
-    <!-- Notification bell -->
-    <div class="bell-wrap" ref="bellRef">
-      <button class="header-icon-btn bell-btn" title="Notifications" @click="toggleDropdown">
-        <Bell :size="18" />
-        <span v-if="unreadCount > 0" class="bell-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+      <!-- Switch to Store View (preview) -->
+      <button v-if="auth.isInStoreMode" class="header-preview-btn" title="Switch to Store View" @click="enterPreview">
+        <Eye :size="14" /> Store View
       </button>
 
-      <Transition name="dropdown">
-        <div v-if="dropdownOpen" class="notif-dropdown">
-          <div class="nd-header">
-            <span class="nd-title">Notifications</span>
-            <button v-if="unreadCount > 0" class="nd-mark-all" @click="doMarkAll">Mark all read</button>
+      <div class="nhdr-spacer" />
+
+      <!-- Theme toggle -->
+      <button class="header-icon-btn" @click="theme.toggle()" :title="theme.dark ? 'Switch to light mode' : 'Switch to dark mode'">
+        <Sun v-if="theme.dark" :size="18" />
+        <Moon v-else :size="18" />
+      </button>
+
+      <!-- AI Chat toggle -->
+      <button class="header-icon-btn ai-toggle-btn" :class="{ active: chatOpen }" @click="$emit('toggleChat')" title="Toggle AI Assistant">
+        <Bot :size="18" />
+      </button>
+    </template>
+
+    <!-- ─────────────── STORE MODE ─────────────── -->
+    <template v-else>
+      <!-- Global search / command palette -->
+      <div class="nhdr-search" ref="searchRef">
+        <Search :size="15" class="nhdr-search-icon" />
+        <input
+          ref="searchInput"
+          v-model="q"
+          class="nhdr-search-input"
+          placeholder="Search pages — Products, Invoices, Customers…"
+          @focus="searchOpen = true"
+          @keydown.down.prevent="move(1)"
+          @keydown.up.prevent="move(-1)"
+          @keydown.enter.prevent="choose"
+          @keydown.esc="searchOpen = false"
+        />
+        <kbd class="nhdr-kbd">⌘K</kbd>
+
+        <Transition name="dropdown">
+          <div v-if="searchOpen && q && results.length" class="nhdr-results">
+            <button
+              v-for="(r, i) in results" :key="r.path"
+              class="nhdr-result" :class="{ active: i === idx }"
+              @click="navTo(r.path)" @mouseenter="idx = i"
+            >
+              <component :is="r.icon" :size="15" class="nhdr-result-icon" />
+              <span class="nhdr-result-label">{{ r.label }}</span>
+              <span class="nhdr-result-group">{{ r.group }}</span>
+            </button>
           </div>
+        </Transition>
+      </div>
 
-          <div v-if="recent.length === 0" class="nd-empty">You're all caught up</div>
+      <div class="nhdr-spacer" />
 
-          <button v-for="n in recent" :key="n.id" class="nd-item" @click="openNotif(n)">
-            <span class="nd-dot" :class="`dot-${n.priority.toLowerCase()}`"></span>
-            <div class="nd-body">
-              <div class="nd-item-title">{{ n.title }}</div>
-              <div v-if="n.body" class="nd-item-body">{{ n.body }}</div>
-              <div class="nd-item-time">{{ timeAgo(n.created_at) }}</div>
+      <!-- Store brand: client logo + PREMIUM badge -->
+      <div v-if="storeLogo || auth.isPremium" class="nhdr-brand">
+        <img v-if="storeLogo" :src="storeLogo" :alt="auth.storeName" class="nhdr-store-logo" />
+        <span v-if="auth.isPremium" class="nhdr-premium-badge">PREMIUM</span>
+      </div>
+
+      <!-- Role badge -->
+      <span v-if="auth.userRole" class="header-role-badge">{{ auth.userRole }}</span>
+
+      <!-- Notification bell -->
+      <div class="bell-wrap" ref="bellRef">
+        <button class="header-icon-btn bell-btn" title="Notifications" @click="toggleDropdown">
+          <Bell :size="18" />
+          <span v-if="unreadCount > 0" class="bell-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+        </button>
+
+        <Transition name="dropdown">
+          <div v-if="dropdownOpen" class="notif-dropdown">
+            <div class="nd-header">
+              <span class="nd-title">Notifications</span>
+              <button v-if="unreadCount > 0" class="nd-mark-all" @click="doMarkAll">Mark all read</button>
             </div>
-          </button>
+            <div v-if="recent.length === 0" class="nd-empty">You're all caught up</div>
+            <button v-for="n in recent" :key="n.id" class="nd-item" @click="openNotif(n)">
+              <span class="nd-dot" :class="`dot-${n.priority.toLowerCase()}`"></span>
+              <div class="nd-body">
+                <div class="nd-item-title">{{ n.title }}</div>
+                <div v-if="n.body" class="nd-item-body">{{ n.body }}</div>
+                <div class="nd-item-time">{{ timeAgo(n.created_at) }}</div>
+              </div>
+            </button>
+            <button class="nd-view-all" @click="goInbox">View all notifications →</button>
+          </div>
+        </Transition>
+      </div>
 
-          <button class="nd-view-all" @click="goInbox">View all notifications →</button>
-        </div>
-      </Transition>
-    </div>
-
-    <!-- Theme toggle -->
-    <button class="header-icon-btn" @click="theme.toggle()" :title="theme.dark ? 'Switch to light mode' : 'Switch to dark mode'">
-      <Sun v-if="theme.dark" :size="18" />
-      <Moon v-else :size="18" />
-    </button>
+      <!-- Theme toggle -->
+      <button class="header-icon-btn" @click="theme.toggle()" :title="theme.dark ? 'Switch to light mode' : 'Switch to dark mode'">
+        <Sun v-if="theme.dark" :size="18" />
+        <Moon v-else :size="18" />
+      </button>
+    </template>
   </header>
 </template>
 
@@ -89,7 +148,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  Bell, Sun, Moon, Search,
+  Bell, Sun, Moon, Search, ChevronDown, Check, ArrowLeft, Bot, Eye,
   LayoutDashboard, Package, ShoppingCart, SlidersHorizontal, Tag, List, FileBarChart,
   FileText, CornerDownLeft, Receipt, Clock, Wallet, Users, Truck, Briefcase,
   LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator,
@@ -97,11 +156,14 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { useNotifications } from '@/composables/useNotifications'
+import api from '@/api/axios'
 
-defineProps({ sidebarCollapsed: Boolean })
+defineProps({ sidebarCollapsed: Boolean, admin: Boolean, chatOpen: Boolean })
+defineEmits(['toggleSidebar', 'toggleChat'])
 
 const auth   = useAuthStore()
 const theme  = useThemeStore()
+const router = useRouter()
 
 const storeLogo = computed(() => {
   const store = auth.user?.store || auth.activeStore
@@ -109,9 +171,36 @@ const storeLogo = computed(() => {
   return theme.dark ? (store.logo_dark_url || store.logo_light_url || null)
                     : (store.logo_light_url || store.logo_dark_url || null)
 })
-const router = useRouter()
 
-/* ── Global search ──────────────────────────── */
+/* ── Store picker (admin) ───────────────────── */
+const pickerOpen    = ref(false)
+const storeQuery    = ref('')
+const stores        = ref([])
+const storesLoading = ref(false)
+const pickerRef     = ref(null)
+let storeSearchTimer = null
+
+async function fetchStores(qy = '') {
+  storesLoading.value = true
+  try {
+    const res = await api.get('/api/admin/stores/', { params: qy ? { search: qy } : {} })
+    stores.value = Array.isArray(res.data) ? res.data : (res.data.results || [])
+  } catch { stores.value = [] }
+  finally { storesLoading.value = false }
+}
+function onStoreSearch() {
+  clearTimeout(storeSearchTimer)
+  storeSearchTimer = setTimeout(() => fetchStores(storeQuery.value.trim()), 250)
+}
+function selectStore(store) {
+  auth.setActiveStore(store)
+  pickerOpen.value = false
+  router.push('/dashboard')
+}
+function enterPreview() { auth.enterPreview(); router.push('/dashboard') }
+function selectGeneral() { auth.clearActiveStore(); pickerOpen.value = false; router.push('/admin/dashboard') }
+
+/* ── Global search (store) ──────────────────── */
 const PAGES = [
   { label: 'Dashboard', path: '/dashboard', group: 'General', icon: LayoutDashboard },
   { label: 'Products', path: '/inventory/products', group: 'Inventory', icon: Package },
@@ -157,9 +246,7 @@ function move(d) {
   if (!results.value.length) return
   idx.value = (idx.value + d + results.value.length) % results.value.length
 }
-function choose() {
-  if (results.value[idx.value]) navTo(results.value[idx.value].path)
-}
+function choose() { if (results.value[idx.value]) navTo(results.value[idx.value].path) }
 function navTo(path) {
   searchOpen.value = false
   q.value = ''
@@ -173,7 +260,7 @@ function onSearchKey(e) {
   }
 }
 
-/* ── Notifications bell ─────────────────────── */
+/* ── Notifications bell (store) ─────────────── */
 const { unreadCount, recent, fetchPrefs, fetchRecent, markRead, markAllRead } = useNotifications()
 const dropdownOpen = ref(false)
 const bellRef      = ref(null)
@@ -184,6 +271,7 @@ function toggleDropdown() { dropdownOpen.value = !dropdownOpen.value }
 function onDocClick(e) {
   if (bellRef.value && !bellRef.value.contains(e.target)) dropdownOpen.value = false
   if (searchRef.value && !searchRef.value.contains(e.target)) searchOpen.value = false
+  if (pickerRef.value && !pickerRef.value.contains(e.target)) pickerOpen.value = false
 }
 
 async function openNotif(n) {
@@ -203,6 +291,9 @@ function timeAgo(iso) {
 }
 
 onMounted(() => {
+  if (auth.isSuperadmin) {
+    fetchStores()
+  }
   if (auth.user?.store) {
     fetchPrefs()
     fetchRecent()
@@ -213,6 +304,7 @@ onMounted(() => {
 })
 onUnmounted(() => {
   clearInterval(pollTimer)
+  clearTimeout(storeSearchTimer)
   document.removeEventListener('click', onDocClick)
   window.removeEventListener('keydown', onSearchKey)
 })
@@ -293,6 +385,57 @@ onUnmounted(() => {
   flex-shrink: 0; font-size: 8.5px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 5px;
   border-radius: 5px; background: var(--sb-badge-bg); color: var(--sb-badge-text);
 }
+
+/* ── AI toggle + store picker (admin) ───────── */
+.ai-toggle-btn.active { background: rgba(239,68,68,0.12); color: var(--admin-accent, #ef4444); }
+
+.header-preview-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+  border-radius: 8px; border: 1px solid var(--admin-accent);
+  background: var(--admin-accent-soft); color: var(--admin-accent);
+  font-size: 12.5px; font-weight: 600; cursor: pointer;
+  transition: background 120ms, transform 80ms; flex-shrink: 0;
+}
+.header-preview-btn:hover  { background: rgba(239,68,68,0.22); }
+.header-preview-btn:active { transform: scale(0.96); }
+
+.store-picker { position: relative; flex-shrink: 0; }
+.store-picker-btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px;
+  border: 1px solid var(--border); border-radius: 9px; background: var(--bg-card);
+  color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: background 120ms, border-color 120ms, transform 80ms;
+}
+.store-picker-btn:hover { border-color: var(--admin-accent); color: var(--admin-accent); }
+.store-picker-btn:active { transform: scale(0.97); }
+.store-picker-btn.open { border-color: var(--admin-accent); color: var(--admin-accent); }
+.store-picker-pop {
+  position: absolute; top: calc(100% + 6px); left: 0; width: 320px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12); z-index: 100; overflow: hidden;
+}
+.store-picker-search { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.store-picker-search input { flex: 1; background: transparent; border: none; outline: none; color: var(--text-primary); font-size: 13px; }
+.store-picker-list { max-height: 340px; overflow-y: auto; padding: 4px; }
+.store-picker-item {
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+  border-radius: 8px; background: transparent; text-align: left; cursor: pointer;
+  color: var(--text-primary); transition: background 120ms;
+}
+.store-picker-item:hover { background: var(--admin-accent-soft); }
+.store-picker-item.active { background: var(--admin-accent-soft); }
+.store-picker-item.exit {
+  color: var(--admin-accent); font-weight: 600; font-size: 12.5px; margin-bottom: 4px;
+  border-bottom: 1px dashed var(--border); border-radius: 0; padding-bottom: 12px;
+}
+.sp-avatar {
+  width: 32px; height: 32px; border-radius: 8px; background: var(--admin-accent-soft);
+  color: var(--admin-accent); font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sp-info { flex: 1; min-width: 0; }
+.sp-name { font-size: 13px; font-weight: 600; }
+.sp-meta { font-size: 11px; color: var(--text-muted); }
+.store-picker-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
 .dropdown-enter-active, .dropdown-leave-active { transition: opacity 150ms, transform 150ms; }
 .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px); }

@@ -98,9 +98,19 @@
   --sb-logo-text:    #fafafa;
   --sb-badge-bg:     rgba(239,68,68,0.20);
   --sb-badge-text:   #f87171;
+  /* Dark group-cards on the always-dark admin sidebar (don't follow light mode). */
+  --sb-group-bg:     #202024;
+  --sb-group-border: #2d2d32;
+  --sb-item-active-bg:   #EAEAEA;
+  --sb-item-active-text: #0a0a0a;
   --admin-accent:        #ef4444;
   --admin-accent-hover:  #dc2626;
   --admin-accent-soft:   rgba(239,68,68,0.12);
+  /* The unified shell (AppSidebar/AppHeader) drives everything off --accent.
+     Flip it red here so the entire reused store shell themes itself for admin. */
+  --accent:        #ef4444;
+  --accent-hover:  #dc2626;
+  --accent-soft:   rgba(239,68,68,0.12);
 }
 
 .admin-shell .nav-item.active::before {

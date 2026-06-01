@@ -5,32 +5,39 @@
       <div class="nsb-logo-row" :class="{ 'nsb-col': collapsed }">
         <div class="nsb-logo">
           <img v-if="collapsed" src="/favicon.png" alt="Vendorya" class="nsb-logo-mark" />
-          <img v-else :src="vendoryaLogo" alt="Vendorya" class="nsb-logo-full" />
+          <img v-else :src="logoSrc" alt="Vendorya" class="nsb-logo-full" />
+          <span v-if="admin && !collapsed" class="nsb-admin-badge">ADMIN</span>
         </div>
         <button class="nsb-collapse" @click="$emit('toggle-collapse')" :title="collapsed ? 'Expand' : 'Collapse'">
           <ChevronLeft :size="18" class="nsb-collapse-icon" :class="{ flip: collapsed }" />
         </button>
       </div>
 
-      <!-- POS -->
-      <div class="nsb-pos">
+      <!-- POS (store only) -->
+      <div v-if="!admin" class="nsb-pos">
         <PhysicalButton variant="primary" :collapsed="collapsed" @click="go('/pos')">
           <template #icon><Calculator :size="18" /></template>
           POS SYSTEM
         </PhysicalButton>
       </div>
 
-      <!-- Dashboard (standalone) -->
+      <!-- Top solo: Dashboard (store / acting) or Overview (general admin) -->
       <div class="nsb-solo">
-        <PhysicalButton variant="sidebar" :collapsed="collapsed" :active="itemActive('/dashboard')" @click="go('/dashboard')">
-          <template #icon><LayoutDashboard :size="17" :class="itemActive('/dashboard') ? 'ic-active' : 'ic'" /></template>
-          Dashboard
+        <PhysicalButton variant="sidebar" :collapsed="collapsed" :active="itemActive(soloTo)" @click="go(soloTo)">
+          <template #icon><LayoutDashboard :size="17" :class="itemActive(soloTo) ? 'ic-active' : 'ic'" /></template>
+          {{ soloLabel }}
         </PhysicalButton>
+      </div>
+
+      <!-- Acting-as-store banner -->
+      <div v-if="acting && !collapsed" class="nsb-acting">
+        <span class="nsb-acting-label">ACTING AS</span>
+        <span class="nsb-acting-name">{{ auth.activeStore.name }}</span>
       </div>
 
       <!-- Groups -->
       <div class="nsb-groups">
-        <div v-for="g in visibleGroups" :key="g.id" class="nsb-group">
+        <div v-for="g in displayGroups" :key="g.id" class="nsb-group">
           <button class="nsb-group-head" :class="{ 'nsb-col': collapsed }" @click="toggle(g.id)">
             <component :is="g.icon" v-if="collapsed" :size="20" class="grp-icon" />
             <span v-else>{{ g.title }}</span>
@@ -59,7 +66,12 @@
     <!-- Bottom -->
     <div class="nsb-bottom">
       <div class="nsb-actions" :class="{ 'nsb-col': collapsed }">
-        <PhysicalButton variant="icon" :collapsed="collapsed" @click="go('/settings')">
+        <!-- Exit to Admin (sudo acting on a store) -->
+        <PhysicalButton v-if="acting" variant="icon" :collapsed="collapsed" :tooltip="'Exit to Admin'" @click="exitToAdmin">
+          <template #icon><ArrowLeft :size="16" /></template>
+        </PhysicalButton>
+        <!-- Settings (store users only) -->
+        <PhysicalButton v-if="!admin" variant="icon" :collapsed="collapsed" @click="go('/settings')">
           <template #icon><Settings :size="16" /></template>
         </PhysicalButton>
         <PhysicalButton variant="icon" :collapsed="collapsed" @click="auth.logout()">
@@ -67,7 +79,7 @@
         </PhysicalButton>
       </div>
 
-      <div class="nsb-user" :class="{ 'nsb-col': collapsed }" @click="go('/settings/profile')">
+      <div class="nsb-user" :class="{ 'nsb-col': collapsed }" @click="go(userCardTo)">
         <div class="nsb-avatar">
           <img v-if="auth.user?.photo" :src="auth.user.photo" alt="" />
           <span v-else>{{ auth.initials }}</span>
@@ -75,7 +87,7 @@
         <template v-if="!collapsed">
           <div class="nsb-user-info">
             <span class="nsb-user-name">{{ auth.displayName }}</span>
-            <span class="nsb-user-role">{{ auth.userRole || 'User' }}</span>
+            <span class="nsb-user-role">{{ admin ? 'Super Admin' : (auth.userRole || 'User') }}</span>
           </div>
           <ChevronRight :size="15" class="nsb-user-chev" />
         </template>
@@ -95,18 +107,24 @@ import {
   FileBarChart, Wallet, FileText, CornerDownLeft, Receipt, Clock, LineChart, TrendingUp,
   DollarSign, BookOpen, UserCheck, Percent, Users, Truck, Briefcase, Folder, Activity,
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
-  ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight,
+  ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
+  Building2, KeyRound, Trash2, Bot, Wrench,
 } from 'lucide-vue-next'
 
-defineProps({ collapsed: Boolean })
+const props = defineProps({ collapsed: Boolean, admin: Boolean })
 defineEmits(['toggle-collapse'])
 
 const route = useRoute()
 const router = useRouter()
 const auth  = useAuthStore()
 const theme = useThemeStore()
-const vendoryaLogo = computed(() => theme.dark ? '/logo-text-dark-mode.png' : '/logo-text-light-mode.png')
+// Admin sidebar is always dark → always use the dark-mode wordmark there.
+const logoSrc = computed(() =>
+  props.admin ? '/logo-text-dark-mode.png'
+              : (theme.dark ? '/logo-text-dark-mode.png' : '/logo-text-light-mode.png')
+)
 
+/* ── Store nav ─────────────────────────────────────────────────────────────── */
 const groups = [
   { id: 'inventory', title: 'INVENTORY', icon: Package, items: [
     { label: 'Products', to: '/inventory/products', icon: Package },
@@ -155,21 +173,60 @@ const groups = [
   ] },
 ]
 
+/* ── Admin nav (general super-admin mode) ──────────────────────────────────── */
+const adminGroups = [
+  { id: 'platform', title: 'PLATFORM', icon: Store, items: [
+    { label: 'Stores', to: '/admin/stores', icon: Store },
+    { label: 'Branches', to: '/admin/branches', icon: Building2 },
+    { label: 'Admin Users', to: '/admin/users', icon: Shield },
+    { label: 'Auth Settings', to: '/admin/auth-settings', icon: KeyRound },
+  ] },
+  { id: 'abilling', title: 'BILLING', icon: CreditCard, items: [
+    { label: 'Subscriptions', to: '/admin/subscriptions', icon: CreditCard },
+    { label: 'Plans', to: '/admin/plans', icon: Package },
+    { label: 'Billing Settings', to: '/admin/billing-settings', icon: SlidersHorizontal },
+  ] },
+  { id: 'asystem', title: 'SYSTEM', icon: Activity, items: [
+    { label: 'Activity Log', to: '/admin/activity-log', icon: Activity },
+    { label: 'Trash', to: '/admin/trash', icon: Trash2 },
+  ] },
+  { id: 'aai', title: 'AI', icon: Bot, items: [
+    { label: 'AI Profiles', to: '/admin/ai-profiles', icon: Bot },
+    { label: 'Misc', to: '/admin/misc', icon: Wrench },
+  ] },
+  { id: 'acomm', title: 'COMMUNICATION', icon: Bell, items: [
+    { label: 'Alerts Center', to: '/admin/alerts', icon: Bell },
+  ] },
+]
+
 const canBilling = computed(() => auth.userRole === 'OWNER' || auth.isSuperadmin)
 const visibleGroups = computed(() =>
   groups.map(g => ({ ...g, items: g.items.filter(it => !it.ownerOnly || canBilling.value) }))
 )
 
+// Sudo acting on a specific store from inside the admin shell.
+const acting = computed(() => props.admin && !!auth.activeStore)
+
+const displayGroups = computed(() =>
+  (props.admin && !acting.value) ? adminGroups : visibleGroups.value
+)
+
+const soloTo    = computed(() => (props.admin && !acting.value) ? '/admin/dashboard' : '/dashboard')
+const soloLabel = computed(() => (props.admin && !acting.value) ? 'Overview' : 'Dashboard')
+const userCardTo = computed(() => props.admin ? '/admin/users' : '/settings/profile')
+
 function itemActive(to) {
   if (to === '/settings') return route.path === '/settings'
+  if (to === '/admin/dashboard' || to === '/dashboard') return route.path === to
   return route.path === to || route.path.startsWith(to + '/')
 }
 
 const open = reactive({})
-groups.forEach(g => { open[g.id] = g.items.some(it => itemActive(it.to)) })
+;[...groups, ...adminGroups].forEach(g => { open[g.id] = g.items.some(it => itemActive(it.to)) })
 
 function toggle(id) { open[id] = !open[id] }
 function go(to) { if (route.path !== to) router.push(to) }
+function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard') }
 </script>
 
 <style scoped>
@@ -187,7 +244,11 @@ function go(to) { if (route.path !== to) router.push(to) }
 .nsb-logo-row.nsb-col { flex-direction: column; gap: 14px; }
 .nsb-logo { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .nsb-logo-mark { width: 26px; height: 26px; flex-shrink: 0; }
-.nsb-logo-full { height: 28px; width: auto; max-width: 140px; object-fit: contain; flex-shrink: 0; }
+.nsb-logo-full { height: 28px; width: auto; max-width: 130px; object-fit: contain; flex-shrink: 0; }
+.nsb-admin-badge {
+  flex-shrink: 0; font-size: 9px; font-weight: 700; letter-spacing: 0.08em; padding: 2px 6px;
+  border-radius: 5px; background: var(--sb-badge-bg); color: var(--sb-badge-text); text-transform: uppercase;
+}
 .nsb-collapse {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -201,6 +262,16 @@ function go(to) { if (route.path !== to) router.push(to) }
 /* POS + solo */
 .nsb-pos { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--sb-border); }
 .nsb-solo { margin-bottom: 16px; }
+
+/* Acting-as banner */
+.nsb-acting {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 8px 12px; margin-bottom: 16px;
+  border-radius: 12px; background: var(--accent-soft);
+  border: 1px solid var(--accent);
+}
+.nsb-acting-label { font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent); }
+.nsb-acting-name { font-size: 13px; font-weight: 600; color: var(--sb-text-active); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Groups */
 .nsb-groups { display: flex; flex-direction: column; gap: 16px; }

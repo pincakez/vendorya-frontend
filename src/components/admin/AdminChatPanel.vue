@@ -100,6 +100,17 @@
           />
         </label>
 
+        <!-- Voice note button -->
+        <button
+          class="attach-btn mic-btn"
+          :class="{ recording }"
+          :title="recording ? 'Stop recording' : 'Record voice note'"
+          @click="toggleRecording"
+        >
+          <Square v-if="recording" :size="13" />
+          <Mic v-else :size="15" />
+        </button>
+
         <!-- Textarea -->
         <textarea
           ref="inputEl"
@@ -121,6 +132,14 @@
         >
           <Send :size="15" />
         </button>
+      </div>
+
+      <!-- Recording indicator -->
+      <div v-if="recording" class="recording-bar">
+        <span class="rec-dot" />
+        <span>Recording… {{ recordLabel }}</span>
+        <span style="flex:1;" />
+        <span style="font-weight:500;opacity:0.8;">tap ▣ to stop</span>
       </div>
 
       <!-- Attachment preview -->
@@ -181,7 +200,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { Bot, X, SquarePen, Send, Paperclip, Wrench, Store } from 'lucide-vue-next'
+import { Bot, X, SquarePen, Send, Paperclip, Wrench, Store, Mic, Square } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api/axios'
@@ -209,6 +228,17 @@ const profileName    = ref('AI Assistant')
 const aiStatus       = ref('no_key')   // connected | no_key | error
 
 const attachment     = ref(null)       // { name, mime_type, data (base64), previewUrl }
+
+// voice-note recording
+const recording      = ref(false)
+const recordSecs     = ref(0)
+let mediaRecorder    = null
+let mediaStream      = null
+let audioChunks      = []
+let recordTimer      = null
+
+// per-admin remembered conversation (survives close + sign-out/in until /clear)
+const CONVO_KEY = `vendorya_ai_convo_${auth.user?.id || 'anon'}`
 
 // slash commands
 const showPalette  = ref(false)
@@ -260,7 +290,27 @@ const canSend = computed(() =>
 onMounted(async () => {
   loadStatus()
   loadActiveProfile()
+  // Bring back this admin's last conversation, if any.
+  const remembered = localStorage.getItem(CONVO_KEY)
+  if (remembered) restoreConversation(remembered)
 })
+
+// Persist the active conversation per admin so it survives close + re-login.
+watch(conversationId, id => {
+  if (id) localStorage.setItem(CONVO_KEY, id)
+})
+
+async function restoreConversation(id) {
+  try {
+    const { data } = await api.get(`/api/admin/ai/conversations/${id}/`)
+    conversationId.value = id
+    messages.value = (data.messages || []).map(m => ({ ...m, id: m.id || Date.now() + Math.random() }))
+    scrollToBottom()
+  } catch {
+    // Gone / not ours / deleted — forget it and start clean.
+    localStorage.removeItem(CONVO_KEY)
+  }
+}
 
 async function loadStatus() {
   try {
@@ -490,6 +540,7 @@ function newConversation() {
   messages.value       = []
   streamBuffer.value   = ''
   streaming.value      = false
+  localStorage.removeItem(CONVO_KEY)   // forget the remembered chat — truly fresh
 }
 
 function clearConversation() {
@@ -520,6 +571,60 @@ function fileToBase64(file) {
     reader.readAsDataURL(file)
   })
 }
+
+// ── Voice note (mic) ─────────────────────────────────────────────────────────
+async function toggleRecording() {
+  if (recording.value) { stopRecording(); return }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    pushSystemMessage('Microphone not available in this browser.')
+    return
+  }
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+  } catch {
+    pushSystemMessage('Microphone permission denied.')
+    return
+  }
+  audioChunks = []
+  mediaRecorder = new MediaRecorder(mediaStream)
+  mediaRecorder.ondataavailable = e => { if (e.data.size) audioChunks.push(e.data) }
+  mediaRecorder.onstop = async () => {
+    const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' })
+    const data = await blobToBase64(blob)
+    clearAttachment()
+    attachment.value = { name: `voice-note.${(blob.type.split('/')[1] || 'webm').split(';')[0]}`, mime_type: blob.type, data, previewUrl: '' }
+    teardownStream()
+  }
+  mediaRecorder.start()
+  recording.value  = true
+  recordSecs.value = 0
+  recordTimer = setInterval(() => { recordSecs.value++ }, 1000)
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop()
+  recording.value = false
+  clearInterval(recordTimer)
+}
+
+function teardownStream() {
+  if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null }
+  mediaRecorder = null
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result.split(',')[1])
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+}
+
+const recordLabel = computed(() => {
+  const m = Math.floor(recordSecs.value / 60), s = recordSecs.value % 60
+  return `${m}:${String(s).padStart(2, '0')}`
+})
 
 // ── History ──────────────────────────────────────────────────────────────────
 async function openHistory() {
@@ -600,6 +705,8 @@ function resetWidth() { emit('resize', DEFAULT_WIDTH) }
 onUnmounted(() => {
   stopDrag()
   clearAttachment()
+  stopRecording()
+  teardownStream()
 })
 
 // ── Markdown (minimal inline rendering) ──────────────────────────────────────
@@ -858,6 +965,27 @@ function fmtDate(iso) {
   margin-bottom: 2px;
 }
 .attach-btn:hover { background: var(--border); color: var(--text-primary); }
+
+.mic-btn.recording {
+  background: var(--admin-accent, #ef4444);
+  color: #fff;
+  animation: mic-pulse 1.2s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.45); }
+  50%      { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
+}
+
+.recording-bar {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px; padding: 6px 10px;
+  border-radius: 8px; background: rgba(239,68,68,0.10);
+  font-size: 12px; font-weight: 600; color: var(--admin-accent, #ef4444);
+}
+.recording-bar .rec-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--admin-accent, #ef4444);
+  animation: mic-pulse 1.2s ease-in-out infinite;
+}
 
 .chat-input {
   flex: 1;
