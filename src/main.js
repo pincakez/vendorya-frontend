@@ -24,6 +24,11 @@ import { useAuthStore } from './stores/auth'
 const authStore   = useAuthStore(pinia)
 const formatStore = useFormatStore(pinia)
 formatStore.applyColor()  // user's currency-symbol tint (persisted in localStorage)
-if (authStore.isAuthenticated) formatStore.loadForStore()
 
-app.mount('#app')
+// Access token is memory-only now, so a reload starts logged-out until we trade
+// the httpOnly refresh cookie for a fresh access token. Await it before mount so
+// the router guard sees the correct auth state on the first navigation.
+authStore.bootstrap().finally(() => {
+  if (authStore.isAuthenticated) formatStore.loadForStore()
+  app.mount('#app')
+})

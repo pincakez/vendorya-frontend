@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia'
-import api, { beginLogout } from '@/api/axios'
+import api, { beginLogout, refreshAccessToken } from '@/api/axios'
+import { setAccessToken } from '@/api/token'
 import { useThemeStore } from './theme'
 import { useFormatStore } from './format'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    accessToken: localStorage.getItem('vendorya_access') || null,
-    refreshToken: localStorage.getItem('vendorya_refresh') || null,
+    // Access token lives in memory only (api/token.js); this flag mirrors "do we
+    // hold a live token" for the router guard. Starts null on every page load and
+    // is set by login() or bootstrap() (silent refresh from the httpOnly cookie).
+    accessToken: null,
     user: JSON.parse(localStorage.getItem('vendorya_user') || 'null'),
     // Super-admin: the store currently being acted on (null = General Admin mode)
     activeStore: JSON.parse(localStorage.getItem('vendorya_active_store_obj') || 'null'),
@@ -47,7 +50,7 @@ export const useAuthStore = defineStore('auth', {
       if (res.data.requires_2fa) {
         return { status: 'requires_2fa' }
       }
-      this.setTokens(res.data.access, res.data.refresh)
+      this.setAccess(res.data.access)
       if (res.data.user) this.setUser(res.data.user)
       // The user identity just changed (sudo vs regular) — apply that user's own theme,
       // not whatever the previous tab session left behind.
@@ -60,11 +63,31 @@ export const useAuthStore = defineStore('auth', {
       const res = await api.get('/api/auth/me/')
       this.setUser(res.data)
     },
-    setTokens(access, refresh) {
+    // Memory-only access token. The router guard reads this.accessToken; the live
+    // value used by requests lives in api/token.js. Never persisted to storage.
+    setAccess(access) {
       this.accessToken = access
-      this.refreshToken = refresh
-      localStorage.setItem('vendorya_access', access)
-      localStorage.setItem('vendorya_refresh', refresh)
+      setAccessToken(access)
+    },
+    // Page reload starts with no access token (memory-only). If we have a
+    // remembered user, the 60-day httpOnly refresh cookie should still be valid —
+    // silently exchange it for a fresh access token before the app renders.
+    // Called from main.js, awaited before mount.
+    async bootstrap() {
+      if (!this.user) return
+      try {
+        const access = await refreshAccessToken()
+        this.accessToken = access   // token.js already holds it; mirror for the guard
+      } catch {
+        // Cookie gone/expired → not actually logged in. Drop stale UX state so the
+        // guard routes to /login (keep theme prefs).
+        this.user = null
+        this.activeStore = null
+        localStorage.removeItem('vendorya_user')
+        localStorage.removeItem('vendorya_active_store')
+        localStorage.removeItem('vendorya_active_store_obj')
+        localStorage.removeItem('vendorya_preview_mode')
+      }
     },
     setUser(user) {
       this.user = user
@@ -108,13 +131,15 @@ export const useAuthStore = defineStore('auth', {
     //     from cleared storage.
     async logout({ idle = false } = {}) {
       beginLogout()   // freeze the axios interceptor so an in-flight 401 can't re-auth us mid-logout
+      setAccessToken(null)  // drop the in-memory access token immediately
 
-      // Blacklist + clear the httpOnly cookie. Awaited so we actually confirm it,
-      // but raced against a timeout so a slow/dead server can't trap the user.
-      const refresh = localStorage.getItem('vendorya_refresh') || undefined
+      // Blacklist + clear the httpOnly cookie. The refresh token rides in the
+      // cookie (sent via withCredentials), so no body is needed. Awaited so we
+      // confirm it, but raced against a timeout so a slow/dead server can't trap
+      // the user.
       try {
         await Promise.race([
-          api.post('/api/auth/logout/', { refresh }),
+          api.post('/api/auth/logout/', {}),
           new Promise((_, reject) => setTimeout(() => reject(new Error('logout-timeout')), 3000)),
         ])
       } catch {

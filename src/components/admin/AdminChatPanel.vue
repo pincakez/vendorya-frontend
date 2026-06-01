@@ -185,6 +185,7 @@ import { Bot, X, SquarePen, Send, Paperclip, Wrench, Store } from 'lucide-vue-ne
 import AppModal from '@/components/ui/AppModal.vue'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api/axios'
+import { getAccessToken } from '@/api/token'
 
 const props = defineProps({
   width: { type: Number, default: 380 },
@@ -369,7 +370,7 @@ async function sendMessage() {
   streaming.value  = true
   streamBuffer.value = ''
 
-  const token = localStorage.getItem('vendorya_access')
+  const token = getAccessToken()  // memory-only access token (httpOnly migration)
   const storeId = localStorage.getItem('vendorya_active_store')
 
   const headers = {
