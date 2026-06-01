@@ -20,15 +20,10 @@ useThemeStore(pinia).init()
 // Load currency + number-formatting prefs from the active store.  No-op if
 // not authenticated yet; it runs again on the next login.
 import { useFormatStore } from './stores/format'
-import { useAuthStore } from './stores/auth'
-const authStore   = useAuthStore(pinia)
 const formatStore = useFormatStore(pinia)
 formatStore.applyColor()  // user's currency-symbol tint (persisted in localStorage)
 
-// Access token is memory-only now, so a reload starts logged-out until we trade
-// the httpOnly refresh cookie for a fresh access token. Await it before mount so
-// the router guard sees the correct auth state on the first navigation.
-authStore.bootstrap().finally(() => {
-  if (authStore.isAuthenticated) formatStore.loadForStore()
-  app.mount('#app')
-})
+// The router's first navigation restores auth from the httpOnly cookie (see the
+// bootstrap gate in router/index.js) and then loads store format prefs, so mount
+// can proceed normally here.
+app.mount('#app')

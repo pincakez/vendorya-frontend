@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useFormatStore } from '@/stores/format'
 import LayoutSwitch from '@/layouts/LayoutSwitch.vue'
 import POSLayout from '@/layouts/POSLayout.vue'
 
@@ -84,8 +85,21 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
+// Access token is memory-only, so a page reload starts with no token. Before the
+// FIRST navigation we must trade the httpOnly refresh cookie for a fresh access
+// token — otherwise the guard below would see "logged out" and bounce to /login
+// even though the session is valid. (vue-router fires this initial navigation at
+// app.use(router) time, before main.js code runs, so the gate must live here.)
+let booted = false
+
+router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore()
+
+  if (!booted) {
+    booted = true
+    await auth.bootstrap()
+    if (auth.isAuthenticated) useFormatStore().loadForStore()
+  }
 
   // Public routes
   if (to.meta.public) {
