@@ -50,15 +50,48 @@
       </template>
     </div>
 
-    <!-- Placeholder for future settings -->
-    <div class="settings-card" style="opacity:.55;">
+    <!-- Model discovery overrides -->
+    <div class="settings-card">
       <div class="card-section-title">
         <SlidersHorizontal :size="15" style="flex-shrink:0;" />
-        More Settings
+        Model Discovery
       </div>
-      <p style="font-size:13px;color:var(--text-muted);">
-        Additional platform settings will appear here in future phases.
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">
+        The model list updates itself from Google every time you Refresh. You normally don't
+        touch anything here. These two boxes are just safety overrides — one model id per line.
       </p>
+
+      <div v-if="loading" class="skeleton-row" style="height:80px;border-radius:8px;max-width:480px;" />
+      <template v-else>
+        <div style="display:flex;flex-direction:column;gap:18px;max-width:520px;">
+          <div>
+            <label class="form-label">Pin extra models (force-show)</label>
+            <textarea
+              v-model="extraModels" class="form-input" rows="3" spellcheck="false"
+              placeholder="e.g. gemini-3.5-flash"
+              style="resize:vertical;font-family:monospace;font-size:13px;"
+            />
+            <p class="hint-text">Show these even if auto-discovery would skip them (must still exist in Google's list).</p>
+          </div>
+          <div>
+            <label class="form-label">Hide models</label>
+            <textarea
+              v-model="hiddenModels" class="form-input" rows="3" spellcheck="false"
+              placeholder="e.g. gemini-2.0"
+              style="resize:vertical;font-family:monospace;font-size:13px;"
+            />
+            <p class="hint-text">Hide anything whose name contains this text. Hiding always wins over pinning.</p>
+          </div>
+          <div>
+            <button class="btn-primary" :disabled="savingModels" @click="saveModelPrefs">
+              <span v-if="savingModels">Saving…</span>
+              <span v-else>Save & apply on next Refresh</span>
+            </button>
+            <p v-if="modelsError" class="field-error" style="margin-top:8px;">{{ modelsError }}</p>
+            <p v-if="modelsSaved" class="save-ok" style="margin-top:8px;">Saved. Hit “Refresh” on the AI Profiles page to apply.</p>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -76,15 +109,40 @@ const newKey     = ref('')
 const saveError  = ref('')
 const saveSuccess = ref(false)
 
+const extraModels   = ref('')
+const hiddenModels  = ref('')
+const savingModels  = ref(false)
+const modelsSaved   = ref(false)
+const modelsError   = ref('')
+
 async function load() {
   try {
     const { data } = await api.get('/api/admin/ai/settings/')
-    hasKey.value    = data.has_key
-    maskedKey.value = data.masked_key
+    hasKey.value       = data.has_key
+    maskedKey.value    = data.masked_key
+    extraModels.value  = data.extra_models || ''
+    hiddenModels.value = data.hidden_models || ''
   } catch {
     // non-fatal — page still usable
   } finally {
     loading.value = false
+  }
+}
+
+async function saveModelPrefs() {
+  modelsError.value = ''
+  modelsSaved.value = false
+  savingModels.value = true
+  try {
+    await api.patch('/api/admin/ai/settings/', {
+      extra_models:  extraModels.value,
+      hidden_models: hiddenModels.value,
+    })
+    modelsSaved.value = true
+  } catch (e) {
+    modelsError.value = e.response?.data?.detail || 'Failed to save. Try again.'
+  } finally {
+    savingModels.value = false
   }
 }
 
@@ -147,5 +205,12 @@ onMounted(load)
 .save-ok {
   font-size: 12.5px;
   color: var(--success, #16a34a);
+}
+
+.hint-text {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.45;
 }
 </style>
