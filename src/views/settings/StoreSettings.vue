@@ -146,6 +146,76 @@
       </div>
     </div>
 
+    <!-- TAB: Branding -->
+    <div v-if="activeTab === 'branding'">
+      <div class="settings-card">
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">
+          Upload your store logo. It appears in the top header bar so your staff always see your brand.
+          <br>Recommended size: <strong>480 × 112 px</strong> — PNG or SVG with a transparent background.
+        </p>
+
+        <div class="logo-upload-grid">
+          <!-- Light mode logo -->
+          <div class="logo-upload-card">
+            <div class="logo-upload-label">
+              <span>Light Mode Logo</span>
+              <span class="logo-hint">Shown when theme is set to light</span>
+            </div>
+            <div class="logo-preview-wrap light-bg">
+              <img v-if="logoPreview.light" :src="logoPreview.light" class="logo-preview-img" alt="Light logo" />
+              <div v-else class="logo-placeholder">
+                <ImageIcon :size="28" style="opacity:.3;" />
+                <span>No logo uploaded</span>
+              </div>
+            </div>
+            <div class="logo-upload-actions">
+              <label class="btn-upload">
+                Choose file
+                <input type="file" accept="image/*" style="display:none;" @change="onLogoFile('light', $event)" />
+              </label>
+              <button v-if="logoPreview.light" class="btn-logo-clear" @click="clearLogo('light')">
+                <X :size="13" /> Remove
+              </button>
+            </div>
+          </div>
+
+          <!-- Dark mode logo -->
+          <div class="logo-upload-card">
+            <div class="logo-upload-label">
+              <span>Dark Mode Logo</span>
+              <span class="logo-hint">Shown when theme is set to dark</span>
+            </div>
+            <div class="logo-preview-wrap dark-bg">
+              <img v-if="logoPreview.dark" :src="logoPreview.dark" class="logo-preview-img" alt="Dark logo" />
+              <div v-else class="logo-placeholder">
+                <ImageIcon :size="28" style="opacity:.3;" />
+                <span>No logo uploaded</span>
+              </div>
+            </div>
+            <div class="logo-upload-actions">
+              <label class="btn-upload">
+                Choose file
+                <input type="file" accept="image/*" style="display:none;" @change="onLogoFile('dark', $event)" />
+              </label>
+              <button v-if="logoPreview.dark" class="btn-logo-clear" @click="clearLogo('dark')">
+                <X :size="13" /> Remove
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p class="form-hint" style="margin-top:12px;">
+          Changes apply immediately after saving. The header logo updates for all logged-in staff on next page load.
+        </p>
+
+        <div class="form-footer">
+          <button class="btn-primary" :disabled="logoSaving" @click="saveLogos">
+            {{ logoSaving ? 'Uploading…' : 'Save Logos' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- TAB: Receipt -->
     <div v-if="activeTab === 'receipt'">
       <div class="settings-card">
@@ -319,7 +389,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
-import { Store, Receipt, GitBranch, CreditCard, Pencil, Trash2 } from 'lucide-vue-next'
+import { Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useQABStore } from '@/stores/qab'
 import { useFormatStore } from '@/stores/format'
@@ -333,6 +403,7 @@ const auth = useAuthStore()
 
 const tabs = [
   { id: 'store',    label: 'Store',            icon: Store },
+  { id: 'branding', label: 'Branding',         icon: ImageIcon },
   { id: 'receipt',  label: 'Receipt',          icon: Receipt },
   { id: 'branches', label: 'Branches',         icon: GitBranch },
   { id: 'payments', label: 'Payment Methods',  icon: CreditCard },
@@ -356,6 +427,60 @@ const timezones = [
   'America/New_York', 'America/Los_Angeles',
   'UTC',
 ]
+
+// --- Branding / Logos ---
+const logoSaving = ref(false)
+const logoFiles  = reactive({ light: null, dark: null })
+const logoPreview = reactive({ light: null, dark: null })
+const logoClear   = reactive({ light: false, dark: false })
+
+function onLogoFile(mode, e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  logoFiles[mode]  = file
+  logoClear[mode]  = false
+  logoPreview[mode] = URL.createObjectURL(file)
+}
+
+function clearLogo(mode) {
+  logoFiles[mode]   = null
+  logoPreview[mode] = null
+  logoClear[mode]   = true
+}
+
+async function saveLogos() {
+  logoSaving.value = true
+  try {
+    const fd = new FormData()
+    if (logoFiles.light) fd.append('logo_light', logoFiles.light)
+    if (logoFiles.dark)  fd.append('logo_dark',  logoFiles.dark)
+    if (logoClear.light) fd.append('clear_logo_light', 'true')
+    if (logoClear.dark)  fd.append('clear_logo_dark',  'true')
+    const res = await api.patch('/api/core/store/logo/', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    // Patch the in-memory auth store so the header logo updates immediately
+    if (auth.user?.store) {
+      auth.user.store.logo_light_url = res.data.logo_light_url
+      auth.user.store.logo_dark_url  = res.data.logo_dark_url
+    }
+    logoFiles.light = null
+    logoFiles.dark  = null
+    logoClear.light = false
+    logoClear.dark  = false
+  } catch (e) {
+    alert(e.response?.data?.detail || 'Error saving logos')
+  } finally {
+    logoSaving.value = false
+  }
+}
+
+function initLogoPreviews() {
+  const store = auth.user?.store
+  if (!store) return
+  logoPreview.light = store.logo_light_url || null
+  logoPreview.dark  = store.logo_dark_url  || null
+}
 
 // --- Store + Settings ---
 const storeLoading = ref(false)
@@ -548,7 +673,7 @@ watch(activeTab, tab => {
   if (tab === 'payments' && paymentMethods.value.length === 0) fetchPMs()
 }, { immediate: true })
 
-onMounted(() => loadStore())
+onMounted(() => { loadStore(); initLogoPreviews() })
 onUnmounted(() => qab.clearActions())
 </script>
 
@@ -616,4 +741,25 @@ onUnmounted(() => qab.clearActions())
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
 .req { color:#dc2626; font-weight:700; }
+
+/* Branding tab */
+.logo-upload-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+@media (max-width:640px) { .logo-upload-grid { grid-template-columns:1fr; } }
+
+.logo-upload-card { display:flex; flex-direction:column; gap:10px; }
+.logo-upload-label { display:flex; flex-direction:column; gap:2px; }
+.logo-upload-label span:first-child { font-size:13px; font-weight:600; color:var(--text-primary); }
+.logo-hint { font-size:11.5px; color:var(--text-muted); }
+
+.logo-preview-wrap { border:1.5px dashed var(--border); border-radius:10px; height:80px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.logo-preview-wrap.light-bg { background:#f9fafb; }
+.logo-preview-wrap.dark-bg  { background:#18181a; }
+.logo-preview-img { max-height:60px; max-width:100%; object-fit:contain; padding:6px; }
+.logo-placeholder { display:flex; flex-direction:column; align-items:center; gap:5px; color:var(--text-muted); font-size:12px; }
+
+.logo-upload-actions { display:flex; align-items:center; gap:8px; }
+.btn-upload { display:inline-flex; align-items:center; padding:6px 12px; border-radius:7px; font-size:12.5px; font-weight:600; border:1px solid var(--border); background:var(--bg-app); color:var(--text-primary); cursor:pointer; transition:background 100ms,border-color 100ms; }
+.btn-upload:hover { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
+.btn-logo-clear { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:7px; font-size:12px; font-weight:500; border:1px solid rgba(220,38,38,0.3); background:rgba(220,38,38,0.06); color:#dc2626; cursor:pointer; transition:background 100ms; }
+.btn-logo-clear:hover { background:rgba(220,38,38,0.14); }
 </style>

@@ -33,6 +33,14 @@
 
     <div class="nhdr-spacer" />
 
+    <!-- Store logo (client brand) -->
+    <img
+      v-if="storeLogo"
+      :src="storeLogo"
+      :alt="auth.storeName"
+      class="nhdr-store-logo"
+    />
+
     <!-- Role badge -->
     <span v-if="auth.userRole" class="header-role-badge">{{ auth.userRole }}</span>
 
@@ -91,6 +99,13 @@ defineProps({ sidebarCollapsed: Boolean })
 
 const auth   = useAuthStore()
 const theme  = useThemeStore()
+
+const storeLogo = computed(() => {
+  const store = auth.user?.store || auth.activeStore
+  if (!store) return null
+  return theme.dark ? (store.logo_dark_url || store.logo_light_url || null)
+                    : (store.logo_light_url || store.logo_dark_url || null)
+})
 const router = useRouter()
 
 /* ── Global search ──────────────────────────── */
@@ -268,6 +283,8 @@ onUnmounted(() => {
 .nd-item-time   { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
 .nd-view-all { display: block; width: 100%; padding: 10px 16px; text-align: center; font-size: 12.5px; font-weight: 600; color: var(--accent); background: none; border: none; border-top: 1px solid var(--border); cursor: pointer; transition: background 100ms; }
 .nd-view-all:hover { background: var(--bg-app); }
+
+.nhdr-store-logo { height: 28px; width: auto; max-width: 160px; object-fit: contain; flex-shrink: 0; margin-right: 4px; }
 
 .dropdown-enter-active, .dropdown-leave-active { transition: opacity 150ms, transform 150ms; }
 .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px); }

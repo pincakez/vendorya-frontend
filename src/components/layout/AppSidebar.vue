@@ -4,11 +4,9 @@
       <!-- Logo + collapse -->
       <div class="nsb-logo-row" :class="{ 'nsb-col': collapsed }">
         <div class="nsb-logo">
-          <img src="/favicon.svg" alt="Vendorya" class="nsb-logo-mark" />
-          <template v-if="!collapsed">
-            <span class="nsb-logo-text">Vendorya</span>
-            <span v-if="auth.isPremium" class="nsb-logo-badge">PREMIUM</span>
-          </template>
+          <img v-if="collapsed" src="/favicon.svg" alt="Vendorya" class="nsb-logo-mark" />
+          <img v-else :src="vendoryaLogo" alt="Vendorya" class="nsb-logo-full" />
+          <span v-if="!collapsed && auth.isPremium" class="nsb-logo-badge">PREMIUM</span>
         </div>
         <button class="nsb-collapse" @click="$emit('toggle-collapse')" :title="collapsed ? 'Expand' : 'Collapse'">
           <ChevronLeft :size="18" class="nsb-collapse-icon" :class="{ flip: collapsed }" />
@@ -91,6 +89,7 @@
 import { ref, reactive, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
 import PhysicalButton from '@/components/ui/PhysicalButton.vue'
 import {
   LayoutDashboard, Calculator, Package, ShoppingCart, SlidersHorizontal, Tag, List,
@@ -105,7 +104,9 @@ defineEmits(['toggle-collapse'])
 
 const route = useRoute()
 const router = useRouter()
-const auth = useAuthStore()
+const auth  = useAuthStore()
+const theme = useThemeStore()
+const vendoryaLogo = computed(() => theme.dark ? '/logo-text-dark-mode.png' : '/logo-text-light-mode.png')
 
 const groups = [
   { id: 'inventory', title: 'INVENTORY', icon: Package, items: [
@@ -186,7 +187,7 @@ function go(to) { if (route.path !== to) router.push(to) }
 .nsb-logo-row.nsb-col { flex-direction: column; gap: 14px; }
 .nsb-logo { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .nsb-logo-mark { width: 26px; height: 26px; flex-shrink: 0; }
-.nsb-logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; color: var(--sb-logo-text); white-space: nowrap; }
+.nsb-logo-full { height: 28px; width: auto; max-width: 140px; object-fit: contain; flex-shrink: 0; }
 .nsb-logo-badge {
   flex-shrink: 0; font-size: 8.5px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 5px;
   border-radius: 5px; background: var(--sb-badge-bg); color: var(--sb-badge-text);
