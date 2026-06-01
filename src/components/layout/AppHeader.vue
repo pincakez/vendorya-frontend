@@ -33,13 +33,16 @@
 
     <div class="nhdr-spacer" />
 
-    <!-- Store logo (client brand) -->
-    <img
-      v-if="storeLogo"
-      :src="storeLogo"
-      :alt="auth.storeName"
-      class="nhdr-store-logo"
-    />
+    <!-- Store brand: client logo + PREMIUM badge -->
+    <div v-if="storeLogo || auth.isPremium" class="nhdr-brand">
+      <img
+        v-if="storeLogo"
+        :src="storeLogo"
+        :alt="auth.storeName"
+        class="nhdr-store-logo"
+      />
+      <span v-if="auth.isPremium" class="nhdr-premium-badge">PREMIUM</span>
+    </div>
 
     <!-- Role badge -->
     <span v-if="auth.userRole" class="header-role-badge">{{ auth.userRole }}</span>
@@ -284,7 +287,12 @@ onUnmounted(() => {
 .nd-view-all { display: block; width: 100%; padding: 10px 16px; text-align: center; font-size: 12.5px; font-weight: 600; color: var(--accent); background: none; border: none; border-top: 1px solid var(--border); cursor: pointer; transition: background 100ms; }
 .nd-view-all:hover { background: var(--bg-app); }
 
-.nhdr-store-logo { height: 28px; width: auto; max-width: 160px; object-fit: contain; flex-shrink: 0; margin-right: 4px; }
+.nhdr-brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-right: 4px; }
+.nhdr-store-logo { height: 28px; width: auto; max-width: 160px; object-fit: contain; flex-shrink: 0; }
+.nhdr-premium-badge {
+  flex-shrink: 0; font-size: 8.5px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 5px;
+  border-radius: 5px; background: var(--sb-badge-bg); color: var(--sb-badge-text);
+}
 
 .dropdown-enter-active, .dropdown-leave-active { transition: opacity 150ms, transform 150ms; }
 .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px); }

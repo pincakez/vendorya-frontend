@@ -6,7 +6,6 @@
         <div class="nsb-logo">
           <img v-if="collapsed" src="/favicon.svg" alt="Vendorya" class="nsb-logo-mark" />
           <img v-else :src="vendoryaLogo" alt="Vendorya" class="nsb-logo-full" />
-          <span v-if="!collapsed && auth.isPremium" class="nsb-logo-badge">PREMIUM</span>
         </div>
         <button class="nsb-collapse" @click="$emit('toggle-collapse')" :title="collapsed ? 'Expand' : 'Collapse'">
           <ChevronLeft :size="18" class="nsb-collapse-icon" :class="{ flip: collapsed }" />
@@ -189,10 +188,6 @@ function go(to) { if (route.path !== to) router.push(to) }
 .nsb-logo { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .nsb-logo-mark { width: 26px; height: 26px; flex-shrink: 0; }
 .nsb-logo-full { height: 28px; width: auto; max-width: 140px; object-fit: contain; flex-shrink: 0; }
-.nsb-logo-badge {
-  flex-shrink: 0; font-size: 8.5px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 5px;
-  border-radius: 5px; background: var(--sb-badge-bg); color: var(--sb-badge-text);
-}
 .nsb-collapse {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
