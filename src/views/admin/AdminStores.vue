@@ -144,6 +144,19 @@
           <textarea v-model="editModal.suspend_reason" class="form-input" rows="2" placeholder="e.g. Non-payment, terms violation, owner request…" />
           <p style="font-size:11.5px;color:var(--admin-accent);margin:6px 0 0;">⚠ All staff of this store will be locked out of login until reactivated.</p>
         </div>
+        <!-- Danger Zone -->
+        <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
+          <p style="font-size:11.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;">Danger Zone</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid rgba(239,68,68,0.25);border-radius:10px;background:rgba(239,68,68,0.04);">
+            <div>
+              <p style="font-size:13px;font-weight:600;color:var(--text-primary);margin:0 0 2px;">Force Logout All Sessions</p>
+              <p style="font-size:12px;color:var(--text-muted);margin:0;">Immediately invalidates every active session for all users in this store.</p>
+            </div>
+            <button class="btn-danger" :disabled="forcingLogout" @click="forceLogout">
+              {{ forcingLogout ? 'Logging out…' : 'Force Logout' }}
+            </button>
+          </div>
+        </div>
       </div>
       <template #footer>
         <button class="btn-ghost" @click="closeEdit">Cancel</button>
@@ -347,6 +360,7 @@ const stores = ref([])
 const currencies = ref([])
 const loading = ref(false)
 const saving = ref(false)
+const forcingLogout = ref(false)
 const search = ref('')
 
 const timezones = [
@@ -463,6 +477,19 @@ async function saveEdit() {
     alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving store')
   } finally {
     saving.value = false
+  }
+}
+
+async function forceLogout() {
+  if (!confirm(`Force logout ALL sessions for "${editModal.name}"?\n\nEvery logged-in user at this store will be immediately kicked out and forced to sign in again.`)) return
+  forcingLogout.value = true
+  try {
+    const res = await api.post(`/api/admin/stores/${editModal.id}/force-logout/`)
+    alert(res.data.detail)
+  } catch (e) {
+    alert(e.response?.data?.detail || 'Error forcing logout')
+  } finally {
+    forcingLogout.value = false
   }
 }
 
@@ -635,4 +662,9 @@ onMounted(() => {
 
 .check-ok    { font-size:12px; font-weight:600; color:#16a34a; }
 .check-taken { font-size:12px; font-weight:600; color:#dc2626; }
+
+.btn-danger { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600; border:1.5px solid rgba(239,68,68,0.5); background:rgba(239,68,68,0.08); color:var(--admin-accent); cursor:pointer; white-space:nowrap; transition:background 100ms,border-color 100ms,transform 70ms; }
+.btn-danger:hover:not(:disabled) { background:rgba(239,68,68,0.18); border-color:var(--admin-accent); }
+.btn-danger:active:not(:disabled) { transform:scale(0.95); }
+.btn-danger:disabled { opacity:.5; cursor:default; }
 </style>
