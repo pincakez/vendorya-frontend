@@ -4,7 +4,7 @@
       <!-- Logo + collapse -->
       <div class="nsb-logo-row" :class="{ 'nsb-col': collapsed }">
         <div class="nsb-logo">
-          <img v-if="collapsed" src="/favicon.svg" alt="Vendorya" class="nsb-logo-mark" />
+          <img v-if="collapsed" src="/favicon.png" alt="Vendorya" class="nsb-logo-mark" />
           <img v-else :src="vendoryaLogo" alt="Vendorya" class="nsb-logo-full" />
         </div>
         <button class="nsb-collapse" @click="$emit('toggle-collapse')" :title="collapsed ? 'Expand' : 'Collapse'">

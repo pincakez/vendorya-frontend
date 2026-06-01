@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // App shell only — no offline data caching (Vendorya is online-first).
       // This just makes the app installable (Install button in Chrome/Edge).
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Vendorya',
         short_name: 'Vendorya',
