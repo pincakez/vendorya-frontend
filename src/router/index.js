@@ -20,6 +20,7 @@ const router = createRouter({
         { path: 'inventory/products',   component: () => import('@/views/inventory/Products.vue'),         meta: { store: true } },
         { path: 'inventory/purchases',  component: () => import('@/views/inventory/Purchases.vue'),        meta: { store: true } },
         { path: 'inventory/adjustments',component: () => import('@/views/inventory/StockAdjustments.vue'), meta: { store: true } },
+        { path: 'inventory/transfers',  component: () => import('@/views/inventory/StockTransfers.vue'),  meta: { store: true } },
         { path: 'inventory/categories', component: () => import('@/views/inventory/Categories.vue'),       meta: { store: true } },
         { path: 'inventory/attributes', component: () => import('@/views/inventory/Attributes.vue'),       meta: { store: true } },
         { path: 'inventory/reports',    component: () => import('@/views/inventory/InventoryReports.vue'), meta: { store: true } },

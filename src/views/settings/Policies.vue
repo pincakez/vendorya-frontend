@@ -44,6 +44,30 @@
         </div>
       </div>
 
+      <!-- Credit Limit Policy -->
+      <div class="policy-card">
+        <div class="policy-icon" style="background:#ede9fe;color:#7c3aed;"><AlertCircle :size="20" /></div>
+        <div class="policy-body">
+          <div class="policy-title">Credit Limit Policy</div>
+          <div class="policy-desc">
+            What happens when a customer's unpaid balance would exceed their credit limit.
+            <strong>Allow</strong> — no enforcement. <strong>Warn</strong> — sale goes through, store owner is notified.
+            <strong>Block</strong> — sale is rejected until balance is settled.
+          </div>
+          <div class="policy-footer" style="gap:8px;flex-wrap:wrap;">
+            <button v-for="opt in creditPolicyOptions" :key="opt.value"
+              class="mode-btn" :class="{ active: form.credit_policy === opt.value }"
+              @click="form.credit_policy = opt.value"
+            >{{ opt.label }}</button>
+            <template v-if="form.credit_policy !== 'ALLOW'">
+              <span style="margin-left:8px;font-size:13px;color:var(--text-muted);">Default limit:</span>
+              <input v-model.number="form.default_credit_limit" type="number" min="0" step="100" class="num-input" placeholder="e.g. 5000" />
+              <span style="font-size:12px;color:var(--text-muted);">per customer (null = no limit)</span>
+            </template>
+          </div>
+        </div>
+      </div>
+
       <!-- Default Tax -->
       <div class="policy-card">
         <div class="policy-icon" style="background:#fef3c7;color:#d97706;"><Percent :size="20" /></div>
@@ -129,7 +153,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Package, CreditCard, Percent, CheckCircle, Clock, Globe, Hash } from 'lucide-vue-next'
+import { Package, CreditCard, Percent, CheckCircle, Clock, Globe, Hash, AlertCircle } from 'lucide-vue-next'
 import api from '@/api/axios'
 
 const loading = ref(false)
@@ -138,9 +162,16 @@ const saved   = ref(false)
 const taxes   = ref([])
 const form    = reactive({
   allow_negative_stock: false, enable_agel_selling: true, default_tax: '',
+  credit_policy: 'ALLOW', default_credit_limit: null,
   product_numbering_mode: 'PROGRESSIVE',
   force_2fa_managers: false, session_timeout_minutes: 0, login_ip_allowlist: '',
 })
+
+const creditPolicyOptions = [
+  { value: 'ALLOW', label: 'Allow' },
+  { value: 'WARN',  label: 'Warn' },
+  { value: 'BLOCK', label: 'Block' },
+]
 
 function toggle(field) { form[field] = !form[field] }
 
@@ -154,6 +185,8 @@ async function load() {
     Object.assign(form, {
       allow_negative_stock:    settingsRes.data.allow_negative_stock,
       enable_agel_selling:     settingsRes.data.enable_agel_selling,
+      credit_policy:           settingsRes.data.credit_policy || 'ALLOW',
+      default_credit_limit:    settingsRes.data.default_credit_limit ?? null,
       default_tax:             settingsRes.data.default_tax || '',
       product_numbering_mode:  settingsRes.data.product_numbering_mode || 'PROGRESSIVE',
       force_2fa_managers:      settingsRes.data.force_2fa_managers ?? false,
@@ -171,6 +204,8 @@ async function save() {
     await api.patch('/api/core/settings/', {
       allow_negative_stock:    form.allow_negative_stock,
       enable_agel_selling:     form.enable_agel_selling,
+      credit_policy:           form.credit_policy,
+      default_credit_limit:    (form.credit_policy !== 'ALLOW' && form.default_credit_limit) ? form.default_credit_limit : null,
       default_tax:             form.default_tax || null,
       product_numbering_mode:  form.product_numbering_mode,
       force_2fa_managers:      form.force_2fa_managers,

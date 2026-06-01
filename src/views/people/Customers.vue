@@ -66,6 +66,11 @@
           <input v-model="modal.phone_number" class="form-input" placeholder="e.g. 01012345678" />
         </div>
         <div>
+          <label class="form-label">Credit Limit (optional)</label>
+          <input v-model.number="modal.credit_limit" type="number" min="0" step="100" class="form-input" placeholder="Leave blank to use store default" />
+          <p style="font-size:11px;color:var(--text-muted);margin:4px 0 0;">Max unpaid balance. Blank = store default. Enforced per Settings › Policies.</p>
+        </div>
+        <div>
           <label class="form-label">Notes (optional)</label>
           <textarea v-model="modal.notes" class="form-input" rows="2" placeholder="Any notes about this customer…" />
         </div>
@@ -125,16 +130,16 @@ async function deleteCustomer(id) {
   fetchCustomers(page.value)
 }
 
-const modal = reactive({ open: false, id: null, name: '', phone_number: '', notes: '' })
+const modal = reactive({ open: false, id: null, name: '', phone_number: '', notes: '', credit_limit: null })
 
-function openNew()    { Object.assign(modal, { open: true, id: null, name: '', phone_number: '', notes: '' }) }
-function openEdit(c)  { Object.assign(modal, { open: true, id: c.id, name: c.name, phone_number: c.phone_number, notes: c.notes || '' }) }
+function openNew()    { Object.assign(modal, { open: true, id: null, name: '', phone_number: '', notes: '', credit_limit: null }) }
+function openEdit(c)  { Object.assign(modal, { open: true, id: c.id, name: c.name, phone_number: c.phone_number, notes: c.notes || '', credit_limit: c.credit_limit ?? null }) }
 function closeModal() { modal.open = false }
 
 async function save() {
   saving.value = true
   try {
-    const payload = { name: modal.name, phone_number: modal.phone_number, notes: modal.notes || '' }
+    const payload = { name: modal.name, phone_number: modal.phone_number, notes: modal.notes || '', credit_limit: modal.credit_limit || null }
     modal.id
       ? await api.patch(`/api/auth/customers/${modal.id}/`, payload)
       : await api.post('/api/auth/customers/', payload)

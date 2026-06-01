@@ -96,7 +96,7 @@ import {
   FileBarChart, Wallet, FileText, CornerDownLeft, Receipt, Clock, LineChart, TrendingUp,
   DollarSign, BookOpen, UserCheck, Percent, Users, Truck, Briefcase, Folder, Activity,
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
-  ChevronDown, ChevronLeft, ChevronRight, LogOut,
+  ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight,
 } from 'lucide-vue-next'
 
 defineProps({ collapsed: Boolean })
@@ -113,6 +113,7 @@ const groups = [
     { label: 'Products', to: '/inventory/products', icon: Package },
     { label: 'Purchases', to: '/inventory/purchases', icon: ShoppingCart },
     { label: 'Stock Adjustments', to: '/inventory/adjustments', icon: SlidersHorizontal },
+    { label: 'Stock Transfers',   to: '/inventory/transfers',   icon: ArrowLeftRight },
     { label: 'Categories', to: '/inventory/categories', icon: Tag },
     { label: 'Attributes', to: '/inventory/attributes', icon: List },
     { label: 'Reports', to: '/inventory/reports', icon: FileBarChart },
