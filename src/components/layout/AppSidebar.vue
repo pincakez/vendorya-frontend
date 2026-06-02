@@ -108,7 +108,7 @@ import {
   DollarSign, BookOpen, UserCheck, Percent, Users, Truck, Briefcase, Folder, Activity,
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
-  Building2, KeyRound, Trash2, Bot, Wrench,
+  Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -189,6 +189,7 @@ const adminGroups = [
   { id: 'asystem', title: 'SYSTEM', icon: Activity, items: [
     { label: 'Activity Log', to: '/admin/activity-log', icon: Activity },
     { label: 'Trash', to: '/admin/trash', icon: Trash2 },
+    { label: 'Isolation Check', to: '/admin/isolation-check', icon: ShieldCheck },
   ] },
   { id: 'aai', title: 'AI', icon: Bot, items: [
     { label: 'AI Profiles', to: '/admin/ai-profiles', icon: Bot },
