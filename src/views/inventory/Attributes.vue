@@ -5,6 +5,10 @@
         <h1 class="page-title">Attributes</h1>
         <p class="page-sub">Define product attributes like Season, Gender, Size, Color</p>
       </div>
+      <button class="btn-primary" @click="openNew">
+        <Plus :size="14" />
+        Add Attribute
+      </button>
     </div>
 
     <div class="table-wrap">
@@ -109,13 +113,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { Tag, Pencil, Trash2, AlignLeft, List, Hash } from 'lucide-vue-next'
+import { ref, reactive, onMounted } from 'vue'
+import { Tag, Pencil, Trash2, AlignLeft, List, Hash, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
-import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
-
-const qab = useQABStore()
 
 const attrs   = ref([])
 const loading = ref(false)
@@ -180,9 +181,7 @@ async function deleteAttr(id) {
 
 onMounted(() => {
   fetchAttrs()
-  qab.setActions([{ id: 'new-attr', label: 'New Attribute', icon: 'plus', handler: openNew }])
 })
-onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
