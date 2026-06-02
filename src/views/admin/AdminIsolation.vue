@@ -49,6 +49,22 @@
         </div>
       </div>
 
+      <!-- coverage strip: proves it tests everything it found, automatically -->
+      <div class="coverage">
+        <span class="cov-item"><strong>{{ report.endpoints_checked }}</strong> doors auto-tested</span>
+        <span class="cov-sep">·</span>
+        <span class="cov-item"><strong>{{ (report.skipped_admin || []).length }}</strong> admin/sudo skipped <em>(meant to span stores)</em></span>
+        <span class="cov-sep">·</span>
+        <span class="cov-item"><strong>{{ (report.skipped_global || []).length }}</strong> global <em>(no store data)</em></span>
+        <span v-if="(report.needs_manual || []).length" class="cov-sep">·</span>
+        <span v-if="(report.needs_manual || []).length" class="cov-item warn">
+          <strong>{{ report.needs_manual.length }}</strong> need manual review
+        </span>
+        <div v-if="(report.needs_manual || []).length" class="cov-manual">
+          Can't auto-test (custom logic — eyeball these): {{ report.needs_manual.join(', ') }}
+        </div>
+      </div>
+
       <!-- per-endpoint table -->
       <div class="table-wrap group-card">
         <div class="group-head">
@@ -170,6 +186,13 @@ function detailText(e) {
 .stat-num { display:block; font-size:20px; font-weight:700; color:var(--text-primary); }
 .stat.bad .stat-num { color:#dc2626; }
 .stat-lbl { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
+
+.coverage { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:11px 16px; margin-bottom:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; font-size:12.5px; color:var(--text-secondary); }
+.cov-item strong { color:var(--text-primary); }
+.cov-item em { font-style:normal; color:var(--text-muted); }
+.cov-item.warn strong { color:#ca8a04; }
+.cov-sep { color:var(--text-muted); opacity:.5; }
+.cov-manual { flex-basis:100%; margin-top:4px; font-size:12px; color:var(--text-muted); }
 
 .group-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .group-head { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--bg-app); }
