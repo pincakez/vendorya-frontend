@@ -299,8 +299,8 @@ async function handleOtp() {
 <style scoped>
 /* ── root & background ──────────────────────────────────── */
 .login-root {
-  position: relative;
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
   background: #0F0F12;
   /* clip-path instead of overflow:hidden — overflow:hidden kills backdrop-filter */
   clip-path: inset(0);
