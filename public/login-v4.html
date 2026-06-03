@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendorya</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; overflow: hidden; }
+        body {
+            background: #0F0F12;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* ── BACKGROUND ── */
+        .bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        /* Orbs */
+        .orb { position: absolute; border-radius: 50%; }
+        .orb-1 {
+            width: 70vw; height: 70vw;
+            top: -20%; left: -25%;
+            background: radial-gradient(circle, rgba(247,143,30,0.8) 0%, transparent 65%);
+            animation: drift1 18s ease-in-out infinite alternate;
+        }
+        .orb-2 {
+            width: 55vw; height: 55vw;
+            bottom: -15%; left: -10%;
+            background: radial-gradient(circle, rgba(220,80,0,0.65) 0%, transparent 65%);
+            animation: drift2 22s ease-in-out infinite alternate;
+        }
+        .orb-3 {
+            width: 45vw; height: 45vw;
+            top: 35%; left: 5%;
+            background: radial-gradient(circle, rgba(255,180,80,0.35) 0%, transparent 65%);
+            animation: drift3 16s ease-in-out infinite alternate;
+        }
+        .orb-4 {
+            width: 60vw; height: 60vw;
+            top: 5%; right: -25%;
+            background: radial-gradient(circle, rgba(247,143,30,0.1) 0%, transparent 65%);
+            animation: drift1 25s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes drift1 { 0%{transform:translate(0,0)} 100%{transform:translate(40px,60px)} }
+        @keyframes drift2 { 0%{transform:translate(0,0)} 100%{transform:translate(60px,-50px)} }
+        @keyframes drift3 { 0%{transform:translate(0,0)} 100%{transform:translate(-30px,40px)} }
+
+        /* Waves — SVG stroke with gradient, 3 layers */
+        .waves-svg {
+            position: absolute;
+            width: 100%;
+            /* taller than viewport so gap never shows when wave animates up */
+            height: 140%;
+            bottom: -40%;
+            left: 0;
+        }
+        .wave-path-1 { animation: waveMove1 8s cubic-bezier(.4,0,.2,1) infinite alternate; }
+        .wave-path-2 { animation: waveMove2 11s cubic-bezier(.4,0,.2,1) infinite alternate; }
+        .wave-path-3 { animation: waveMove3 7s cubic-bezier(.4,0,.2,1) infinite alternate-reverse; }
+        @keyframes waveMove1 { 0%{transform:translateY(0)} 100%{transform:translateY(-8%)} }
+        @keyframes waveMove2 { 0%{transform:translateY(0)} 100%{transform:translateY(-12%)} }
+        @keyframes waveMove3 { 0%{transform:translateY(0)} 100%{transform:translateY(-6%)} }
+
+        /* ── LEFT GLASS PANE ── */
+        .form-pane {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 56px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            background: rgba(10, 10, 13, 0.28);
+            border-right: none;
+        }
+        .form-inner { width: 100%; max-width: 420px; }
+
+        /* Logo */
+        .logo { font-size: 56px; font-weight: 900; letter-spacing: -0.04em; text-transform: uppercase; color: #fff; margin-bottom: 28px; text-align: center; }
+        .logo span { color: #f78f1e; }
+
+        /* Badge */
+        .badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #27272A; border-radius: 8px;
+            padding: 8px 14px; margin-bottom: 44px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.14em; text-transform: uppercase;
+            color: #fff;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #f78f1e; animation: pulse 2s ease infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .badge-wrap { display:flex; justify-content:center; }
+
+        /* Inputs */
+        .field { margin-bottom: 20px; }
+        .input-wrap {
+            position: relative;
+            border-radius: 12px;
+            background: rgba(12,12,15,0.85);
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        .input-wrap:focus-within {
+            box-shadow: 0 0 0 1px rgba(247,143,30,0.5), 0 0 18px rgba(247,143,30,0.15);
+        }
+        .input-icon {
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+            color: #52525b; font-size: 18px; pointer-events: none;
+        }
+        .input-wrap input {
+            width: 100%; background: transparent; border: none; outline: none;
+            color: #f4f4f5; font-family: 'Outfit', sans-serif; font-size: 15px;
+            padding: 16px 16px 16px 48px;
+        }
+        .input-wrap input::placeholder { color: #3f3f46; }
+        .input-wrap input:-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px #0c0c0f inset; -webkit-text-fill-color: #f4f4f5; }
+        .eye-btn { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; color:#52525b; cursor:pointer; font-size:18px; }
+        .eye-btn:hover { color:#a1a1aa; }
+
+        /* Row */
+        .field-row { display:flex; justify-content:flex-end; margin-bottom: 24px; }
+        .link { font-size:13px; color:#71717a; text-decoration:none; transition:color 0.15s; }
+        .link:hover { color:#f78f1e; }
+
+        /* Button */
+        .btn {
+            width: 100%; padding: 16px; border-radius: 12px;
+            background: #f78f1e; border: none; cursor: pointer;
+            color: #0F0F12; font-family: 'Outfit', sans-serif;
+            font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 8px 24px rgba(247,143,30,0.28);
+            transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+            position: relative; overflow: hidden;
+        }
+        .btn:hover { background: #ff9d2e; box-shadow: 0 12px 32px rgba(247,143,30,0.4); }
+        .btn:active { transform: scale(0.98); }
+        .btn .shimmer {
+            position:absolute; inset:0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+            transform: translateX(-100%); transition: none;
+        }
+        .btn:hover .shimmer { transform: translateX(100%); transition: transform 0.7s ease; }
+
+        /* ── RIGHT PANEL ── */
+        .slide-pane {
+            position: relative; z-index: 10;
+            display: flex; align-items: center; justify-content: center;
+            padding: 64px;
+        }
+        .slide-content { max-width: 500px; animation: revealRight 1.2s cubic-bezier(.2,.8,.2,1) forwards; opacity: 0; }
+        @keyframes revealRight { 0%{opacity:0;transform:translateX(24px);filter:blur(8px)} 100%{opacity:1;transform:none;filter:none} }
+        .slide-title { font-size: clamp(32px, 3.5vw, 48px); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 24px; color: #fff; }
+        .slide-title span { color: transparent; background: linear-gradient(90deg, #a1a1aa, #52525b); -webkit-background-clip: text; background-clip: text; }
+        .slide-body { font-size: 18px; color: #71717a; line-height: 1.65; font-weight: 300; }
+
+        /* Stagger in */
+        .s1{opacity:0;animation:fadeUp .7s .1s cubic-bezier(.16,1,.3,1) forwards}
+        .s2{opacity:0;animation:fadeUp .7s .2s cubic-bezier(.16,1,.3,1) forwards}
+        .s3{opacity:0;animation:fadeUp .7s .3s cubic-bezier(.16,1,.3,1) forwards}
+        .s4{opacity:0;animation:fadeUp .7s .4s cubic-bezier(.16,1,.3,1) forwards}
+        .s5{opacity:0;animation:fadeUp .7s .55s cubic-bezier(.16,1,.3,1) forwards}
+        @keyframes fadeUp { 0%{opacity:0;transform:translateY(16px)} 100%{opacity:1;transform:none} }
+    </style>
+</head>
+<body>
+    <!-- Background -->
+    <div class="bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+
+        <!-- Waves: stroke paths with center-bright gradient -->
+        <svg class="waves-svg" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#f78f1e" stop-opacity="0"/>
+                    <stop offset="30%" stop-color="#f78f1e" stop-opacity="0.35"/>
+                    <stop offset="50%" stop-color="#f78f1e" stop-opacity="0.5"/>
+                    <stop offset="70%" stop-color="#f78f1e" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#f78f1e" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="wg2" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#c0c0c8" stop-opacity="0"/>
+                    <stop offset="25%" stop-color="#c0c0c8" stop-opacity="0.18"/>
+                    <stop offset="50%" stop-color="#c0c0c8" stop-opacity="0.25"/>
+                    <stop offset="75%" stop-color="#c0c0c8" stop-opacity="0.18"/>
+                    <stop offset="100%" stop-color="#c0c0c8" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="wg3" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#ff9d2e" stop-opacity="0"/>
+                    <stop offset="40%" stop-color="#ff9d2e" stop-opacity="0.22"/>
+                    <stop offset="60%" stop-color="#ff9d2e" stop-opacity="0.22"/>
+                    <stop offset="100%" stop-color="#ff9d2e" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+            <!-- Wave 1 — orange, primary -->
+            <path class="wave-path-1"
+                d="M0,500 C300,350 500,650 720,480 C940,310 1100,600 1440,450"
+                fill="none" stroke="url(#wg1)" stroke-width="2.5"/>
+            <!-- Wave 2 — grey, secondary -->
+            <path class="wave-path-2"
+                d="M0,600 C200,450 480,750 760,560 C1020,380 1200,680 1440,530"
+                fill="none" stroke="url(#wg2)" stroke-width="1.5"/>
+            <!-- Wave 3 — orange, softer -->
+            <path class="wave-path-3"
+                d="M0,420 C350,580 600,300 900,500 C1100,640 1250,400 1440,520"
+                fill="none" stroke="url(#wg3)" stroke-width="2"/>
+        </svg>
+    </div>
+
+    <!-- LEFT: Form -->
+    <div class="form-pane">
+        <div class="form-inner">
+            <div class="s1" style="text-align:center">
+                <div class="logo">Vendorya<span>.</span></div>
+            </div>
+            <div class="badge-wrap s2">
+                <div class="badge">
+                    <div class="badge-dot"></div>
+                    Authentication Required
+                </div>
+            </div>
+            <div class="field s3">
+                <div class="input-wrap">
+                    <i class="ph ph-user input-icon"></i>
+                    <input type="text" placeholder="Email or Username" autocomplete="username">
+                </div>
+            </div>
+            <div class="field s4">
+                <div class="input-wrap">
+                    <i class="ph ph-lock-key input-icon"></i>
+                    <input type="password" placeholder="Access Password" autocomplete="current-password" style="font-family:'JetBrains Mono',monospace;letter-spacing:0.1em">
+                    <button class="eye-btn" type="button"><i class="ph ph-eye"></i></button>
+                </div>
+            </div>
+            <div class="field-row s4">
+                <a href="#" class="link">Recover Access</a>
+            </div>
+            <button class="btn s5" type="submit">
+                <div class="shimmer"></div>
+                <span>Authenticate</span>
+                <i class="ph-bold ph-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- RIGHT: Slideshow -->
+    <div class="slide-pane">
+        <div class="slide-content">
+            <div class="slide-title">AI that runs the<br><span>back office with you.</span></div>
+            <div class="slide-body">Vendorya ships with a built-in AI admin that understands your stock, your invoices, and your numbers. One person moving like a whole team.</div>
+        </div>
+    </div>
+</body>
+</html>

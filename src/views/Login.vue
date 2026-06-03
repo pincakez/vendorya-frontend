@@ -44,7 +44,9 @@
 
           <!-- Security notice -->
           <div class="security-notice">
-            <span class="notice-label">Authentication Required</span>
+            <ShieldCheck :size="14" class="notice-icon" />
+            <span class="notice-label">Auth Gateway Active</span>
+            <span class="notice-sub">Secure tunnel connected to primary node. Clearance required.</span>
           </div>
 
           <!-- Form area -->
@@ -169,7 +171,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Mail, Lock, Eye, EyeOff, Key, ArrowRight, AlertCircle, Loader2 } from 'lucide-vue-next'
+import { Mail, Lock, Eye, EyeOff, Key, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
@@ -312,6 +314,7 @@ async function handleOtp() {
   z-index: 0;
   pointer-events: none;
   background: linear-gradient(135deg, #0F0F12 0%, #121216 60%, #0A0A0C 100%);
+  opacity: 0.6;
 }
 
 /* Large soft glowing orbs — wide spread, very low opacity */
@@ -324,7 +327,7 @@ async function handleOtp() {
 .glow-orb-a {
   width: 700px;
   height: 700px;
-  background: radial-gradient(ellipse, rgba(247,143,30,0.45) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(247,143,30,0.22) 0%, transparent 70%);
   top: -200px;
   right: -100px;
   animation: orbDrift1 22s ease-in-out infinite alternate;
@@ -332,7 +335,7 @@ async function handleOtp() {
 .glow-orb-b {
   width: 600px;
   height: 600px;
-  background: radial-gradient(ellipse, rgba(247,143,30,0.32) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(247,143,30,0.16) 0%, transparent 70%);
   bottom: -150px;
   left: 10%;
   animation: orbDrift2 28s ease-in-out infinite alternate-reverse;
@@ -417,34 +420,44 @@ async function handleOtp() {
   display: flex;
   justify-content: center;
   margin-bottom: 40px;
-  min-height: 80px;
+  min-height: 56px;
   align-items: center;
 }
 .logo-img {
-  max-height: 80px;
-  max-width: 300px;
+  max-height: 56px;
+  max-width: 240px;
   object-fit: contain;
 }
 
 /* ── security notice ────────────────────────────────────── */
 .security-notice {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 12px 20px;
-  border-radius: 10px;
-  background: rgba(39,39,42,0.85);
-  border: 1px solid rgba(63,63,70,0.6);
+  text-align: center;
+  gap: 4px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(247,143,30,0.08);
+  border: 1px solid rgba(247,143,30,0.18);
   margin-bottom: 36px;
   cursor: default;
+  transition: background 150ms;
 }
+.security-notice:hover { background: rgba(247,143,30,0.14); }
+.notice-icon  { color: #f78f1e; }
 .notice-label {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #ffffff;
+  color: #f78f1e;
   font-family: ui-monospace, monospace;
+}
+.notice-sub {
+  font-size: 12.5px;
+  color: #a1a1aa;
+  line-height: 1.5;
 }
 
 /* ── form fields ────────────────────────────────────────── */
