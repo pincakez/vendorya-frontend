@@ -48,6 +48,9 @@
         <button v-if="canEdit && !editing" class="dt-filter" @click="enterEdit">
           <Columns3 :size="14" /> Customize
         </button>
+        <button v-if="canEdit && !editing" class="dt-filter" :class="{ on: bulkMode }" @click="toggleBulk">
+          <CheckSquare :size="14" /> Bulk
+        </button>
         <button v-if="canEdit && !editing" class="dt-filter" title="Assign layouts to staff" @click="openAssign">
           <UserCog :size="14" />
         </button>
@@ -107,12 +110,29 @@
         <button class="btn-ghost" @click="clearFilters"><X :size="13" /> Clear</button>
       </div>
 
+      <!-- BULK ACTION BAR -->
+      <Transition name="edit-slide">
+        <div v-if="bulkMode" class="bulk-bar">
+          <span class="bulk-count">{{ selectedCount }} selected</span>
+          <div class="bulk-actions">
+            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="doBulkGhost(true)"><EyeOff :size="14" /> Ghost</button>
+            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="doBulkGhost(false)"><Eye :size="14" /> Un-ghost</button>
+            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="openBulkEdit"><Pencil :size="14" /> Edit</button>
+            <button class="btn-ghost danger" :disabled="!selectedCount || bulkBusy" @click="openBulkDelete"><Trash2 :size="14" /> Delete</button>
+          </div>
+          <button class="bulk-exit" title="Exit bulk mode" @click="toggleBulk"><X :size="15" /></button>
+        </div>
+      </Transition>
+
       <!-- TABLE -->
       <div class="dt-card" :class="{ editing }">
         <div class="dt-xscroll">
           <table class="dt" :style="{ minWidth: tableMin + 'px' }">
             <thead :style="{ top: theadTop + 'px' }">
               <tr>
+                <th v-if="bulkMode" class="dt-th dt-selcol" :style="{ top: theadTop + 'px' }">
+                  <input type="checkbox" class="dt-cb" :checked="allOnPageSelected" @change="toggleSelectAll" />
+                </th>
                 <th
                   v-for="col in displayColumns" :key="col.key"
                   class="dt-th"
@@ -140,18 +160,26 @@
 
             <Transition :name="rowTransition" mode="out-in">
               <tbody :key="page">
-                <tr v-for="p in products" :key="p.id" class="dt-row" :class="{ clickable: !editing }" @click="!editing && openEditProduct(p)">
+                <tr v-for="p in products" :key="p.id" class="dt-row" :class="{ clickable: !editing, ghosted: p.hide_from_pos, selected: bulkMode && isSelected(p.id) }" @click="onRowClick(p)">
+                  <td v-if="bulkMode" class="dt-selcol" @click.stop>
+                    <input type="checkbox" class="dt-cb" :checked="isSelected(p.id)" @change="toggleSelect(p.id)" />
+                  </td>
                   <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '']">
                     <span v-if="col.badge" class="stock-badge">{{ formatQty(p.total_stock) }}</span>
                     <template v-else-if="col.money && p[col.field] !== undefined && p[col.field] !== null && p[col.field] !== ''"><span v-if="col.plus">+</span><Money :value="p[col.field]" /></template>
-                    <template v-else>{{ cellText(col, p) }}</template>
+                    <template v-else>
+                      <span v-if="col.key === 'product' && p.hide_from_pos" class="ghost-tag" title="Hidden from POS"><EyeOff :size="11" /></span>{{ cellText(col, p) }}
+                    </template>
                   </td>
                   <td class="ta-right dt-actcol">
+                    <button class="row-action" :title="p.hide_from_pos ? 'Un-ghost (show in POS)' : 'Ghost (hide from POS)'" @click.stop="toggleGhost(p)">
+                      <component :is="p.hide_from_pos ? EyeOff : Eye" :size="14" />
+                    </button>
                     <button class="row-action" title="Edit product" @click.stop="openEditProduct(p)"><Pencil :size="14" /></button>
                   </td>
                 </tr>
                 <tr v-if="!loading && !products.length">
-                  <td :colspan="displayColumns.length + 1" class="dt-empty">
+                  <td :colspan="displayColumns.length + (bulkMode ? 2 : 1)" class="dt-empty">
                     <Package :size="40" class="dt-empty-icon" />
                     <div class="dt-empty-title">No products found</div>
                     <div class="dt-empty-sub">Adjust your search or filter.</div>
@@ -348,6 +376,62 @@
         >{{ prodModal.saving ? 'Saving…' : 'Save' }}</button>
       </template>
     </AppModal>
+
+    <!-- ═══════════ BULK EDIT ═══════════ -->
+    <AppModal :open="bulkEditModal.open" title="Bulk edit products" @close="bulkEditModal.open = false">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <p style="font-size:13px;color:var(--text-muted);margin:0;">
+          Applies to <strong>all {{ selectedCount }}</strong> selected product(s). Leave a field blank to keep it unchanged.
+        </p>
+        <div>
+          <label class="form-label">Retail price</label>
+          <input v-model="bulkEditModal.retail_price" class="form-input" type="number" min="0" step="0.01" placeholder="Unchanged" />
+        </div>
+        <div>
+          <label class="form-label">Category</label>
+          <select v-model="bulkEditModal.category" class="form-input">
+            <option value="">Unchanged</option>
+            <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="bulkEditModal.open = false">Cancel</button>
+        <button
+          class="btn-primary"
+          :disabled="bulkBusy || (bulkEditModal.retail_price === '' && !bulkEditModal.category)"
+          @click="confirmBulkEdit"
+        >{{ bulkEditModal.confirming ? 'Click again to apply to all' : 'Apply' }}</button>
+      </template>
+    </AppModal>
+
+    <!-- ═══════════ BULK DELETE ═══════════ -->
+    <AppModal :open="bulkDeleteModal.open" title="Delete products" @close="bulkDeleteModal.open = false">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <p style="font-size:13px;color:var(--text-muted);margin:0;">
+          Soft-deleting <strong>{{ selectedCount }}</strong> product(s). They move to Trash and can be restored by an admin.
+        </p>
+        <div>
+          <label class="form-label">Reason</label>
+          <select v-model="bulkDeleteModal.reason" class="form-input">
+            <option value="">Select a reason…</option>
+            <option v-for="r in DELETE_REASONS" :key="r.value" :value="r.value">{{ r.label }}</option>
+          </select>
+        </div>
+        <div v-if="bulkDeleteModal.reason === 'OTHER'">
+          <label class="form-label">Note</label>
+          <input v-model="bulkDeleteModal.note" class="form-input" placeholder="Briefly, why?" maxlength="255" />
+        </div>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="bulkDeleteModal.open = false">Cancel</button>
+        <button
+          class="btn-danger"
+          :disabled="bulkBusy || !bulkDeleteModal.reason"
+          @click="confirmBulkDelete"
+        >{{ bulkDeleteModal.confirming ? 'Click again to delete' : 'Delete' }}</button>
+      </template>
+    </AppModal>
   </div>
 </template>
 
@@ -357,6 +441,7 @@ import {
   Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck, Plus,
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ArrowUp, ArrowDown, ArrowUpDown,
   Columns3, GripVertical, Lock, UserCog, RotateCcw,
+  Eye, EyeOff, CheckSquare,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -770,6 +855,100 @@ async function saveProduct() {
   } finally { prodModal.saving = false }
 }
 
+/* ── ghost (hide from POS) + bulk ops ── */
+const bulkMode = ref(false)
+const selected = ref(new Set())
+const DELETE_REASONS = [
+  { value: 'DISCONTINUED', label: 'Discontinued' },
+  { value: 'DUPLICATE',    label: 'Duplicate' },
+  { value: 'MISTAKE',      label: 'Created by mistake' },
+  { value: 'OTHER',        label: 'Other' },
+]
+const bulkBusy = ref(false)
+const bulkDeleteModal = reactive({ open: false, reason: '', note: '', confirming: false })
+const bulkEditModal = reactive({ open: false, retail_price: '', category: '', confirming: false })
+
+const selectedCount = computed(() => selected.value.size)
+const allOnPageSelected = computed(() =>
+  products.value.length > 0 && products.value.every(p => selected.value.has(p.id)))
+
+function toggleBulk() {
+  bulkMode.value = !bulkMode.value
+  if (!bulkMode.value) selected.value = new Set()
+}
+function isSelected(id) { return selected.value.has(id) }
+function toggleSelect(id) {
+  const s = new Set(selected.value)
+  s.has(id) ? s.delete(id) : s.add(id)
+  selected.value = s
+}
+function toggleSelectAll() {
+  const s = new Set(selected.value)
+  if (allOnPageSelected.value) products.value.forEach(p => s.delete(p.id))
+  else products.value.forEach(p => s.add(p.id))
+  selected.value = s
+}
+function onRowClick(p) {
+  if (editing.value) return
+  if (bulkMode.value) toggleSelect(p.id)
+  else openEditProduct(p)
+}
+
+async function toggleGhost(p) {
+  try {
+    const { data } = await api.post(`/api/inventory/products/${p.id}/toggle_ghost/`)
+    p.hide_from_pos = data.hide_from_pos
+  } catch { /* noop */ }
+}
+
+const selectedIds = () => [...selected.value]
+
+async function doBulkGhost(hide) {
+  if (!selectedCount.value || bulkBusy.value) return
+  bulkBusy.value = true
+  try {
+    await api.post('/api/inventory/products/bulk_ghost/', { ids: selectedIds(), hide })
+    await fetchProducts(page.value)
+  } finally { bulkBusy.value = false }
+}
+
+function openBulkEdit() {
+  if (!selectedCount.value) return
+  Object.assign(bulkEditModal, { open: true, retail_price: '', category: '', confirming: false })
+}
+async function confirmBulkEdit() {
+  const hasRetail = bulkEditModal.retail_price !== '' && bulkEditModal.retail_price != null
+  if (!hasRetail && !bulkEditModal.category) return
+  if (!bulkEditModal.confirming) { bulkEditModal.confirming = true; return }
+  bulkBusy.value = true
+  try {
+    const payload = { ids: selectedIds() }
+    if (hasRetail) payload.retail_price = bulkEditModal.retail_price
+    if (bulkEditModal.category) payload.category = bulkEditModal.category
+    await api.post('/api/inventory/products/bulk_update/', payload)
+    bulkEditModal.open = false
+    await fetchProducts(page.value)
+  } catch { bulkEditModal.confirming = false } finally { bulkBusy.value = false }
+}
+
+function openBulkDelete() {
+  if (!selectedCount.value) return
+  Object.assign(bulkDeleteModal, { open: true, reason: '', note: '', confirming: false })
+}
+async function confirmBulkDelete() {
+  if (!bulkDeleteModal.reason) return
+  if (!bulkDeleteModal.confirming) { bulkDeleteModal.confirming = true; return }
+  bulkBusy.value = true
+  try {
+    await api.post('/api/inventory/products/bulk_delete/', {
+      ids: selectedIds(), reason: bulkDeleteModal.reason, note: bulkDeleteModal.note,
+    })
+    bulkDeleteModal.open = false
+    selected.value = new Set()
+    await fetchProducts(1)
+  } catch { bulkDeleteModal.confirming = false } finally { bulkBusy.value = false }
+}
+
 onMounted(() => {
   fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppliers()
   ro = new ResizeObserver(() => { if (toolbarRef.value) theadTop.value = toolbarRef.value.offsetHeight })
@@ -931,7 +1110,28 @@ onUnmounted(() => { ro?.disconnect() })
 
 /* reused */
 .code-chip { font-family: ui-monospace, monospace; font-size: 12px; background: var(--bg-app); border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px; color: var(--text-secondary); }
-.dt-actcol { width: 72px; white-space: nowrap; }
+.dt-actcol { width: 96px; white-space: nowrap; }
+
+/* ── bulk action bar ── */
+.bulk-bar { display: flex; align-items: center; gap: 14px; background: var(--bg-card); border: 1px solid var(--accent); border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; box-shadow: 0 4px 20px var(--accent-soft); transform-origin: top center; }
+.bulk-count { font-size: 13px; font-weight: 700; color: var(--accent); }
+.bulk-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bulk-exit { display: flex; margin-left: auto; border: none; background: var(--border); color: var(--text-muted); border-radius: 7px; padding: 5px; cursor: pointer; }
+.bulk-exit:hover { color: var(--text-primary); }
+.btn-ghost.danger { color: #dc2626; border-color: #f3b1b1; }
+.btn-ghost.danger:hover { background: #fee2e2; color: #b91c1c; }
+.btn-ghost:disabled { opacity: .45; cursor: default; }
+.btn-danger { display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; border-radius: 9px; font-size: 13px; font-weight: 600; border: none; background: #dc2626; color: #fff; cursor: pointer; }
+.btn-danger:hover { background: #b91c1c; }
+.btn-danger:disabled { opacity: .5; cursor: default; }
+
+/* ── select column + ghosted rows ── */
+.dt-selcol { width: 42px; text-align: center; padding-left: 14px; padding-right: 0; }
+.dt-cb { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+.dt-row.selected { background: var(--accent-soft); }
+.dt-row.ghosted td { opacity: 0.5; }
+.dt-row.ghosted:hover td { opacity: 0.7; }
+.ghost-tag { display: inline-flex; vertical-align: middle; margin-right: 5px; color: var(--text-muted); }
 .row-action { width: 28px; height: 28px; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; transition: background 100ms, color 100ms; }
 .row-action:hover { background: var(--border); color: var(--text-primary); }
 .row-action.danger:hover { background: #fee2e2; color: #dc2626; }
