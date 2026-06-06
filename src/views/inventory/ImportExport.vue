@@ -113,11 +113,14 @@ function buildForm() {
   return fd
 }
 
+// Let the browser set multipart/form-data + boundary (axios defaults to JSON).
+const UPLOAD_CFG = { headers: { 'Content-Type': undefined } }
+
 async function validate() {
   if (!file.value) return
   busy.value = true; checking.value = true; done.value = 0
   try {
-    const { data } = await api.post('/api/inventory/catalog/import/validate/', buildForm())
+    const { data } = await api.post('/api/inventory/catalog/import/validate/', buildForm(), UPLOAD_CFG)
     report.value = data
   } catch (e) {
     report.value = e.response?.data?.errors
@@ -130,7 +133,7 @@ async function commit() {
   if (!report.value?.ok) return
   busy.value = true; importing.value = true
   try {
-    const { data } = await api.post('/api/inventory/catalog/import/commit/', buildForm())
+    const { data } = await api.post('/api/inventory/catalog/import/commit/', buildForm(), UPLOAD_CFG)
     done.value = data.summary.created
     report.value = null
     file.value = null
