@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
 import LayoutSwitch from '@/layouts/LayoutSwitch.vue'
-import POSLayout from '@/layouts/POSLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,6 +51,13 @@ const router = createRouter({
         { path: 'settings/billing',     component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
         { path: 'settings/billing/invoices/:id',   component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
         { path: 'settings/notifications',         component: () => import('@/views/settings/NotificationPrefs.vue'), meta: { store: true } },
+        { path: 'settings/payment-methods',       component: () => import('@/views/settings/PaymentMethods.vue'),    meta: { store: true } },
+        { path: 'settings/pos/favorites',          component: () => import('@/views/settings/POSFavorites.vue'),      meta: { store: true } },
+        { path: 'settings/pos/top-selling',        component: () => import('@/views/settings/POSTopSelling.vue'),     meta: { store: true } },
+        { path: 'settings/pos/ux',                 component: () => import('@/views/settings/PosUX.vue'),             meta: { store: true } },
+
+        // POS — uses DefaultLayout with sidebar auto-collapsed
+        { path: 'pos',                  component: () => import('@/views/POS.vue'),                       meta: { store: true } },
 
         // Inbox — any authenticated store user
         { path: 'inbox',                component: () => import('@/views/Inbox.vue'),                      meta: { store: true } },
@@ -76,12 +82,6 @@ const router = createRouter({
     },
     // Bare printable invoice — no app shell, prints clean.
     { path: '/finance/invoices/:id/print', component: () => import('@/views/sales/InvoicePrint.vue'), meta: { requiresAuth: true } },
-    {
-      path: '/pos',
-      component: POSLayout,
-      meta: { requiresAuth: true },
-      children: [{ path: '', component: () => import('@/views/POS.vue') }]
-    },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' }
   ]
 })

@@ -687,3 +687,10 @@ body {
 .transition-theme {
   transition: background 200ms, color 200ms, border-color 200ms;
 }
+
+/* ── POS MODE ──────────────────────────────────────────── */
+/* Applied via html.pos-mode class — set by POS.vue on mount, removed on unmount */
+html.pos-mode .app-header  { display: none; }
+html.pos-mode .app-footer  { display: none; }
+html.pos-mode .app-content { padding: 0; overflow: hidden; }
+html.pos-mode .page-wrap   { max-width: none; padding: 0; margin: 0; height: 100%; display: flex; flex-direction: column; }

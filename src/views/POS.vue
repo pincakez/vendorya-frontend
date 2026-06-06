@@ -1,1 +1,918 @@
-<template><div>POS</div></template>
+<template>
+  <div class="pos-view" @keydown="onGlobalKey" tabindex="-1" ref="posRoot">
+
+    <!-- ─── Top bar ─────────────────────────────────────────── -->
+    <div class="pos-topbar">
+      <div class="pos-topbar-left">
+        <span class="pos-brand">POS</span>
+        <span class="pos-divider">|</span>
+        <span class="pos-store">{{ auth.storeName }}</span>
+      </div>
+
+      <div class="pos-search-wrap" ref="searchWrapEl">
+        <Search :size="15" class="pos-search-icon" />
+        <input
+          ref="searchInputEl"
+          v-model="searchQuery"
+          @input="onSearchInput"
+          @keydown="onSearchKeydown"
+          @focus="searchFocused = true"
+          @blur="onSearchBlur"
+          placeholder="Search products or scan barcode… (F1)"
+          class="pos-search"
+        />
+        <kbd class="pos-search-kbd">F1</kbd>
+
+        <div v-if="searchResults.length && searchFocused" class="pos-search-dropdown">
+          <div
+            v-for="(p, i) in searchResults" :key="p.id"
+            :class="['pos-search-item', { highlighted: i === searchIndex }]"
+            @mousedown.prevent="addToCart(p)"
+            @mouseenter="searchIndex = i"
+          >
+            <span class="psi-name">{{ p.name }}</span>
+            <span class="psi-sku">{{ p.sku_display }}</span>
+            <span class="psi-price">{{ fmtNum(p.default_variant_price) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pos-topbar-right">
+        <span class="pos-operator">{{ auth.user?.first_name || auth.displayName }}</span>
+        <span class="pos-branch-chip">{{ pos.branchName }}</span>
+        <span class="pos-clock">{{ liveTime }}</span>
+      </div>
+    </div>
+
+    <!-- ─── Body: Left | Center | Right ─────────────────────── -->
+    <div class="pos-body">
+
+      <!-- LEFT — Top Selling + Favorites -->
+      <div class="pos-left">
+        <div class="pos-panel-section">
+          <div class="pos-panel-title">Top Selling</div>
+          <div v-if="pos.topSelling.length" class="pos-quick-grid">
+            <button
+              v-for="p in pos.topSelling" :key="p.id"
+              class="pos-quick-btn"
+              @click="addToCart(p)"
+            >
+              <span class="pqb-name">{{ p.name }}</span>
+              <span class="pqb-price">{{ fmtNum(p.default_variant_price) }}</span>
+            </button>
+          </div>
+          <div v-else class="pos-panel-empty">No data yet</div>
+        </div>
+
+        <div class="pos-panel-section pos-panel-section--fav">
+          <div class="pos-panel-title">Favorites</div>
+          <div v-if="pos.favorites.length" class="pos-quick-grid">
+            <button
+              v-for="p in pos.favorites" :key="p.id"
+              class="pos-quick-btn pos-quick-btn--fav"
+              @click="addToCartFromFav(p)"
+            >
+              <span class="pqb-name">{{ p.product_name }}</span>
+              <span class="pqb-price">{{ fmtNum(p.product_price) }}</span>
+            </button>
+          </div>
+          <div v-else class="pos-panel-empty">No favorites yet</div>
+        </div>
+      </div>
+
+      <!-- CENTER — Invoice header + cart -->
+      <div class="pos-center">
+        <div class="pos-invoice-bar">
+          <div class="pib-meta">
+            <span class="pib-num">{{ pos.currentInvoiceId ? '#DRAFT' : '—' }}</span>
+            <span class="pib-branch">{{ pos.branchName }}</span>
+          </div>
+
+          <div class="pos-customer-area" ref="customerWrapEl">
+            <UserIcon :size="14" class="pos-customer-icon" />
+            <span
+              v-if="cart.customerObj && !customerFocused"
+              class="pos-customer-name"
+              @click="openCustomerSearch"
+            >{{ cart.customerObj.name }}</span>
+            <input
+              v-else
+              ref="customerInputEl"
+              v-model="customerQuery"
+              @input="onCustomerInput"
+              @focus="customerFocused = true"
+              @blur="onCustomerBlur"
+              placeholder="Walk-in"
+              class="pos-customer-input"
+            />
+            <div v-if="customerResults.length && customerFocused" class="pos-customer-dropdown">
+              <div
+                v-for="c in customerResults" :key="c.id"
+                class="pos-customer-item"
+                @mousedown.prevent="selectCustomer(c)"
+              >
+                <span>{{ c.name }}</span>
+                <span class="pci-phone">{{ c.phone_number }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="cart.discount > 0" class="pib-discount-chip">
+            − {{ fmtNum(cart.discount) }}
+            <button @click="cart.setDiscount(0)"><X :size="10" /></button>
+          </div>
+        </div>
+
+        <div class="pos-cart-header">
+          <span class="pch-item">ITEM</span>
+          <span class="pch-qty">QTY</span>
+          <span class="pch-price">PRICE</span>
+          <span></span>
+        </div>
+
+        <div class="pos-cart-body">
+          <TransitionGroup name="cart-row" tag="div">
+            <div
+              v-for="(item, idx) in cart.items" :key="item.variant_id"
+              :class="['pos-cart-row', { 'pcr-selected': idx === selectedRow, 'pcr-flash': item._flash }]"
+              @click="selectedRow = idx"
+            >
+              <span class="pcr-name">{{ item.name }}</span>
+              <div class="pcr-qty-ctrl">
+                <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.variant_id, item.qty - 1)">−</button>
+                <span class="pcr-qty-val">{{ item.qty }}</span>
+                <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.variant_id, item.qty + 1)">+</button>
+              </div>
+              <span class="pcr-price">{{ fmtNum(item.price * item.qty) }}</span>
+              <button class="pcr-del" @click.stop="removeItem(item.variant_id)"><X :size="13" /></button>
+            </div>
+          </TransitionGroup>
+          <div v-if="cart.isEmpty" class="pos-cart-empty">
+            <ShoppingCart :size="32" class="pce-icon" />
+            <span>Start scanning or search for products</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT — Actions + Summary + PAY -->
+      <div class="pos-right">
+        <div class="pos-actions-grid">
+          <button class="pac" :class="{ 'pac--held': cart.heldCarts.length }" @click="holdOrResume">
+            <Pause :size="16" />
+            <span>Hold<span v-if="cart.heldCarts.length" class="pac-badge">{{ cart.heldCarts.length }}</span></span>
+            <kbd>F4</kbd>
+          </button>
+          <button class="pac" @click="showDiscount = true">
+            <Percent :size="16" />
+            <span>Discount</span>
+            <kbd>F8</kbd>
+          </button>
+          <button class="pac" @click="$router.push('/finance/returns')">
+            <CornerDownLeft :size="16" />
+            <span>Returns</span>
+          </button>
+          <button class="pac" @click="focusCustomer">
+            <UserIcon :size="16" />
+            <span>Customer</span>
+          </button>
+          <button class="pac" @click="reprint" :disabled="!pos.lastPostedInvoiceId">
+            <Printer :size="16" />
+            <span>Reprint</span>
+            <kbd>F2</kbd>
+          </button>
+          <button class="pac pac--disabled" disabled>
+            <FileText :size="16" />
+            <span>Note</span>
+          </button>
+        </div>
+
+        <div class="pos-summary">
+          <div class="psum-row">
+            <span>Subtotal</span><span>{{ fmtNum(cart.subtotal) }}</span>
+          </div>
+          <div v-if="cart.discount > 0" class="psum-row psum-discount">
+            <span>Discount</span><span>− {{ fmtNum(cart.discount) }}</span>
+          </div>
+          <div class="psum-divider" />
+          <div class="psum-row psum-total">
+            <span>TOTAL</span><span>{{ fmtNum(cart.grandTotal) }}</span>
+          </div>
+          <div class="psum-items">{{ cart.itemCount }} item{{ cart.itemCount !== 1 ? 's' : '' }}</div>
+        </div>
+
+        <button class="pos-pay-btn" :disabled="cart.isEmpty" @click="openPayment">
+          <span>PAY</span>
+          <span class="pos-pay-amount">{{ auth.currencySymbol }} {{ fmtNum(cart.grandTotal) }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── Scan flash ─────────────────────────────────────── -->
+    <Transition name="scan-flash">
+      <div v-if="pos.animateScan" class="pos-scan-flash" />
+    </Transition>
+
+    <!-- ─── Modals ─────────────────────────────────────────── -->
+    <BranchPickerModal v-if="showBranchPicker" @selected="onBranchSelected" />
+    <PaymentModal      v-if="showPayment"   @close="showPayment = false"   @success="onPaymentSuccess" />
+    <DiscountModal     v-if="showDiscount"  @close="showDiscount = false" />
+
+    <!-- ─── Success overlay ────────────────────────────────── -->
+    <Transition name="success-pop">
+      <div v-if="successInvoice" class="pos-success-overlay">
+        <div class="pos-success-card">
+          <CheckCircle2 :size="52" class="psc-icon" />
+          <div class="psc-label">Sale Complete</div>
+          <div class="psc-num">Invoice #{{ successInvoice.invoice_number }}</div>
+          <div class="psc-amount">{{ auth.currencySymbol }} {{ fmtNum(successInvoice.grand_total) }}</div>
+          <div class="psc-actions">
+            <button class="psc-print" @click="printInvoice(successInvoice.id)">
+              <Printer :size="16" /> Print
+            </button>
+            <button class="psc-new" @click="newSale">New Sale</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- ─── Held carts panel ───────────────────────────────── -->
+    <Transition name="held-slide">
+      <div v-if="showHeldPanel" class="pos-held-panel">
+        <div class="php-header">
+          <span>Held Carts ({{ cart.heldCarts.length }})</span>
+          <button @click="showHeldPanel = false"><X :size="16" /></button>
+        </div>
+        <div v-for="(held, i) in cart.heldCarts" :key="i" class="php-item" @click="resumeHeld(i)">
+          <span class="php-items-label">{{ held.items.length }} item{{ held.items.length !== 1 ? 's' : '' }}</span>
+          <span class="php-total">{{ auth.currencySymbol }} {{ fmtNum(held.items.reduce((s, it) => s + it.price * it.qty, 0)) }}</span>
+        </div>
+        <div v-if="!cart.heldCarts.length" class="php-empty">No held carts</div>
+      </div>
+    </Transition>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
+  Printer, FileText, ShoppingCart, CheckCircle2,
+} from 'lucide-vue-next'
+import api from '@/api/axios'
+import { useAuthStore }  from '@/stores/auth'
+import { useCartStore }  from '@/stores/cart'
+import { usePosStore }   from '@/stores/pos'
+import { useUIStore }    from '@/stores/ui'
+import BranchPickerModal from '@/components/pos/BranchPickerModal.vue'
+import PaymentModal      from '@/components/pos/PaymentModal.vue'
+import DiscountModal     from '@/components/pos/DiscountModal.vue'
+
+const router = useRouter()
+const auth   = useAuthStore()
+const cart   = useCartStore()
+const pos    = usePosStore()
+const ui     = useUIStore()
+
+// ── Sidebar + POS mode ───────────────────────────────────────
+let prePosSidebarState = false
+const posRoot = ref(null)
+
+onMounted(async () => {
+  document.documentElement.classList.add('pos-mode')
+  prePosSidebarState = ui.sidebarCollapsed
+  ui.setSidebarCollapsed(true)
+  await init()
+  nextTick(() => posRoot.value?.focus())
+})
+onUnmounted(() => {
+  document.documentElement.classList.remove('pos-mode')
+  ui.setSidebarCollapsed(prePosSidebarState)
+})
+
+// ── Clock ────────────────────────────────────────────────────
+const liveTime = ref(nowStr())
+let clockTimer
+function nowStr() {
+  return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
+onMounted(() => { clockTimer = setInterval(() => { liveTime.value = nowStr() }, 1000) })
+onUnmounted(() => clearInterval(clockTimer))
+
+// ── Init ─────────────────────────────────────────────────────
+const showBranchPicker = ref(false)
+
+async function init() {
+  // Load payment methods
+  try {
+    const res = await api.get('/api/finance/payment-methods/')
+    pos.paymentMethods = (res.data.results || res.data).filter(m => !m.is_deleted)
+  } catch { /* ok */ }
+
+  // Load top-selling + favorites in parallel
+  Promise.all([
+    api.get('/api/pos/top-selling/').then(r => { pos.topSelling = r.data.results || r.data }).catch(() => {}),
+    api.get('/api/pos/favorites/').then(r => { pos.favorites = r.data.results || r.data }).catch(() => {}),
+  ])
+
+  // Branch selection
+  try {
+    const bRes = await api.get('/api/core/branches/')
+    const branches = bRes.data.results || bRes.data
+    if (branches.length === 1) {
+      pos.initSession(branches[0])
+      await loadWalkIn()
+      return
+    }
+    if (auth.user?.default_branch) {
+      const branch = branches.find(b => b.id === auth.user.default_branch)
+      if (branch) { pos.initSession(branch); await loadWalkIn(); return }
+    }
+  } catch { /* ok */ }
+
+  showBranchPicker.value = true
+}
+
+async function onBranchSelected(branch) {
+  showBranchPicker.value = false
+  pos.initSession(branch)
+  await loadWalkIn()
+}
+
+async function loadWalkIn() {
+  try {
+    const res = await api.get('/api/auth/customers/', { params: { is_walk_in: 'true', page_size: 1 } })
+    const walkin = (res.data.results || res.data)[0]
+    if (walkin) cart.setCustomer(walkin)
+  } catch { /* ok */ }
+  nextTick(() => searchInputEl.value?.focus())
+}
+
+// ── Search ───────────────────────────────────────────────────
+const searchInputEl = ref(null)
+const searchWrapEl  = ref(null)
+const searchQuery   = ref('')
+const searchResults = ref([])
+const searchIndex   = ref(-1)
+const searchFocused = ref(false)
+
+let searchTimer = null
+function onSearchInput() {
+  clearTimeout(searchTimer)
+  if (searchQuery.value.length < 2) { searchResults.value = []; return }
+  searchTimer = setTimeout(runSearch, 200)
+}
+
+async function runSearch() {
+  try {
+    const res = await api.get('/api/inventory/products/', {
+      params: { search: searchQuery.value, page_size: 12 }
+    })
+    searchResults.value = (res.data.results || res.data).filter(p => !p.hide_from_pos)
+    searchIndex.value = searchResults.value.length ? 0 : -1
+  } catch { /* ok */ }
+}
+
+function onSearchKeydown(e) {
+  if (e.key === 'ArrowDown') { e.preventDefault(); searchIndex.value = Math.min(searchIndex.value + 1, searchResults.value.length - 1) }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); searchIndex.value = Math.max(searchIndex.value - 1, 0) }
+  else if (e.key === 'Enter' && searchIndex.value >= 0) { e.preventDefault(); addToCart(searchResults.value[searchIndex.value]) }
+  else if (e.key === 'Escape') { searchResults.value = []; searchQuery.value = '' }
+}
+
+function onSearchBlur() {
+  setTimeout(() => { searchFocused.value = false }, 200)
+}
+
+// ── Add to cart ──────────────────────────────────────────────
+const selectedRow = ref(-1)
+
+async function addToCart(product) {
+  if (!pos.branchId) return
+  cart.addItem({
+    id:    product.default_variant_id,
+    name:  product.name,
+    price: product.default_variant_price,
+    stock: product.default_variant_stock,
+  })
+  searchQuery.value = ''
+  searchResults.value = []
+  searchFocused.value = false
+  pos.triggerScan()
+  playBeep()
+  selectedRow.value = cart.items.length - 1
+  nextTick(() => searchInputEl.value?.focus())
+  schedulePatch()
+}
+
+function addToCartFromFav(fav) {
+  addToCart({
+    default_variant_id:    fav.product,
+    name:                  fav.product_name,
+    default_variant_price: fav.product_price,
+    default_variant_stock: 999,
+  })
+}
+
+// ── DRAFT invoice management ─────────────────────────────────
+let patchTimer = null
+function schedulePatch() {
+  clearTimeout(patchTimer)
+  patchTimer = setTimeout(syncInvoice, 300)
+}
+
+async function syncInvoice() {
+  if (!pos.branchId || cart.isEmpty) return
+  const payload = {
+    branch:   pos.branchId,
+    customer: cart.customerId,
+    date:     new Date().toISOString(),
+    status:   'DRAFT',
+    discount: cart.discount,
+    items:    cart.items.map(i => ({ variant: i.variant_id, quantity: i.qty, unit_price: i.price })),
+  }
+  try {
+    if (!pos.currentInvoiceId) {
+      const res = await api.post('/api/finance/invoices/', payload)
+      pos.setCurrentInvoice(res.data.id)
+    } else {
+      await api.patch(`/api/finance/invoices/${pos.currentInvoiceId}/`, payload)
+    }
+  } catch { /* best-effort */ }
+}
+
+watch(() => cart.items.map(i => `${i.variant_id}:${i.qty}`).join(), schedulePatch)
+watch(() => cart.customerId, schedulePatch)
+watch(() => cart.discount, schedulePatch)
+
+function removeItem(variantId) {
+  cart.removeItem(variantId)
+  if (selectedRow.value >= cart.items.length) selectedRow.value = cart.items.length - 1
+  schedulePatch()
+}
+
+// ── Customer search ──────────────────────────────────────────
+const customerWrapEl  = ref(null)
+const customerInputEl = ref(null)
+const customerQuery   = ref('')
+const customerResults = ref([])
+const customerFocused = ref(false)
+
+let customerTimer = null
+function onCustomerInput() {
+  clearTimeout(customerTimer)
+  customerTimer = setTimeout(runCustomerSearch, 250)
+}
+async function runCustomerSearch() {
+  if (customerQuery.value.length < 2) { customerResults.value = []; return }
+  try {
+    const res = await api.get('/api/auth/customers/', { params: { search: customerQuery.value, page_size: 8 } })
+    customerResults.value = (res.data.results || res.data).filter(c => !c.is_walk_in)
+  } catch { /* ok */ }
+}
+function onCustomerBlur() {
+  setTimeout(() => { customerFocused.value = false; customerQuery.value = '' }, 200)
+}
+function openCustomerSearch() {
+  customerFocused.value = true
+  nextTick(() => customerInputEl.value?.focus())
+}
+function selectCustomer(c) {
+  cart.setCustomer(c)
+  customerQuery.value = ''
+  customerResults.value = []
+  customerFocused.value = false
+  schedulePatch()
+}
+function focusCustomer() {
+  customerFocused.value = true
+  nextTick(() => customerInputEl.value?.focus())
+}
+
+// ── Hold / Resume ────────────────────────────────────────────
+const showHeldPanel = ref(false)
+
+async function holdOrResume() {
+  if (cart.isEmpty && cart.heldCarts.length) {
+    showHeldPanel.value = !showHeldPanel.value
+    return
+  }
+  if (!cart.isEmpty) {
+    if (pos.currentInvoiceId) {
+      api.post(`/api/finance/invoices/${pos.currentInvoiceId}/void/`).catch(() => {})
+      pos.clearSession()
+    }
+    cart.holdCart()
+    showHeldPanel.value = true
+  } else {
+    showHeldPanel.value = !showHeldPanel.value
+  }
+}
+
+async function resumeHeld(i) {
+  if (pos.currentInvoiceId) {
+    api.post(`/api/finance/invoices/${pos.currentInvoiceId}/void/`).catch(() => {})
+    pos.clearSession()
+  }
+  cart.resumeHeld(i)
+  showHeldPanel.value = false
+  schedulePatch()
+}
+
+// ── Payment ──────────────────────────────────────────────────
+const showPayment    = ref(false)
+const showDiscount   = ref(false)
+const successInvoice = ref(null)
+
+async function openPayment() {
+  if (cart.isEmpty) return
+  if (!pos.currentInvoiceId) {
+    await syncInvoice()
+  }
+  if (pos.currentInvoiceId) showPayment.value = true
+}
+
+function onPaymentSuccess(invoice) {
+  showPayment.value = false
+  pos.lastPostedInvoiceId = invoice.id
+  successInvoice.value = invoice
+}
+
+function newSale() {
+  successInvoice.value = null
+  cart.clearCart()
+  pos.clearSession()
+  loadWalkIn()
+}
+
+function printInvoice(id) {
+  window.open(`/finance/invoices/${id}/print`, '_blank')
+}
+
+function reprint() {
+  if (!pos.lastPostedInvoiceId) return
+  printInvoice(pos.lastPostedInvoiceId)
+}
+
+// ── Global keyboard shortcuts ─────────────────────────────────
+const posSettings = computed(() => auth.user?.pos_settings || {})
+const shortcuts   = computed(() => posSettings.value.shortcuts || {
+  pay: 'F9', discount: 'F8', hold: 'F4', reprint: 'F2', focus_search: 'F1',
+})
+
+function buildKeyStr(e) {
+  let k = ''
+  if (e.ctrlKey && e.key !== 'Control')   k += 'Ctrl+'
+  if (e.shiftKey && e.key !== 'Shift')    k += 'Shift+'
+  if (e.altKey && e.key !== 'Alt')        k += 'Alt+'
+  k += e.key
+  return k
+}
+
+function onGlobalKey(e) {
+  const tag = document.activeElement?.tagName
+  const inInput = tag === 'INPUT' || tag === 'TEXTAREA'
+
+  const k = buildKeyStr(e)
+
+  // F1 always focuses search
+  if (k === 'F1' || k === (shortcuts.value.focus_search || 'F1')) {
+    e.preventDefault(); searchInputEl.value?.focus(); return
+  }
+
+  if (inInput) return
+
+  if (k === (shortcuts.value.pay || 'F9'))      { e.preventDefault(); openPayment(); return }
+  if (k === (shortcuts.value.discount || 'F8')) { e.preventDefault(); showDiscount.value = true; return }
+  if (k === (shortcuts.value.hold || 'F4'))     { e.preventDefault(); holdOrResume(); return }
+  if (k === (shortcuts.value.reprint || 'F2'))  { e.preventDefault(); reprint(); return }
+
+  // Arrow keys navigate the cart
+  if (k === 'ArrowDown') { e.preventDefault(); selectedRow.value = Math.min(selectedRow.value + 1, cart.items.length - 1); return }
+  if (k === 'ArrowUp')   { e.preventDefault(); selectedRow.value = Math.max(selectedRow.value - 1, 0); return }
+  if ((k === 'Delete' || k === 'Backspace') && selectedRow.value >= 0 && cart.items[selectedRow.value]) {
+    e.preventDefault()
+    removeItem(cart.items[selectedRow.value].variant_id)
+    return
+  }
+
+  // Any printable key → focus search (barcode scanner compatible)
+  if (k.length === 1) { searchInputEl.value?.focus() }
+}
+
+// ── Beep ──────────────────────────────────────────────────────
+function playBeep() {
+  if (posSettings.value.ux?.scan_beep === false) return
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain); gain.connect(ctx.destination)
+    osc.type = 'sine'; osc.frequency.value = 1200
+    gain.gain.setValueAtTime(0.2, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12)
+    osc.start(); osc.stop(ctx.currentTime + 0.12)
+  } catch { /* audio blocked */ }
+}
+
+// ── Format helper ─────────────────────────────────────────────
+function fmtNum(n) {
+  return parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+</script>
+
+<style scoped>
+.pos-view {
+  display: flex; flex-direction: column; height: 100%;
+  background: var(--bg-app); outline: none;
+}
+
+/* ── Top bar ──────────────────────────────────────────────── */
+.pos-topbar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 14px; background: var(--bg-card);
+  border-bottom: 1px solid var(--border); height: 54px; flex-shrink: 0;
+}
+.pos-topbar-left { display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0; }
+.pos-brand { font-size: 15px; font-weight: 900; color: var(--accent); letter-spacing: 0.1em; }
+.pos-divider { color: var(--border); font-size: 20px; }
+.pos-store  { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+
+.pos-search-wrap {
+  flex: 1; position: relative;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-app); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 0 14px; height: 38px;
+  transition: border-color 150ms;
+}
+.pos-search-wrap:focus-within { border-color: var(--accent); }
+.pos-search-icon { color: var(--text-muted); flex-shrink: 0; }
+.pos-search {
+  flex: 1; border: none; background: none; outline: none;
+  font-size: 13.5px; color: var(--text-primary);
+}
+.pos-search::placeholder { color: var(--text-muted); }
+.pos-search-kbd {
+  font-size: 11px; background: var(--border); color: var(--text-muted);
+  border-radius: 6px; padding: 2px 7px; font-family: inherit; flex-shrink: 0;
+}
+.pos-search-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 300;
+  background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px;
+  overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.14); max-height: 320px; overflow-y: auto;
+}
+.pos-search-item {
+  display: flex; align-items: center; gap: 12px; padding: 11px 16px;
+  cursor: pointer; transition: background 100ms; border-bottom: 1px solid var(--border);
+}
+.pos-search-item:last-child { border-bottom: none; }
+.pos-search-item:hover, .pos-search-item.highlighted { background: var(--accent-soft); }
+.psi-name  { flex: 1; font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+.psi-sku   { font-size: 11px; font-family: monospace; color: var(--text-muted); }
+.psi-price { font-size: 14px; font-weight: 800; color: var(--accent); white-space: nowrap; }
+
+.pos-topbar-right { display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0; }
+.pos-operator    { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+.pos-branch-chip { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); }
+.pos-clock       { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+
+/* ── Body ─────────────────────────────────────────────────── */
+.pos-body { flex: 1; display: flex; overflow: hidden; }
+
+/* ── Left panel ───────────────────────────────────────────── */
+.pos-left {
+  width: 220px; min-width: 220px;
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow-y: auto;
+  background: var(--bg-card);
+}
+.pos-panel-section { padding: 12px 10px; display: flex; flex-direction: column; gap: 8px; }
+.pos-panel-section--fav { border-top: 1px solid var(--border); flex: 1; }
+.pos-panel-title { font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); padding: 0 4px; }
+.pos-quick-grid { display: flex; flex-direction: column; gap: 4px; }
+.pos-quick-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--bg-app); cursor: pointer; transition: all 120ms; text-align: left;
+}
+.pos-quick-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+.pos-quick-btn--fav { background: rgba(247,143,30,0.06); border-color: rgba(247,143,30,0.3); }
+.pqb-name  { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.pqb-price { font-size: 11.5px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
+.pos-panel-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 14px 0; }
+
+/* ── Center ───────────────────────────────────────────────── */
+.pos-center { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+.pos-invoice-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 14px; background: var(--bg-card);
+  border-bottom: 1px solid var(--border); height: 46px; flex-shrink: 0;
+}
+.pib-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.pib-num    { font-size: 11px; font-family: monospace; color: var(--text-muted); }
+.pib-branch { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+
+.pos-customer-area {
+  flex: 1; position: relative;
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+}
+.pos-customer-icon { color: var(--text-muted); flex-shrink: 0; }
+.pos-customer-name {
+  font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pos-customer-name:hover { text-decoration: underline; }
+.pos-customer-input {
+  flex: 1; border: none; background: none; outline: none;
+  font-size: 13px; color: var(--text-primary); font-weight: 600; min-width: 0;
+}
+.pos-customer-input::placeholder { color: var(--text-muted); font-weight: 400; }
+.pos-customer-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0; min-width: 280px; z-index: 300;
+  background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 12px;
+  overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.12); max-height: 240px; overflow-y: auto;
+}
+.pos-customer-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; cursor: pointer; transition: background 100ms;
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+}
+.pos-customer-item:last-child { border-bottom: none; }
+.pos-customer-item:hover { background: var(--bg-app); }
+.pci-phone { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+
+.pib-discount-chip {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  font-size: 12px; font-weight: 700; color: #dc2626;
+  padding: 4px 10px; border-radius: 8px; background: #fef2f2; border: 1px solid #fecaca;
+}
+.pib-discount-chip button { background: none; border: none; cursor: pointer; color: #dc2626; display: flex; align-items: center; padding: 0; }
+
+.pos-cart-header {
+  display: grid; grid-template-columns: 1fr 96px 90px 36px;
+  padding: 7px 14px; background: var(--bg-app);
+  font-size: 10px; font-weight: 800; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-muted); flex-shrink: 0;
+}
+.pch-qty, .pch-price { text-align: center; }
+
+.pos-cart-body { flex: 1; overflow-y: auto; }
+.pos-cart-row {
+  display: grid; grid-template-columns: 1fr 96px 90px 36px;
+  align-items: center; padding: 9px 14px;
+  border-bottom: 1px solid var(--border); cursor: pointer;
+  transition: background 120ms;
+}
+.pos-cart-row:hover    { background: var(--bg-app); }
+.pos-cart-row.pcr-selected { background: var(--accent-soft); }
+.pos-cart-row.pcr-flash { animation: pos-flash 0.5s ease; }
+@keyframes pos-flash {
+  0%   { background: rgba(247,143,30,0.28); }
+  100% { background: transparent; }
+}
+.pcr-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcr-qty-ctrl { display: flex; align-items: center; justify-content: center; gap: 5px; }
+.pcr-qty-btn {
+  width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg-card); cursor: pointer; font-size: 14px; font-weight: 700;
+  color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+  transition: background 120ms; line-height: 1;
+}
+.pcr-qty-btn:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.pcr-qty-val { font-size: 13px; font-weight: 800; min-width: 20px; text-align: center; }
+.pcr-price { font-size: 13.5px; font-weight: 800; color: var(--text-primary); text-align: center; }
+.pcr-del {
+  width: 28px; height: 28px; border-radius: 7px; border: none; background: none;
+  cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  transition: background 120ms, color 120ms; justify-self: center;
+}
+.pcr-del:hover { background: #fef2f2; color: #dc2626; }
+.pos-cart-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 48px 24px; color: var(--text-muted); font-size: 13.5px;
+}
+.pce-icon { opacity: 0.3; }
+
+.cart-row-enter-active { transition: all 200ms ease; }
+.cart-row-leave-active { transition: all 180ms ease; }
+.cart-row-enter-from { opacity: 0; transform: translateX(-20px); }
+.cart-row-leave-to  { opacity: 0; transform: translateX(20px); }
+
+/* ── Right panel ──────────────────────────────────────────── */
+.pos-right {
+  width: 268px; min-width: 268px;
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 10px; background: var(--bg-card); overflow-y: auto;
+}
+
+.pos-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pac {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; padding: 11px 6px; border-radius: 12px;
+  border: 1.5px solid var(--border); background: var(--bg-app);
+  cursor: pointer; transition: all 140ms; position: relative;
+  font-size: 12px; font-weight: 700; color: var(--text-secondary);
+}
+.pac:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.pac--held { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.pac--disabled { opacity: 0.35; cursor: not-allowed; }
+.pac kbd {
+  font-size: 9px; padding: 1px 5px; border-radius: 4px;
+  background: var(--border); color: var(--text-muted); font-family: inherit;
+}
+.pac-badge {
+  position: absolute; top: 5px; right: 5px;
+  background: var(--accent); color: #fff; font-size: 9px; font-weight: 800;
+  border-radius: 5px; padding: 1px 5px; min-width: 14px; text-align: center;
+}
+
+.pos-summary {
+  background: var(--bg-app); border-radius: 14px; padding: 14px;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.psum-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-secondary); }
+.psum-discount { color: #dc2626; font-size: 12px; }
+.psum-divider  { height: 1px; background: var(--border); margin: 2px 0; }
+.psum-total    { font-size: 17px; font-weight: 900; color: var(--text-primary); }
+.psum-items    { font-size: 11px; color: var(--text-muted); text-align: right; }
+
+.pos-pay-btn {
+  width: 100%; padding: 16px 12px; border-radius: 14px; border: none;
+  background: #16a34a; color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 18px; font-weight: 900; letter-spacing: 0.08em;
+  transition: opacity 150ms; margin-top: auto;
+}
+.pos-pay-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.pos-pay-btn:not(:disabled):hover { opacity: 0.9; }
+.pos-pay-amount { font-size: 14px; font-weight: 700; opacity: 0.9; }
+
+/* ── Scan flash ───────────────────────────────────────────── */
+.pos-scan-flash {
+  position: fixed; inset: 0; background: rgba(247,143,30,0.1);
+  pointer-events: none; z-index: 500;
+}
+.scan-flash-enter-active, .scan-flash-leave-active { transition: opacity 250ms; }
+.scan-flash-enter-from, .scan-flash-leave-to { opacity: 0; }
+
+/* ── Success overlay ──────────────────────────────────────── */
+.pos-success-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center; z-index: 9000;
+}
+.pos-success-card {
+  background: var(--bg-card); border-radius: 24px; padding: 40px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  min-width: 340px; box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+}
+.psc-icon   { color: #16a34a; }
+.psc-label  { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em; }
+.psc-num    { font-size: 22px; font-weight: 900; color: var(--text-primary); }
+.psc-amount { font-size: 34px; font-weight: 900; color: var(--text-primary); }
+.psc-actions { display: flex; gap: 12px; margin-top: 10px; }
+.psc-print {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-radius: 12px; border: 2px solid var(--border);
+  background: none; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--text-secondary);
+}
+.psc-print:hover { background: var(--bg-app); }
+.psc-new {
+  padding: 12px 28px; border-radius: 12px; border: none;
+  background: var(--accent); color: #fff; cursor: pointer;
+  font-size: 14px; font-weight: 800; transition: opacity 150ms;
+}
+.psc-new:hover { opacity: 0.9; }
+.success-pop-enter-active { transition: all 280ms cubic-bezier(0.34,1.56,0.64,1); }
+.success-pop-leave-active { transition: all 200ms ease; }
+.success-pop-enter-from, .success-pop-leave-to { opacity: 0; transform: scale(0.85); }
+
+/* ── Held panel ───────────────────────────────────────────── */
+.pos-held-panel {
+  position: fixed; right: 280px; top: 100px; z-index: 600;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: 16px; min-width: 260px; overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.php-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 800; color: var(--text-primary);
+}
+.php-header button { background: none; border: none; cursor: pointer; color: var(--text-muted); border-radius: 6px; padding: 2px; }
+.php-header button:hover { background: var(--border); }
+.php-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; cursor: pointer; transition: background 120ms;
+  border-bottom: 1px solid var(--border);
+}
+.php-item:last-child { border-bottom: none; }
+.php-item:hover { background: var(--bg-app); }
+.php-items-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.php-total  { font-size: 13px; font-weight: 800; color: var(--accent); }
+.php-empty  { padding: 16px; text-align: center; font-size: 13px; color: var(--text-muted); }
+.held-slide-enter-active, .held-slide-leave-active { transition: all 200ms ease; }
+.held-slide-enter-from, .held-slide-leave-to { opacity: 0; transform: translateY(-10px); }
+</style>

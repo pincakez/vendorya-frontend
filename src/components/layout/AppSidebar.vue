@@ -108,7 +108,7 @@ import {
   DollarSign, BookOpen, UserCheck, Percent, Users, Truck, Briefcase, Folder, Activity,
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
-  Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck,
+  Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -168,6 +168,10 @@ const groups = [
     { label: 'Taxes', to: '/settings/taxes', icon: Percent },
     { label: 'Notifications', to: '/settings/notifications', icon: Bell },
     { label: 'Billing', to: '/settings/billing', icon: CreditCard, ownerOnly: true },
+    { label: 'Payment Methods', to: '/settings/payment-methods', icon: Wallet },
+    { label: 'POS Favorites', to: '/settings/pos/favorites', icon: Star },
+    { label: 'POS Top Selling', to: '/settings/pos/top-selling', icon: TrendingUp },
+    { label: 'POS UX', to: '/settings/pos/ux', icon: Keyboard },
     { label: 'Profile', to: '/settings/profile', icon: User },
     { label: 'Security', to: '/settings/security', icon: Lock },
   ] },

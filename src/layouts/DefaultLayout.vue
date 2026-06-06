@@ -1,11 +1,11 @@
 <template>
   <div class="app-shell">
-    <AppSidebar :collapsed="sidebarCollapsed" @toggle-collapse="sidebarCollapsed = !sidebarCollapsed" />
+    <AppSidebar :collapsed="ui.sidebarCollapsed" @toggle-collapse="ui.toggleSidebar()" />
 
     <div class="app-main">
       <AppHeader
-        :sidebarCollapsed="sidebarCollapsed"
-        @toggleSidebar="sidebarCollapsed = !sidebarCollapsed"
+        :sidebarCollapsed="ui.sidebarCollapsed"
+        @toggleSidebar="ui.toggleSidebar()"
       />
 
       <main class="app-content">
@@ -29,7 +29,6 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Eye } from 'lucide-vue-next'
 import { RouterView } from 'vue-router'
@@ -38,19 +37,13 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import { useIdleTimeout } from '@/composables/useIdleTimeout'
 import { useAuthStore } from '@/stores/auth'
+import { useUIStore } from '@/stores/ui'
 
 useIdleTimeout()
 
 const auth   = useAuthStore()
+const ui     = useUIStore()
 const router = useRouter()
-
-const sidebarCollapsed = ref(
-  localStorage.getItem('vendorya_sidebar') === 'collapsed'
-)
-
-watch(sidebarCollapsed, val => {
-  localStorage.setItem('vendorya_sidebar', val ? 'collapsed' : 'open')
-})
 
 function exitPreview() {
   auth.exitPreview()
