@@ -1085,13 +1085,13 @@ onUnmounted(() => { ro?.disconnect() })
 .dt-row:last-child { border-bottom: none; }
 .dt-row:hover { background: var(--bg-app); }
 .dt-row.clickable { cursor: pointer; }
-.dt td { padding: 12px 16px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dt td { padding: 12px 16px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
 .ta-right { text-align: right; }
 
-.c-sku { font-family: ui-monospace, monospace; font-size: 11.5px; letter-spacing: 0.03em; color: var(--text-muted); }
+.c-sku { font-family: ui-monospace, monospace; font-size: 13.5px; letter-spacing: 0.03em; color: var(--text-muted); }
 .c-name { font-weight: 700; }
-.c-sup { color: var(--text-secondary); font-size: 12.5px; }
-.c-mono { font-family: ui-monospace, monospace; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.c-sup { color: var(--text-secondary); font-size: 14.5px; }
+.c-mono { font-family: ui-monospace, monospace; font-size: 14.5px; font-variant-numeric: tabular-nums; }
 .c-muted { color: var(--text-muted); }
 .c-retail { color: #16a34a; font-weight: 600; }
 .c-profit { color: #16a34a; font-weight: 700; }
