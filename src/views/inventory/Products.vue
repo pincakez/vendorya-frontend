@@ -463,12 +463,16 @@ const columns = [
   { key: 'sku',       label: 'SKU',       sort: 'o_sku',          align: 'left',  field: 'sku_display',   cls: 'c-sku' },
   { key: 'product',   label: 'PRODUCT',   sort: 'name',           align: 'left',  field: 'name',          cls: 'c-name' },
   { key: 'supplier',  label: 'SUPPLIER',  sort: 'supplier__name', align: 'left',  field: 'supplier_name', cls: 'c-sup' },
+  { key: 'cat1',      label: 'CATEGORY',     align: 'left', field: 'category_l1', cls: 'c-sup' },
+  { key: 'cat2',      label: 'SUB-CATEGORY', align: 'left', field: 'category_l2', cls: 'c-sup' },
+  { key: 'cat3',      label: 'SUB-CAT 3',    align: 'left', field: 'category_l3', cls: 'c-sup' },
+  { key: 'cat4',      label: 'SUB-CAT 4',    align: 'left', field: 'category_l4', cls: 'c-sup' },
   { key: 'wholesale', label: 'WHOLESALE', sort: 'o_wholesale',    align: 'left',  field: 'cost_display',  cls: 'c-mono c-muted', money: true },
   { key: 'retail',    label: 'RETAIL',    sort: 'o_retail',       align: 'left',  field: 'price_display', cls: 'c-mono c-retail', money: true },
   { key: 'profit',    label: 'PROFIT',    sort: 'o_profit',       align: 'left',  field: 'profit_display',cls: 'c-mono c-profit', money: true, plus: true },
   { key: 'inStock',   label: 'IN STOCK',  sort: 'o_stock',        align: 'right', field: 'total_stock',   cls: '', badge: true },
 ]
-const DEFAULT_WIDTHS = { sku: 130, product: 300, supplier: 170, wholesale: 120, retail: 120, profit: 120, inStock: 110 }
+const DEFAULT_WIDTHS = { sku: 130, product: 300, supplier: 170, cat1: 150, cat2: 150, cat3: 150, cat4: 150, wholesale: 120, retail: 120, profit: 120, inStock: 110 }
 const colWidths = reactive({ ...DEFAULT_WIDTHS })
 
 const TABLE_ID = 'inventory_products'
@@ -477,7 +481,9 @@ const LOCKED = ['sku', 'product']           // can't be hidden
 const colByKey = Object.fromEntries(columns.map(c => [c.key, c]))
 
 const colOrder = ref(columns.map(c => c.key))
-const colHidden = ref([])
+// Deeper category tiers are available but hidden by default (toggle in Customize
+// Columns). Only applies to fresh users — saved layouts/presets take over.
+const colHidden = ref(['cat3', 'cat4'])
 
 // Layer 1: a column is *permitted* only if its field is present in the data.
 // The server omits role-hidden fields, so a preset can never reveal them.

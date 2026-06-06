@@ -85,12 +85,69 @@
         </button>
       </template>
     </AppModal>
+
+    <!-- Delete a non-empty category: move up vs purge -->
+    <AppModal :open="resolve.open" :title="`Delete “${resolve.name}”`" width="470px" @close="closeResolve">
+      <div v-if="resolve.step === 'choose'" style="display:flex;flex-direction:column;gap:12px;">
+        <p class="resolve-summary">
+          <strong>{{ resolve.name }}</strong> isn’t empty — it holds
+          <strong>{{ resolve.productCount }}</strong> product{{ resolve.productCount === 1 ? '' : 's' }}<template v-if="resolve.subcatCount"> and <strong>{{ resolve.subcatCount }}</strong> sub-categor{{ resolve.subcatCount === 1 ? 'y' : 'ies' }}</template>. What should happen to them?
+        </p>
+        <button class="resolve-opt" :disabled="busy" @click="doMove">
+          <CornerUpLeft :size="17" />
+          <span class="resolve-opt-text">
+            <span class="resolve-opt-title">Move contents up to {{ resolve.parent ? resolve.parent.name : 'Uncategorized' }}</span>
+            <span class="resolve-opt-sub">Keeps everything — just re-tags one level up. No stock change.</span>
+          </span>
+        </button>
+        <button class="resolve-opt danger" :disabled="busy" @click="resolve.step = 'purge'">
+          <Trash2 :size="17" />
+          <span class="resolve-opt-text">
+            <span class="resolve-opt-title">Delete it and everything inside</span>
+            <span class="resolve-opt-sub">Removes the products too — a stock write-off, so a reason is required.</span>
+          </span>
+        </button>
+        <p v-if="error" class="form-error">{{ error }}</p>
+      </div>
+
+      <div v-else style="display:flex;flex-direction:column;gap:13px;">
+        <p class="resolve-summary">
+          About to delete <strong>{{ resolve.productCount }}</strong> product{{ resolve.productCount === 1 ? '' : 's' }}<template v-if="resolve.subcatCount"> and <strong>{{ resolve.subcatCount }}</strong> sub-categor{{ resolve.subcatCount === 1 ? 'y' : 'ies' }}</template>. They move to Trash and stay restorable.
+        </p>
+        <div>
+          <label class="form-label">Reason</label>
+          <select v-model="resolve.reason" class="form-input">
+            <option value="DISCONTINUED">Discontinued</option>
+            <option value="DUPLICATE">Duplicate</option>
+            <option value="MISTAKE">Created by mistake</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Note (optional)</label>
+          <input v-model="resolve.note" class="form-input" placeholder="Add context…" />
+        </div>
+        <p v-if="error" class="form-error">{{ error }}</p>
+      </div>
+
+      <template #footer>
+        <template v-if="resolve.step === 'choose'">
+          <button class="btn-ghost" @click="closeResolve">Cancel</button>
+        </template>
+        <template v-else>
+          <button class="btn-ghost" @click="resolve.step = 'choose'; resolve.confirming = false">Back</button>
+          <button class="btn-danger" :disabled="busy" @click="doPurge">
+            {{ busy ? 'Deleting…' : (resolve.confirming ? 'Tap again to confirm delete' : 'Delete with items') }}
+          </button>
+        </template>
+      </template>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { Plus, Pencil, Trash2, Tag, FolderTree, ChevronRight, ChevronDown, CornerDownRight } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Tag, FolderTree, ChevronRight, ChevronDown, CornerDownRight, CornerUpLeft } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
 
@@ -216,19 +273,55 @@ async function save() {
   }
 }
 
+// --- delete flow: probe contents, then either a plain delete (empty) or the
+//     move-vs-purge modal (has products / sub-categories). -------------------
+const busy = ref(false)
+const resolve = reactive({
+  open: false, id: null, name: '', parent: null,
+  productCount: 0, subcatCount: 0, step: 'choose', reason: 'DISCONTINUED', note: '', confirming: false,
+})
+function closeResolve() { resolve.open = false }
+
 async function del(row) {
-  const kids = (childrenMap.value[row.id] || []).length
-  const msg = kids
-    ? `“${row.name}” has ${kids} sub-categor${kids === 1 ? 'y' : 'ies'}. Move or delete them first.`
-    : `Delete “${row.name}”?`
-  if (kids) { alert(msg); return }
-  if (!confirm(msg)) return
+  error.value = ''
+  let contents
   try {
-    await api.delete(`/api/inventory/categories/${row.id}/`)
-    await load()
-  } catch (e) {
-    alert(e.response?.data?.detail || 'Could not delete category.')
+    contents = (await api.get(`/api/inventory/categories/${row.id}/contents/`)).data
+  } catch { alert('Could not check what this category contains.'); return }
+
+  if (contents.product_count === 0 && contents.subcategory_count === 0) {
+    if (!confirm(`Delete “${row.name}”?`)) return
+    try { await api.delete(`/api/inventory/categories/${row.id}/`); await load() }
+    catch (e) { alert(e.response?.data?.detail || 'Could not delete category.') }
+    return
   }
+  Object.assign(resolve, {
+    open: true, id: row.id, name: row.name, parent: contents.parent,
+    productCount: contents.product_count, subcatCount: contents.subcategory_count,
+    step: 'choose', reason: 'DISCONTINUED', note: '', confirming: false,
+  })
+}
+
+async function doMove() {
+  busy.value = true; error.value = ''
+  try {
+    await api.post(`/api/inventory/categories/${resolve.id}/resolve-delete/`, { mode: 'move' })
+    closeResolve(); await load()
+  } catch (e) { error.value = e.response?.data?.detail || 'Could not move contents.' }
+  finally { busy.value = false }
+}
+
+async function doPurge() {
+  if (!resolve.confirming) { resolve.confirming = true; return }   // second click required
+  busy.value = true; error.value = ''
+  try {
+    await api.post(`/api/inventory/categories/${resolve.id}/resolve-delete/`,
+      { mode: 'purge', reason: resolve.reason, note: resolve.note })
+    closeResolve(); await load()
+  } catch (e) {
+    error.value = e.response?.data?.reason?.[0] || e.response?.data?.detail || 'Could not delete.'
+    resolve.confirming = false
+  } finally { busy.value = false }
 }
 </script>
 
@@ -279,4 +372,19 @@ async function del(row) {
 .btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
+.btn-danger  { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#dc2626; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
+.btn-danger:hover    { background:#b91c1c; }
+.btn-danger:active   { transform:scale(0.95); }
+.btn-danger:disabled { opacity:.6; cursor:default; }
+
+.resolve-summary { font-size:13px; color:var(--text-secondary); margin:0; line-height:1.5; }
+.resolve-opt { display:flex; align-items:flex-start; gap:11px; text-align:left; width:100%; padding:12px 13px; border:1px solid var(--border); border-radius:10px; background:var(--bg-app); color:var(--text-primary); cursor:pointer; transition:border-color 120ms, background 120ms, transform 70ms; }
+.resolve-opt:hover  { border-color:var(--accent); }
+.resolve-opt:active { transform:scale(0.99); }
+.resolve-opt:disabled { opacity:.5; cursor:default; }
+.resolve-opt.danger { color:#dc2626; }
+.resolve-opt.danger:hover { border-color:#dc2626; background:#fef2f2; }
+.resolve-opt-text  { display:flex; flex-direction:column; gap:2px; }
+.resolve-opt-title { font-size:13px; font-weight:700; }
+.resolve-opt-sub   { font-size:11.5px; color:var(--text-muted); font-weight:400; }
 </style>
