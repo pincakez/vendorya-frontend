@@ -59,7 +59,7 @@
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchStaff" />
 
     <!-- MODAL: Add / Edit -->
-    <AppModal :open="modal.open" :title="modal.id ? 'Edit Staff Member' : 'New Staff Member'" @close="closeModal">
+    <AppModal :open="modal.open" :title="modal.id ? 'Edit Staff Member' : 'New Staff Member'" no-backdrop-close @close="closeModal">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>

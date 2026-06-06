@@ -67,15 +67,18 @@
     <div class="nsb-bottom">
       <div class="nsb-actions" :class="{ 'nsb-col': collapsed }">
         <!-- Exit to Admin (sudo acting on a store) -->
-        <PhysicalButton v-if="acting" variant="icon" :collapsed="collapsed" :tooltip="'Exit to Admin'" @click="exitToAdmin">
+        <PhysicalButton v-if="acting" variant="sidebar" :collapsed="collapsed" tooltip="Exit to Admin" @click="exitToAdmin">
           <template #icon><ArrowLeft :size="16" /></template>
+          Exit to Admin
         </PhysicalButton>
         <!-- Settings (store users only) -->
-        <PhysicalButton v-if="!admin" variant="icon" :collapsed="collapsed" @click="go('/settings')">
+        <PhysicalButton v-if="!admin" variant="sidebar" :collapsed="collapsed" tooltip="Store Settings" @click="go('/settings')">
           <template #icon><Settings :size="16" /></template>
+          Store Settings
         </PhysicalButton>
-        <PhysicalButton variant="icon" :collapsed="collapsed" @click="auth.logout()">
+        <PhysicalButton variant="sidebar" :collapsed="collapsed" tooltip="Log Out" @click="auth.logout()">
           <template #icon><LogOut :size="16" class="ic-logout" /></template>
+          <span class="lbl-logout">Log Out</span>
         </PhysicalButton>
       </div>
 
@@ -164,12 +167,10 @@ const groups = [
     { label: 'Inbox', to: '/inbox', icon: Inbox },
   ] },
   { id: 'settings', title: 'SETTINGS', icon: Settings, items: [
-    { label: 'Store Info', to: '/settings', icon: Store },
-    { label: 'Policies', to: '/settings/policies', icon: Shield },
+    { label: 'Store Settings', to: '/settings', icon: Store },
     { label: 'Taxes', to: '/settings/taxes', icon: Percent },
     { label: 'Notifications', to: '/settings/notifications', icon: Bell },
     { label: 'Billing', to: '/settings/billing', icon: CreditCard, ownerOnly: true },
-    { label: 'Payment Methods', to: '/settings/payment-methods', icon: Wallet },
     { label: 'POS Favorites', to: '/settings/pos/favorites', icon: Star },
     { label: 'POS Top Selling', to: '/settings/pos/top-selling', icon: TrendingUp },
     { label: 'POS UX', to: '/settings/pos/ux', icon: Keyboard },
@@ -310,8 +311,9 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 
 /* Bottom */
 .nsb-bottom { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--sb-border); display: flex; flex-direction: column; gap: 10px; }
-.nsb-actions { display: flex; gap: 8px; }
-.nsb-actions.nsb-col { flex-direction: column; }
+.nsb-actions { display: flex; flex-direction: column; gap: 3px; }
+.nsb-actions.nsb-col { gap: 6px; }
+.lbl-logout { color: #ef4444; }
 .nsb-user {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   padding: 8px 10px; border-radius: 12px; cursor: pointer; transition: background 120ms;

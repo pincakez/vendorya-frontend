@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">Settings</h1>
-        <p class="page-sub">Configure your store, branches and payment options</p>
+        <p class="page-sub">Manage your store info, branding, and business rules</p>
       </div>
     </div>
 
@@ -14,10 +14,11 @@
       </button>
     </div>
 
-    <!-- TAB: Store -->
+    <!-- ══ TAB: Store Info ══ -->
     <div v-if="activeTab === 'store'">
       <div v-if="storeLoading" class="form-skeleton" />
       <div v-else class="settings-card">
+        <div class="section-divider">Basic</div>
         <div class="form-grid">
           <div class="form-group">
             <label class="form-label">Store Name</label>
@@ -30,18 +31,174 @@
                 {{ c.symbol }} — {{ c.name }} ({{ c.code }})
               </option>
             </select>
-            <p class="form-hint">Used everywhere this store displays money. Sample: <strong>{{ sampleAmount }}</strong></p>
+            <p class="form-hint">Sample: <strong>{{ sampleAmount }}</strong></p>
           </div>
           <div class="form-group">
             <label class="form-label">Timezone</label>
             <select v-model="storeForm.timezone" class="form-input" style="width:220px;">
               <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
             </select>
-            <p class="form-hint">Time is set automatically by Vendorya servers — you just pick the zone for display.</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Default Language</label>
+            <select v-model="storeForm.default_language" class="form-input" style="width:160px;">
+              <option value="ar">Arabic</option>
+              <option value="en">English</option>
+            </select>
           </div>
         </div>
 
-        <div class="section-divider">Number Formatting</div>
+        <div class="section-divider">Contact</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input v-model="storeForm.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp</label>
+            <input v-model="storeForm.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input v-model="storeForm.email" class="form-input" placeholder="store@example.com" type="email" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Website</label>
+            <input v-model="storeForm.website" class="form-input" placeholder="https://…" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <select v-model="storeForm.city" class="form-input">
+              <option value="">— Select city —</option>
+              <option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Country</label>
+            <input value="Egypt" class="form-input" disabled style="opacity:.55;cursor:not-allowed;" />
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label class="form-label">Address</label>
+            <input v-model="storeForm.address_line" class="form-input" placeholder="Street address, building, floor…" />
+          </div>
+        </div>
+
+        <div class="section-divider">Social Media</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Facebook Page</label>
+            <input v-model="storeForm.fb_page" class="form-input" placeholder="https://facebook.com/…" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Instagram</label>
+            <input v-model="storeForm.instagram" class="form-input" placeholder="@yourhandle or URL" />
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <button class="btn-primary" :disabled="storeSaving" @click="saveStore">
+            {{ storeSaving ? 'Saving…' : 'Save Store Info' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: Branches & Owners ══ -->
+    <div v-if="activeTab === 'branches'">
+      <!-- Owners section -->
+      <div class="section-heading-row">
+        <span class="section-group-title">Owners</span>
+      </div>
+      <div class="table-wrap" style="margin-bottom:20px;">
+        <div v-if="ownersLoading" class="table-skeleton"><div v-for="i in 2" :key="i" class="skeleton-row" /></div>
+        <table v-else class="data-table">
+          <thead><tr><th>Name</th><th>Username</th><th>Phone</th><th>WhatsApp</th><th style="width:50px;"></th></tr></thead>
+          <tbody>
+            <tr v-if="owners.length === 0">
+              <td colspan="5" class="table-empty"><UserCog :size="28" style="opacity:.3;margin-bottom:6px;" /><div>No owners yet</div></td>
+            </tr>
+            <tr v-for="o in owners" :key="o.id" class="table-row">
+              <td class="col-name">{{ o.full_name }}</td>
+              <td>{{ o.username }}</td>
+              <td>{{ o.phone_number || '—' }}</td>
+              <td>{{ o.whatsapp_number || '—' }}</td>
+              <td><button class="row-action" @click="openEditOwner(o)"><Pencil :size="13" /></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Branches section -->
+      <div class="section-heading-row">
+        <span class="section-group-title">Branches</span>
+        <button class="btn-primary btn-sm" @click="openNewBranch"><Plus :size="14" /> New Branch</button>
+      </div>
+      <div class="table-wrap">
+        <div v-if="branchLoading" class="table-skeleton"><div v-for="i in 3" :key="i" class="skeleton-row" /></div>
+        <table v-else class="data-table">
+          <thead><tr><th>Name</th><th>City</th><th>Street</th><th>Main</th><th style="width:50px;"></th></tr></thead>
+          <tbody>
+            <tr v-if="branches.length === 0">
+              <td colspan="5" class="table-empty">
+                <GitBranch :size="32" style="opacity:.2;margin-bottom:8px;" />
+                <div style="font-size:14px;font-weight:600;color:var(--text-primary);">No branches yet</div>
+                <div style="font-size:12.5px;">Add a branch to assign staff and manage stock per location.</div>
+              </td>
+            </tr>
+            <tr v-for="b in branches" :key="b.id" class="table-row">
+              <td class="col-name">{{ b.name }}</td>
+              <td>{{ b.address_city }}</td>
+              <td class="col-street">{{ b.address_street_1 }}</td>
+              <td><span v-if="b.is_main_branch" class="badge-main">Main</span></td>
+              <td><button class="row-action" @click="openEditBranch(b)"><Pencil :size="13" /></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ TAB: Branding ══ -->
+    <div v-if="activeTab === 'branding'">
+      <div class="settings-card">
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">
+          Upload your store logo. It appears in the top header bar so your staff always see your brand.<br>
+          Recommended size: <strong>480 × 112 px</strong> — PNG or SVG with a transparent background.
+        </p>
+        <div class="logo-upload-grid">
+          <div class="logo-upload-card">
+            <div class="logo-upload-label"><span>Light Mode Logo</span><span class="logo-hint">Shown when theme is set to light</span></div>
+            <div class="logo-preview-wrap light-bg">
+              <img v-if="logoPreview.light" :src="logoPreview.light" class="logo-preview-img" alt="Light logo" />
+              <div v-else class="logo-placeholder"><ImageIcon :size="28" style="opacity:.3;" /><span>No logo uploaded</span></div>
+            </div>
+            <div class="logo-upload-actions">
+              <label class="btn-upload">Choose file<input type="file" accept="image/*" style="display:none;" @change="onLogoFile('light', $event)" /></label>
+              <button v-if="logoPreview.light" class="btn-logo-clear" @click="clearLogo('light')"><X :size="13" /> Remove</button>
+            </div>
+          </div>
+          <div class="logo-upload-card">
+            <div class="logo-upload-label"><span>Dark Mode Logo</span><span class="logo-hint">Shown when theme is set to dark</span></div>
+            <div class="logo-preview-wrap dark-bg">
+              <img v-if="logoPreview.dark" :src="logoPreview.dark" class="logo-preview-img" alt="Dark logo" />
+              <div v-else class="logo-placeholder"><ImageIcon :size="28" style="opacity:.3;" /><span>No logo uploaded</span></div>
+            </div>
+            <div class="logo-upload-actions">
+              <label class="btn-upload">Choose file<input type="file" accept="image/*" style="display:none;" @change="onLogoFile('dark', $event)" /></label>
+              <button v-if="logoPreview.dark" class="btn-logo-clear" @click="clearLogo('dark')"><X :size="13" /> Remove</button>
+            </div>
+          </div>
+        </div>
+        <p class="form-hint" style="margin-top:12px;">Changes apply immediately after saving. The header logo updates for all staff on next page load.</p>
+        <div class="form-footer">
+          <button class="btn-primary" :disabled="logoSaving" @click="saveLogos">{{ logoSaving ? 'Uploading…' : 'Save Logos' }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: Business Rules ══ -->
+    <div v-if="activeTab === 'rules'">
+      <div class="settings-card">
+        <div class="section-divider">Display &amp; Formatting</div>
         <div class="form-grid">
           <div class="form-group">
             <label class="form-label">Decimal places</label>
@@ -56,15 +213,9 @@
           <div class="form-group">
             <label class="form-label">Thousand separator</label>
             <div style="display:flex;align-items:center;gap:10px;height:34px;">
-              <button class="toggle-btn" :class="{ on: settingsForm.thousands_separator }"
-                      @click="settingsForm.thousands_separator = !settingsForm.thousands_separator">
-                <span class="toggle-knob" />
-              </button>
-              <span style="font-size:12.5px;color:var(--text-muted);">
-                {{ settingsForm.thousands_separator ? '1,234,567.89' : '1234567.89' }}
-              </span>
+              <button class="toggle-btn" :class="{ on: settingsForm.thousands_separator }" @click="settingsForm.thousands_separator = !settingsForm.thousands_separator"><span class="toggle-knob" /></button>
+              <span style="font-size:12.5px;color:var(--text-muted);">{{ settingsForm.thousands_separator ? '1,234,567.89' : '1234567.89' }}</span>
             </div>
-            <p class="form-hint">Off by default — cleaner for short receipts.</p>
           </div>
           <div class="form-group">
             <label class="form-label">Items are called</label>
@@ -74,27 +225,18 @@
               <option value="ITEM">Item</option>
               <option value="MODEL">Model</option>
             </select>
-            <p class="form-hint">Label used for a catalog item across the app (e.g. laptop shops prefer “Model”).</p>
+            <p class="form-hint">Label used for a catalog item across the app (laptop shops prefer "Model").</p>
           </div>
-          <div class="form-group" style="grid-column:1 / -1;">
+          <div class="form-group" style="grid-column:1/-1;">
             <label class="form-label">Category level names</label>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <input v-for="(lvl, i) in settingsForm.category_level_names" :key="i"
-                     v-model="settingsForm.category_level_names[i]" class="form-input"
-                     style="width:150px;" :placeholder="`Tier ${i + 1}`" />
+              <input v-for="(lvl, i) in settingsForm.category_level_names" :key="i" v-model="settingsForm.category_level_names[i]" class="form-input" style="width:150px;" :placeholder="`Tier ${i + 1}`" />
             </div>
-            <p class="form-hint">Names for the 4 category tiers — shown as column headers and on the Categories page (e.g. Type · Category · Spec).</p>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Default Language</label>
-            <select v-model="storeForm.default_language" class="form-input" style="width:160px;">
-              <option value="ar">Arabic</option>
-              <option value="en">English</option>
-            </select>
+            <p class="form-hint">Names for the 4 category tiers — column headers and Categories page.</p>
           </div>
         </div>
 
-        <div class="section-divider">Business Rules</div>
+        <div class="section-divider">Tax &amp; Registration</div>
         <div class="form-grid">
           <div class="form-group">
             <label class="form-label">Default Tax</label>
@@ -111,131 +253,50 @@
             <label class="form-label">Commercial Reg / Sogel</label>
             <input v-model="settingsForm.commercial_reg" class="form-input" placeholder="Optional" />
           </div>
-        </div>
-
-        <div class="section-divider">Contact Info</div>
-        <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">Phone Number</label>
-            <input v-model="storeForm.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">WhatsApp</label>
-            <input v-model="storeForm.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">City</label>
-            <select v-model="storeForm.city" class="form-input">
-              <option value="">— Select city —</option>
-              <option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Country</label>
-            <input value="Egypt" class="form-input" disabled style="opacity:.55;cursor:not-allowed;" />
+            <label class="form-label">Product Numbering Mode</label>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <button class="mode-btn" :class="{ active: settingsForm.product_numbering_mode === 'PROGRESSIVE' }" @click="settingsForm.product_numbering_mode = 'PROGRESSIVE'">Progressive</button>
+              <button class="mode-btn" :class="{ active: settingsForm.product_numbering_mode === 'RANDOM' }" @click="settingsForm.product_numbering_mode = 'RANDOM'">Random</button>
+            </div>
+            <p class="form-hint">{{ settingsForm.product_numbering_mode === 'PROGRESSIVE' ? '0001, 0002, 0003…' : 'random 4-digit slot' }}</p>
           </div>
         </div>
 
+        <div class="section-divider">Stock &amp; Credit Policies</div>
         <div class="toggle-row">
           <div class="toggle-item">
-            <div>
-              <div class="toggle-label">Allow Negative Stock</div>
-              <div class="toggle-desc">If off, POS blocks sales when stock is zero</div>
-            </div>
-            <button class="toggle-btn" :class="{ on: settingsForm.allow_negative_stock }" @click="settingsForm.allow_negative_stock = !settingsForm.allow_negative_stock">
-              <span class="toggle-knob" />
-            </button>
+            <div><div class="toggle-label">Allow Negative Stock</div><div class="toggle-desc">If off, POS blocks sales when stock is zero</div></div>
+            <button class="toggle-btn" :class="{ on: settingsForm.allow_negative_stock }" @click="settingsForm.allow_negative_stock = !settingsForm.allow_negative_stock"><span class="toggle-knob" /></button>
           </div>
           <div class="toggle-item">
-            <div>
-              <div class="toggle-label">Allow Credit Sales (Agel)</div>
-              <div class="toggle-desc">Let customers buy on credit and build a balance</div>
+            <div><div class="toggle-label">Allow Credit Sales (Agel)</div><div class="toggle-desc">Let customers buy on credit and build a balance</div></div>
+            <button class="toggle-btn" :class="{ on: settingsForm.enable_agel_selling }" @click="settingsForm.enable_agel_selling = !settingsForm.enable_agel_selling"><span class="toggle-knob" /></button>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-top:16px;">
+          <div class="form-group">
+            <label class="form-label">Credit Limit Policy</label>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <button v-for="opt in creditPolicyOptions" :key="opt.value" class="mode-btn" :class="{ active: settingsForm.credit_policy === opt.value }" @click="settingsForm.credit_policy = opt.value">{{ opt.label }}</button>
             </div>
-            <button class="toggle-btn" :class="{ on: settingsForm.enable_agel_selling }" @click="settingsForm.enable_agel_selling = !settingsForm.enable_agel_selling">
-              <span class="toggle-knob" />
-            </button>
+            <p class="form-hint">Allow / Warn / Block when a customer exceeds their credit limit.</p>
+          </div>
+          <div class="form-group" v-if="settingsForm.credit_policy !== 'ALLOW'">
+            <label class="form-label">Default credit limit per customer</label>
+            <input v-model.number="settingsForm.default_credit_limit" type="number" min="0" step="100" class="form-input" style="width:130px;" placeholder="e.g. 5000" />
+            <p class="form-hint">Leave blank for no limit</p>
           </div>
         </div>
 
         <div class="form-footer">
-          <button class="btn-primary" :disabled="storeSaving" @click="saveStore">
-            {{ storeSaving ? 'Saving…' : 'Save Changes' }}
-          </button>
+          <button class="btn-primary" :disabled="storeSaving" @click="saveRules">{{ storeSaving ? 'Saving…' : 'Save Business Rules' }}</button>
         </div>
       </div>
     </div>
 
-    <!-- TAB: Branding -->
-    <div v-if="activeTab === 'branding'">
-      <div class="settings-card">
-        <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">
-          Upload your store logo. It appears in the top header bar so your staff always see your brand.
-          <br>Recommended size: <strong>480 × 112 px</strong> — PNG or SVG with a transparent background.
-        </p>
-
-        <div class="logo-upload-grid">
-          <!-- Light mode logo -->
-          <div class="logo-upload-card">
-            <div class="logo-upload-label">
-              <span>Light Mode Logo</span>
-              <span class="logo-hint">Shown when theme is set to light</span>
-            </div>
-            <div class="logo-preview-wrap light-bg">
-              <img v-if="logoPreview.light" :src="logoPreview.light" class="logo-preview-img" alt="Light logo" />
-              <div v-else class="logo-placeholder">
-                <ImageIcon :size="28" style="opacity:.3;" />
-                <span>No logo uploaded</span>
-              </div>
-            </div>
-            <div class="logo-upload-actions">
-              <label class="btn-upload">
-                Choose file
-                <input type="file" accept="image/*" style="display:none;" @change="onLogoFile('light', $event)" />
-              </label>
-              <button v-if="logoPreview.light" class="btn-logo-clear" @click="clearLogo('light')">
-                <X :size="13" /> Remove
-              </button>
-            </div>
-          </div>
-
-          <!-- Dark mode logo -->
-          <div class="logo-upload-card">
-            <div class="logo-upload-label">
-              <span>Dark Mode Logo</span>
-              <span class="logo-hint">Shown when theme is set to dark</span>
-            </div>
-            <div class="logo-preview-wrap dark-bg">
-              <img v-if="logoPreview.dark" :src="logoPreview.dark" class="logo-preview-img" alt="Dark logo" />
-              <div v-else class="logo-placeholder">
-                <ImageIcon :size="28" style="opacity:.3;" />
-                <span>No logo uploaded</span>
-              </div>
-            </div>
-            <div class="logo-upload-actions">
-              <label class="btn-upload">
-                Choose file
-                <input type="file" accept="image/*" style="display:none;" @change="onLogoFile('dark', $event)" />
-              </label>
-              <button v-if="logoPreview.dark" class="btn-logo-clear" @click="clearLogo('dark')">
-                <X :size="13" /> Remove
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <p class="form-hint" style="margin-top:12px;">
-          Changes apply immediately after saving. The header logo updates for all logged-in staff on next page load.
-        </p>
-
-        <div class="form-footer">
-          <button class="btn-primary" :disabled="logoSaving" @click="saveLogos">
-            {{ logoSaving ? 'Uploading…' : 'Save Logos' }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: Receipt -->
+    <!-- ══ TAB: Receipt ══ -->
     <div v-if="activeTab === 'receipt'">
       <div class="settings-card">
         <div class="form-group" style="margin-bottom:16px;">
@@ -245,85 +306,42 @@
         </div>
         <div class="form-group">
           <label class="form-label">Receipt Footer</label>
-          <p class="form-hint">Shown at the bottom — return policy, thank-you message, etc.</p>
+          <p class="form-hint">Return policy, thank-you message, etc.</p>
           <textarea v-model="settingsForm.receipt_footer" class="form-input" rows="4" placeholder="e.g. No returns after 7 days. Thank you!" />
         </div>
         <div class="toggle-row">
           <div class="toggle-item">
             <div>
               <div class="toggle-label">Print Tax ID on invoices</div>
-              <div class="toggle-desc">
-                When on, your Tax ID ({{ settingsForm.tax_id || 'set it under Store Info' }}) prints on every invoice.
-                Turn off to omit it entirely — no "N/A" placeholder.
-              </div>
+              <div class="toggle-desc">When on, your Tax ID prints on every invoice. Turn off to omit it entirely.</div>
             </div>
-            <button class="toggle-btn" :class="{ on: settingsForm.print_tax_id }" @click="settingsForm.print_tax_id = !settingsForm.print_tax_id">
-              <span class="toggle-knob" />
-            </button>
+            <button class="toggle-btn" :class="{ on: settingsForm.print_tax_id }" @click="settingsForm.print_tax_id = !settingsForm.print_tax_id"><span class="toggle-knob" /></button>
           </div>
         </div>
         <div class="form-footer">
-          <button class="btn-primary" :disabled="storeSaving" @click="saveSettings">
-            {{ storeSaving ? 'Saving…' : 'Save Receipt' }}
-          </button>
+          <button class="btn-primary" :disabled="storeSaving" @click="saveReceipt">{{ storeSaving ? 'Saving…' : 'Save Receipt' }}</button>
         </div>
       </div>
     </div>
 
-    <!-- TAB: Branches -->
-    <div v-if="activeTab === 'branches'">
-      <div class="table-wrap">
-        <div v-if="branchLoading" class="table-skeleton">
-          <div v-for="i in 3" :key="i" class="skeleton-row" />
-        </div>
-        <table v-else class="data-table">
-          <thead>
-            <tr><th>Name</th><th>City</th><th>Street</th><th>Main</th><th style="width:60px;"></th></tr>
-          </thead>
-          <tbody>
-            <tr v-if="branches.length === 0">
-              <td colspan="5" class="table-empty">
-                <GitBranch :size="40" style="opacity:.2;margin-bottom:10px;" />
-                <div style="font-size:15px;font-weight:700;color:var(--text-primary);">No branches yet</div>
-                <div style="font-size:13px;">Add a branch to assign staff and manage stock per location.</div>
-              </td>
-            </tr>
-            <tr v-for="b in branches" :key="b.id" class="table-row">
-              <td class="col-name">{{ b.name }}</td>
-              <td>{{ b.address_city }}</td>
-              <td class="col-street">{{ b.address_street_1 }}</td>
-              <td>
-                <span v-if="b.is_main_branch" class="badge-main">Main</span>
-              </td>
-              <td>
-                <button class="row-action" @click="openEditBranch(b)"><Pencil :size="13" /></button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB: Payment Methods -->
+    <!-- ══ TAB: Payment Methods ══ -->
     <div v-if="activeTab === 'payments'">
+      <div class="section-heading-row">
+        <span class="section-group-title">Payment Methods</span>
+        <button class="btn-primary btn-sm" @click="openNewPM"><Plus :size="14" /> New Method</button>
+      </div>
       <div class="table-wrap">
-        <div v-if="pmLoading" class="table-skeleton">
-          <div v-for="i in 3" :key="i" class="skeleton-row" />
-        </div>
+        <div v-if="pmLoading" class="table-skeleton"><div v-for="i in 3" :key="i" class="skeleton-row" /></div>
         <table v-else class="data-table">
-          <thead>
-            <tr><th>Name</th><th>Type</th><th style="width:60px;"></th></tr>
-          </thead>
+          <thead><tr><th>Name</th><th>Type</th><th>Agel</th><th style="width:70px;"></th></tr></thead>
           <tbody>
             <tr v-if="paymentMethods.length === 0">
-              <td colspan="3" class="table-empty">
-                <CreditCard :size="28" style="opacity:.3;margin-bottom:8px;" />
-                <div>No payment methods yet</div>
-              </td>
+              <td colspan="4" class="table-empty"><CreditCard :size="28" style="opacity:.3;margin-bottom:8px;" /><div>No payment methods yet</div></td>
             </tr>
             <tr v-for="pm in paymentMethods" :key="pm.id" class="table-row">
               <td class="col-name">{{ pm.name }}</td>
               <td><span :class="pm.is_cash ? 'badge-cash' : 'badge-digital'">{{ pm.is_cash ? 'Cash' : 'Digital' }}</span></td>
+              <td><span v-if="pm.is_agel" class="badge-agel">Agel</span><span v-else class="text-muted-sm">—</span></td>
               <td>
                 <button class="row-action" @click="openEditPM(pm)"><Pencil :size="13" /></button>
                 <button class="row-action danger" @click="deletePM(pm.id)"><Trash2 :size="13" /></button>
@@ -334,112 +352,119 @@
       </div>
     </div>
 
-    <!-- MODAL: Branch -->
-    <AppModal :open="branchModal.open" :title="branchModal.id ? 'Edit Branch' : 'New Branch'" @close="branchModal.open = false">
+    <!-- ══ TAB: Security ══ -->
+    <div v-if="activeTab === 'security'">
+      <div class="settings-card">
+        <div class="form-group" style="margin-bottom:20px;">
+          <label class="form-label">Session Timeout</label>
+          <p class="form-hint">Auto sign out a user after this many minutes of inactivity. 0 = disabled. (Max 1440 = 24h.)</p>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input v-model.number="settingsForm.session_timeout_minutes" type="number" min="0" max="1440" class="form-input" style="width:90px;" />
+            <span style="font-size:13px;color:var(--text-muted);">minutes</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Owner / Admin Login IP Allowlist</label>
+          <p class="form-hint">Restrict OWNER and ADMIN logins to specific IPs or CIDR ranges (one per line or comma-separated). Leave empty to allow from anywhere.</p>
+          <textarea v-model="settingsForm.login_ip_allowlist" class="form-input" rows="4" placeholder="e.g. 197.45.0.0/16&#10;102.40.21.7" />
+        </div>
+        <div class="form-footer">
+          <button class="btn-primary" :disabled="storeSaving" @click="saveSecurity">{{ storeSaving ? 'Saving…' : 'Save Security' }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MODALS ══ -->
+
+    <!-- Owner edit modal -->
+    <AppModal :open="ownerModal.open" title="Edit Owner" no-backdrop-close @close="ownerModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div>
-          <label class="form-label">Branch Name</label>
-          <input v-model="branchModal.name" class="form-input" placeholder="e.g. Main Branch" />
-        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div>
-            <label class="form-label">City <span class="req">*</span></label>
-            <select v-model="branchModal.city" class="form-input">
-              <option value="">— Select city —</option>
-              <option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label">Country</label>
-            <input value="Egypt" class="form-input" disabled style="opacity:.55;cursor:not-allowed;" />
-          </div>
+          <div><label class="form-label">First Name</label><input v-model="ownerModal.first_name" class="form-input" /></div>
+          <div><label class="form-label">Last Name</label><input v-model="ownerModal.last_name" class="form-input" /></div>
         </div>
-        <div>
-          <label class="form-label">Street Address</label>
-          <input v-model="branchModal.street_1" class="form-input" placeholder="Street address" />
-        </div>
+        <div><label class="form-label">Phone Number</label><input v-model="ownerModal.phone_number" class="form-input" type="tel" placeholder="e.g. 01012345678" /></div>
+        <div><label class="form-label">WhatsApp</label><input v-model="ownerModal.whatsapp_number" class="form-input" type="tel" placeholder="e.g. 01012345678" /></div>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="ownerModal.open = false">Cancel</button>
+        <button class="btn-primary" :disabled="ownerSaving" @click="saveOwner">{{ ownerSaving ? 'Saving…' : 'Save' }}</button>
+      </template>
+    </AppModal>
+
+    <!-- Branch modal -->
+    <AppModal :open="branchModal.open" :title="branchModal.id ? 'Edit Branch' : 'New Branch'" no-backdrop-close @close="branchModal.open = false">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div><label class="form-label">Branch Name</label><input v-model="branchModal.name" class="form-input" placeholder="e.g. Main Branch" /></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div>
-            <label class="form-label">Phone <span class="req">*</span></label>
-            <input v-model="branchModal.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
-          </div>
-          <div>
-            <label class="form-label">WhatsApp</label>
-            <input v-model="branchModal.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
-          </div>
+          <div><label class="form-label">City <span class="req">*</span></label>
+            <select v-model="branchModal.city" class="form-input"><option value="">— Select city —</option><option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option></select></div>
+          <div><label class="form-label">Country</label><input value="Egypt" class="form-input" disabled style="opacity:.55;" /></div>
         </div>
-        <div>
-          <label class="form-label">Email <span class="req">*</span></label>
-          <input v-model="branchModal.email" class="form-input" placeholder="branch@example.com" type="email" />
+        <div><label class="form-label">Street Address</label><input v-model="branchModal.street_1" class="form-input" placeholder="Street address" /></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label class="form-label">Phone <span class="req">*</span></label><input v-model="branchModal.phone_number" class="form-input" type="tel" /></div>
+          <div><label class="form-label">Email <span class="req">*</span></label><input v-model="branchModal.email" class="form-input" type="email" /></div>
         </div>
         <div class="toggle-row" style="padding:0;">
           <div class="toggle-item" style="padding:0;">
-            <div>
-              <div class="toggle-label">Main Branch</div>
-            </div>
-            <button class="toggle-btn" :class="{ on: branchModal.is_main_branch }" @click="branchModal.is_main_branch = !branchModal.is_main_branch">
-              <span class="toggle-knob" />
-            </button>
+            <div><div class="toggle-label">Main Branch</div></div>
+            <button class="toggle-btn" :class="{ on: branchModal.is_main_branch }" @click="branchModal.is_main_branch = !branchModal.is_main_branch"><span class="toggle-knob" /></button>
           </div>
         </div>
       </div>
       <template #footer>
         <button class="btn-ghost" @click="branchModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!branchModal.name.trim() || !branchModal.phone_number.trim() || !branchModal.email.trim() || branchSaving" @click="saveBranch">
-          {{ branchSaving ? 'Saving…' : (branchModal.id ? 'Save Changes' : 'Add Branch') }}
-        </button>
+        <button class="btn-primary" :disabled="!branchModal.name.trim() || !branchModal.phone_number.trim() || !branchModal.email.trim() || branchSaving" @click="saveBranch">{{ branchSaving ? 'Saving…' : (branchModal.id ? 'Save Changes' : 'Add Branch') }}</button>
       </template>
     </AppModal>
 
-    <!-- MODAL: Payment Method -->
-    <AppModal :open="pmModal.open" :title="pmModal.id ? 'Edit Payment Method' : 'New Payment Method'" @close="pmModal.open = false">
+    <!-- Payment Method modal -->
+    <AppModal :open="pmModal.open" :title="pmModal.id ? 'Edit Payment Method' : 'New Payment Method'" no-backdrop-close @close="pmModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div>
-          <label class="form-label">Name</label>
-          <input v-model="pmModal.name" class="form-input" placeholder="e.g. Visa, InstaPay, Cash" />
-        </div>
+        <div><label class="form-label">Name</label><input v-model="pmModal.name" class="form-input" placeholder="e.g. Visa, InstaPay, Cash" /></div>
         <div class="toggle-row" style="padding:0;">
           <div class="toggle-item" style="padding:0;">
-            <div>
-              <div class="toggle-label">Is Cash</div>
-              <div class="toggle-desc">Used for Cash Drawer tracking</div>
-            </div>
-            <button class="toggle-btn" :class="{ on: pmModal.is_cash }" @click="pmModal.is_cash = !pmModal.is_cash">
-              <span class="toggle-knob" />
-            </button>
+            <div><div class="toggle-label">Is Cash</div><div class="toggle-desc">Used for Cash Drawer tracking</div></div>
+            <button class="toggle-btn" :class="{ on: pmModal.is_cash }" @click="pmModal.is_cash = !pmModal.is_cash"><span class="toggle-knob" /></button>
+          </div>
+          <div class="toggle-item" style="padding:0;">
+            <div><div class="toggle-label">Is Agel (Credit)</div><div class="toggle-desc">Used for credit/agel sales</div></div>
+            <button class="toggle-btn" :class="{ on: pmModal.is_agel }" @click="pmModal.is_agel = !pmModal.is_agel"><span class="toggle-knob" /></button>
           </div>
         </div>
       </div>
       <template #footer>
         <button class="btn-ghost" @click="pmModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!pmModal.name.trim() || pmSaving" @click="savePM">
-          {{ pmSaving ? 'Saving…' : (pmModal.id ? 'Save Changes' : 'Add Method') }}
-        </button>
+        <button class="btn-primary" :disabled="!pmModal.name.trim() || pmSaving" @click="savePM">{{ pmSaving ? 'Saving…' : (pmModal.id ? 'Save Changes' : 'Add Method') }}</button>
       </template>
     </AppModal>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
-import { Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X } from 'lucide-vue-next'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
+import {
+  Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X,
+  Settings2, Shield, Plus, UserCog,
+} from 'lucide-vue-next'
 import api from '@/api/axios'
-import { useQABStore } from '@/stores/qab'
 import { useFormatStore } from '@/stores/format'
 import { useAuthStore } from '@/stores/auth'
 import { formatCurrency } from '@/utils/format'
 import AppModal from '@/components/ui/AppModal.vue'
 
-const qab = useQABStore()
-const fmt = useFormatStore()
+const fmt  = useFormatStore()
 const auth = useAuthStore()
 
 const tabs = [
-  { id: 'store',    label: 'Store',            icon: Store },
-  { id: 'branding', label: 'Branding',         icon: ImageIcon },
-  { id: 'receipt',  label: 'Receipt',          icon: Receipt },
-  { id: 'branches', label: 'Branches',         icon: GitBranch },
-  { id: 'payments', label: 'Payment Methods',  icon: CreditCard },
+  { id: 'store',    label: 'Store Info',       icon: Store },
+  { id: 'branches', label: 'Branches & Owners', icon: GitBranch },
+  { id: 'branding', label: 'Branding',          icon: ImageIcon },
+  { id: 'rules',    label: 'Business Rules',    icon: Settings2 },
+  { id: 'receipt',  label: 'Receipt',           icon: Receipt },
+  { id: 'payments', label: 'Payment Methods',   icon: CreditCard },
+  { id: 'security', label: 'Security',          icon: Shield },
 ]
 const activeTab = ref('store')
 
@@ -451,36 +476,34 @@ const egyptCities = [
   'Shibin El Kom', 'Marsa Matruh', 'Edfu', 'Kom Ombo', 'Qusair',
 ]
 
-// Short list — the most useful IANA zones for our target markets.
 const timezones = [
   'Africa/Cairo', 'Africa/Casablanca', 'Africa/Tripoli',
   'Asia/Riyadh', 'Asia/Dubai', 'Asia/Kuwait', 'Asia/Qatar', 'Asia/Baghdad', 'Asia/Beirut',
   'Asia/Amman', 'Asia/Damascus', 'Asia/Jerusalem',
   'Europe/London', 'Europe/Paris', 'Europe/Istanbul',
-  'America/New_York', 'America/Los_Angeles',
-  'UTC',
+  'America/New_York', 'America/Los_Angeles', 'UTC',
 ]
 
-// --- Branding / Logos ---
-const logoSaving = ref(false)
-const logoFiles  = reactive({ light: null, dark: null })
+const creditPolicyOptions = [
+  { value: 'ALLOW', label: 'Allow' },
+  { value: 'WARN',  label: 'Warn' },
+  { value: 'BLOCK', label: 'Block' },
+]
+
+// ── Branding ─────────────────────────────────────────────────────────────
+const logoSaving  = ref(false)
+const logoFiles   = reactive({ light: null, dark: null })
 const logoPreview = reactive({ light: null, dark: null })
 const logoClear   = reactive({ light: false, dark: false })
 
 function onLogoFile(mode, e) {
   const file = e.target.files?.[0]
   if (!file) return
-  logoFiles[mode]  = file
-  logoClear[mode]  = false
+  logoFiles[mode]   = file
+  logoClear[mode]   = false
   logoPreview[mode] = URL.createObjectURL(file)
 }
-
-function clearLogo(mode) {
-  logoFiles[mode]   = null
-  logoPreview[mode] = null
-  logoClear[mode]   = true
-}
-
+function clearLogo(mode) { logoFiles[mode] = null; logoPreview[mode] = null; logoClear[mode] = true }
 async function saveLogos() {
   logoSaving.value = true
   try {
@@ -489,25 +512,11 @@ async function saveLogos() {
     if (logoFiles.dark)  fd.append('logo_dark',  logoFiles.dark)
     if (logoClear.light) fd.append('clear_logo_light', 'true')
     if (logoClear.dark)  fd.append('clear_logo_dark',  'true')
-    const res = await api.patch('/api/core/store/logo/', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-    // Patch the in-memory auth store so the header logo updates immediately
-    if (auth.user?.store) {
-      auth.user.store.logo_light_url = res.data.logo_light_url
-      auth.user.store.logo_dark_url  = res.data.logo_dark_url
-    }
-    logoFiles.light = null
-    logoFiles.dark  = null
-    logoClear.light = false
-    logoClear.dark  = false
-  } catch (e) {
-    alert(e.response?.data?.detail || 'Error saving logos')
-  } finally {
-    logoSaving.value = false
-  }
+    const res = await api.patch('/api/core/store/logo/', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    if (auth.user?.store) { auth.user.store.logo_light_url = res.data.logo_light_url; auth.user.store.logo_dark_url = res.data.logo_dark_url }
+    logoFiles.light = null; logoFiles.dark = null; logoClear.light = false; logoClear.dark = false
+  } catch (e) { alert(e.response?.data?.detail || 'Error saving logos') } finally { logoSaving.value = false }
 }
-
 function initLogoPreviews() {
   const store = auth.user?.store
   if (!store) return
@@ -515,18 +524,13 @@ function initLogoPreviews() {
   logoPreview.dark  = store.logo_dark_url  || null
 }
 
-// --- Store + Settings ---
+// ── Store Info ────────────────────────────────────────────────────────────
 const storeLoading = ref(false)
 const storeSaving  = ref(false)
 const storeForm    = reactive({
-  name: '',
-  currency_id: '',
-  default_language: 'ar',
-  timezone: 'Africa/Cairo',
-  phone_number: '',
-  whatsapp_number: '',
-  city: '',
-  country: 'Egypt',
+  name: '', currency_id: '', default_language: 'ar', timezone: 'Africa/Cairo',
+  phone_number: '', whatsapp_number: '', city: '', country: 'Egypt',
+  address_line: '', email: '', website: '', fb_page: '', instagram: '',
 })
 const settingsForm = reactive({
   allow_negative_stock: false, enable_agel_selling: true,
@@ -534,18 +538,16 @@ const settingsForm = reactive({
   category_level_names: ['Category', 'Sub-category', 'Sub-category 2', 'Sub-category 3'],
   default_tax: '', tax_id: '', commercial_reg: '', print_tax_id: true,
   receipt_header: '', receipt_footer: '',
+  credit_policy: 'ALLOW', default_credit_limit: null,
+  product_numbering_mode: 'PROGRESSIVE',
+  session_timeout_minutes: 0, login_ip_allowlist: '',
 })
 const taxes      = ref([])
 const currencies = ref([])
 
 const sampleAmount = computed(() => {
   const cur = currencies.value.find(c => c.id === storeForm.currency_id)
-  return formatCurrency(1234.5, {
-    symbol:    cur?.symbol   ?? fmt.symbol,
-    position:  cur?.position ?? fmt.position,
-    decimals:  settingsForm.decimals,
-    separator: settingsForm.thousands_separator,
-  })
+  return formatCurrency(1234.5, { symbol: cur?.symbol ?? fmt.symbol, position: cur?.position ?? fmt.position, decimals: settingsForm.decimals, separator: settingsForm.thousands_separator })
 })
 
 async function loadStore() {
@@ -566,6 +568,11 @@ async function loadStore() {
       whatsapp_number: storeRes.data.whatsapp_number || '',
       city: storeRes.data.city || '',
       country: storeRes.data.country || 'Egypt',
+      address_line: storeRes.data.address_line || '',
+      email: storeRes.data.email || '',
+      website: storeRes.data.website || '',
+      fb_page: storeRes.data.fb_page || '',
+      instagram: storeRes.data.instagram || '',
     })
     Object.assign(settingsForm, settingsRes.data)
     taxes.value      = taxRes.data.results ?? taxRes.data
@@ -578,145 +585,137 @@ async function saveStore() {
   try {
     const [storeRes, settingsRes] = await Promise.all([
       api.patch('/api/core/store/', {
-        name: storeForm.name,
-        currency_id: storeForm.currency_id || null,
-        default_language: storeForm.default_language,
-        timezone: storeForm.timezone,
-        phone_number: storeForm.phone_number,
-        whatsapp_number: storeForm.whatsapp_number,
-        city: storeForm.city,
-        country: 'Egypt',
+        name: storeForm.name, currency_id: storeForm.currency_id || null,
+        default_language: storeForm.default_language, timezone: storeForm.timezone,
+        phone_number: storeForm.phone_number, whatsapp_number: storeForm.whatsapp_number,
+        city: storeForm.city, country: 'Egypt',
+        address_line: storeForm.address_line, email: storeForm.email,
+        website: storeForm.website, fb_page: storeForm.fb_page, instagram: storeForm.instagram,
       }),
       api.patch('/api/core/settings/', {
-        allow_negative_stock: settingsForm.allow_negative_stock,
-        enable_agel_selling:  settingsForm.enable_agel_selling,
-        decimals:             settingsForm.decimals,
-        thousands_separator:  settingsForm.thousands_separator,
-        item_noun:            settingsForm.item_noun,
-        category_level_names: settingsForm.category_level_names,
-        default_tax: settingsForm.default_tax || null,
-        tax_id:         settingsForm.tax_id,
-        commercial_reg: settingsForm.commercial_reg,
+        decimals: settingsForm.decimals, thousands_separator: settingsForm.thousands_separator,
+        item_noun: settingsForm.item_noun, category_level_names: settingsForm.category_level_names,
       }),
     ])
-    // Push the new rules through the app immediately.
     const cur = storeRes.data.currency
     fmt.apply({
-      symbol:   cur?.symbol,
-      position: cur?.position,
-      decimals: settingsRes.data.decimals,
-      thousands_separator: settingsRes.data.thousands_separator,
-      item_noun: settingsRes.data.item_noun,
-      category_level_names: settingsRes.data.category_level_names,
+      symbol: cur?.symbol, position: cur?.position,
+      decimals: settingsRes.data.decimals, thousands_separator: settingsRes.data.thousands_separator,
+      item_noun: settingsRes.data.item_noun, category_level_names: settingsRes.data.category_level_names,
     })
-    // Refresh the cached store payload (login response) so other tabs see it.
-    if (auth.user?.store) {
-      auth.user.store = { ...auth.user.store, currency: cur, timezone: storeRes.data.timezone }
-      localStorage.setItem('vendorya_user', JSON.stringify(auth.user))
-    }
-  } finally { storeSaving.value = false }
+    if (auth.user?.store) { auth.user.store = { ...auth.user.store, currency: cur, timezone: storeRes.data.timezone }; localStorage.setItem('vendorya_user', JSON.stringify(auth.user)) }
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving') } finally { storeSaving.value = false }
 }
 
-async function saveSettings() {
+async function saveRules() {
   storeSaving.value = true
   try {
     await api.patch('/api/core/settings/', {
-      receipt_header: settingsForm.receipt_header,
-      receipt_footer: settingsForm.receipt_footer,
-      print_tax_id:   settingsForm.print_tax_id,
+      allow_negative_stock: settingsForm.allow_negative_stock,
+      enable_agel_selling:  settingsForm.enable_agel_selling,
+      credit_policy:        settingsForm.credit_policy,
+      default_credit_limit: (settingsForm.credit_policy !== 'ALLOW' && settingsForm.default_credit_limit) ? settingsForm.default_credit_limit : null,
+      default_tax:          settingsForm.default_tax || null,
+      tax_id:               settingsForm.tax_id,
+      commercial_reg:       settingsForm.commercial_reg,
+      product_numbering_mode: settingsForm.product_numbering_mode,
+      decimals:             settingsForm.decimals,
+      thousands_separator:  settingsForm.thousands_separator,
+      item_noun:            settingsForm.item_noun,
+      category_level_names: settingsForm.category_level_names,
     })
-  } finally { storeSaving.value = false }
+    fmt.apply({ decimals: settingsForm.decimals, thousands_separator: settingsForm.thousands_separator, item_noun: settingsForm.item_noun, category_level_names: settingsForm.category_level_names })
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving') } finally { storeSaving.value = false }
 }
 
-// --- Branches ---
-const branches     = ref([])
+async function saveReceipt() {
+  storeSaving.value = true
+  try { await api.patch('/api/core/settings/', { receipt_header: settingsForm.receipt_header, receipt_footer: settingsForm.receipt_footer, print_tax_id: settingsForm.print_tax_id }) }
+  catch (e) { alert('Error saving') } finally { storeSaving.value = false }
+}
+
+async function saveSecurity() {
+  storeSaving.value = true
+  try { await api.patch('/api/core/settings/', { session_timeout_minutes: settingsForm.session_timeout_minutes || 0, login_ip_allowlist: settingsForm.login_ip_allowlist || '' }) }
+  catch (e) { alert('Error saving') } finally { storeSaving.value = false }
+}
+
+// ── Owners ────────────────────────────────────────────────────────────────
+const owners       = ref([])
+const ownersLoading = ref(false)
+const ownerSaving  = ref(false)
+const ownerModal   = reactive({ open: false, id: null, first_name: '', last_name: '', phone_number: '', whatsapp_number: '' })
+
+async function fetchOwners() {
+  ownersLoading.value = true
+  try {
+    const res = await api.get('/api/auth/staff/', { params: { page: 1, page_size: 50 } })
+    const all = res.data.results ?? res.data
+    owners.value = all.filter(u => u.role === 'OWNER')
+  } finally { ownersLoading.value = false }
+}
+function openEditOwner(o) { Object.assign(ownerModal, { open: true, id: o.id, first_name: o.first_name || '', last_name: o.last_name || '', phone_number: o.phone_number || '', whatsapp_number: o.whatsapp_number || '' }) }
+async function saveOwner() {
+  ownerSaving.value = true
+  try {
+    await api.patch(`/api/auth/staff/${ownerModal.id}/`, { first_name: ownerModal.first_name, last_name: ownerModal.last_name, phone_number: ownerModal.phone_number, whatsapp_number: ownerModal.whatsapp_number })
+    ownerModal.open = false; fetchOwners()
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error') } finally { ownerSaving.value = false }
+}
+
+// ── Branches ──────────────────────────────────────────────────────────────
+const branches      = ref([])
 const branchLoading = ref(false)
 const branchSaving  = ref(false)
-const branchModal   = reactive({ open: false, id: null, name: '', city: '', country: 'Egypt', street_1: '', is_main_branch: false, phone_number: '', whatsapp_number: '', email: '' })
+const branchModal   = reactive({ open: false, id: null, name: '', city: '', country: 'Egypt', street_1: '', is_main_branch: false, phone_number: '', email: '' })
 
 async function fetchBranches() {
   branchLoading.value = true
-  try {
-    const res = await api.get('/api/core/branches/')
-    branches.value = res.data.results ?? res.data
-  } finally { branchLoading.value = false }
+  try { const res = await api.get('/api/core/branches/'); branches.value = res.data.results ?? res.data } finally { branchLoading.value = false }
 }
-
-function openNewBranch()   { Object.assign(branchModal, { open: true, id: null, name: '', city: '', country: 'Egypt', street_1: '', is_main_branch: false, phone_number: '', whatsapp_number: '', email: '' }) }
-function openEditBranch(b) { Object.assign(branchModal, { open: true, id: b.id, name: b.name, city: b.address_city, country: b.address_country, street_1: b.address_street_1, is_main_branch: b.is_main_branch, phone_number: b.phone_number || '', whatsapp_number: b.whatsapp_number || '', email: b.email || '' }) }
-
+function openNewBranch()   { Object.assign(branchModal, { open: true, id: null, name: '', city: '', country: 'Egypt', street_1: '', is_main_branch: false, phone_number: '', email: '' }) }
+function openEditBranch(b) { Object.assign(branchModal, { open: true, id: b.id, name: b.name, city: b.address_city, country: b.address_country, street_1: b.address_street_1, is_main_branch: b.is_main_branch, phone_number: b.phone_number || '', email: b.email || '' }) }
 async function saveBranch() {
   branchSaving.value = true
   try {
-    const payload = {
-      name: branchModal.name, city: branchModal.city, country: 'Egypt',
-      street_1: branchModal.street_1, is_main_branch: branchModal.is_main_branch,
-      phone_number: branchModal.phone_number, email: branchModal.email,
-      whatsapp_number: branchModal.whatsapp_number,
-    }
-    branchModal.id
-      ? await api.patch(`/api/core/branches/${branchModal.id}/`, payload)
-      : await api.post('/api/core/branches/', payload)
-    branchModal.open = false
-    fetchBranches()
-  } catch (e) {
-    alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving branch')
-  } finally { branchSaving.value = false }
+    const payload = { name: branchModal.name, city: branchModal.city, country: 'Egypt', street_1: branchModal.street_1, is_main_branch: branchModal.is_main_branch, phone_number: branchModal.phone_number, email: branchModal.email }
+    branchModal.id ? await api.patch(`/api/core/branches/${branchModal.id}/`, payload) : await api.post('/api/core/branches/', payload)
+    branchModal.open = false; fetchBranches()
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error') } finally { branchSaving.value = false }
 }
 
-// --- Payment Methods ---
+// ── Payment Methods ───────────────────────────────────────────────────────
 const paymentMethods = ref([])
 const pmLoading      = ref(false)
 const pmSaving       = ref(false)
-const pmModal        = reactive({ open: false, id: null, name: '', is_cash: false })
+const pmModal        = reactive({ open: false, id: null, name: '', is_cash: false, is_agel: false })
 
 async function fetchPMs() {
   pmLoading.value = true
-  try {
-    const res = await api.get('/api/finance/payment-methods/')
-    paymentMethods.value = res.data.results ?? res.data
-  } finally { pmLoading.value = false }
+  try { const res = await api.get('/api/finance/payment-methods/'); paymentMethods.value = res.data.results ?? res.data } finally { pmLoading.value = false }
 }
-
-function openNewPM()   { Object.assign(pmModal, { open: true, id: null, name: '', is_cash: false }) }
-function openEditPM(pm){ Object.assign(pmModal, { open: true, id: pm.id, name: pm.name, is_cash: pm.is_cash }) }
-
+function openNewPM()    { Object.assign(pmModal, { open: true, id: null, name: '', is_cash: false, is_agel: false }) }
+function openEditPM(pm) { Object.assign(pmModal, { open: true, id: pm.id, name: pm.name, is_cash: pm.is_cash, is_agel: pm.is_agel ?? false }) }
 async function savePM() {
   pmSaving.value = true
   try {
-    const payload = { name: pmModal.name, is_cash: pmModal.is_cash }
-    pmModal.id
-      ? await api.patch(`/api/finance/payment-methods/${pmModal.id}/`, payload)
-      : await api.post('/api/finance/payment-methods/', payload)
-    pmModal.open = false
-    fetchPMs()
-  } catch (e) {
-    alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving payment method')
-  } finally { pmSaving.value = false }
+    const payload = { name: pmModal.name, is_cash: pmModal.is_cash, is_agel: pmModal.is_agel }
+    pmModal.id ? await api.patch(`/api/finance/payment-methods/${pmModal.id}/`, payload) : await api.post('/api/finance/payment-methods/', payload)
+    pmModal.open = false; fetchPMs()
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error') } finally { pmSaving.value = false }
 }
-
 async function deletePM(id) {
   if (!confirm('Delete this payment method?')) return
-  try {
-    await api.delete(`/api/finance/payment-methods/${id}/`)
-    fetchPMs()
-  } catch (e) {
-    alert(e.response?.data?.detail || 'Cannot delete — may be in use by payments.')
-  }
+  try { await api.delete(`/api/finance/payment-methods/${id}/`); fetchPMs() } catch (e) { alert(e.response?.data?.detail || 'Cannot delete — may be in use.') }
 }
 
-// QAB per tab
+// Load on tab switch
 watch(activeTab, tab => {
-  if (tab === 'branches') qab.setActions([{ id: 'new-branch', label: 'New Branch', icon: 'plus', handler: openNewBranch }])
-  else if (tab === 'payments') qab.setActions([{ id: 'new-pm', label: 'New Method', icon: 'plus', handler: openNewPM }])
-  else qab.clearActions()
-
-  if (tab === 'branches' && branches.value.length === 0) fetchBranches()
+  if (tab === 'branches' && branches.value.length === 0) { fetchBranches(); fetchOwners() }
   if (tab === 'payments' && paymentMethods.value.length === 0) fetchPMs()
 }, { immediate: true })
 
 onMounted(() => { loadStore(); initLogoPreviews() })
-onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
@@ -724,8 +723,8 @@ onUnmounted(() => qab.clearActions())
 .page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
 .page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
-.tab-bar { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:20px; }
-.tab-btn { display:flex; align-items:center; gap:6px; padding:9px 16px; font-size:13.5px; font-weight:500; color:var(--text-muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms,border-color 120ms; }
+.tab-bar { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:20px; flex-wrap:wrap; }
+.tab-btn { display:flex; align-items:center; gap:6px; padding:9px 14px; font-size:13px; font-weight:500; color:var(--text-muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms,border-color 120ms; }
 .tab-btn:hover  { color:var(--text-primary); }
 .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
 
@@ -736,11 +735,14 @@ onUnmounted(() => qab.clearActions())
 .form-grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; margin-bottom:20px; }
 .form-group { display:flex; flex-direction:column; }
 .form-label { font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
-.form-hint  { font-size:12px; color:var(--text-muted); margin:0 0 6px; }
+.form-hint  { font-size:12px; color:var(--text-muted); margin:4px 0 0; }
 .form-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; width:100%; box-sizing:border-box; transition:border-color 120ms; resize:vertical; }
 .form-input:focus { border-color:var(--accent); }
 
 .section-divider { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); margin:8px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+
+.section-heading-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.section-group-title { font-size:13px; font-weight:700; color:var(--text-primary); }
 
 .toggle-row  { display:flex; flex-direction:column; gap:12px; padding:16px 0; border-top:1px solid var(--border); margin-top:4px; }
 .toggle-item { display:flex; align-items:center; justify-content:space-between; gap:16px; }
@@ -751,6 +753,10 @@ onUnmounted(() => qab.clearActions())
 .toggle-knob { position:absolute; width:16px; height:16px; border-radius:50%; background:#fff; top:3px; left:3px; transition:left 200ms; box-shadow:0 1px 3px rgba(0,0,0,.2); }
 .toggle-btn.on .toggle-knob { left:21px; }
 
+.mode-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-muted); font-size:12.5px; font-weight:600; cursor:pointer; transition:background 100ms,border-color 100ms,color 100ms; }
+.mode-btn:hover { border-color:var(--accent); color:var(--accent); }
+.mode-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
 .form-footer { display:flex; justify-content:flex-end; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
 
 .table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
@@ -760,48 +766,47 @@ onUnmounted(() => qab.clearActions())
 .data-table tbody tr.table-row:last-child { border-bottom:none; }
 .data-table tbody tr.table-row:hover { background:var(--bg-app); }
 .data-table tbody td { padding:10px 14px; color:var(--text-primary); }
-.table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
+.table-empty { text-align:center; padding:36px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .table-skeleton { padding:8px 0; }
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
 
 .col-name   { font-weight:500; }
 .col-street { color:var(--text-muted); font-size:12px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.text-muted-sm { color:var(--text-muted); font-size:12px; }
 
 .badge-main    { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:var(--accent-soft); color:var(--accent-hover); }
 .badge-cash    { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:#dcfce7; color:#166534; }
 .badge-digital { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:#f3f4f6; color:#6b7280; }
+.badge-agel    { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:#ede9fe; color:#7c3aed; }
 
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action:hover        { background:var(--border); color:var(--text-primary); }
 .row-action.danger:hover { background:#fee2e2; color:#dc2626; }
 
-.btn-ghost   { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
-.btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
-.btn-ghost:active { transform:scale(0.95); }
+.btn-ghost   { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms; }
+.btn-ghost:hover { background:var(--border); color:var(--text-primary); }
 .btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
 .btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
+.btn-sm { padding:6px 12px; font-size:12px; }
 .req { color:#dc2626; font-weight:700; }
 
-/* Branding tab */
+/* Branding */
 .logo-upload-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
 @media (max-width:640px) { .logo-upload-grid { grid-template-columns:1fr; } }
-
 .logo-upload-card { display:flex; flex-direction:column; gap:10px; }
 .logo-upload-label { display:flex; flex-direction:column; gap:2px; }
 .logo-upload-label span:first-child { font-size:13px; font-weight:600; color:var(--text-primary); }
 .logo-hint { font-size:11.5px; color:var(--text-muted); }
-
 .logo-preview-wrap { border:1.5px dashed var(--border); border-radius:10px; height:80px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
 .logo-preview-wrap.light-bg { background:#f9fafb; }
 .logo-preview-wrap.dark-bg  { background:#18181a; }
 .logo-preview-img { max-height:60px; max-width:100%; object-fit:contain; padding:6px; }
 .logo-placeholder { display:flex; flex-direction:column; align-items:center; gap:5px; color:var(--text-muted); font-size:12px; }
-
 .logo-upload-actions { display:flex; align-items:center; gap:8px; }
 .btn-upload { display:inline-flex; align-items:center; padding:6px 12px; border-radius:7px; font-size:12.5px; font-weight:600; border:1px solid var(--border); background:var(--bg-app); color:var(--text-primary); cursor:pointer; transition:background 100ms,border-color 100ms; }
 .btn-upload:hover { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
-.btn-logo-clear { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:7px; font-size:12px; font-weight:500; border:1px solid rgba(220,38,38,0.3); background:rgba(220,38,38,0.06); color:#dc2626; cursor:pointer; transition:background 100ms; }
+.btn-logo-clear { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:7px; font-size:12px; font-weight:500; border:1px solid rgba(220,38,38,0.3); background:rgba(220,38,38,0.06); color:#dc2626; cursor:pointer; }
 .btn-logo-clear:hover { background:rgba(220,38,38,0.14); }
 </style>

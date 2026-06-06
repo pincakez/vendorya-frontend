@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="open" class="modal-backdrop" @click.self="$emit('close')">
+      <div v-if="open" class="modal-backdrop" @click.self="!noBackdropClose && $emit('close')">
         <div class="modal-box" :style="{ maxWidth: width }">
           <div class="modal-header">
             <span class="modal-title">{{ title }}</span>
@@ -23,7 +23,7 @@
 
 <script setup>
 import { X } from 'lucide-vue-next'
-defineProps({ open: Boolean, title: String, width: { type: String, default: '480px' } })
+defineProps({ open: Boolean, title: String, width: { type: String, default: '480px' }, noBackdropClose: { type: Boolean, default: false } })
 defineEmits(['close'])
 </script>
 

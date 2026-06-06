@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">My Profile</h1>
-        <p class="page-sub">Update your name, email and password</p>
+        <p class="page-sub">Update your personal info, photo and password</p>
       </div>
     </div>
 
@@ -11,9 +11,14 @@
       <!-- Avatar card -->
       <div class="avatar-card">
         <div class="avatar-circle" :style="{ background: avatarColor }">
-          <img v-if="auth.user?.photo" :src="auth.user.photo" alt="" class="avatar-img" />
+          <img v-if="photoPreview || auth.user?.photo" :src="photoPreview || auth.user.photo" alt="" class="avatar-img" />
           <span v-else class="avatar-initials">{{ auth.initials }}</span>
         </div>
+        <label class="btn-photo-upload">
+          <Camera :size="13" /> Change Photo
+          <input type="file" accept="image/*" style="display:none;" @change="onPhotoFile" />
+        </label>
+        <button v-if="photoPreview" class="btn-photo-remove" @click="removePhoto">Remove</button>
         <div class="avatar-name">{{ auth.displayName }}</div>
         <div class="avatar-role">
           <span class="role-badge" :class="'role-' + (auth.userRole || '').toLowerCase()">{{ auth.userRole }}</span>
@@ -36,6 +41,14 @@
           <div style="grid-column:1/-1;">
             <label class="form-label">Email</label>
             <input v-model="form.email" type="email" class="form-input" placeholder="email@example.com" />
+          </div>
+          <div>
+            <label class="form-label">Phone Number</label>
+            <input v-model="form.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+          </div>
+          <div>
+            <label class="form-label">WhatsApp</label>
+            <input v-model="form.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
           </div>
         </div>
 
@@ -77,21 +90,23 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ShieldCheck, ChevronRight, Palette } from 'lucide-vue-next'
+import { ShieldCheck, ChevronRight, Palette, Camera } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
+import Money from '@/components/ui/Money.vue'
 
 const auth = useAuthStore()
 const fmt  = useFormatStore()
 
-// Curated currency-symbol tints; light green is the default.
 const CURRENCY_PRESETS = ['#16a34a', '#22c55e', '#0891b2', '#2563eb', '#f78f1e', '#6b7280']
 function pickColor(c) { fmt.setSymbolColor(c) }
 
-const form = reactive({ first_name: '', last_name: '', email: '' })
+const form = reactive({ first_name: '', last_name: '', email: '', phone_number: '', whatsapp_number: '' })
 const saving = ref(false)
 const saved  = ref(false)
+const photoFile = ref(null)
+const photoPreview = ref(null)
 
 const COLORS = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2']
 const avatarColor = computed(() => {
@@ -101,19 +116,37 @@ const avatarColor = computed(() => {
   return COLORS[Math.abs(hash) % COLORS.length]
 })
 
+function onPhotoFile(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  photoFile.value = file
+  photoPreview.value = URL.createObjectURL(file)
+}
+function removePhoto() { photoFile.value = null; photoPreview.value = null }
+
 function loadProfile() {
-  form.first_name = auth.user?.first_name || ''
-  form.last_name  = auth.user?.last_name  || ''
-  form.email      = auth.user?.email      || ''
+  form.first_name     = auth.user?.first_name     || ''
+  form.last_name      = auth.user?.last_name      || ''
+  form.email          = auth.user?.email          || ''
+  form.phone_number   = auth.user?.phone_number   || ''
+  form.whatsapp_number = auth.user?.whatsapp_number || ''
 }
 
 async function save() {
   saving.value = true
   saved.value  = false
   try {
-    const payload = { first_name: form.first_name, last_name: form.last_name, email: form.email }
-    const res = await api.patch('/api/auth/me/', payload)
+    const fd = new FormData()
+    fd.append('first_name',      form.first_name)
+    fd.append('last_name',       form.last_name)
+    fd.append('email',           form.email)
+    fd.append('phone_number',    form.phone_number)
+    fd.append('whatsapp_number', form.whatsapp_number)
+    if (photoFile.value) fd.append('photo', photoFile.value)
+    const res = await api.patch('/api/auth/me/', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
     auth.user = { ...auth.user, ...res.data }
+    photoFile.value = null
+    photoPreview.value = null
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
@@ -133,12 +166,17 @@ onMounted(() => loadProfile())
 @media (max-width: 700px) { .profile-layout { grid-template-columns:1fr; } }
 
 .avatar-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px 16px; display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; }
-.avatar-circle  { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
+.avatar-circle  { width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
 .avatar-img     { width:100%; height:100%; object-fit:cover; }
-.avatar-initials{ font-size:24px; font-weight:700; color:#fff; }
+.avatar-initials{ font-size:26px; font-weight:700; color:#fff; }
 .avatar-name    { font-size:15px; font-weight:600; color:var(--text-primary); }
 .avatar-role    { margin-top:2px; }
 .avatar-store   { font-size:12px; color:var(--text-muted); }
+
+.btn-photo-upload { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; border-radius:7px; font-size:12px; font-weight:600; border:1px solid var(--border); background:var(--bg-app); color:var(--text-primary); cursor:pointer; transition:background 100ms,border-color 100ms; }
+.btn-photo-upload:hover { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
+.btn-photo-remove { background:none; border:none; font-size:11.5px; color:#dc2626; cursor:pointer; padding:0; }
+.btn-photo-remove:hover { text-decoration:underline; }
 
 .role-badge  { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
 .role-owner   { background:#f3e8ff; color:#7c3aed; }
@@ -153,7 +191,6 @@ onMounted(() => loadProfile())
 .form-input     { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; }
 .form-input:focus { border-color:var(--accent); }
 
-.error-text { font-size:12px; color:#dc2626; margin-top:6px; }
 .saved-msg  { font-size:13px; color:#16a34a; font-weight:500; }
 .security-link { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:11px 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; font-weight:600; text-decoration:none; transition:border-color 120ms, background 120ms; }
 .security-link span { display:inline-flex; align-items:center; gap:8px; }

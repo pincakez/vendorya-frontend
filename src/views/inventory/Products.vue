@@ -78,24 +78,20 @@
         <p class="edit-hint">Drag to reorder · uncheck to hide · SKU and Product are locked.</p>
         <div class="chooser">
           <div
-            v-for="(key, idx) in working.order" :key="key" class="chooser-row"
+            v-for="key in working.order" :key="key" class="chooser-row"
             :class="{ disabled: !permittedKeys.includes(key), 'drag-over': dragOver === key && dragKey !== key }"
             @pointerenter="dragOver = key"
           >
-            <GripVertical :size="14" class="chooser-grip" @pointerdown.prevent="startDrag(key, $event)" />
+            <GripVertical :size="13" class="chooser-grip" @pointerdown.prevent="startDrag(key, $event)" />
             <input
               type="checkbox" class="chooser-cb"
               :checked="!working.hidden.includes(key)"
               :disabled="LOCKED.includes(key) || !permittedKeys.includes(key)"
               @change="toggleHidden(key)"
             />
-            <span class="chooser-label">{{ headerLabel(key, colByKey[key].label) }}</span>
-            <Lock v-if="LOCKED.includes(key)" :size="12" class="chooser-tag" />
-            <span v-else-if="!permittedKeys.includes(key)" class="chooser-na">hidden by role</span>
-            <span class="chooser-move">
-              <button class="chooser-mv" :disabled="idx === 0" title="Move up" @click="moveCol(key, -1)"><ChevronUp :size="14" /></button>
-              <button class="chooser-mv" :disabled="idx === working.order.length - 1" title="Move down" @click="moveCol(key, 1)"><ChevronDown :size="14" /></button>
-            </span>
+            <span class="chooser-label">{{ headerLabel(key, colByKey[key]?.label ?? key) }}</span>
+            <Lock v-if="LOCKED.includes(key)" :size="11" class="chooser-tag" />
+            <span v-else-if="!permittedKeys.includes(key)" class="chooser-na">role</span>
           </div>
         </div>
       </div>
@@ -439,7 +435,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import {
   Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck, Plus,
-  ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ArrowUp, ArrowDown, ArrowUpDown,
+  ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown,
   Columns3, GripVertical, Lock, UserCog, RotateCcw,
   Eye, EyeOff, CheckSquare,
 } from 'lucide-vue-next'
@@ -469,7 +465,7 @@ const tabs = [
 const activeTab = ref('products')
 
 /* ── columns ── */
-const columns = [
+const BASE_COLUMNS = [
   { key: 'sku',       label: 'SKU',       sort: 'o_sku',          align: 'left',  field: 'sku_display',   cls: 'c-sku' },
   { key: 'product',   label: 'PRODUCT',   sort: 'name',           align: 'left',  field: 'name',          cls: 'c-name' },
   { key: 'supplier',  label: 'SUPPLIER',  sort: 'supplier__name', align: 'left',  field: 'supplier_name', cls: 'c-sup' },
@@ -482,24 +478,26 @@ const columns = [
   { key: 'profit',    label: 'PROFIT',    sort: 'o_profit',       align: 'left',  field: 'profit_display',cls: 'c-mono c-profit', money: true, plus: true },
   { key: 'inStock',   label: 'IN STOCK',  sort: 'o_stock',        align: 'right', field: 'total_stock',   cls: '', badge: true },
 ]
+const attrCols = ref([])  // dynamically built from loaded attribute definitions
+const columns = computed(() => [...BASE_COLUMNS, ...attrCols.value])
+
 const DEFAULT_WIDTHS = { sku: 130, product: 300, supplier: 170, cat1: 150, cat2: 150, cat3: 150, cat4: 150, wholesale: 120, retail: 120, profit: 120, inStock: 110 }
 const colWidths = reactive({ ...DEFAULT_WIDTHS })
 
 const TABLE_ID = 'inventory_products'
 const ADHOC_KEY = 'dt_inventory_adhoc'
 const LOCKED = ['sku', 'product']           // can't be hidden
-const colByKey = Object.fromEntries(columns.map(c => [c.key, c]))
+const colByKey = computed(() => Object.fromEntries(columns.value.map(c => [c.key, c])))
 
-const colOrder = ref(columns.map(c => c.key))
+const colOrder = ref(BASE_COLUMNS.map(c => c.key))
 // Deeper category tiers are available but hidden by default (toggle in Customize
 // Columns). Only applies to fresh users — saved layouts/presets take over.
 const colHidden = ref(['cat3', 'cat4'])
 
-// Layer 1: a column is *permitted* only if its field is present in the data.
-// The server omits role-hidden fields, so a preset can never reveal them.
+// Layer 1: attr columns always permitted; others permitted if field is present in data.
 const permittedKeys = computed(() => {
   const sample = products.value[0]
-  return columns.filter(c => !c.field || !sample || sample[c.field] !== undefined).map(c => c.key)
+  return columns.value.filter(c => c.isAttr || !c.field || !sample || sample[c.field] !== undefined).map(c => c.key)
 })
 
 // Edit mode previews live off the working copy.
@@ -511,12 +509,17 @@ const activeHidden = computed(() => (editing.value ? working.hidden : colHidden.
 const displayColumns = computed(() =>
   activeOrder.value
     .filter(k => permittedKeys.value.includes(k) && !activeHidden.value.includes(k))
-    .map(k => colByKey[k])
+    .map(k => colByKey.value[k])
+    .filter(Boolean)
 )
 const tableMin = computed(() => displayColumns.value.reduce((a, c) => a + colWidths[c.key], 0))
 const canEdit = computed(() => ['OWNER', 'ADMIN'].includes(auth.userRole) || auth.isSuperadmin)
 
 function cellText(col, p) {
+  if (col.isAttr) {
+    const vals = p.attributes_summary?.[col.attrKey]
+    return vals?.length ? vals.join(', ') : '—'
+  }
   const v = p[col.field]
   if (v === undefined || v === null || v === '') return '—'
   return col.money ? (col.plus ? '+' : '') + auth.currencySymbol + v : v
@@ -528,7 +531,7 @@ const hasAdhoc = ref(!!localStorage.getItem(ADHOC_KEY))
 
 function applyLayout(cfg) {
   if (!cfg) return
-  const known = columns.map(c => c.key)
+  const known = columns.value.map(c => c.key)
   if (Array.isArray(cfg.order) && cfg.order.length) {
     const ordered = cfg.order.filter(k => known.includes(k))
     for (const k of known) if (!ordered.includes(k)) ordered.push(k)
@@ -558,12 +561,12 @@ async function loadLayout() {
 }
 function resetLayout() {
   localStorage.removeItem(ADHOC_KEY); hasAdhoc.value = false
-  colOrder.value = columns.map(c => c.key); colHidden.value = []
+  colOrder.value = columns.value.map(c => c.key); colHidden.value = ['cat3', 'cat4', ...attrCols.value.map(c => c.key)]
   Object.assign(colWidths, DEFAULT_WIDTHS); sortKey.value = null; sortDir.value = 'asc'
   applyLayout(baseConfig.value)
   fetchProducts(1)
 }
-function resetWorking() { working.order = columns.map(c => c.key); working.hidden = [] }
+function resetWorking() { working.order = columns.value.map(c => c.key); working.hidden = ['cat3', 'cat4', ...attrCols.value.map(c => c.key)] }
 
 /* ── edit mode ── */
 function enterEdit() { working.order = [...colOrder.value]; working.hidden = [...colHidden.value]; editing.value = true; fetchPresets() }
@@ -596,13 +599,6 @@ function reorder(fromKey, toKey) {
   arr.splice(arr.indexOf(toKey), 0, fromKey)
   working.order = arr
 }
-function moveCol(key, dir) {
-  const arr = [...working.order]
-  const i = arr.indexOf(key), j = i + dir
-  if (j < 0 || j >= arr.length) return
-  ;[arr[i], arr[j]] = [arr[j], arr[i]]
-  working.order = arr
-}
 
 /* ── presets + assignment ── */
 const presets = ref([])
@@ -611,7 +607,7 @@ const assignModal = reactive({ open: false, rows: [] })
 
 async function fetchPresets() { try { const { data } = await api.get('/api/smart/presets/', { params: { table_id: TABLE_ID } }); presets.value = data.results ?? data } catch { /* noop */ } }
 function loadPreset(p) {
-  const known = columns.map(c => c.key)
+  const known = columns.value.map(c => c.key)
   const ordered = (p.config.order || known).filter(k => known.includes(k))
   for (const k of known) if (!ordered.includes(k)) ordered.push(k)
   working.order = ordered
@@ -738,7 +734,7 @@ async function fetchProducts(p = 1) {
     if (search.value) params.search = search.value
     if (activeCatId.value) params.category = activeCatId.value
     if (sortKey.value) {
-      const col = columns.find(c => c.key === sortKey.value)
+      const col = columns.value.find(c => c.key === sortKey.value)
       params.ordering = (sortDir.value === 'desc' ? '-' : '') + col.sort
     }
     for (const [k, v] of Object.entries(attrFilters)) if (v) params[k] = v
@@ -783,7 +779,27 @@ const suppliers = ref([])
 const catModal = reactive({ open: false, id: null, name: '', parent: '' })
 const supModal = reactive({ open: false, id: null, name: '', code_prefix: '', contact_info: '' })
 
-async function fetchAttributes() { try { const r = await api.get('/api/inventory/attributes/'); attributes.value = r.data.results ?? r.data } catch { /* noop */ } }
+async function fetchAttributes() {
+  try {
+    const r = await api.get('/api/inventory/attributes/')
+    attributes.value = r.data.results ?? r.data
+    // Build dynamic attribute columns — hidden by default, user opts in via Customize
+    const newAttrCols = attributes.value.map(a => ({
+      key: `attr_${a.key}`, label: a.name.toUpperCase(), align: 'left',
+      field: `attr_${a.key}`, cls: 'c-sup', isAttr: true, attrKey: a.key,
+    }))
+    attrCols.value = newAttrCols
+    // Add to colOrder (hidden by default) if not already present
+    const existingKeys = new Set(colOrder.value)
+    const toAdd = newAttrCols.filter(c => !existingKeys.has(c.key)).map(c => c.key)
+    if (toAdd.length) {
+      colOrder.value = [...colOrder.value, ...toAdd]
+      colHidden.value = [...colHidden.value, ...toAdd]
+    }
+    // Ensure colWidths has defaults for attr cols
+    for (const c of newAttrCols) if (!colWidths[c.key]) colWidths[c.key] = 130
+  } catch { /* noop */ }
+}
 async function fetchCategories() {
   try {
     const r = await api.get('/api/inventory/categories/')
@@ -1033,8 +1049,8 @@ onUnmounted(() => { ro?.disconnect() })
 .edit-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .edit-select { background: var(--bg-app); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 13px; color: var(--text-primary); cursor: pointer; outline: none; }
 .edit-hint { font-size: 12px; color: var(--text-muted); margin: 8px 0 10px; }
-.chooser { display: flex; flex-direction: column; gap: 4px; max-width: 380px; }
-.chooser-row { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-app); cursor: grab; transition: border-color 120ms; }
+.chooser { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.chooser-row { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-app); cursor: grab; transition: border-color 120ms; }
 /* column header drag */
 .dt-th.col-dragging  { opacity: 0.35; cursor: grabbing !important; }
 .dt-th.col-drag-over { border-left: 3px solid var(--accent); background: var(--accent-soft) !important; }
@@ -1044,13 +1060,9 @@ onUnmounted(() => { ro?.disconnect() })
 .chooser-row.disabled { opacity: 0.5; }
 .chooser-grip { color: var(--text-muted); flex-shrink: 0; }
 .chooser-cb { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
-.chooser-label { flex: 1; font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
-.chooser-tag { color: var(--text-muted); }
-.chooser-na { font-size: 11px; color: var(--text-muted); }
-.chooser-move { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; margin-left: auto; }
-.chooser-mv { display: flex; border: none; background: none; cursor: pointer; color: var(--text-muted); padding: 1px; border-radius: 4px; transition: background 120ms, color 120ms; }
-.chooser-mv:hover:not(:disabled) { background: var(--border); color: var(--text-primary); }
-.chooser-mv:disabled { opacity: 0.25; cursor: default; }
+.chooser-label { flex: 1; font-size: 12px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chooser-tag { color: var(--text-muted); flex-shrink: 0; }
+.chooser-na { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
 
 .assign-list { display: flex; flex-direction: column; gap: 8px; }
 .assign-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
