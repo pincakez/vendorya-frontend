@@ -419,6 +419,71 @@
       </template>
     </AppModal>
 
+    <!-- ══ TAB: Label Presets ══ -->
+    <div v-if="activeTab === 'labels'">
+      <div class="section-heading-row">
+        <span class="section-group-title">Label Presets</span>
+        <button class="btn-primary btn-sm" @click="openNewPreset"><Plus :size="14" /> New Preset</button>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">Define label sizes for barcode/price stickers. You can print labels from any purchase invoice.</p>
+      <div class="table-wrap">
+        <div v-if="presetsLoading" class="table-skeleton"><div v-for="i in 3" :key="i" class="skeleton-row" /></div>
+        <table v-else class="data-table">
+          <thead><tr><th>Name</th><th>Size (mm)</th><th>Shows</th><th>Default</th><th style="width:70px;"></th></tr></thead>
+          <tbody>
+            <tr v-if="presets.length === 0">
+              <td colspan="5" class="table-empty"><Tag :size="28" style="opacity:.3;margin-bottom:8px;" /><div>No label presets yet</div></td>
+            </tr>
+            <tr v-for="p in presets" :key="p.id" class="table-row">
+              <td class="col-name">{{ p.name }}</td>
+              <td style="font-variant-numeric:tabular-nums;">{{ p.width_mm }} × {{ p.height_mm }}</td>
+              <td style="font-size:12px;color:var(--text-muted);">
+                <span v-if="p.show_store_name">Store</span>
+                <span v-if="p.show_product_name"> · Name</span>
+                <span v-if="p.show_sku"> · SKU</span>
+                <span v-if="p.show_barcode"> · Barcode</span>
+                <span v-if="p.show_price"> · Price</span>
+              </td>
+              <td><span v-if="p.is_default" class="badge-cash">Default</span><span v-else class="text-muted-sm">—</span></td>
+              <td>
+                <button class="row-action" title="Edit" @click="openEditPreset(p)"><Pencil :size="13" /></button>
+                <button class="row-action danger" title="Delete" @click="deletePreset(p.id)"><Trash2 :size="13" /></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Label Preset modal -->
+    <AppModal :open="presetModal.open" :title="presetModal.id ? 'Edit Label Preset' : 'New Label Preset'" no-backdrop-close @close="presetModal.open = false">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div><label class="form-label">Preset Name</label><input v-model="presetModal.name" class="form-input" placeholder="e.g. Small Tag 40×20" /></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label class="form-label">Width (mm)</label><input v-model.number="presetModal.width_mm" type="number" min="10" max="300" class="form-input" /></div>
+          <div><label class="form-label">Height (mm)</label><input v-model.number="presetModal.height_mm" type="number" min="5" max="300" class="form-input" /></div>
+        </div>
+        <div class="section-divider" style="margin:4px 0;">Show on label</div>
+        <div class="toggle-row" style="padding:0;flex-direction:column;gap:8px;">
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_store_name" /> Store name</label>
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_product_name" /> Product name</label>
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_sku" /> SKU</label>
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_barcode" /> Barcode</label>
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_price" /> Price</label>
+        </div>
+        <div class="toggle-row" style="padding:0;">
+          <div class="toggle-item" style="padding:0;">
+            <div><div class="toggle-label">Set as default</div><div class="toggle-desc">Pre-selected when printing labels</div></div>
+            <button class="toggle-btn" :class="{ on: presetModal.is_default }" @click="presetModal.is_default = !presetModal.is_default"><span class="toggle-knob" /></button>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="presetModal.open = false">Cancel</button>
+        <button class="btn-primary" :disabled="!presetModal.name.trim() || presetSaving" @click="savePreset">{{ presetSaving ? 'Saving…' : (presetModal.id ? 'Save Changes' : 'Add Preset') }}</button>
+      </template>
+    </AppModal>
+
     <!-- Payment Method modal -->
     <AppModal :open="pmModal.open" :title="pmModal.id ? 'Edit Payment Method' : 'New Payment Method'" no-backdrop-close @close="pmModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
@@ -446,7 +511,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import {
   Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X,
-  Settings2, Shield, Plus, UserCog,
+  Settings2, Shield, Plus, UserCog, Tag,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
@@ -463,6 +528,7 @@ const tabs = [
   { id: 'branding', label: 'Branding',          icon: ImageIcon },
   { id: 'rules',    label: 'Business Rules',    icon: Settings2 },
   { id: 'receipt',  label: 'Receipt',           icon: Receipt },
+  { id: 'labels',   label: 'Label Presets',     icon: Tag },
   { id: 'payments', label: 'Payment Methods',   icon: CreditCard },
   { id: 'security', label: 'Security',          icon: Shield },
 ]
@@ -709,10 +775,36 @@ async function deletePM(id) {
   try { await api.delete(`/api/finance/payment-methods/${id}/`); fetchPMs() } catch (e) { alert(e.response?.data?.detail || 'Cannot delete — may be in use.') }
 }
 
+// ── Label Presets ─────────────────────────────────────────────────────────
+const presets       = ref([])
+const presetsLoading = ref(false)
+const presetSaving  = ref(false)
+const presetModal   = reactive({ open: false, id: null, name: '', width_mm: 40, height_mm: 20, show_store_name: true, show_product_name: true, show_sku: true, show_barcode: true, show_price: true, is_default: false })
+
+async function fetchPresets() {
+  presetsLoading.value = true
+  try { const res = await api.get('/api/core/label-presets/'); presets.value = res.data.results ?? res.data } finally { presetsLoading.value = false }
+}
+function openNewPreset() { Object.assign(presetModal, { open: true, id: null, name: '', width_mm: 40, height_mm: 20, show_store_name: true, show_product_name: true, show_sku: true, show_barcode: true, show_price: true, is_default: false }) }
+function openEditPreset(p) { Object.assign(presetModal, { open: true, id: p.id, name: p.name, width_mm: p.width_mm, height_mm: p.height_mm, show_store_name: p.show_store_name, show_product_name: p.show_product_name, show_sku: p.show_sku, show_barcode: p.show_barcode, show_price: p.show_price, is_default: p.is_default }) }
+async function savePreset() {
+  presetSaving.value = true
+  try {
+    const payload = { name: presetModal.name, width_mm: presetModal.width_mm, height_mm: presetModal.height_mm, show_store_name: presetModal.show_store_name, show_product_name: presetModal.show_product_name, show_sku: presetModal.show_sku, show_barcode: presetModal.show_barcode, show_price: presetModal.show_price, is_default: presetModal.is_default }
+    presetModal.id ? await api.patch(`/api/core/label-presets/${presetModal.id}/`, payload) : await api.post('/api/core/label-presets/', payload)
+    presetModal.open = false; fetchPresets()
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error') } finally { presetSaving.value = false }
+}
+async function deletePreset(id) {
+  if (!confirm('Delete this label preset?')) return
+  try { await api.delete(`/api/core/label-presets/${id}/`); fetchPresets() } catch { alert('Error deleting') }
+}
+
 // Load on tab switch
 watch(activeTab, tab => {
   if (tab === 'branches' && branches.value.length === 0) { fetchBranches(); fetchOwners() }
   if (tab === 'payments' && paymentMethods.value.length === 0) fetchPMs()
+  if (tab === 'labels'   && presets.value.length === 0) fetchPresets()
 }, { immediate: true })
 
 onMounted(() => { loadStore(); initLogoPreviews() })
@@ -740,6 +832,7 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .form-input:focus { border-color:var(--accent); }
 
 .section-divider { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); margin:8px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+.check-row { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-secondary); cursor:pointer; }
 
 .section-heading-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
 .section-group-title { font-size:13px; font-weight:700; color:var(--text-primary); }

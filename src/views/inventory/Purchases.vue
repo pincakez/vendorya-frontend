@@ -108,9 +108,35 @@
 
       <template #footer>
         <button class="btn-ghost" @click="closeModal">{{ modal.id ? 'Close' : 'Cancel' }}</button>
+        <button v-if="modal.id" class="btn-ghost" @click="openLabelPicker"><Tag :size="14" /> Print Labels</button>
         <button v-if="!modal.id" class="btn-primary" :disabled="saving || !modal.supplier || modal.items.length === 0" @click="savePurchase">
           {{ saving ? 'Saving…' : 'Save Purchase' }}
         </button>
+      </template>
+    </AppModal>
+
+    <!-- Label preset picker -->
+    <AppModal :open="labelPicker.open" title="Print Labels" width="400px" @close="labelPicker.open = false">
+      <div v-if="labelPicker.loading" style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>
+      <div v-else-if="labelPicker.presets.length === 0" style="text-align:center;padding:24px;color:var(--text-muted);">
+        No label presets found. Go to Settings → Label Presets to create one.
+      </div>
+      <div v-else>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">Choose a label size, then print {{ labelPicker.totalQty }} label{{ labelPicker.totalQty !== 1 ? 's' : '' }} (one per unit received).</p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <label v-for="p in labelPicker.presets" :key="p.id" class="preset-option" :class="{ selected: labelPicker.selectedId === p.id }">
+            <input type="radio" :value="p.id" v-model="labelPicker.selectedId" style="display:none;" />
+            <div class="preset-info">
+              <div class="preset-name">{{ p.name }}</div>
+              <div class="preset-size">{{ p.width_mm }} × {{ p.height_mm }} mm</div>
+            </div>
+            <div v-if="p.is_default" class="badge-cash" style="font-size:10px;">Default</div>
+          </label>
+        </div>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="labelPicker.open = false">Cancel</button>
+        <button class="btn-primary" :disabled="!labelPicker.selectedId || labelPicker.loading" @click="printLabels"><Tag :size="14" /> Print</button>
       </template>
     </AppModal>
   </div>
@@ -118,16 +144,20 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { ShoppingCart, PackageCheck, Trash2, Plus } from 'lucide-vue-next'
+import { ShoppingCart, PackageCheck, Trash2, Plus, Tag } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
+import { useLabelsStore } from '@/stores/labels'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
-const auth = useAuthStore()
-const qab  = useQABStore()
+const auth        = useAuthStore()
+const qab         = useQABStore()
+const labelsStore = useLabelsStore()
+const router      = useRouter()
 
 const purchases    = ref([])
 const loading      = ref(false)
@@ -238,6 +268,34 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+// ── Label printing ────────────────────────────────────────────────────────
+const labelPicker = reactive({ open: false, loading: false, presets: [], selectedId: null, totalQty: 0, invoiceId: null })
+
+async function openLabelPicker() {
+  labelPicker.invoiceId = modal.id
+  labelPicker.totalQty  = modal.items.reduce((s, i) => s + (Number(i.quantity) || 0), 0)
+  labelPicker.loading   = true
+  labelPicker.open      = true
+  labelPicker.selectedId = null
+  try {
+    const res = await api.get('/api/core/label-presets/')
+    labelPicker.presets = res.data.results ?? res.data
+    const def = labelPicker.presets.find(p => p.is_default)
+    if (def) labelPicker.selectedId = def.id
+  } finally { labelPicker.loading = false }
+}
+
+async function printLabels() {
+  const preset = labelPicker.presets.find(p => p.id === labelPicker.selectedId)
+  if (!preset) return
+  try {
+    const res = await api.get(`/api/finance/purchases/${labelPicker.invoiceId}/label-data/`)
+    labelsStore.setJob({ preset, store_name: res.data.store_name, items: res.data.items })
+    labelPicker.open = false
+    router.push('/print/labels')
+  } catch { alert('Could not load label data.') }
+}
+
 onMounted(() => {
   qab.setActions([{ id: 'new', label: 'New Purchase', icon: 'plus', handler: openNew }])
   fetchPurchases()
@@ -300,4 +358,11 @@ onUnmounted(() => qab.clearActions())
 .btn-primary:hover    { background:var(--accent-hover); }
 .btn-primary:active   { transform:scale(0.95); }
 .btn-primary:disabled { opacity:.5; cursor:default; }
+
+.preset-option { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:border-color 100ms,background 100ms; }
+.preset-option:hover   { background:var(--bg-app); }
+.preset-option.selected { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, transparent); }
+.preset-info { display:flex; flex-direction:column; gap:2px; }
+.preset-name { font-size:13px; font-weight:600; color:var(--text-primary); }
+.preset-size { font-size:11.5px; color:var(--text-muted); font-variant-numeric:tabular-nums; }
 </style>

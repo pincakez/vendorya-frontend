@@ -79,8 +79,9 @@ const router = createRouter({
         { path: 'admin/isolation-check', component: () => import('@/views/admin/AdminIsolation.vue'),     meta: { admin: true } },
       ]
     },
-    // Bare printable invoice — no app shell, prints clean.
+    // Bare printable pages — no app shell.
     { path: '/finance/invoices/:id/print', component: () => import('@/views/sales/InvoicePrint.vue'), meta: { requiresAuth: true } },
+    { path: '/print/labels',               component: () => import('@/views/print/LabelPrint.vue'),   meta: { requiresAuth: true } },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' }
   ]
 })
