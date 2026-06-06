@@ -9,6 +9,12 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
+  build: {
+    // Bundle ALL component CSS into one file loaded upfront, instead of a
+    // per-route CSS chunk that arrives a beat after the page renders. Kills the
+    // flash-of-unstyled-content when first navigating to a page.
+    cssCodeSplit: false,
+  },
   plugins: [
     vue(),
     VitePWA({
