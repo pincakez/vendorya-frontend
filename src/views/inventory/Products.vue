@@ -89,7 +89,7 @@
               :disabled="LOCKED.includes(key) || !permittedKeys.includes(key)"
               @change="toggleHidden(key)"
             />
-            <span class="chooser-label">{{ key === 'product' ? fmtStore.itemLabelUpper : colByKey[key].label }}</span>
+            <span class="chooser-label">{{ headerLabel(key, colByKey[key].label) }}</span>
             <Lock v-if="LOCKED.includes(key)" :size="12" class="chooser-tag" />
             <span v-else-if="!permittedKeys.includes(key)" class="chooser-na">hidden by role</span>
             <span class="chooser-move">
@@ -149,7 +149,7 @@
                 >
                   <span class="dt-th-inner" :class="{ jend: col.align === 'right' }">
                     <component v-if="col.align === 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
-                    {{ col.key === 'product' ? fmtStore.itemLabelUpper : col.label }}
+                    {{ headerLabel(col.key, col.label) }}
                     <component v-if="col.align !== 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
                   </span>
                   <span class="dt-resize" @mousedown.stop.prevent="startResize(col.key, $event)" @click.stop></span>
@@ -451,6 +451,14 @@ import AppModal from '@/components/ui/AppModal.vue'
 
 const auth = useAuthStore()
 const fmtStore = useFormatStore()
+
+// Column header label: product noun + per-store category tier names are dynamic.
+const _CAT_IDX = { cat1: 0, cat2: 1, cat3: 2, cat4: 3 }
+function headerLabel(key, fallback) {
+  if (key === 'product') return fmtStore.itemLabelUpper
+  if (key in _CAT_IDX) return (fmtStore.categoryLevels[_CAT_IDX[key]] || fallback).toUpperCase()
+  return fallback
+}
 
 const tabs = [
   { id: 'products', label: 'Products', icon: Package },

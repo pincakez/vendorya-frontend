@@ -76,6 +76,15 @@
             </select>
             <p class="form-hint">Label used for a catalog item across the app (e.g. laptop shops prefer “Model”).</p>
           </div>
+          <div class="form-group" style="grid-column:1 / -1;">
+            <label class="form-label">Category level names</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input v-for="(lvl, i) in settingsForm.category_level_names" :key="i"
+                     v-model="settingsForm.category_level_names[i]" class="form-input"
+                     style="width:150px;" :placeholder="`Tier ${i + 1}`" />
+            </div>
+            <p class="form-hint">Names for the 4 category tiers — shown as column headers and on the Categories page (e.g. Type · Category · Spec).</p>
+          </div>
           <div class="form-group">
             <label class="form-label">Default Language</label>
             <select v-model="storeForm.default_language" class="form-input" style="width:160px;">
@@ -522,6 +531,7 @@ const storeForm    = reactive({
 const settingsForm = reactive({
   allow_negative_stock: false, enable_agel_selling: true,
   decimals: 2, thousands_separator: false, item_noun: 'NAME',
+  category_level_names: ['Category', 'Sub-category', 'Sub-category 2', 'Sub-category 3'],
   default_tax: '', tax_id: '', commercial_reg: '', print_tax_id: true,
   receipt_header: '', receipt_footer: '',
 })
@@ -583,6 +593,7 @@ async function saveStore() {
         decimals:             settingsForm.decimals,
         thousands_separator:  settingsForm.thousands_separator,
         item_noun:            settingsForm.item_noun,
+        category_level_names: settingsForm.category_level_names,
         default_tax: settingsForm.default_tax || null,
         tax_id:         settingsForm.tax_id,
         commercial_reg: settingsForm.commercial_reg,
@@ -596,6 +607,7 @@ async function saveStore() {
       decimals: settingsRes.data.decimals,
       thousands_separator: settingsRes.data.thousands_separator,
       item_noun: settingsRes.data.item_noun,
+      category_level_names: settingsRes.data.category_level_names,
     })
     // Refresh the cached store payload (login response) so other tabs see it.
     if (auth.user?.store) {

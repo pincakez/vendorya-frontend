@@ -38,7 +38,7 @@
 
           <Tag :size="14" class="tree-icon" />
           <span class="tree-name">{{ row.name }}</span>
-          <span class="tree-tier">tier {{ row.depth + 1 }}</span>
+          <span class="tree-tier">{{ fmtStore.categoryLevels[row.depth] || ('tier ' + (row.depth + 1)) }}</span>
 
           <div class="tree-actions">
             <button
@@ -150,7 +150,9 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { Plus, Pencil, Trash2, Tag, FolderTree, ChevronRight, ChevronDown, CornerDownRight, CornerUpLeft } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
+import { useFormatStore } from '@/stores/format'
 
+const fmtStore = useFormatStore()
 const MAX_DEPTH = 4
 
 const categories = ref([])
