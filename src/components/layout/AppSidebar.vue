@@ -15,7 +15,7 @@
 
       <!-- POS (store only) -->
       <div v-if="!admin" class="nsb-pos">
-        <PhysicalButton variant="primary" :collapsed="collapsed" @click="go('/pos')">
+        <PhysicalButton variant="primary" :collapsed="collapsed" tooltip="POS System" @click="go('/pos')">
           <template #icon><Calculator :size="18" /></template>
           POS SYSTEM
         </PhysicalButton>
@@ -23,7 +23,7 @@
 
       <!-- Top solo: Dashboard (store / acting) or Overview (general admin) -->
       <div class="nsb-solo">
-        <PhysicalButton variant="sidebar" :collapsed="collapsed" :active="itemActive(soloTo)" @click="go(soloTo)">
+        <PhysicalButton variant="sidebar" :collapsed="collapsed" :active="itemActive(soloTo)" :tooltip="soloLabel" @click="go(soloTo)">
           <template #icon><LayoutDashboard :size="17" :class="itemActive(soloTo) ? 'ic-active' : 'ic'" /></template>
           {{ soloLabel }}
         </PhysicalButton>
@@ -38,7 +38,7 @@
       <!-- Groups -->
       <div class="nsb-groups">
         <div v-for="g in displayGroups" :key="g.id" class="nsb-group">
-          <button class="nsb-group-head" :class="{ 'nsb-col': collapsed }" @click="toggle(g.id)">
+          <button class="nsb-group-head" :class="{ 'nsb-col': collapsed }" @click="toggle(g.id)" :data-tip="collapsed ? g.title : null">
             <component :is="g.icon" v-if="collapsed" :size="20" class="grp-icon" />
             <span v-else>{{ g.title }}</span>
             <ChevronDown v-if="!collapsed" :size="14" class="nsb-chevron" :class="{ closed: !open[g.id] }" />
@@ -90,7 +90,7 @@
         <template v-if="!collapsed">
           <div class="nsb-user-info">
             <span class="nsb-user-name">{{ auth.displayName }}</span>
-            <span class="nsb-user-role">{{ admin ? 'Super Admin' : (auth.userRole || 'User') }}</span>
+            <span class="nsb-user-role">{{ admin || auth.isSuperadmin ? 'Super Admin' : (auth.userRole || 'User') }}</span>
           </div>
           <ChevronRight :size="15" class="nsb-user-chev" />
         </template>
@@ -291,6 +291,29 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-group-head:hover { color: var(--sb-text-active); }
 .nsb-group-head.nsb-col { justify-content: center; padding: 4px 0; margin-bottom: 6px; }
 .grp-icon { color: var(--accent); }
+
+/* Tooltip for collapsed group headers */
+.nsb-group-head[data-tip] { position: relative; }
+.nsb-group-head[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1a1208;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+}
+.nsb-group-head[data-tip]:hover::after { opacity: 1; }
 .nsb-chevron { transition: transform 250ms ease; opacity: 0.7; }
 .nsb-chevron.closed { transform: rotate(-90deg); }
 

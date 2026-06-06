@@ -138,7 +138,9 @@
                     colDragKey === col.key ? 'col-dragging' : '',
                     colDragOver === col.key && colDragKey !== col.key && colDragMoved ? 'col-drag-over' : ''
                   ]"
-                  :style="{ width: colWidths[col.key] + 'px', top: theadTop + 'px' }"
+                  :style="col.key === 'product'
+                    ? { minWidth: colWidths[col.key] + 'px', top: theadTop + 'px' }
+                    : { width: colWidths[col.key] + 'px', top: theadTop + 'px' }"
                   @click="col.sort && handleSort(col)"
                   @pointerdown="startColDrag(col.key, $event)"
                   @pointerenter="colDragKey && (colDragOver = col.key)"
