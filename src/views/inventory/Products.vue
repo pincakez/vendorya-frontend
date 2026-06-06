@@ -452,7 +452,7 @@ const auth = useAuthStore()
 
 const tabs = [
   { id: 'products', label: 'Products', icon: Package },
-  { id: 'categories', label: 'Categories', icon: Tags },
+  // Categories now live on their own tree page (/inventory/categories).
   { id: 'suppliers', label: 'Suppliers', icon: Truck },
   { id: 'reports', label: 'Reports', icon: BarChart3 },
 ]
