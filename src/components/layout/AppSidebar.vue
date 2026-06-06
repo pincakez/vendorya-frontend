@@ -108,7 +108,7 @@ import {
   DollarSign, BookOpen, UserCheck, Percent, Users, Truck, Briefcase, Folder, Activity,
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
-  Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard,
+  Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -134,6 +134,7 @@ const groups = [
     { label: 'Categories', to: '/inventory/categories', icon: Tag },
     { label: 'Attributes', to: '/inventory/attributes', icon: List },
     { label: 'Reports', to: '/inventory/reports', icon: FileBarChart },
+    { label: 'Import / Export', to: '/inventory/import-export', icon: ArrowDownUp },
   ] },
   { id: 'finance', title: 'FINANCE', icon: Wallet, items: [
     { label: 'Sales Invoices', to: '/finance/invoices', icon: FileText },

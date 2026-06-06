@@ -24,6 +24,7 @@ const router = createRouter({
         { path: 'inventory/categories', component: () => import('@/views/inventory/Categories.vue'),       meta: { store: true } },
         { path: 'inventory/attributes', component: () => import('@/views/inventory/Attributes.vue'),       meta: { store: true } },
         { path: 'inventory/reports',    component: () => import('@/views/inventory/InventoryReports.vue'), meta: { store: true } },
+        { path: 'inventory/import-export', component: () => import('@/views/inventory/ImportExport.vue'),  meta: { store: true } },
         { path: 'finance/invoices',     component: () => import('@/views/sales/SalesInvoices.vue'),        meta: { store: true } },
         { path: 'finance/returns',      component: () => import('@/views/sales/Returns.vue'),              meta: { store: true } },
         { path: 'finance/expenses',     component: () => import('@/views/finance/Expenses.vue'),           meta: { store: true } },
