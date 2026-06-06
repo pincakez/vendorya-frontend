@@ -67,6 +67,16 @@
             <p class="form-hint">Off by default — cleaner for short receipts.</p>
           </div>
           <div class="form-group">
+            <label class="form-label">Items are called</label>
+            <select v-model="settingsForm.item_noun" class="form-input" style="width:160px;">
+              <option value="NAME">Name</option>
+              <option value="PRODUCT">Product</option>
+              <option value="ITEM">Item</option>
+              <option value="MODEL">Model</option>
+            </select>
+            <p class="form-hint">Label used for a catalog item across the app (e.g. laptop shops prefer “Model”).</p>
+          </div>
+          <div class="form-group">
             <label class="form-label">Default Language</label>
             <select v-model="storeForm.default_language" class="form-input" style="width:160px;">
               <option value="ar">Arabic</option>
@@ -511,7 +521,7 @@ const storeForm    = reactive({
 })
 const settingsForm = reactive({
   allow_negative_stock: false, enable_agel_selling: true,
-  decimals: 2, thousands_separator: false,
+  decimals: 2, thousands_separator: false, item_noun: 'NAME',
   default_tax: '', tax_id: '', commercial_reg: '', print_tax_id: true,
   receipt_header: '', receipt_footer: '',
 })
@@ -572,6 +582,7 @@ async function saveStore() {
         enable_agel_selling:  settingsForm.enable_agel_selling,
         decimals:             settingsForm.decimals,
         thousands_separator:  settingsForm.thousands_separator,
+        item_noun:            settingsForm.item_noun,
         default_tax: settingsForm.default_tax || null,
         tax_id:         settingsForm.tax_id,
         commercial_reg: settingsForm.commercial_reg,
@@ -584,6 +595,7 @@ async function saveStore() {
       position: cur?.position,
       decimals: settingsRes.data.decimals,
       thousands_separator: settingsRes.data.thousands_separator,
+      item_noun: settingsRes.data.item_noun,
     })
     // Refresh the cached store payload (login response) so other tabs see it.
     if (auth.user?.store) {

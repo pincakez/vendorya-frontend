@@ -89,7 +89,7 @@
               :disabled="LOCKED.includes(key) || !permittedKeys.includes(key)"
               @change="toggleHidden(key)"
             />
-            <span class="chooser-label">{{ colByKey[key].label }}</span>
+            <span class="chooser-label">{{ key === 'product' ? fmtStore.itemLabelUpper : colByKey[key].label }}</span>
             <Lock v-if="LOCKED.includes(key)" :size="12" class="chooser-tag" />
             <span v-else-if="!permittedKeys.includes(key)" class="chooser-na">hidden by role</span>
             <span class="chooser-move">
@@ -149,7 +149,7 @@
                 >
                   <span class="dt-th-inner" :class="{ jend: col.align === 'right' }">
                     <component v-if="col.align === 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
-                    {{ col.label }}
+                    {{ col.key === 'product' ? fmtStore.itemLabelUpper : col.label }}
                     <component v-if="col.align !== 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
                   </span>
                   <span class="dt-resize" @mousedown.stop.prevent="startResize(col.key, $event)" @click.stop></span>
@@ -321,7 +321,7 @@
     <!-- ═══════════ PRODUCT ADD / EDIT ═══════════ -->
     <AppModal :open="prodModal.open" :title="prodModal.id ? 'Edit Product' : 'New Product'" @close="prodModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">Name</label><input v-model="prodModal.name" class="form-input" placeholder="Product name" /></div>
+        <div><label class="form-label">{{ fmtStore.itemLabel }}</label><input v-model="prodModal.name" class="form-input" :placeholder="`${fmtStore.itemLabel} name`" /></div>
 
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <div style="flex:1;min-width:160px;">
@@ -445,10 +445,12 @@ import {
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
+import { useFormatStore } from '@/stores/format'
 import { formatQty } from '@/utils/format'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const auth = useAuthStore()
+const fmtStore = useFormatStore()
 
 const tabs = [
   { id: 'products', label: 'Products', icon: Package },

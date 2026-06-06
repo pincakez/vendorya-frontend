@@ -21,6 +21,8 @@ export const useFormatStore = defineStore('format', {
     position: 'SUFFIX',
     decimals: 2,
     thousandsSeparator: false,
+    // What this store calls a catalog item (label only): NAME/PRODUCT/ITEM/MODEL.
+    itemNoun: 'NAME',
     // Currency-symbol tint — a per-user (per-browser) display preference.
     symbolColor: localStorage.getItem(COLOR_KEY) || DEFAULT_COLOR,
     loaded: false,
@@ -33,6 +35,9 @@ export const useFormatStore = defineStore('format', {
       decimals: s.decimals,
       separator: s.thousandsSeparator,
     }),
+    // "Name" / "Product" / "Item" / "Model" and an uppercase variant for headers.
+    itemLabel: (s) => ({ NAME: 'Name', PRODUCT: 'Product', ITEM: 'Item', MODEL: 'Model' }[s.itemNoun] || 'Name'),
+    itemLabelUpper() { return this.itemLabel.toUpperCase() },
   },
 
   actions: {
@@ -54,19 +59,22 @@ export const useFormatStore = defineStore('format', {
         const res = await api.get('/api/core/settings/')
         this.decimals           = Number(res.data?.decimals ?? 2)
         this.thousandsSeparator = !!res.data?.thousands_separator
+        this.itemNoun           = res.data?.item_noun || 'NAME'
       } catch {
         this.decimals = 2
         this.thousandsSeparator = false
+        this.itemNoun = 'NAME'
       }
       this.loaded = true
     },
 
     /** Called after the user saves StoreSettings or sudo changes the store currency. */
-    apply({ symbol, position, decimals, thousands_separator }) {
+    apply({ symbol, position, decimals, thousands_separator, item_noun }) {
       if (symbol !== undefined)   this.symbol   = symbol
       if (position !== undefined) this.position = position
       if (decimals !== undefined) this.decimals = Number(decimals)
       if (thousands_separator !== undefined) this.thousandsSeparator = !!thousands_separator
+      if (item_noun !== undefined) this.itemNoun = item_noun || 'NAME'
     },
 
     /** Push the chosen currency-symbol colour onto <html> so the CSS var
