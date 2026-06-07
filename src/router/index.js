@@ -17,7 +17,8 @@ const router = createRouter({
 
         // Store routes — visible to regular users always, to sudo only when a store is selected
         { path: 'dashboard',            component: () => import('@/views/Dashboard.vue'),                  meta: { store: true } },
-        { path: 'inventory/products',   component: () => import('@/views/inventory/Products.vue'),         meta: { store: true } },
+        { path: 'inventory/products',           component: () => import('@/views/inventory/Products.vue'),       meta: { store: true } },
+        { path: 'inventory/products/:id',       component: () => import('@/views/inventory/ProductDetail.vue'),  meta: { store: true }, props: true },
         { path: 'inventory/purchases',  component: () => import('@/views/inventory/Purchases.vue'),        meta: { store: true } },
         { path: 'inventory/adjustments',component: () => import('@/views/inventory/StockAdjustments.vue'), meta: { store: true } },
         { path: 'inventory/transfers',  component: () => import('@/views/inventory/StockTransfers.vue'),  meta: { store: true } },
@@ -28,7 +29,8 @@ const router = createRouter({
         { path: 'finance/invoices',     component: () => import('@/views/sales/SalesInvoices.vue'),        meta: { store: true } },
         { path: 'finance/returns',      component: () => import('@/views/sales/Returns.vue'),              meta: { store: true } },
         { path: 'finance/expenses',     component: () => import('@/views/finance/Expenses.vue'),           meta: { store: true } },
-        { path: 'finance/shifts',       component: () => import('@/views/finance/Shifts.vue'),             meta: { store: true } },
+        { path: 'finance/shifts',           component: () => import('@/views/finance/Shifts.vue'),            meta: { store: true } },
+        { path: 'finance/shifts/:id',       component: () => import('@/views/finance/ShiftDetail.vue'),     meta: { store: true }, props: true },
         { path: 'finance/cash-drawer',  component: () => import('@/views/finance/CashDrawer.vue'),         meta: { store: true } },
         // Reports v1
         { path: 'reports/sales',        component: () => import('@/views/reports/SalesReport.vue'),         meta: { store: true } },
@@ -40,8 +42,10 @@ const router = createRouter({
         { path: 'reports/stock-ledger', component: () => import('@/views/reports/StockLedger.vue'),         meta: { store: true } },
         { path: 'reports/cashiers',     component: () => import('@/views/reports/CashierPerformance.vue'),  meta: { store: true } },
         { path: 'reports/tax',          component: () => import('@/views/reports/TaxReport.vue'),           meta: { store: true } },
-        { path: 'people/customers',     component: () => import('@/views/people/Customers.vue'),           meta: { store: true } },
-        { path: 'people/suppliers',     component: () => import('@/views/people/Suppliers.vue'),           meta: { store: true } },
+        { path: 'people/customers',         component: () => import('@/views/people/Customers.vue'),          meta: { store: true } },
+        { path: 'people/customers/:id',     component: () => import('@/views/people/CustomerDetail.vue'),   meta: { store: true }, props: true },
+        { path: 'people/suppliers',         component: () => import('@/views/people/Suppliers.vue'),          meta: { store: true } },
+        { path: 'people/suppliers/:id',     component: () => import('@/views/people/SupplierDetail.vue'),   meta: { store: true }, props: true },
         { path: 'people/staff',         component: () => import('@/views/people/Staff.vue'),               meta: { store: true } },
         { path: 'activity-log',         component: () => import('@/views/ActivityLog.vue'),                meta: { store: true } },
         { path: 'settings',             component: () => import('@/views/settings/StoreSettings.vue'),     meta: { store: true } },

@@ -35,7 +35,7 @@
               <div style="font-size:13px;">Add suppliers to link them to purchase invoices.</div>
             </td>
           </tr>
-          <tr v-for="s in suppliers" :key="s.id" class="table-row">
+          <tr v-for="s in suppliers" :key="s.id" class="table-row" style="cursor:pointer" @click="router.push('/people/suppliers/' + s.id)">
             <td class="col-name">{{ s.name }}</td>
             <td>
               <div style="display:flex;align-items:center;gap:6px;">
@@ -48,7 +48,7 @@
               <span v-if="Number(s.balance) > 0" class="balance-owe"><Money :value="s.balance" /></span>
               <span v-else class="balance-zero">—</span>
             </td>
-            <td>
+            <td @click.stop>
               <button class="row-action" @click="openEdit(s)"><Pencil :size="13" /></button>
               <button class="row-action danger" @click="deleteSupplier(s.id)"><Trash2 :size="13" /></button>
             </td>
@@ -165,6 +165,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Search, Building2, Pencil, Trash2, Lock } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -173,8 +174,9 @@ import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
-const auth = useAuthStore()
-const qab  = useQABStore()
+const auth   = useAuthStore()
+const qab    = useQABStore()
+const router = useRouter()
 
 const suppliers = ref([])
 const loading   = ref(false)

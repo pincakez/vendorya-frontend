@@ -43,7 +43,7 @@
                 <div>No shift history yet</div>
               </td>
             </tr>
-            <tr v-for="s in shifts" :key="s.id" class="table-row">
+            <tr v-for="s in shifts" :key="s.id" class="table-row" style="cursor:pointer" @click="router.push('/finance/shifts/' + s.id)">
               <td>{{ fmtDateTime(s.start_time) }}</td>
               <td><span class="status-badge" :class="`status-${s.status.toLowerCase()}`">{{ s.status }}</span></td>
               <td class="col-amount"><Money :value="s.starting_cash" /></td>
@@ -102,6 +102,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Clock, History } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -110,8 +111,9 @@ import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
-const auth = useAuthStore()
-const qab  = useQABStore()
+const auth   = useAuthStore()
+const qab    = useQABStore()
+const router = useRouter()
 
 const tabs = [
   { id: 'history', label: 'Shift History', icon: History },

@@ -35,7 +35,7 @@
               <div style="font-size:13px;">Add your first customer to start tracking sales.</div>
             </td>
           </tr>
-          <tr v-for="c in customers" :key="c.id" class="table-row">
+          <tr v-for="c in customers" :key="c.id" class="table-row" style="cursor:pointer" @click="router.push('/people/customers/' + c.id)">
             <td class="col-name">{{ c.name }}</td>
             <td class="col-phone">{{ c.phone_number }}</td>
             <td class="col-notes">{{ c.notes || '—' }}</td>
@@ -44,7 +44,7 @@
               <span v-else-if="Number(c.balance) < 0" class="balance-credit">Credit <Money :value="Math.abs(c.balance)" /></span>
               <span v-else class="balance-zero">—</span>
             </td>
-            <td>
+            <td @click.stop>
               <button class="row-action" @click="openEdit(c)"><Pencil :size="13" /></button>
               <button class="row-action danger" @click="deleteCustomer(c.id)"><Trash2 :size="13" /></button>
             </td>
@@ -87,6 +87,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Search, Users, Pencil, Trash2 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -95,8 +96,9 @@ import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
-const auth = useAuthStore()
-const qab  = useQABStore()
+const auth   = useAuthStore()
+const qab    = useQABStore()
+const router = useRouter()
 
 const customers = ref([])
 const loading   = ref(false)

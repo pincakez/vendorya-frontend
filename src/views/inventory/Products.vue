@@ -441,6 +441,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck, Plus,
   ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown,
@@ -455,6 +456,7 @@ import AppModal from '@/components/ui/AppModal.vue'
 
 const auth = useAuthStore()
 const fmtStore = useFormatStore()
+const router = useRouter()
 
 // Column header label: product noun + per-store category tier names are dynamic.
 const _CAT_IDX = { cat1: 0, cat2: 1, cat3: 2, cat4: 3 }
@@ -948,7 +950,7 @@ function toggleSelectAll() {
 function onRowClick(p) {
   if (editing.value) return
   if (bulkMode.value) toggleSelect(p.id)
-  else openEditProduct(p)
+  else router.push('/inventory/products/' + p.id)
 }
 
 async function toggleGhost(p) {

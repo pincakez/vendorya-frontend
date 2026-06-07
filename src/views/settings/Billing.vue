@@ -35,6 +35,28 @@
       No subscription found. Contact support.
     </div>
 
+    <!-- Quota usage -->
+    <div v-if="subscription && subscription.quota" class="section-block">
+      <h2 class="section-title" style="margin-top:0;">Plan Usage</h2>
+      <div class="quota-grid">
+        <div v-for="(item, key) in subscription.quota" :key="key" class="quota-item">
+          <div class="quota-header">
+            <span class="quota-label">{{ quotaLabel(key) }}</span>
+            <span class="quota-count" :class="item.over ? 'over' : ''">
+              {{ item.used }}{{ item.limit != null ? ' / ' + item.limit : '' }}
+            </span>
+          </div>
+          <div class="quota-bar-bg">
+            <div
+              class="quota-bar-fill"
+              :class="item.over ? 'over' : barClass(item)"
+              :style="{ width: barWidth(item) }"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Invoice list -->
     <h2 class="section-title">Invoices</h2>
     <div class="table-wrap">
@@ -176,6 +198,24 @@ function printInvoice() {
   window.print()
 }
 
+const QUOTA_LABELS = {
+  users: 'Staff Users',
+  branches: 'Branches',
+  products: 'Products',
+  invoices: 'Invoices This Month',
+}
+function quotaLabel(key) { return QUOTA_LABELS[key] || key }
+function barWidth(item) {
+  if (item.limit == null || item.limit === 0) return '0%'
+  return Math.min(100, Math.round((item.used / item.limit) * 100)) + '%'
+}
+function barClass(item) {
+  if (item.limit == null) return ''
+  const pct = item.used / item.limit
+  if (pct >= 0.9) return 'warn'
+  return ''
+}
+
 function formatDate(iso) {
   if (!iso) return ''
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -261,6 +301,18 @@ onMounted(async () => {
 .btn-ghost:active { transform:scale(0.95); }
 .btn-primary { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--primary, var(--accent-hover)); color:#fff; cursor:pointer; transition:transform 70ms; }
 .btn-primary:active { transform:scale(0.96); }
+
+.section-block { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin-bottom:24px; }
+.quota-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; }
+.quota-item { display:flex; flex-direction:column; gap:6px; }
+.quota-header { display:flex; align-items:center; justify-content:space-between; }
+.quota-label { font-size:12px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; }
+.quota-count { font-size:13px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
+.quota-count.over { color:#dc2626; }
+.quota-bar-bg { height:6px; background:var(--border); border-radius:99px; overflow:hidden; }
+.quota-bar-fill { height:100%; border-radius:99px; background:var(--accent); transition:width 400ms; }
+.quota-bar-fill.warn { background:#f59e0b; }
+.quota-bar-fill.over { background:#dc2626; }
 
 @media print {
   .page-header, .table-wrap, .section-title, .btn-ghost, .btn-primary, .plan-card { display:none !important; }
