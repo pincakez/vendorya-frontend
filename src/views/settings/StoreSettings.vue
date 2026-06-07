@@ -420,12 +420,40 @@
           <span v-if="notifyOk" class="save-ok" style="margin-left:12px;">Notifications checked.</span>
         </div>
 
-        <div class="section-divider" style="margin-top:24px;">Printers (QZ Tray)</div>
+        <div class="section-divider" style="margin-top:24px;display:flex;align-items:center;gap:10px;">
+          Printers (QZ Tray)
+          <span v-if="qzStatus === true"  class="qz-dot qz-ok">● Connected</span>
+          <span v-else-if="qzStatus === false" class="qz-dot qz-off">● Not running</span>
+        </div>
         <p class="form-hint">
-          Enter the exact printer name as it appears in Windows (Control Panel → Devices and Printers).
-          Leave blank to fall back to browser print. Requires
-          <strong>QZ Tray</strong> installed on the machine doing the printing.
+          Enter the exact printer name as it appears in Windows
+          (<em>Control Panel → Devices and Printers</em>).
+          Leave blank to fall back to browser print.
         </p>
+
+        <!-- QZ Tray install + test row -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <a
+            href="/media/downloads/qztray-setup.exe"
+            download
+            class="btn-secondary btn-sm"
+            style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;"
+          >
+            <Download :size="14" /> Download QZ Tray
+          </a>
+          <button
+            class="btn-secondary btn-sm"
+            :disabled="qzTesting"
+            @click="testQZTray"
+          >
+            <span v-if="qzTesting">Testing…</span>
+            <span v-else>Test Connection</span>
+          </button>
+          <span class="form-hint" style="margin:0;">
+            QZ Tray is a free desktop bridge (~10 MB) that lets Vendorya print directly to USB/network printers without a print dialog.
+          </span>
+        </div>
+
         <div style="display:flex;gap:16px;flex-wrap:wrap;max-width:600px;">
           <div style="flex:1;min-width:220px;">
             <label class="form-label">Label Printer Name</label>
@@ -616,13 +644,14 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import {
   Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X,
-  Settings2, Shield, Plus, UserCog, Tag, Briefcase, Trash,
+  Settings2, Shield, Plus, UserCog, Tag, Briefcase, Trash, Download,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
 import { useAuthStore } from '@/stores/auth'
 import { formatCurrency } from '@/utils/format'
 import AppModal from '@/components/ui/AppModal.vue'
+import { useQZTray } from '@/composables/useQZTray'
 
 const fmt  = useFormatStore()
 const auth = useAuthStore()
@@ -920,6 +949,17 @@ const notifyRunning  = ref(false)
 const notifyOk       = ref(false)
 const newServiceType = ref('')
 
+// QZ Tray
+const { isAvailable: qzIsAvailable } = useQZTray()
+const qzStatus  = ref(null)   // null = untested, true = connected, false = not running
+const qzTesting = ref(false)
+
+async function testQZTray() {
+  qzTesting.value = true
+  qzStatus.value  = await qzIsAvailable()
+  qzTesting.value = false
+}
+
 function addServiceType() {
   const type = newServiceType.value.trim()
   if (!type || settingsForm.service_types.includes(type)) return
@@ -1079,4 +1119,7 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .btn-sm { padding:6px 12px; font-size:13px; }
 .save-ok { font-size:12.5px; color:var(--success, #16a34a); }
 .field-error { font-size:12.5px; color:var(--danger, #dc2626); }
+.qz-dot { font-size:12px; font-weight:600; letter-spacing:.01em; }
+.qz-ok  { color:#16a34a; }
+.qz-off { color:#dc2626; }
 </style>
