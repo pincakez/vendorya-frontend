@@ -100,19 +100,29 @@
               ref="customerInputEl"
               v-model="customerQuery"
               @input="onCustomerInput"
+              @keydown="onCustomerKeydown"
               @focus="customerFocused = true"
               @blur="onCustomerBlur"
               placeholder="Walk-in"
               class="pos-customer-input"
             />
-            <div v-if="customerResults.length && customerFocused" class="pos-customer-dropdown">
+            <div v-if="customerFocused && customerQuery.length >= 2" class="pos-customer-dropdown">
               <div
-                v-for="c in customerResults" :key="c.id"
+                v-for="(c, i) in customerResults" :key="c.id"
                 class="pos-customer-item"
+                :class="{ highlighted: i === customerIndex }"
                 @mousedown.prevent="selectCustomer(c)"
               >
                 <span>{{ c.name }}</span>
                 <span class="pci-phone">{{ c.phone_number }}</span>
+              </div>
+              <!-- Not found row -->
+              <div
+                v-if="!customerResults.length"
+                class="pos-customer-item pci-add"
+                @mousedown.prevent="showAddCustomer = true"
+              >
+                <span>No customer found — press Enter or click to add</span>
               </div>
             </div>
           </div>
@@ -216,6 +226,13 @@
     <BranchPickerModal v-if="showBranchPicker" @selected="onBranchSelected" />
     <PaymentModal      v-if="showPayment"   @close="showPayment = false"   @success="onPaymentSuccess" />
     <DiscountModal     v-if="showDiscount"  @close="showDiscount = false" />
+    <CustomerFormModal
+      :open="showAddCustomer"
+      :prefill-name="addCustomerPrefill.name"
+      :prefill-phone="addCustomerPrefill.phone"
+      @close="showAddCustomer = false"
+      @saved="onAddCustomerSaved"
+    />
 
     <!-- ─── Success overlay ────────────────────────────────── -->
     <Transition name="success-pop">
@@ -253,7 +270,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
@@ -264,9 +281,10 @@ import { useAuthStore }  from '@/stores/auth'
 import { useCartStore }  from '@/stores/cart'
 import { usePosStore }   from '@/stores/pos'
 import { useUIStore }    from '@/stores/ui'
-import BranchPickerModal from '@/components/pos/BranchPickerModal.vue'
-import PaymentModal      from '@/components/pos/PaymentModal.vue'
-import DiscountModal     from '@/components/pos/DiscountModal.vue'
+import BranchPickerModal   from '@/components/pos/BranchPickerModal.vue'
+import PaymentModal        from '@/components/pos/PaymentModal.vue'
+import DiscountModal       from '@/components/pos/DiscountModal.vue'
+import CustomerFormModal   from '@/components/shared/CustomerFormModal.vue'
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -479,10 +497,16 @@ const customerInputEl = ref(null)
 const customerQuery   = ref('')
 const customerResults = ref([])
 const customerFocused = ref(false)
+const customerIndex   = ref(-1)
+
+// Add-customer modal (opened when search finds no match)
+const showAddCustomer    = ref(false)
+const addCustomerPrefill = reactive({ name: '', phone: '' })
 
 let customerTimer = null
 function onCustomerInput() {
   clearTimeout(customerTimer)
+  customerIndex.value = -1
   customerTimer = setTimeout(runCustomerSearch, 250)
 }
 async function runCustomerSearch() {
@@ -490,10 +514,11 @@ async function runCustomerSearch() {
   try {
     const res = await api.get('/api/auth/customers/', { params: { search: customerQuery.value, page_size: 8 } })
     customerResults.value = (res.data.results || res.data).filter(c => !c.is_walk_in)
+    customerIndex.value = customerResults.value.length ? 0 : -1
   } catch { /* ok */ }
 }
 function onCustomerBlur() {
-  setTimeout(() => { customerFocused.value = false; customerQuery.value = '' }, 200)
+  setTimeout(() => { customerFocused.value = false; customerQuery.value = ''; customerResults.value = [] }, 200)
 }
 function openCustomerSearch() {
   customerFocused.value = true
@@ -504,11 +529,45 @@ function selectCustomer(c) {
   customerQuery.value = ''
   customerResults.value = []
   customerFocused.value = false
+  customerIndex.value = -1
   schedulePatch()
 }
 function focusCustomer() {
   customerFocused.value = true
   nextTick(() => customerInputEl.value?.focus())
+}
+function onCustomerKeydown(e) {
+  const len = customerResults.value.length
+  if (e.key === 'ArrowDown') {
+    e.preventDefault(); customerIndex.value = Math.min(customerIndex.value + 1, len - 1)
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault(); customerIndex.value = Math.max(customerIndex.value - 1, 0)
+  } else if (e.key === 'Tab' && len > 0) {
+    e.preventDefault()
+    if (e.shiftKey) {
+      customerIndex.value = customerIndex.value <= 0 ? len - 1 : customerIndex.value - 1
+    } else {
+      customerIndex.value = customerIndex.value >= len - 1 ? 0 : customerIndex.value + 1
+    }
+  } else if (e.key === 'Enter') {
+    e.preventDefault()
+    if (customerIndex.value >= 0 && customerResults.value[customerIndex.value]) {
+      selectCustomer(customerResults.value[customerIndex.value])
+    } else if (customerQuery.value.trim().length >= 1) {
+      // Not found — open add-customer modal with prefilled data
+      const q = customerQuery.value.trim()
+      const looksLikePhone = /^[\d\s+()-]{4,}$/.test(q)
+      addCustomerPrefill.name  = looksLikePhone ? '' : q
+      addCustomerPrefill.phone = looksLikePhone ? q  : ''
+      customerFocused.value = false
+      showAddCustomer.value = true
+    }
+  } else if (e.key === 'Escape') {
+    customerResults.value = []; customerQuery.value = ''; customerFocused.value = false
+  }
+}
+function onAddCustomerSaved(customer) {
+  selectCustomer(customer)
 }
 
 // ── Hold / Resume ────────────────────────────────────────────
@@ -803,8 +862,10 @@ function fmtNum(n) {
   border-bottom: 1px solid var(--border);
 }
 .pos-customer-item:last-child { border-bottom: none; }
-.pos-customer-item:hover { background: var(--bg-app); }
+.pos-customer-item:hover, .pos-customer-item.highlighted { background: var(--accent-soft); color: var(--accent); }
+.pos-customer-item.highlighted .pci-phone { color: var(--accent); }
 .pci-phone { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+.pci-add   { font-size: 12px; color: var(--text-muted); font-style: italic; justify-content: center; }
 
 .pib-discount-chip {
   display: flex; align-items: center; gap: 6px; flex-shrink: 0;

@@ -163,6 +163,9 @@ const groups = [
     { label: 'Suppliers', to: '/people/suppliers', icon: Truck },
     { label: 'Staff', to: '/people/staff', icon: Briefcase },
   ] },
+  { id: 'services', title: 'SERVICES', icon: Wrench, items: [
+    { label: 'Services', to: '/services', icon: Wrench },
+  ] },
   { id: 'general', title: 'GENERAL', icon: Folder, items: [
     { label: 'Activity Log', to: '/activity-log', icon: Activity },
     { label: 'Inbox', to: '/inbox', icon: Inbox },

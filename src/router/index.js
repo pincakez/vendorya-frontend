@@ -47,6 +47,7 @@ const router = createRouter({
         { path: 'people/suppliers',         component: () => import('@/views/people/Suppliers.vue'),          meta: { store: true } },
         { path: 'people/suppliers/:id',     component: () => import('@/views/people/SupplierDetail.vue'),   meta: { store: true }, props: true },
         { path: 'people/staff',         component: () => import('@/views/people/Staff.vue'),               meta: { store: true } },
+        { path: 'services',             component: () => import('@/views/services/Services.vue'),         meta: { store: true } },
         { path: 'activity-log',         component: () => import('@/views/ActivityLog.vue'),                meta: { store: true } },
         { path: 'settings',             component: () => import('@/views/settings/StoreSettings.vue'),     meta: { store: true } },
         { path: 'settings/taxes',       component: () => import('@/views/settings/Taxes.vue'),             meta: { store: true } },
