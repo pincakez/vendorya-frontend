@@ -272,7 +272,7 @@
       </template>
     </AppModal>
 
-    <AppModal :open="assignModal.open" title="Assign layouts to staff" @close="assignModal.open = false">
+    <AppModal :open="assignModal.open" title="Assign layouts to staff" @close="assignModal.open = false; assignConflict = null">
       <div class="assign-list">
         <div v-for="row in assignModal.rows" :key="row.user_id" class="assign-row">
           <div class="assign-user">
@@ -285,6 +285,12 @@
           </select>
         </div>
         <div v-if="!assignModal.rows.length" style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">No staff yet.</div>
+      </div>
+      <div v-if="assignConflict" class="assign-conflict-banner">
+        <span style="font-size:13px;">⚠</span>
+        <span><strong>{{ assignConflict.user }}</strong> ({{ assignConflict.role }}) can't see
+          <em>{{ assignConflict.cols }}</em> — those columns will be hidden automatically by their role.</span>
+        <button style="background:none;border:none;cursor:pointer;color:inherit;font-size:14px;line-height:1;padding:0 2px;" @click="assignConflict = null">✕</button>
       </div>
     </AppModal>
 
@@ -606,6 +612,10 @@ function reorder(fromKey, toKey) {
 const presets = ref([])
 const saveModal = reactive({ open: false, name: '', is_default: false })
 const assignModal = reactive({ open: false, rows: [] })
+const assignConflict = ref(null)
+
+// Mirrors backend DEFAULT_HIDDEN for this table — columns restricted per role.
+const ROLE_HIDDEN_KEYS = { CASHIER: ['wholesale', 'profit'] }
 
 async function fetchPresets() { try { const { data } = await api.get('/api/smart/presets/', { params: { table_id: TABLE_ID } }); presets.value = data.results ?? data } catch { /* noop */ } }
 function loadPreset(p) {
@@ -630,6 +640,19 @@ async function openAssign() {
   assignModal.rows = data; assignModal.open = true
 }
 async function assignTo(row) {
+  assignConflict.value = null
+  if (row.preset_id) {
+    const preset = presets.value.find(p => p.id === row.preset_id)
+    const restricted = ROLE_HIDDEN_KEYS[row.role] || []
+    if (preset && restricted.length) {
+      const presetHidden = preset.config?.hidden || []
+      const conflicts = restricted.filter(k => !presetHidden.includes(k))
+      if (conflicts.length) {
+        const labels = conflicts.map(k => columns.value.find(c => c.key === k)?.label || k).join(', ')
+        assignConflict.value = { user: row.full_name, role: row.role, cols: labels }
+      }
+    }
+  }
   await api.post('/api/smart/presets/assignments/', { user_id: row.user_id, table_id: TABLE_ID, preset_id: row.preset_id || null })
 }
 
@@ -1073,6 +1096,12 @@ onUnmounted(() => { ro?.disconnect() })
 .assign-name { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
 .assign-role { font-size: 11px; color: var(--text-muted); text-transform: capitalize; }
 .assign-sel { max-width: 180px; }
+.assign-conflict-banner {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-top: 12px; padding: 10px 12px;
+  background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.35);
+  border-radius: 8px; font-size: 12.5px; color: var(--text-primary);
+}
 
 /* No overflow:hidden — it would trap the sticky thead. Corners rounded via children. */
 .dt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: box-shadow 150ms; }

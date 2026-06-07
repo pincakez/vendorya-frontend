@@ -621,9 +621,10 @@ body {
   background: #22c55e;
   flex-shrink: 0;
 }
-.footer-dot.dot-green { background: #22c55e; }
-.footer-dot.dot-red   { background: #ef4444; }
-.footer-dot.dot-gray  { background: var(--text-muted); }
+.footer-dot.dot-green  { background: #22c55e; }
+.footer-dot.dot-red    { background: #ef4444; }
+.footer-dot.dot-yellow { background: #f59e0b; }
+.footer-dot.dot-gray   { background: var(--text-muted); }
 
 .footer-sep {
   color: var(--footer-border);

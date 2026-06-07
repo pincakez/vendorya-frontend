@@ -112,6 +112,7 @@ import {
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
+  BarChart2,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -194,6 +195,7 @@ const adminGroups = [
   ] },
   { id: 'asystem', title: 'SYSTEM', icon: Activity, items: [
     { label: 'Activity Log', to: '/admin/activity-log', icon: Activity },
+    { label: 'Tenant Usage', to: '/admin/usage', icon: BarChart2 },
     { label: 'Trash', to: '/admin/trash', icon: Trash2 },
     { label: 'Isolation Check', to: '/admin/isolation-check', icon: ShieldCheck },
   ] },

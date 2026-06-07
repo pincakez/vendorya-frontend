@@ -213,4 +213,22 @@ onMounted(load)
   margin-top: 6px;
   line-height: 1.45;
 }
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background 100ms, transform 70ms, opacity 100ms;
+}
+.btn-primary:hover    { background: var(--accent-hover, #e07d10); }
+.btn-primary:active   { transform: scale(0.95); }
+.btn-primary:disabled { opacity: .5; cursor: default; }
 </style>

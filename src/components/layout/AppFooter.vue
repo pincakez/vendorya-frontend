@@ -1,8 +1,8 @@
 <template>
   <footer class="app-footer">
     <span class="footer-item">
-      <span class="footer-dot" />
-      Server: Optimal
+      <span class="footer-dot" :class="serverDotClass" />
+      Server: {{ serverLabel }}
     </span>
 
     <template v-if="authStore.isSuperadmin">
@@ -37,6 +37,34 @@ const authStore = useAuthStore()
 const syncedLabel = ref('just now')
 let syncedAt = Date.now()
 let timer
+
+// Server health
+const serverStatus = ref('loading')
+
+const serverDotClass = computed(() => {
+  if (serverStatus.value === 'ok')      return 'dot-green'
+  if (serverStatus.value === 'degraded') return 'dot-yellow'
+  if (serverStatus.value === 'error')   return 'dot-red'
+  return 'dot-gray'
+})
+
+const serverLabel = computed(() => {
+  if (serverStatus.value === 'ok')      return 'Online'
+  if (serverStatus.value === 'degraded') return 'Degraded'
+  if (serverStatus.value === 'error')   return 'Offline'
+  return '…'
+})
+
+async function checkServerHealth() {
+  try {
+    const { data } = await api.get('/api/health/')
+    serverStatus.value = data.status === 'ok' ? 'ok' : 'degraded'
+  } catch {
+    serverStatus.value = 'error'
+  }
+}
+
+let serverTimer
 
 function updateLabel() {
   const diff = Math.floor((Date.now() - syncedAt) / 60000)
@@ -73,6 +101,8 @@ let aiTimer
 
 onMounted(() => {
   timer = setInterval(updateLabel, 30000)
+  checkServerHealth()
+  serverTimer = setInterval(checkServerHealth, 120000)
   if (authStore.isSuperadmin) {
     checkAiStatus()
     aiTimer = setInterval(checkAiStatus, 60000)
@@ -81,6 +111,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearInterval(timer)
+  clearInterval(serverTimer)
   clearInterval(aiTimer)
 })
 </script>

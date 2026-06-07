@@ -77,6 +77,7 @@ const router = createRouter({
         { path: 'admin/alerts',        component: () => import('@/views/admin/AdminAlerts.vue'),         meta: { admin: true } },
         { path: 'admin/trash',         component: () => import('@/views/admin/AdminTrash.vue'),          meta: { admin: true } },
         { path: 'admin/isolation-check', component: () => import('@/views/admin/AdminIsolation.vue'),     meta: { admin: true } },
+        { path: 'admin/usage',           component: () => import('@/views/admin/AdminUsage.vue'),          meta: { admin: true } },
       ]
     },
     // Bare printable pages — no app shell.

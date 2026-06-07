@@ -139,10 +139,25 @@
           </button>
           <span style="font-size:12px;color:var(--text-muted);">{{ editModal.is_active ? 'Store is open for use' : 'Store deactivated' }}</span>
         </div>
-        <div v-if="editModal.originalActive && !editModal.is_active" style="border-top:1px solid var(--border);padding-top:12px;margin-top:2px;">
-          <label class="form-label">Reason for suspending <span style="color:var(--admin-accent);">*</span></label>
-          <textarea v-model="editModal.suspend_reason" class="form-input" rows="2" placeholder="e.g. Non-payment, terms violation, owner request…" />
-          <p style="font-size:11.5px;color:var(--admin-accent);margin:6px 0 0;">⚠ All staff of this store will be locked out of login until reactivated.</p>
+        <div v-if="editModal.originalActive && !editModal.is_active" style="border-top:1px solid var(--border);padding-top:12px;margin-top:2px;display:flex;flex-direction:column;gap:12px;">
+          <div>
+            <label class="form-label">Reason for suspending <span style="color:var(--admin-accent);">*</span></label>
+            <textarea v-model="editModal.suspend_reason" class="form-input" rows="2" placeholder="e.g. Non-payment, terms violation, owner request…" />
+          </div>
+          <div>
+            <label class="form-label">Grace period</label>
+            <select v-model="editModal.suspend_grace_days" class="form-input" style="max-width:220px;">
+              <option :value="0">Immediately</option>
+              <option :value="7">7 days notice</option>
+              <option :value="14">14 days notice</option>
+              <option :value="30">30 days notice</option>
+            </select>
+            <p style="font-size:11.5px;color:var(--text-muted);margin:4px 0 0;">
+              <span v-if="editModal.suspend_grace_days === 0">Store will be locked out immediately on save.</span>
+              <span v-else>Store stays active for {{ editModal.suspend_grace_days }} days from today, then must be manually deactivated. Grace period is recorded in the activity log.</span>
+            </p>
+          </div>
+          <p style="font-size:11.5px;color:var(--admin-accent);margin:0;">⚠ Immediate suspension locks out all staff until you reactivate.</p>
         </div>
         <!-- Danger Zone -->
         <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
@@ -431,7 +446,7 @@ function openEdit(s) {
     default_language: s.default_language,
     timezone: s.timezone || 'Africa/Cairo',
     is_active: s.is_active,
-    suspend_reason: '', originalActive: s.is_active,
+    suspend_reason: '', suspend_grace_days: 0, originalActive: s.is_active,
   })
 }
 
@@ -469,7 +484,10 @@ async function saveEdit() {
       is_active: editModal.is_active,
     }
     if (editModal.store_code) payload.store_code = editModal.store_code
-    if (suspending) payload.suspend_reason = editModal.suspend_reason.trim()
+    if (suspending) {
+      payload.suspend_reason = editModal.suspend_reason.trim()
+      payload.suspend_grace_days = editModal.suspend_grace_days
+    }
     await api.patch(`/api/admin/stores/${editModal.id}/`, payload)
     closeEdit()
     fetchStores()
