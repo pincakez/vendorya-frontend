@@ -374,10 +374,23 @@ async function runSearch() {
 }
 
 function onSearchKeydown(e) {
-  if (e.key === 'ArrowDown') { e.preventDefault(); searchIndex.value = Math.min(searchIndex.value + 1, searchResults.value.length - 1) }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); searchIndex.value = Math.max(searchIndex.value - 1, 0) }
-  else if (e.key === 'Enter' && searchIndex.value >= 0) { e.preventDefault(); addToCart(searchResults.value[searchIndex.value]) }
-  else if (e.key === 'Escape') { searchResults.value = []; searchQuery.value = '' }
+  const len = searchResults.value.length
+  if (e.key === 'ArrowDown') {
+    e.preventDefault(); searchIndex.value = Math.min(searchIndex.value + 1, len - 1)
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault(); searchIndex.value = Math.max(searchIndex.value - 1, 0)
+  } else if (e.key === 'Tab' && len > 0) {
+    e.preventDefault()
+    if (e.shiftKey) {
+      searchIndex.value = searchIndex.value <= 0 ? len - 1 : searchIndex.value - 1
+    } else {
+      searchIndex.value = searchIndex.value >= len - 1 ? 0 : searchIndex.value + 1
+    }
+  } else if (e.key === 'Enter' && searchIndex.value >= 0) {
+    e.preventDefault(); addToCart(searchResults.value[searchIndex.value])
+  } else if (e.key === 'Escape') {
+    searchResults.value = []; searchQuery.value = ''
+  }
 }
 
 function onSearchBlur() {
@@ -397,11 +410,20 @@ async function addToCart(product) {
   })
   searchQuery.value = ''
   searchResults.value = []
-  searchFocused.value = false
   pos.triggerScan()
   playBeep()
   selectedRow.value = cart.items.length - 1
-  nextTick(() => searchInputEl.value?.focus())
+  nextTick(() => {
+    searchInputEl.value?.focus()
+    searchFocused.value = true  // calling .focus() on an already-focused input won't re-fire @focus, so we set this explicitly
+  })
+  schedulePatch()
+}
+
+function removeLast() {
+  if (cart.isEmpty) return
+  const last = cart.items[cart.items.length - 1]
+  cart.removeItem(last.variant_id)
   schedulePatch()
 }
 
@@ -556,16 +578,39 @@ function reprint() {
 
 // ── Global keyboard shortcuts ─────────────────────────────────
 const posSettings = computed(() => auth.user?.pos_settings || {})
-const shortcuts   = computed(() => posSettings.value.shortcuts || {
-  pay: 'F9', discount: 'F8', hold: 'F4', reprint: 'F2', focus_search: 'F1',
-})
+const shortcuts = computed(() => ({
+  focus_search: 'F1',
+  pay:          'F9',
+  discount:     'F8',
+  hold:         'F4',
+  reprint:      'F2',
+  remove_last:  'F10',
+  undo:         'Ctrl+Z',
+  redo:         'Ctrl+Y',
+  returns:      'Alt+R',
+  fav_1:  'Alt+1', fav_2:  'Alt+2', fav_3:  'Alt+3',
+  fav_4:  'Alt+4', fav_5:  'Alt+5', fav_6:  'Alt+6',
+  fav_7:  'Alt+7', fav_8:  'Alt+8', fav_9:  'Alt+9',
+  fav_10: 'Alt+0',
+  ...(posSettings.value.shortcuts || {}),
+}))
 
 function buildKeyStr(e) {
   let k = ''
   if (e.ctrlKey && e.key !== 'Control')   k += 'Ctrl+'
   if (e.shiftKey && e.key !== 'Shift')    k += 'Shift+'
   if (e.altKey && e.key !== 'Alt')        k += 'Alt+'
-  k += e.key
+
+  // For Alt combos use e.code so Mac dead-keys don't mangle the letter (Alt+R → ® on Mac)
+  let rawKey
+  if (e.altKey && e.code) {
+    if (e.code.startsWith('Key'))        rawKey = e.code.slice(3)   // KeyR → R
+    else if (e.code.startsWith('Digit')) rawKey = e.code.slice(5)   // Digit1 → 1
+    else rawKey = e.key.length === 1 ? e.key.toUpperCase() : e.key
+  } else {
+    rawKey = e.key.length === 1 ? e.key.toUpperCase() : e.key
+  }
+  k += rawKey
   return k
 }
 
@@ -580,12 +625,30 @@ function onGlobalKey(e) {
     e.preventDefault(); searchInputEl.value?.focus(); return
   }
 
-  if (inInput) return
+  // Function-key shortcuts work even while the search input is focused
+  const isFKey = /^F\d+$/.test(k)
+  if (inInput && !isFKey) return
 
-  if (k === (shortcuts.value.pay || 'F9'))      { e.preventDefault(); openPayment(); return }
-  if (k === (shortcuts.value.discount || 'F8')) { e.preventDefault(); showDiscount.value = true; return }
-  if (k === (shortcuts.value.hold || 'F4'))     { e.preventDefault(); holdOrResume(); return }
-  if (k === (shortcuts.value.reprint || 'F2'))  { e.preventDefault(); reprint(); return }
+  if (k === (shortcuts.value.pay || 'F9'))         { e.preventDefault(); openPayment(); return }
+  if (k === (shortcuts.value.discount || 'F8'))    { e.preventDefault(); showDiscount.value = true; return }
+  if (k === (shortcuts.value.hold || 'F4'))        { e.preventDefault(); holdOrResume(); return }
+  if (k === (shortcuts.value.reprint || 'F2'))     { e.preventDefault(); reprint(); return }
+  if (k === (shortcuts.value.remove_last || 'F10')){ e.preventDefault(); removeLast(); return }
+  if (shortcuts.value.undo && k === shortcuts.value.undo) { e.preventDefault(); cart.undo(); schedulePatch(); return }
+  if (shortcuts.value.redo && k === shortcuts.value.redo) { e.preventDefault(); cart.redo(); schedulePatch(); return }
+  if (shortcuts.value.returns && k === shortcuts.value.returns) { e.preventDefault(); router.push('/finance/returns'); return }
+
+  // Favorites 1–10
+  for (let i = 0; i < 10; i++) {
+    const favKey = `fav_${i + 1}`
+    if (shortcuts.value[favKey] && k === shortcuts.value[favKey]) {
+      const fav = pos.favorites[i]
+      if (fav) { e.preventDefault(); addToCartFromFav(fav) }
+      return
+    }
+  }
+
+  if (inInput) return  // only function keys past here; block non-F-key actions when in input
 
   // Arrow keys navigate the cart
   if (k === 'ArrowDown') { e.preventDefault(); selectedRow.value = Math.min(selectedRow.value + 1, cart.items.length - 1); return }
