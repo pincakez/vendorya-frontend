@@ -209,6 +209,7 @@
     <!-- ═══════════ CATEGORIES TAB ═══════════ -->
     <div v-if="activeTab === 'categories'">
       <div class="dt-card simple">
+        <div class="dt-xscroll">
         <table class="dt">
           <thead><tr><th class="dt-th">Name</th><th class="dt-th">Parent</th><th class="dt-th ta-right">Actions</th></tr></thead>
           <tbody>
@@ -223,12 +224,14 @@
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
 
     <!-- ═══════════ SUPPLIERS TAB ═══════════ -->
     <div v-if="activeTab === 'suppliers'">
       <div class="dt-card simple">
+        <div class="dt-xscroll">
         <table class="dt">
           <thead><tr><th class="dt-th">Name</th><th class="dt-th">Code</th><th class="dt-th">Contact</th><th class="dt-th ta-right">Actions</th></tr></thead>
           <tbody>
@@ -244,6 +247,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
 
@@ -1019,17 +1023,7 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .tab-btn:hover { color: var(--text-primary); }
 .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
-/* ── STICKY toolbar ── */
-.dt-toolbar {
-  position: sticky; top: 0; z-index: 30;
-  display: flex; align-items: center; gap: 14px;
-  background: var(--bg-app); padding: 14px 0;
-}
-.dt-search { display: flex; align-items: center; gap: 6px; width: 300px; flex-shrink: 0; position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: 11px; padding: 8px 10px; }
-.dt-search-icon { color: var(--text-muted); flex-shrink: 0; }
-.dt-search-input { flex: 1; border: none; background: none; outline: none; font-size: 13.5px; color: var(--text-primary); min-width: 0; }
-.dt-x { display: flex; border: none; cursor: pointer; background: var(--border); color: var(--text-muted); border-radius: 6px; padding: 3px; }
-
+/* Toolbar shell (.dt-toolbar/.dt-search/.dt-filter/.dt-add) is global — see src/assets/main.css */
 .cat-slider { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; overflow: hidden; }
 .cat-nav { display: flex; flex-shrink: 0; border: none; background: none; cursor: pointer; color: var(--text-muted); border-radius: 8px; padding: 6px; transition: background 120ms, color 120ms; }
 .cat-nav:hover { background: var(--sb-hover, var(--border)); color: var(--text-primary); }
@@ -1040,13 +1034,7 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .cat-pill:hover { background: var(--bg-card); color: var(--text-primary); }
 .cat-pill.active { background: var(--text-primary); color: var(--bg-card); font-weight: 600; }
 
-.dt-filter { display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 10px 16px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: 11px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background 120ms, color 120ms; }
-.dt-filter:hover, .dt-filter.on { color: var(--text-primary); border-color: var(--accent); }
-.dt-add { display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 10px 16px; border: none; background: var(--accent); color: #fff; border-radius: 11px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background 120ms, transform 70ms; }
-.dt-add:hover { background: var(--accent-hover, var(--accent)); }
-.dt-add:active { transform: scale(0.96); }
-
-.dt-filterpanel { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: center; }
+.dt-add:active { transform: scale(0.96); }   /* press feedback; base .dt-add is global */
 .filter-select { max-width: 150px; }
 
 /* ── TABLE ── */
@@ -1071,9 +1059,7 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .edit-hint { font-size: 12px; color: var(--text-muted); margin: 8px 0 10px; }
 .chooser { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
 .chooser-row { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-app); cursor: grab; transition: border-color 120ms; }
-/* column header drag */
-.dt-th.col-dragging  { opacity: 0.35; cursor: grabbing !important; }
-.dt-th.col-drag-over { border-left: 3px solid var(--accent); background: var(--accent-soft) !important; }
+/* column-header drag visuals (.dt-th.col-dragging / .col-drag-over) are global */
 
 .chooser-row:hover { border-color: var(--accent); }
 .chooser-row.drag-over { border-color: var(--accent); background: var(--accent-soft); }
@@ -1098,41 +1084,9 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
   border-radius: 8px; font-size: 12.5px; color: var(--text-primary);
 }
 
-/* No overflow:hidden — it would trap the sticky thead. Corners rounded via children. */
-.dt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: box-shadow 150ms; }
-.dt-card.editing { box-shadow: 0 0 0 2px var(--accent), 0 8px 30px var(--accent-soft); }
-.dt thead tr:first-child .dt-th:first-child { border-top-left-radius: 15px; }
-.dt thead tr:first-child .dt-th:last-child  { border-top-right-radius: 15px; }
-.dt-foot { border-radius: 0 0 15px 15px; }
-.dt-card.simple { margin-top: 14px; }
-.dt-xscroll { width: 100%; overflow-x: auto; }
-.dt { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
-
-.dt-th {
-  position: sticky; z-index: 20;
-  padding: 13px 16px; text-align: left; background: var(--bg-app);
-  border-bottom: 1px solid var(--border); color: var(--text-primary);
-  font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
-  white-space: nowrap; user-select: none;
-}
-.dt-th.sortable { cursor: pointer; }
-/* MUST be opaque — a translucent hover lets scrolling rows bleed through the sticky header. */
-.dt-th.sortable:hover { background: #eef2f7; }
-.dark .dt-th.sortable:hover { background: #2a2a2e; }
-.dt-th.ta-right { text-align: right; }
-.dt-th-inner { display: inline-flex; align-items: center; gap: 6px; }
-.dt-th-inner.jend { justify-content: flex-end; }
-.dt-arrow { color: var(--text-muted); opacity: 0.6; flex-shrink: 0; }
-.dt-arrow.on { color: var(--accent); opacity: 1; }
-.dt-resize { position: absolute; right: 0; top: 0; bottom: 0; width: 8px; cursor: col-resize; }
-.dt-resize:hover { background: var(--accent-soft); }
-
-.dt-row { border-bottom: 1px solid var(--border); transition: background 100ms; }
-.dt-row:last-child { border-bottom: none; }
-.dt-row:hover { background: var(--bg-app); }
-.dt-row.clickable { cursor: pointer; }
-.dt td { padding: 12px 16px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
-.ta-right { text-align: right; }
+/* The whole .dt table system (card, scroll, sticky header, rows, empty
+   states, pagination) is now global — see src/assets/main.css.
+   Only product-specific cell styling lives below. */
 
 .c-sku { font-family: ui-monospace, monospace; font-size: 13.5px; letter-spacing: 0.03em; color: var(--text-muted); }
 .c-name { font-weight: 700; }
@@ -1147,23 +1101,7 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 
 .stock-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; padding: 3px 9px; border-radius: 8px; background: var(--text-primary); color: var(--bg-card); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
-.dt-loading, .dt-empty { text-align: center; padding: 48px 20px; color: var(--text-muted); }
-.dt-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.dt td.dt-empty { overflow: visible; white-space: normal; }
-.dt-empty-icon { color: var(--text-muted); opacity: 0.4; margin-bottom: 10px; }
-.dt-empty-title { font-weight: 700; color: var(--text-primary); font-size: 15px; }
-.dt-empty-sub { font-size: 13px; margin-top: 3px; }
-
-/* pagination */
-.dt-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border-top: 1px solid var(--border); flex-wrap: wrap; }
-.dt-perpage { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--text-muted); }
-.dt-perpage select { background: var(--bg-app); border: 1px solid var(--border); border-radius: 7px; padding: 5px 8px; font-size: 12px; font-weight: 700; color: var(--text-primary); cursor: pointer; outline: none; }
-.dt-showing { font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--text-muted); }
-.dt-pages { display: flex; align-items: center; gap: 6px; }
-.dt-pg { display: flex; border: none; background: none; cursor: pointer; color: var(--text-secondary); border-radius: 7px; padding: 4px; transition: background 120ms; }
-.dt-pg:hover:not(:disabled) { background: var(--border); color: var(--text-primary); }
-.dt-pg:disabled { opacity: 0.3; cursor: default; }
-.dt-pgnum { font-size: 13px; font-weight: 700; color: var(--text-primary); padding: 0 6px; }
+/* empty/loading states + pagination are global — see src/assets/main.css */
 
 /* reused */
 .code-chip { font-family: ui-monospace, monospace; font-size: 12px; background: var(--bg-app); border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px; color: var(--text-secondary); }

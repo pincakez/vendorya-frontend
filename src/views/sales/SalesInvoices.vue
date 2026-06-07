@@ -539,16 +539,8 @@ onMounted(() => { loadLayout(); fetchCustomers(); fetchVariants() })
 .tab-btn:hover { color: var(--text-primary); }
 .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
-.dt-toolbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 14px; background: var(--bg-app); padding: 14px 0; flex-wrap: wrap; }
-.dt-search  { display: flex; align-items: center; gap: 6px; width: 280px; flex-shrink: 0; position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: 11px; padding: 8px 10px; }
-.dt-search-icon { color: var(--text-muted); flex-shrink: 0; }
-.dt-search-input { flex: 1; border: none; background: none; outline: none; font-size: 13.5px; color: var(--text-primary); min-width: 0; }
-.dt-x { display: flex; border: none; cursor: pointer; background: var(--border); color: var(--text-muted); border-radius: 6px; padding: 3px; }
+/* Table + toolbar styles are global — see .dt* in src/assets/main.css */
 .dt-filter-sel { padding: 10px 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: 11px; font-size: 13px; cursor: pointer; outline: none; }
-.dt-filter { display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 10px 16px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: 11px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background 120ms, color 120ms; }
-.dt-filter:hover { color: var(--text-primary); border-color: var(--accent); }
-.dt-add { display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 10px 16px; border: none; background: var(--accent); color: #fff; border-radius: 11px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background 120ms, transform 70ms; margin-left: auto; }
-.dt-add:hover { background: var(--accent-hover, var(--accent)); }
 
 .edit-slide-enter-active { animation: editSlideDown 220ms cubic-bezier(0.25,0.8,0.25,1) both; }
 .edit-slide-leave-active { animation: editSlideUp   160ms cubic-bezier(0.4,0,1,1)       both; }
@@ -568,46 +560,8 @@ onMounted(() => { loadLayout(); fetchCustomers(); fetchVariants() })
 .chooser-label { flex: 1; font-size: 12px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chooser-tag   { color: var(--text-muted); flex-shrink: 0; }
 
-.dt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
-.dt-card.editing { box-shadow: 0 0 0 2px var(--accent), 0 8px 30px var(--accent-soft); }
-.dt-xscroll { width: 100%; overflow-x: auto; }
-.dt thead tr:first-child .dt-th:first-child { border-top-left-radius: 15px; }
-.dt thead tr:first-child .dt-th:last-child  { border-top-right-radius: 15px; }
-.dt { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
-.dt-th { padding: 13px 16px; text-align: left; background: var(--bg-app); border-bottom: 1px solid var(--border); color: var(--text-primary); font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; user-select: none; }
-.dt-th.sortable { cursor: pointer; }
-.dt-th.sortable:hover { background: #eef2f7; }
-.dark .dt-th.sortable:hover { background: #2a2a2e; }
-.dt-th.ta-right { text-align: right; }
-.dt-th-inner { display: inline-flex; align-items: center; gap: 6px; }
-.dt-th-inner.jend { justify-content: flex-end; }
-.dt-arrow { color: var(--text-muted); opacity: 0.6; flex-shrink: 0; }
-.dt-arrow.on { color: var(--accent); opacity: 1; }
-.dt-resize { position: absolute; right: 0; top: 0; bottom: 0; width: 8px; cursor: col-resize; }
-.dt-resize:hover { background: var(--accent-soft); }
-.dt-th.col-dragging  { opacity: 0.35; cursor: grabbing !important; }
-.dt-th.col-drag-over { border-left: 3px solid var(--accent); background: var(--accent-soft) !important; }
-.dt-row { border-bottom: 1px solid var(--border); transition: background 100ms; }
-.dt-row:last-child { border-bottom: none; }
-.dt-row:hover { background: var(--bg-app); }
-.dt td { padding: 12px 16px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
-.ta-right { text-align: right; }
-.dt-actcol { width: 96px; white-space: nowrap; }
-.dt-empty { text-align: center; padding: 48px 20px; color: var(--text-muted); }
-.dt-empty-inner { display: flex; flex-direction: column; align-items: center; }
-.dt-empty-icon { color: var(--text-muted); opacity: 0.4; margin-bottom: 10px; }
-.dt-empty-title { font-weight: 700; color: var(--text-primary); font-size: 15px; }
-.dt-empty-sub { font-size: 13px; margin-top: 3px; }
-
-.dt-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border-top: 1px solid var(--border); flex-wrap: wrap; border-radius: 0 0 15px 15px; }
-.dt-perpage { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--text-muted); }
-.dt-perpage select { background: var(--bg-app); border: 1px solid var(--border); border-radius: 7px; padding: 5px 8px; font-size: 12px; font-weight: 700; color: var(--text-primary); cursor: pointer; outline: none; }
-.dt-showing { font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--text-muted); }
-.dt-pages { display: flex; align-items: center; gap: 6px; }
-.dt-pg { display: flex; border: none; background: none; cursor: pointer; color: var(--text-secondary); border-radius: 7px; padding: 4px; transition: background 120ms; }
-.dt-pg:hover:not(:disabled) { background: var(--border); color: var(--text-primary); }
-.dt-pg:disabled { opacity: 0.3; cursor: default; }
-.dt-pgnum { font-size: 13px; font-weight: 700; color: var(--text-primary); padding: 0 6px; }
+/* table — .dt* styles are global (src/assets/main.css) */
+.dt-actcol { width: 96px; white-space: nowrap; }   /* page-specific action-column width */
 
 .assign-list { display: flex; flex-direction: column; gap: 8px; }
 .assign-row  { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
