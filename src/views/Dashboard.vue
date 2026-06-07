@@ -50,6 +50,32 @@
       </div>
     </div>
 
+    <!-- Upcoming Services Widget -->
+    <div v-if="!loading" class="services-widget">
+      <div class="services-header">
+        <span class="services-title">Upcoming Services</span>
+        <router-link v-if="data.upcoming_services.length > 0" to="/services" class="services-link">View all →</router-link>
+      </div>
+      <div v-if="data.upcoming_services.length === 0" class="services-empty">
+        <Briefcase :size="36" class="empty-icon" />
+        <p class="empty-title">No upcoming services</p>
+        <p class="empty-sub">Services with ETAs will appear here.</p>
+      </div>
+      <div v-else class="services-list">
+        <div v-for="svc in data.upcoming_services" :key="svc.id" class="service-item">
+          <div class="service-col-ref">{{ svc.serial_number }}</div>
+          <div class="service-col-main">
+            <div class="service-name">{{ svc.client_name }}</div>
+            <div class="service-type">{{ svc.service_type }}</div>
+          </div>
+          <div class="service-col-eta">
+            <div class="eta-label">{{ fmtETA(svc.eta_datetime) }}</div>
+            <div class="eta-time">{{ fmtTime(svc.eta_datetime) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Bottom Grid: Recent Sales + Low Stock -->
     <div v-if="!loading" class="bottom-grid">
 
@@ -137,7 +163,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { TrendingUp, ShoppingBag, Clock, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-vue-next'
+import { TrendingUp, ShoppingBag, Clock, AlertTriangle, CheckCircle, RefreshCw, Briefcase } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { formatNumber, formatQty } from '@/utils/format'
@@ -170,6 +196,20 @@ async function fetchData() {
 
 function fmtTime(d) {
   return d ? new Date(d).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '—'
+}
+
+function fmtETA(d) {
+  if (!d) return '—'
+  const eta = new Date(d)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const etaDate = new Date(eta.getFullYear(), eta.getMonth(), eta.getDate())
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  if (etaDate.getTime() === today.getTime()) return 'Today'
+  if (etaDate.getTime() === tomorrow.getTime()) return 'Tomorrow'
+  return eta.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
 onMounted(fetchData)
@@ -333,4 +373,89 @@ onMounted(fetchData)
 }
 .qty-zero { background: #fee2e2; color: #dc2626; }
 .qty-low  { background: #fef3c7; color: #92400e; }
+
+/* Services Widget */
+.services-widget {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.services-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.services-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.services-link  { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
+.services-link:hover { text-decoration: underline; }
+
+.services-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.service-item {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background 100ms;
+}
+.service-item:last-child { border-bottom: none; }
+.service-item:hover { background: var(--bg-app); }
+
+.service-col-ref {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.service-col-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.service-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.service-type {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.service-col-eta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.eta-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.eta-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
 </style>

@@ -365,6 +365,71 @@
       </div>
     </div>
 
+    <!-- ══ TAB: Service Types ══ -->
+    <div v-if="activeTab === 'services'">
+      <div class="settings-card">
+        <div class="section-divider">Service Types</div>
+        <p class="form-hint">Define the types of services your store offers. These labels appear in service records.</p>
+
+        <div v-if="serviceLoading" class="skeleton-row" style="height:120px;border-radius:8px;max-width:480px;" />
+        <template v-else>
+          <div class="service-types-list">
+            <div v-if="settingsForm.service_types.length === 0" class="empty-types">
+              <p>No service types defined yet.</p>
+            </div>
+            <div v-for="(type, i) in settingsForm.service_types" :key="i" class="service-type-item">
+              <span>{{ type }}</span>
+              <button class="btn-remove" @click="removeServiceType(i)" title="Remove"><Trash :size="13" /></button>
+            </div>
+          </div>
+
+          <div class="add-service-type">
+            <input
+              v-model="newServiceType"
+              class="form-input"
+              placeholder="e.g. Hardware Repair"
+              @keyup.enter="addServiceType"
+              style="max-width:280px;"
+            />
+            <button class="btn-secondary btn-sm" @click="addServiceType" :disabled="!newServiceType.trim()">
+              <Plus :size="14" /> Add Type
+            </button>
+          </div>
+        </template>
+
+        <div class="section-divider" style="margin-top:24px;">Notification Timing</div>
+        <div style="display:flex;gap:12px;align-items:flex-end;max-width:400px;">
+          <div style="flex:1;">
+            <label class="form-label">Notify before ETA (hours)</label>
+            <input
+              v-model.number="settingsForm.service_notify_hours"
+              type="number"
+              min="0"
+              max="168"
+              class="form-input"
+            />
+            <p class="form-hint">Fire notifications when a service's ETA is within this window. 0 = disabled.</p>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
+          <button class="btn-secondary" :disabled="notifyRunning" @click="runNotifications">
+            <span v-if="notifyRunning">Running…</span>
+            <span v-else>Run notifications now</span>
+          </button>
+          <span v-if="notifyOk" class="save-ok" style="margin-left:12px;">Notifications checked.</span>
+        </div>
+
+        <div class="form-footer">
+          <button class="btn-primary" :disabled="serviceSaving" @click="saveServiceSettings">
+            {{ serviceSaving ? 'Saving…' : 'Save Service Settings' }}
+          </button>
+          <span v-if="serviceError" class="field-error">{{ serviceError }}</span>
+          <span v-if="serviceSuccess" class="save-ok">Settings saved.</span>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ TAB: Security ══ -->
     <div v-if="activeTab === 'security'">
       <div class="settings-card">
@@ -524,7 +589,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import {
   Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X,
-  Settings2, Shield, Plus, UserCog, Tag,
+  Settings2, Shield, Plus, UserCog, Tag, Briefcase, Trash,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
@@ -543,6 +608,7 @@ const tabs = [
   { id: 'receipt',  label: 'Receipt',           icon: Receipt },
   { id: 'labels',   label: 'Label Presets',     icon: Tag },
   { id: 'payments', label: 'Payment Methods',   icon: CreditCard },
+  { id: 'services', label: 'Service Types',     icon: Briefcase },
   { id: 'security', label: 'Security',          icon: Shield },
 ]
 const activeTab = ref('store')
@@ -621,6 +687,7 @@ const settingsForm = reactive({
   return_window_days: 0, restocking_fee_percent: 0,
   product_numbering_mode: 'PROGRESSIVE',
   session_timeout_minutes: 0, login_ip_allowlist: '',
+  service_types: [], service_notify_hours: 1,
 })
 const taxes      = ref([])
 const currencies = ref([])
@@ -816,6 +883,58 @@ async function deletePreset(id) {
   try { await api.delete(`/api/core/label-presets/${id}/`); fetchPresets() } catch { alert('Error deleting') }
 }
 
+// ── Service Types ────────────────────────────────────────────────────────
+const serviceLoading = ref(false)
+const serviceSaving  = ref(false)
+const serviceError   = ref('')
+const serviceSuccess = ref(false)
+const notifyRunning  = ref(false)
+const notifyOk       = ref(false)
+const newServiceType = ref('')
+
+function addServiceType() {
+  const type = newServiceType.value.trim()
+  if (!type || settingsForm.service_types.includes(type)) return
+  settingsForm.service_types.push(type)
+  newServiceType.value = ''
+}
+
+function removeServiceType(i) {
+  settingsForm.service_types.splice(i, 1)
+}
+
+async function saveServiceSettings() {
+  serviceError.value = ''
+  serviceSuccess.value = false
+  serviceSaving.value = true
+  try {
+    await api.patch('/api/core/settings/', {
+      service_types: settingsForm.service_types,
+      service_notify_hours: settingsForm.service_notify_hours,
+    })
+    serviceSuccess.value = true
+    setTimeout(() => (serviceSuccess.value = false), 2500)
+  } catch (e) {
+    serviceError.value = e.response?.data?.detail || 'Failed to save service settings.'
+  } finally {
+    serviceSaving.value = false
+  }
+}
+
+async function runNotifications() {
+  notifyOk.value = false
+  notifyRunning.value = true
+  try {
+    await api.post('/api/services/run-notifications/')
+    notifyOk.value = true
+    setTimeout(() => (notifyOk.value = false), 3000)
+  } catch (e) {
+    serviceError.value = e.response?.data?.detail || 'Failed to run notifications.'
+  } finally {
+    notifyRunning.value = false
+  }
+}
+
 // Load on tab switch
 watch(activeTab, tab => {
   if (tab === 'branches' && branches.value.length === 0) { fetchBranches(); fetchOwners() }
@@ -918,4 +1037,16 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .btn-upload:hover { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
 .btn-logo-clear { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:7px; font-size:12px; font-weight:500; border:1px solid rgba(220,38,38,0.3); background:rgba(220,38,38,0.06); color:#dc2626; cursor:pointer; }
 .btn-logo-clear:hover { background:rgba(220,38,38,0.14); }
+
+/* Service Types */
+.service-types-list { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+.empty-types { color:var(--text-muted); font-size:13px; padding:12px; text-align:center; }
+.service-type-item { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; background:var(--bg-app); border:1px solid var(--border); }
+.service-type-item span { font-size:13px; font-weight:500; }
+.btn-remove { width:28px; height:28px; border-radius:6px; border:none; background:transparent; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
+.btn-remove:hover { background:rgba(220,38,38,0.1); color:#dc2626; }
+.add-service-type { display:flex; gap:8px; align-items:center; margin-bottom:16px; }
+.btn-sm { padding:6px 12px; font-size:13px; }
+.save-ok { font-size:12.5px; color:var(--success, #16a34a); }
+.field-error { font-size:12.5px; color:var(--danger, #dc2626); }
 </style>
