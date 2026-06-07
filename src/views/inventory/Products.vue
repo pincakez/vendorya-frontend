@@ -139,7 +139,7 @@
                     colDragOver === col.key && colDragKey !== col.key && colDragMoved ? 'col-drag-over' : ''
                   ]"
                   :style="col.key === 'product'
-                    ? { minWidth: colWidths[col.key] + 'px', top: theadTop + 'px' }
+                    ? { minWidth: colWidths[col.key] + 'px', top: theadTop + 'px', position: 'sticky', left: '0', zIndex: 22, background: 'var(--bg-app)' }
                     : { width: colWidths[col.key] + 'px', top: theadTop + 'px' }"
                   @click="col.sort && handleSort(col)"
                   @pointerdown="startColDrag(col.key, $event)"
@@ -162,7 +162,7 @@
                   <td v-if="bulkMode" class="dt-selcol" @click.stop>
                     <input type="checkbox" class="dt-cb" :checked="isSelected(p.id)" @change="toggleSelect(p.id)" />
                   </td>
-                  <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '']">
+                  <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '', col.key === 'product' ? 'col-frozen' : '']">
                     <span v-if="col.badge" class="stock-badge">{{ formatQty(p.total_stock) }}</span>
                     <template v-else-if="col.money && p[col.field] !== undefined && p[col.field] !== null && p[col.field] !== ''"><span v-if="col.plus">+</span><Money :value="p[col.field]" /></template>
                     <template v-else>
@@ -192,7 +192,7 @@
         <div class="dt-foot">
           <div class="dt-perpage">
             <span>PER PAGE</span>
-            <select v-model.number="pageSize" @change="fetchProducts(1)">
+            <select v-model.number="pageSize" @change="fetchProducts(1); saveAdhoc()">
               <option :value="50">50</option><option :value="75">75</option><option :value="100">100</option>
             </select>
           </div>
@@ -1115,7 +1115,7 @@ onUnmounted(() => { ro?.disconnect() })
 .dt thead tr:first-child .dt-th:last-child  { border-top-right-radius: 15px; }
 .dt-foot { border-radius: 0 0 15px 15px; }
 .dt-card.simple { margin-top: 14px; }
-.dt-xscroll { width: 100%; }
+.dt-xscroll { width: 100%; overflow-x: auto; }
 .dt { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
 
 .dt-th {
@@ -1146,6 +1146,8 @@ onUnmounted(() => { ro?.disconnect() })
 
 .c-sku { font-family: ui-monospace, monospace; font-size: 13.5px; letter-spacing: 0.03em; color: var(--text-muted); }
 .c-name { font-weight: 700; }
+.col-frozen { position: sticky; left: 0; background: var(--bg-card); z-index: 1; }
+.dt-row:hover .col-frozen { background: var(--bg-app); }
 .c-sup { color: var(--text-secondary); font-size: 14.5px; }
 .c-mono { font-family: ui-monospace, monospace; font-size: 14.5px; font-variant-numeric: tabular-nums; }
 .c-muted { color: var(--text-muted); }
