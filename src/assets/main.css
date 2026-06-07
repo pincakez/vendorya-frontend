@@ -235,17 +235,16 @@ body {
    the scroll (each page drifted apart). Page-specific extras
    only (stock-badge, c-sku, col-frozen, edit-panel, etc.).
 
-   STICKY HEADER, done right: the header is sticky to its OWN
-   scroll box (.dt-xscroll), not the page. top:0 anchors it to
-   the top of that box, so it stays pinned and can never float
-   mid-table again. The pagination footer lives OUTSIDE the
-   scroll box, so it stays put at the bottom of the card.
+   SCROLLING: there is ONE scrollbar — the browser/page one. The
+   table does NOT get its own vertical scroll box (that produced a
+   double scrollbar). The header therefore scrolls away with the
+   page, like a normal long page. .dt-xscroll only adds a
+   HORIZONTAL scrollbar for wide tables (Products' many columns +
+   frozen first column); it has no height cap, so it never creates
+   a second vertical scrollbar.
    ══════════════════════════════════════════════════════════ */
 
-/* Card shell. overflow:hidden is SAFE here — the scroll (and
-   therefore the sticky context) lives on .dt-xscroll inside,
-   so the rounded corners clip cleanly without trapping the
-   sticky thead. */
+/* Card shell. overflow:hidden clips the rounded corners cleanly. */
 .dt-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -257,22 +256,21 @@ body {
 .dt-card.editing { box-shadow: 0 0 0 2px var(--accent), 0 8px 30px var(--accent-soft); }
 .dt-card.simple  { margin-top: 14px; }
 
-/* The scroll container: scrolls both axes and is the anchor
-   the sticky header sticks to. max-height caps a long list so
-   it scrolls inside the card (header pinned) instead of pushing
-   the page; short lists collapse to their content, no gap. */
+/* Horizontal scroll only — no max-height, so no second vertical
+   scrollbar. The page's own scrollbar handles vertical scrolling. */
 .dt-xscroll {
   width: 100%;
-  overflow: auto;
-  max-height: calc(100vh - 240px);
+  overflow-x: auto;
 }
 
 .dt { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
 .dt thead tr:first-child .dt-th:first-child { border-top-left-radius: 15px; }
 .dt thead tr:first-child .dt-th:last-child  { border-top-right-radius: 15px; }
 
+/* Header is NOT sticky — it scrolls away with the page (single
+   scrollbar). Products' frozen first-column header still pins
+   horizontally via its own inline position:sticky;left:0. */
 .dt-th {
-  position: sticky; top: 0; z-index: 20;   /* ← the fix: top:0 anchors the sticky header */
   padding: 13px 16px; text-align: left; background: var(--bg-app);
   border-bottom: 1px solid var(--border); color: var(--text-primary);
   font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
