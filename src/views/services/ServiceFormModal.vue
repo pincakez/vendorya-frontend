@@ -167,8 +167,10 @@ import { ref, reactive, computed, watch } from 'vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
+import { useQZTray } from '@/composables/useQZTray'
 
 const auth = useAuthStore()
+const { sendRaw, isAvailable } = useQZTray()
 
 const props = defineProps({
   open:         { type: Boolean, default: false },
@@ -338,7 +340,58 @@ async function save() {
 }
 
 /* ── Print receipt ───────────────────────────────────────────── */
-function printReceipt() {
+
+// ESC/POS constants
+const _ESC = '\x1B', _GS = '\x1D', _LF = '\x0A'
+const _INIT    = _ESC + '\x40'
+const _CENTER  = _ESC + '\x61\x01'
+const _LEFT    = _ESC + '\x61\x00'
+const _BOLD_ON = _ESC + '\x45\x01'
+const _BOLD_OFF= _ESC + '\x45\x00'
+const _SIZE_2X = _ESC + '\x21\x30'
+const _SIZE_NRM= _ESC + '\x21\x00'
+const _CUT     = _GS  + '\x56\x42\x05'
+const _COLS    = 48
+
+function _ln(t = '') { return t + _LF }
+function _dashes() { return '-'.repeat(_COLS) + _LF }
+function _two(l, r) { return l + ' '.repeat(Math.max(1, _COLS - l.length - r.length)) + r + _LF }
+
+function buildServiceESCPOS(copy) {
+  const storeName  = auth.storeName || auth.activeStore?.name || 'Store'
+  const clientName = form.freeText ? (form.client_name || 'Walk-in') : (form.clientName || 'Walk-in')
+  const clientPhone= form.freeText ? (form.client_phone || '') : ''
+  const serial     = form.serial_number || props.serviceId?.slice(0, 8) || '—'
+  const stype      = form.service_type === '__custom__' ? form.custom_type : (form.service_type || '—')
+  const rcvDate    = form.receive_date || '—'
+  const etaStr     = form.no_eta ? 'No ETA' : `${form.eta_days || 0}d ${form.eta_hours || 0}h from receive`
+  const info       = form.info || '—'
+  const keeping    = form.keeping || '—'
+  const cost       = `${auth.currencySymbol || ''} ${form.cost || 0}`
+
+  let out = _INIT
+  out += _CENTER
+  out += _SIZE_2X + _BOLD_ON + _ln(storeName) + _SIZE_NRM + _BOLD_OFF
+  out += _dashes()
+  out += _BOLD_ON + _ln(copy) + _BOLD_OFF
+  out += _ln('SRV# ' + serial)
+  out += _dashes()
+  out += _LEFT
+  out += _two('Client:', (clientName + (clientPhone ? ' ' + clientPhone : '')).slice(0, _COLS - 10))
+  out += _two('Service:', stype.slice(0, _COLS - 10))
+  out += _two('Received:', rcvDate)
+  out += _two('ETA:', etaStr.slice(0, _COLS - 6))
+  out += _two('Items:', keeping.slice(0, _COLS - 8))
+  if (info && info !== '—') out += _two('Info:', info.slice(0, _COLS - 7))
+  out += _dashes()
+  out += _BOLD_ON + _two('COST:', cost) + _BOLD_OFF
+  out += _dashes()
+  out += _CENTER + _ln('Thank you for choosing ' + storeName) + _LEFT
+  out += _LF + _LF + _LF + _CUT
+  return out
+}
+
+function printReceiptCSS() {
   const storeName  = auth.storeName || auth.activeStore?.name || 'Store'
   const clientName = form.freeText ? (form.client_name || 'Walk-in') : (form.clientName || 'Walk-in')
   const clientPhone = form.freeText ? (form.client_phone || '') : ''
@@ -350,7 +403,7 @@ function printReceipt() {
   const keeping    = form.keeping || '—'
   const cost       = `${auth.currencySymbol || ''} ${form.cost || 0}`
 
-  const receiptBlock = (title) => `
+  const block = (title) => `
     <div class="receipt">
       <div class="r-header">
         <div class="r-store">${storeName}</div>
@@ -374,10 +427,7 @@ function printReceipt() {
     @page { size: 80mm auto; margin: 0; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Courier New', monospace; font-size: 11px; background: #fff; width: 80mm; }
-    .receipt {
-      width: 80mm; padding: 5mm 4mm 6mm;
-      page-break-after: always; break-after: page;
-    }
+    .receipt { width: 80mm; padding: 5mm 4mm 6mm; page-break-after: always; break-after: page; }
     .receipt:last-child { page-break-after: auto; break-after: auto; }
     .r-header { text-align: center; border-bottom: 1px dashed #999; padding-bottom: 4mm; margin-bottom: 3mm; }
     .r-store  { font-size: 14px; font-weight: bold; letter-spacing: .05em; }
@@ -386,18 +436,12 @@ function printReceipt() {
     .r-table  { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
     .r-table td { padding: 1.5mm 1mm; vertical-align: top; font-size: 10px; line-height: 1.4; }
     .r-lbl    { color: #444; width: 30%; white-space: nowrap; font-weight: bold; }
-    .r-sep    { border-top: 1px dashed #999; padding-top: 2mm; }
     .r-footer { text-align: center; font-size: 9px; color: #666; border-top: 1px dashed #999; padding-top: 3mm; margin-top: 2mm; }
-    @media screen {
-      body { background: #e5e5e5; width: auto; padding: 10px 0; }
-      .receipt { border: 1px dashed #aaa; margin: 10px auto; background: #fff; }
-    }
-    @media print {
-      body { background: #fff; margin: 0; }
-    }
+    @media screen { body { background: #e5e5e5; width: auto; padding: 10px 0; } .receipt { border: 1px dashed #aaa; margin: 10px auto; background: #fff; } }
+    @media print  { body { background: #fff; margin: 0; } }
   </style></head><body>
-    ${receiptBlock('CLIENT RECEIPT')}
-    ${receiptBlock('STORE RECEIPT')}
+    ${block('CLIENT RECEIPT')}
+    ${block('STORE RECEIPT')}
   </body></html>`
 
   const w = window.open('', '_blank', 'width=340,height=580')
@@ -405,6 +449,24 @@ function printReceipt() {
   w.document.close()
   w.focus()
   setTimeout(() => { w.print() }, 400)
+}
+
+async function printReceipt() {
+  try {
+    const available = await isAvailable()
+    if (available) {
+      const settingsRes = await api.get('/api/core/settings/')
+      const printerName = settingsRes.data.receipt_printer_name || ''
+      if (printerName) {
+        await sendRaw(printerName, buildServiceESCPOS('CLIENT RECEIPT'))
+        await sendRaw(printerName, buildServiceESCPOS('STORE RECEIPT'))
+        return
+      }
+    }
+  } catch {
+    // silent — fall through to CSS print
+  }
+  printReceiptCSS()
 }
 </script>
 

@@ -420,6 +420,33 @@
           <span v-if="notifyOk" class="save-ok" style="margin-left:12px;">Notifications checked.</span>
         </div>
 
+        <div class="section-divider" style="margin-top:24px;">Printers (QZ Tray)</div>
+        <p class="form-hint">
+          Enter the exact printer name as it appears in Windows (Control Panel → Devices and Printers).
+          Leave blank to fall back to browser print. Requires
+          <strong>QZ Tray</strong> installed on the machine doing the printing.
+        </p>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;max-width:600px;">
+          <div style="flex:1;min-width:220px;">
+            <label class="form-label">Label Printer Name</label>
+            <input
+              v-model="settingsForm.label_printer_name"
+              class="form-input"
+              placeholder="e.g. XPrinter XP-420B"
+            />
+            <p class="form-hint">50 mm × 25 mm TSPL labels.</p>
+          </div>
+          <div style="flex:1;min-width:220px;">
+            <label class="form-label">Receipt Printer Name</label>
+            <input
+              v-model="settingsForm.receipt_printer_name"
+              class="form-input"
+              placeholder="e.g. XPrinter XP-58"
+            />
+            <p class="form-hint">80 mm thermal receipts (ESC/POS).</p>
+          </div>
+        </div>
+
         <div class="form-footer">
           <button class="btn-primary" :disabled="serviceSaving" @click="saveServiceSettings">
             {{ serviceSaving ? 'Saving…' : 'Save Service Settings' }}
@@ -688,6 +715,7 @@ const settingsForm = reactive({
   product_numbering_mode: 'PROGRESSIVE',
   session_timeout_minutes: 0, login_ip_allowlist: '',
   service_types: [], service_notify_hours: 1,
+  label_printer_name: '', receipt_printer_name: '',
 })
 const taxes      = ref([])
 const currencies = ref([])
@@ -909,8 +937,10 @@ async function saveServiceSettings() {
   serviceSaving.value = true
   try {
     await api.patch('/api/core/settings/', {
-      service_types: settingsForm.service_types,
+      service_types:        settingsForm.service_types,
       service_notify_hours: settingsForm.service_notify_hours,
+      label_printer_name:   settingsForm.label_printer_name,
+      receipt_printer_name: settingsForm.receipt_printer_name,
     })
     serviceSuccess.value = true
     setTimeout(() => (serviceSuccess.value = false), 2500)

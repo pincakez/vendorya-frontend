@@ -99,13 +99,16 @@ import { ArrowLeft, Printer } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
 import { formatQty } from '@/utils/format'
+import { useQZTray } from '@/composables/useQZTray'
 
 const route  = useRoute()
 const router = useRouter()
 const fmt    = useFormatStore()
+const { sendRaw, isAvailable } = useQZTray()
 
 const loading = ref(true)
 const error   = ref('')
+const receiptPrinterName = ref('')
 const inv = reactive({
   invoice: {}, store: {}, branch: null, customer: null,
   legal: {}, currency: null, items: [], payments: [],
@@ -125,8 +128,12 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const res = await api.get(`/api/finance/invoices/${route.params.id}/print-data/`)
-    Object.assign(inv, res.data)
+    const [printRes, settingsRes] = await Promise.all([
+      api.get(`/api/finance/invoices/${route.params.id}/print-data/`),
+      api.get('/api/core/settings/'),
+    ])
+    Object.assign(inv, printRes.data)
+    receiptPrinterName.value = settingsRes.data.receipt_printer_name || ''
     // Honor the invoice's own store currency for this document (sudo-safe).
     if (inv.currency) {
       fmt.symbol = inv.currency.symbol || fmt.symbol
@@ -141,7 +148,100 @@ async function load() {
   }
 }
 
-function doPrint() { window.print() }
+// ── ESC/POS receipt builder ─────────────────────────────────────────────────
+const ESC = '\x1B', GS = '\x1D', LF = '\x0A'
+const INIT    = ESC + '\x40'
+const CENTER  = ESC + '\x61\x01'
+const LEFT    = ESC + '\x61\x00'
+const BOLD_ON = ESC + '\x45\x01'
+const BOLD_OFF= ESC + '\x45\x00'
+const SIZE_2X = ESC + '\x21\x30'
+const SIZE_NRM= ESC + '\x21\x00'
+const CUT     = GS  + '\x56\x42\x05'
+const COLS = 48
+
+function esc_line(text = '') { return text + LF }
+function esc_dashes() { return '-'.repeat(COLS) + LF }
+function esc_two(left, right) {
+  const gap = Math.max(1, COLS - left.length - right.length)
+  return left + ' '.repeat(gap) + right + LF
+}
+function esc_money(val) { return parseFloat(val || 0).toFixed(2) }
+
+function buildInvoiceESCPOS() {
+  let out = INIT
+  // Store header
+  out += CENTER
+  out += SIZE_2X + BOLD_ON + esc_line(inv.store.name || '') + SIZE_NRM + BOLD_OFF
+  const hdrLines = (inv.legal.receipt_header || '').split('\n').map(l => l.trim()).filter(Boolean)
+  for (const l of hdrLines) out += esc_line(l)
+  if (inv.store.phone_number) out += esc_line('Tel: ' + inv.store.phone_number)
+  const loc = [inv.store.city, inv.store.country].filter(Boolean).join(', ')
+  if (loc) out += esc_line(loc)
+  out += esc_dashes()
+
+  // Invoice meta
+  out += LEFT
+  out += BOLD_ON + ('INVOICE #' + (inv.invoice.invoice_number || '—')) + BOLD_OFF + LF
+  out += esc_line(fmtDate(inv.invoice.date))
+  if (inv.customer?.name) out += esc_line('Customer: ' + inv.customer.name)
+  if (inv.branch?.name)   out += esc_line('Branch:   ' + inv.branch.name)
+  out += esc_dashes()
+
+  // Line items
+  for (const it of inv.items) {
+    const name  = String(it.name || '').slice(0, COLS - 12)
+    const total = esc_money(it.total)
+    out += (name + ' x' + it.quantity).padEnd(COLS - total.length - 1) + ' ' + total + LF
+    if (Number(it.discount_amount) > 0) {
+      const disc = '- ' + esc_money(it.discount_amount)
+      out += '  Disc:'.padEnd(COLS - disc.length - 1) + ' ' + disc + LF
+    }
+  }
+  out += esc_dashes()
+
+  // Totals
+  out += esc_two('Subtotal:', esc_money(inv.invoice.subtotal))
+  if (Number(inv.invoice.tax_total) > 0)
+    out += esc_two('Tax:', esc_money(inv.invoice.tax_total))
+  if (Number(inv.invoice.discount) > 0)
+    out += esc_two('Discount:', '- ' + esc_money(inv.invoice.discount))
+  out += BOLD_ON + esc_two('TOTAL:', esc_money(inv.invoice.grand_total)) + BOLD_OFF
+  out += esc_two('Paid:', esc_money(inv.invoice.paid_amount))
+  const bal = Number(inv.invoice.grand_total || 0) - Number(inv.invoice.paid_amount || 0)
+  if (bal > 0.005) out += BOLD_ON + esc_two('Balance Due:', esc_money(bal)) + BOLD_OFF
+
+  // Payments
+  if (inv.payments.length) {
+    out += esc_dashes()
+    for (const p of inv.payments) out += esc_two(p.method + ':', esc_money(p.amount))
+  }
+
+  // Footer
+  const ftrLines = (inv.legal.receipt_footer || '').split('\n').map(l => l.trim()).filter(Boolean)
+  if (ftrLines.length) {
+    out += esc_dashes()
+    out += CENTER
+    for (const l of ftrLines) out += esc_line(l)
+    out += LEFT
+  }
+  out += LF + LF + LF + CUT
+  return out
+}
+
+async function doPrint() {
+  try {
+    const available = await isAvailable()
+    if (available && receiptPrinterName.value) {
+      await sendRaw(receiptPrinterName.value, buildInvoiceESCPOS())
+      return
+    }
+  } catch {
+    // silent — fall through to browser print
+  }
+  window.print()
+}
+
 function goBack() { router.push('/finance/invoices') }
 
 onMounted(load)

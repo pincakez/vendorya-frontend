@@ -7,7 +7,9 @@
         <span class="tb-title">Label Print</span>
         <span class="tb-meta">{{ totalLabels }} label{{ totalLabels !== 1 ? 's' : '' }} · {{ preset.width_mm }}×{{ preset.height_mm }} mm</span>
       </div>
-      <button class="tb-btn primary" @click="window.print()"><Printer :size="15" /> Print</button>
+      <button class="tb-btn primary" :disabled="printing" @click="doPrint">
+        <Printer :size="15" /> {{ printing ? 'Sending…' : 'Print' }}
+      </button>
     </div>
 
     <div v-if="!job" class="no-job no-print">
@@ -41,10 +43,16 @@ import { ArrowLeft, Printer } from 'lucide-vue-next'
 import JsBarcode from 'jsbarcode'
 import { useLabelsStore } from '@/stores/labels'
 import { useFormatStore } from '@/stores/format'
+import { useQZTray } from '@/composables/useQZTray'
+import api from '@/api/axios'
 
 const router = useRouter()
 const labelsStore = useLabelsStore()
 const fmt = useFormatStore()
+const { sendRaw, isAvailable } = useQZTray()
+
+const printing = ref(false)
+const labelPrinterName = ref('')
 
 const job    = computed(() => labelsStore.job)
 const preset = computed(() => job.value?.preset ?? {})
@@ -81,7 +89,50 @@ function fmtPrice(val) {
 
 function goBack() { router.back() }
 
+function buildTSPL(labels, storeName) {
+  let out = 'SIZE 50 mm, 25 mm\r\nGAP 2 mm, 0 mm\r\nDIRECTION 1\r\n'
+  for (const label of labels) {
+    const price = parseFloat(label.sell_price || 0).toFixed(2) + ' EGP'
+    const sku   = (label.barcode || label.sku || '').replace(/"/g, '')
+    const store = (storeName || '').replace(/"/g, '')
+    out += `CLS\r\n`
+    out += `TEXT 400,20,"ROMAN.TTF",0,1,1,"${store}"\r\n`
+    out += `BARCODE 400,60,"128",80,1,0,2,2,"${sku}"\r\n`
+    out += `TEXT 400,160,"ROMAN.TTF",0,1,1,"${price}"\r\n`
+    out += `PRINT 1,1\r\n`
+  }
+  return out
+}
+
+async function doPrint() {
+  if (!job.value || printing.value) return
+  printing.value = true
+  try {
+    const available = await isAvailable()
+    if (available && labelPrinterName.value) {
+      const tspl = buildTSPL(flatLabels.value, job.value.store_name)
+      await sendRaw(labelPrinterName.value, tspl)
+    } else {
+      if (!available) {
+        alert('QZ Tray is not running. Falling back to browser print.\nInstall QZ Tray for direct silent printing.')
+      } else if (!labelPrinterName.value) {
+        alert('No label printer configured. Set the "Label Printer Name" in Settings → Service Types.\nFalling back to browser print.')
+      }
+      window.print()
+    }
+  } catch (err) {
+    alert('Print error: ' + (err.message || err))
+  } finally {
+    printing.value = false
+  }
+}
+
 onMounted(async () => {
+  // Load printer name from store settings (non-blocking — screen still renders)
+  api.get('/api/core/settings/').then(r => {
+    labelPrinterName.value = r.data.label_printer_name || ''
+  }).catch(() => {})
+
   await nextTick()
   if (!preset.value.show_barcode) return
   flatLabels.value.forEach((label, i) => {
@@ -89,7 +140,7 @@ onMounted(async () => {
     if (!el) return
     try {
       JsBarcode(el, label.barcode || label.sku, {
-        format:      'CODE128',
+        format:       'CODE128',
         displayValue: false,
         margin:       1,
         height:       Math.max(12, (preset.value.height_mm ?? 20) * 1.5),
