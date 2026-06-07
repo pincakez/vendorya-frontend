@@ -235,33 +235,36 @@ body {
    the scroll (each page drifted apart). Page-specific extras
    only (stock-badge, c-sku, col-frozen, edit-panel, etc.).
 
-   SCROLLING (single scrollbar + pinned header): the `v-fill`
-   directive caps .dt-xscroll's height to "down to the bottom of
-   the screen", so the TABLE BODY scrolls inside that box while the
-   <thead> stays pinned (sticky top:0). Because the table fills the
-   viewport, the PAGE itself doesn't scroll — so there's exactly
-   ONE scrollbar (the table's), not a second page-level one. Title,
-   tabs and toolbar stay put above it. .dt-xscroll also handles
-   horizontal scroll for wide tables (Products + frozen column).
+   SCROLLING (the global/browser scrollbar + pinned header): the
+   page (.app-content) is the ONLY scroller — its scrollbar is the
+   browser one on the right. The <thead> is `position: sticky;
+   top: 0`, so as the page scrolls the header pins to the top.
+   CRITICAL: nothing between the <thead> and .app-content may be a
+   scroll container, or it "traps" the sticky and the header
+   scrolls away. So .dt-card must NOT have overflow:hidden and
+   .dt-xscroll must NOT have overflow — both would trap it. (Rounded
+   corners are done on the thead/footer children instead.)
+   TRADE-OFF: because there's no overflow wrapper, the table can't
+   scroll sideways on its own — wide column sets fit/compress
+   instead. (Sideways scroll + a pinned page-header can't coexist.)
    ══════════════════════════════════════════════════════════ */
 
-/* Card shell. overflow:hidden clips the rounded corners cleanly. */
+/* Card shell. NO overflow — it would trap the sticky <thead>.
+   Rounded corners come from the thead/foot children below. */
 .dt-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 16px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  overflow: hidden;
   transition: box-shadow 150ms;
 }
 .dt-card.editing { box-shadow: 0 0 0 2px var(--accent), 0 8px 30px var(--accent-soft); }
 .dt-card.simple  { margin-top: 14px; }
 
-/* Horizontal scroll only — no max-height, so no second vertical
-   scrollbar. The page's own scrollbar handles vertical scrolling. */
+/* No overflow — keeps the page as the only scroll container so the
+   sticky header pins to the browser scrollbar. */
 .dt-xscroll {
   width: 100%;
-  overflow-x: auto;
 }
 
 .dt { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
@@ -323,8 +326,9 @@ body {
 .dt-pgnum { font-size: 13px; font-weight: 700; color: var(--text-primary); padding: 0 6px; }
 
 /* Shared toolbar shell (search + filter + primary action).
-   Sticky to the page so it stays above the table. */
-.dt-toolbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 14px; background: var(--bg-app); padding: 14px 0; flex-wrap: wrap; }
+   NOT sticky — it scrolls away so it doesn't collide with the
+   sticky table header that pins at top:0. */
+.dt-toolbar { display: flex; align-items: center; gap: 14px; background: var(--bg-app); padding: 14px 0; flex-wrap: wrap; }
 .dt-search { display: flex; align-items: center; gap: 6px; width: 300px; flex-shrink: 0; position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: 11px; padding: 8px 10px; }
 .dt-search-icon { color: var(--text-muted); flex-shrink: 0; }
 .dt-search-input { flex: 1; border: none; background: none; outline: none; font-size: 13.5px; color: var(--text-primary); min-width: 0; }

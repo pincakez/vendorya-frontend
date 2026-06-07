@@ -122,8 +122,8 @@
 
       <!-- TABLE -->
       <div class="dt-card" :class="{ editing }">
-        <div class="dt-xscroll" v-fill>
-          <table class="dt" :style="{ minWidth: tableMin + 'px' }">
+        <div class="dt-xscroll">
+          <table class="dt">
             <thead>
               <tr>
                 <th v-if="bulkMode" class="dt-th dt-selcol">
@@ -209,7 +209,7 @@
     <!-- ═══════════ CATEGORIES TAB ═══════════ -->
     <div v-if="activeTab === 'categories'">
       <div class="dt-card simple">
-        <div class="dt-xscroll" v-fill>
+        <div class="dt-xscroll">
         <table class="dt">
           <thead><tr><th class="dt-th">Name</th><th class="dt-th">Parent</th><th class="dt-th ta-right">Actions</th></tr></thead>
           <tbody>
@@ -231,7 +231,7 @@
     <!-- ═══════════ SUPPLIERS TAB ═══════════ -->
     <div v-if="activeTab === 'suppliers'">
       <div class="dt-card simple">
-        <div class="dt-xscroll" v-fill>
+        <div class="dt-xscroll">
         <table class="dt">
           <thead><tr><th class="dt-th">Name</th><th class="dt-th">Code</th><th class="dt-th">Contact</th><th class="dt-th ta-right">Actions</th></tr></thead>
           <tbody>

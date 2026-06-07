@@ -81,8 +81,8 @@
 
       <!-- TABLE -->
       <div class="dt-card" :class="{ editing }">
-        <div class="dt-xscroll" v-fill>
-          <table class="dt" :style="{ minWidth: tableMin + 'px' }">
+        <div class="dt-xscroll">
+          <table class="dt">
             <thead>
               <tr>
                 <th
