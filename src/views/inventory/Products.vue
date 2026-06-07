@@ -353,6 +353,7 @@
           <div style="flex:1;min-width:110px;"><label class="form-label">Base price</label><input v-model.number="prodModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
           <div style="flex:1;min-width:110px;"><label class="form-label">Cost price</label><input v-model.number="prodModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
           <div style="flex:1;min-width:110px;"><label class="form-label">Sell price</label><input v-model.number="prodModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
+          <div style="flex:1;min-width:110px;"><label class="form-label">Reorder level</label><input v-model.number="prodModal.reorder_level" class="form-input" type="number" min="0" step="1" title="Low-stock alert threshold" /></div>
         </div>
 
         <div v-if="attributes.length" style="border-top:1px solid var(--border);padding-top:12px;">
@@ -855,7 +856,7 @@ async function deleteSupplier(id) { if (!confirm('Delete this supplier?')) retur
 /* ── product add / edit ── */
 const prodModal = reactive({
   open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
-  base_price: 0, cost_price: 0, sell_price: 0, attrs: {}, saving: false, error: '',
+  base_price: 0, cost_price: 0, sell_price: 0, reorder_level: 5, attrs: {}, saving: false, error: '',
 })
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
 function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
@@ -863,7 +864,7 @@ function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] 
 function openAddProduct() {
   Object.assign(prodModal, {
     open: true, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
-    base_price: 0, cost_price: 0, sell_price: 0, saving: false, error: '',
+    base_price: 0, cost_price: 0, sell_price: 0, reorder_level: 5, saving: false, error: '',
   })
   resetAttrs()
 }
@@ -883,6 +884,7 @@ async function openEditProduct(p) {
     const v = (data.variants && data.variants[0]) || null
     prodModal.cost_price  = v ? Number(v.cost_price || 0) : 0
     prodModal.sell_price  = v ? Number(v.sell_price || 0) : 0
+    prodModal.reorder_level = v ? Number(v.reorder_level ?? 5) : 5
     if (v && v.attributes) for (const a of v.attributes) prodModal.attrs[a.definition] = a.value
   } catch { prodModal.error = 'Failed to load product details.' }
 }
@@ -899,6 +901,7 @@ async function saveProduct() {
     base_price: prodModal.base_price || 0,
     cost_price: prodModal.cost_price || 0,
     sell_price: prodModal.sell_price || 0,
+    reorder_level: prodModal.reorder_level ?? 5,
     attributes: attributes_payload,
   }
   if (!prodModal.id) payload.supplier = prodModal.supplier   // supplier locked on edit

@@ -290,6 +290,19 @@
           </div>
         </div>
 
+        <div class="form-grid" style="margin-top:16px;">
+          <div class="form-group">
+            <label class="form-label">Return window (days)</label>
+            <input v-model.number="settingsForm.return_window_days" type="number" min="0" step="1" class="form-input" style="width:130px;" placeholder="0" />
+            <p class="form-hint">Reject returns older than this. 0 = no limit.</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Restocking fee (%)</label>
+            <input v-model.number="settingsForm.restocking_fee_percent" type="number" min="0" max="100" step="0.5" class="form-input" style="width:130px;" placeholder="0" />
+            <p class="form-hint">Deducted from each refund payout. 0 = none.</p>
+          </div>
+        </div>
+
         <div class="form-footer">
           <button class="btn-primary" :disabled="storeSaving" @click="saveRules">{{ storeSaving ? 'Saving…' : 'Save Business Rules' }}</button>
         </div>
@@ -605,6 +618,7 @@ const settingsForm = reactive({
   default_tax: '', tax_id: '', commercial_reg: '', print_tax_id: true,
   receipt_header: '', receipt_footer: '',
   credit_policy: 'ALLOW', default_credit_limit: null,
+  return_window_days: 0, restocking_fee_percent: 0,
   product_numbering_mode: 'PROGRESSIVE',
   session_timeout_minutes: 0, login_ip_allowlist: '',
 })
@@ -681,6 +695,8 @@ async function saveRules() {
       enable_agel_selling:  settingsForm.enable_agel_selling,
       credit_policy:        settingsForm.credit_policy,
       default_credit_limit: (settingsForm.credit_policy !== 'ALLOW' && settingsForm.default_credit_limit) ? settingsForm.default_credit_limit : null,
+      return_window_days:   settingsForm.return_window_days || 0,
+      restocking_fee_percent: settingsForm.restocking_fee_percent || 0,
       default_tax:          settingsForm.default_tax || null,
       tax_id:               settingsForm.tax_id,
       commercial_reg:       settingsForm.commercial_reg,

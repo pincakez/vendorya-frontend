@@ -41,6 +41,10 @@
             <div class="info-value"><Money v-if="customer.credit_limit" :value="customer.credit_limit" /> <span v-else class="text-muted">Store default</span></div>
           </div>
           <div class="info-item">
+            <div class="info-label">Store Credit</div>
+            <div class="info-value"><Money v-if="Number(customer.store_credit) > 0" :value="customer.store_credit" /> <span v-else class="text-muted">None</span></div>
+          </div>
+          <div class="info-item">
             <div class="info-label">Notes</div>
             <div class="info-value">{{ customer.notes || '—' }}</div>
           </div>

@@ -5,6 +5,7 @@
         <h1 class="page-title">Returns</h1>
         <p class="page-sub">Customer refund invoices and stock returns</p>
       </div>
+      <button class="btn-primary" @click="openModal"><Plus :size="14" /> New Return</button>
     </div>
 
     <div class="table-wrap">
@@ -13,11 +14,11 @@
       </div>
       <table v-else class="data-table">
         <thead>
-          <tr><th>#</th><th>Date</th><th>Customer</th><th>Original Invoice</th><th>Total Refunded</th><th>Reason</th></tr>
+          <tr><th>#</th><th>Date</th><th>Customer</th><th>Original Invoice</th><th>Total Refunded</th><th>Fee</th><th>Net</th><th>Method</th><th>Reason</th></tr>
         </thead>
         <tbody>
           <tr v-if="refunds.length === 0">
-            <td colspan="6" class="table-empty">
+            <td colspan="9" class="table-empty">
               <RotateCcw :size="32" style="opacity:.3;margin-bottom:8px;" />
               <div>No returns yet</div>
             </td>
@@ -28,6 +29,9 @@
             <td class="col-name">{{ r.customer_name || r.customer }}</td>
             <td class="col-ref">{{ r.original_invoice ? `#${r.original_invoice}` : '—' }}</td>
             <td class="col-refund"><Money :value="r.total_refunded" /></td>
+            <td class="col-fee">{{ Number(r.restocking_fee) > 0 ? '' : '—' }}<Money v-if="Number(r.restocking_fee) > 0" :value="r.restocking_fee" /></td>
+            <td class="col-refund"><Money :value="r.net_refund" /></td>
+            <td><span class="method-pill" :class="r.refund_method === 'STORE_CREDIT' ? 'credit' : 'cash'">{{ r.refund_method === 'STORE_CREDIT' ? 'Store Credit' : 'Cash' }}</span></td>
             <td class="col-reason">{{ r.reason || '—' }}</td>
           </tr>
         </tbody>
@@ -52,11 +56,27 @@
             <option v-for="inv in invoices" :key="inv.id" :value="inv.id">#{{ inv.invoice_number }} — {{ inv.customer_name }}</option>
           </select>
         </div>
+        <div v-if="branches.length > 1">
+          <label class="form-label">Branch</label>
+          <select v-model="modal.branch" class="form-input">
+            <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Refund Method</label>
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="mode-btn" :class="{ active: modal.refund_method === 'CASH' }" @click="modal.refund_method = 'CASH'">Cash</button>
+            <button type="button" class="mode-btn" :class="{ active: modal.refund_method === 'STORE_CREDIT' }" @click="modal.refund_method = 'STORE_CREDIT'">Store Credit</button>
+          </div>
+        </div>
         <div style="grid-column:1/-1;">
           <label class="form-label">Reason</label>
           <textarea v-model="modal.reason" class="form-input" rows="2" placeholder="Why is this being returned?" />
         </div>
       </div>
+      <p v-if="restockingFeePercent > 0" class="fee-note">
+        A {{ restockingFeePercent }}% restocking fee will be deducted from the payout.
+      </p>
 
       <div style="margin-top:18px;">
         <div class="section-label">Items to Return</div>
@@ -89,22 +109,21 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { RotateCcw, Trash2, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
-import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
-import { formatNumber } from '@/utils/format'
 
 const auth = useAuthStore()
-const qab  = useQABStore()
 
 const refunds   = ref([])
 const customers = ref([])
 const invoices  = ref([])
 const variants  = ref([])
+const branches  = ref([])
+const restockingFeePercent = ref(0)
 const loading   = ref(false)
 const total     = ref(0)
 const page      = ref(1)
@@ -123,33 +142,48 @@ async function fetchRefunds(p = 1) {
 
 async function fetchSupporting() {
   try {
-    const [c, inv, v] = await Promise.all([
+    const [c, inv, v, b, s] = await Promise.all([
       api.get('/api/auth/customers/'),
       api.get('/api/finance/invoices/', { params: { status: 'POSTED', page_size: 100 } }),
       api.get('/api/inventory/variants/', { params: { page_size: 200 } }),
+      api.get('/api/core/branches/'),
+      api.get('/api/core/settings/'),
     ])
     customers.value = c.data.results ?? c.data
     invoices.value  = inv.data.results ?? inv.data
     variants.value  = v.data.results ?? v.data
+    branches.value  = b.data.results ?? b.data
+    restockingFeePercent.value = Number(s.data?.restocking_fee_percent || 0)
   } catch {}
 }
 
 const modal = reactive({
-  open: false, customer: '', original_invoice: '', reason: '', items: [],
+  open: false, customer: '', original_invoice: '', branch: '',
+  refund_method: 'CASH', reason: '', items: [],
 })
 
+function defaultBranchId() {
+  const main = branches.value.find(b => b.is_main_branch)
+  return auth.user?.default_branch || main?.id || branches.value[0]?.id || ''
+}
+
 function openModal() {
-  Object.assign(modal, { open: true, customer: '', original_invoice: '', reason: '', items: [] })
+  Object.assign(modal, {
+    open: true, customer: '', original_invoice: '', branch: defaultBranchId(),
+    refund_method: 'CASH', reason: '', items: [],
+  })
 }
 function closeModal() { modal.open = false }
 
 async function saveReturn() {
+  if (!modal.branch) { alert('No branch available for this return.'); return }
   saving.value = true
   try {
     await api.post('/api/finance/refunds/', {
       customer: modal.customer,
       original_invoice: modal.original_invoice || null,
-      branch: auth.user?.store?.id,
+      branch: modal.branch,
+      refund_method: modal.refund_method,
       reason: modal.reason,
       items: modal.items.map(i => ({
         variant: i.variant,
@@ -161,7 +195,8 @@ async function saveReturn() {
     closeModal()
     fetchRefunds(1)
   } catch (e) {
-    alert(e.response?.data?.detail || 'Failed to save return.')
+    const d = e.response?.data
+    alert(d?.detail || (d ? JSON.stringify(d) : 'Failed to save return.'))
   } finally {
     saving.value = false
   }
@@ -170,11 +205,9 @@ async function saveReturn() {
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '—' }
 
 onMounted(() => {
-  qab.setActions([{ id: 'new', label: 'New Return', icon: 'plus', handler: openModal }])
   fetchRefunds()
   fetchSupporting()
 })
-onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
@@ -198,7 +231,17 @@ onUnmounted(() => qab.clearActions())
 .col-name   { font-weight:500; }
 .col-ref    { font-family:monospace; font-size:12px; color:var(--text-muted); }
 .col-refund { color:#dc2626; font-weight:600; font-variant-numeric:tabular-nums; }
+.col-fee    { color:var(--text-muted); font-size:12px; font-variant-numeric:tabular-nums; }
 .col-reason { color:var(--text-muted); font-size:12px; max-width:200px; }
+
+.method-pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; }
+.method-pill.cash   { background:var(--bg-app); color:var(--text-secondary); border:1px solid var(--border); }
+.method-pill.credit { background:#fef3c7; color:#b45309; }
+
+.mode-btn { padding:7px 14px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:all 100ms; }
+.mode-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+.fee-note { margin:14px 0 0; padding:8px 12px; background:#fef3c7; color:#b45309; border-radius:8px; font-size:12.5px; }
 
 .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
