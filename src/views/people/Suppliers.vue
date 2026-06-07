@@ -11,7 +11,7 @@
     </div>
 
     <!-- STICKY TOOLBAR -->
-    <div class="dt-toolbar" ref="toolbarRef">
+    <div class="dt-toolbar">
       <div class="dt-search">
         <Search :size="15" class="dt-search-icon" />
         <input v-model="search" class="dt-search-input" placeholder="Search supplier…" @input="debouncedFetch" />
@@ -76,7 +76,7 @@
                 :class="[col.align === 'right' ? 'ta-right' : '', col.sort ? 'sortable' : '',
                   colDragKey === col.key ? 'col-dragging' : '',
                   colDragOver === col.key && colDragKey !== col.key && colDragMoved ? 'col-drag-over' : '']"
-                :style="{ width: colWidths[col.key] + 'px', top: theadTop + 'px' }"
+                :style="{ width: colWidths[col.key] + 'px' }"
                 @click="col.sort && handleSort(col)"
                 @pointerdown="startColDrag(col.key, $event)"
                 @pointerenter="colDragKey && (colDragOver = col.key)"
@@ -95,9 +95,11 @@
           <tbody>
             <tr v-if="!loading && !suppliers.length">
               <td :colspan="displayColumns.length + 1" class="dt-empty">
-                <Building2 :size="40" class="dt-empty-icon" />
-                <div class="dt-empty-title">No suppliers found</div>
-                <div class="dt-empty-sub">Add suppliers to link them to purchase invoices.</div>
+                <div class="dt-empty-inner">
+                  <Building2 :size="40" class="dt-empty-icon" />
+                  <div class="dt-empty-title">No suppliers found</div>
+                  <div class="dt-empty-sub">Add suppliers to link them to purchase invoices.</div>
+                </div>
               </td>
             </tr>
             <tr v-for="s in suppliers" :key="s.id" class="dt-row clickable" @click="router.push('/people/suppliers/' + s.id)">
@@ -234,7 +236,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Search, X, Building2, Pencil, Trash2, Plus, Lock,
@@ -449,11 +451,6 @@ let searchTimer = null
 function debouncedFetch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => fetchSuppliers(1), 300) }
 function clearSearch() { search.value = ''; fetchSuppliers(1) }
 
-/* ── sticky thead offset ── */
-const toolbarRef = ref(null)
-const theadTop   = ref(0)
-let ro = null
-
 /* ── CRUD ── */
 const saving = ref(false)
 const newModal = reactive({ open: false, name: '', code_prefix: '', contact_info: '', prefixCheck: null, checkingPrefix: false })
@@ -492,12 +489,7 @@ async function deleteSupplier(id) {
   catch (e) { alert(e.response?.data?.detail || 'Cannot delete — supplier may have linked purchases.') }
 }
 
-onMounted(() => {
-  loadLayout()
-  ro = new ResizeObserver(() => { if (toolbarRef.value) theadTop.value = toolbarRef.value.offsetHeight })
-  if (toolbarRef.value) ro.observe(toolbarRef.value)
-})
-onUnmounted(() => ro?.disconnect())
+onMounted(() => { loadLayout() })
 </script>
 
 <style scoped>
@@ -539,7 +531,7 @@ onUnmounted(() => ro?.disconnect())
 .dt thead tr:first-child .dt-th:first-child { border-top-left-radius: 15px; }
 .dt thead tr:first-child .dt-th:last-child  { border-top-right-radius: 15px; }
 .dt { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
-.dt-th { position: sticky; z-index: 20; padding: 13px 16px; text-align: left; background: var(--bg-app); border-bottom: 1px solid var(--border); color: var(--text-primary); font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; user-select: none; }
+.dt-th { padding: 13px 16px; text-align: left; background: var(--bg-app); border-bottom: 1px solid var(--border); color: var(--text-primary); font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; user-select: none; }
 .dt-th.sortable { cursor: pointer; }
 .dt-th.sortable:hover { background: #eef2f7; }
 .dark .dt-th.sortable:hover { background: #2a2a2e; }
@@ -560,7 +552,7 @@ onUnmounted(() => ro?.disconnect())
 .ta-right { text-align: right; }
 .dt-actcol { width: 80px; white-space: nowrap; }
 .dt-empty { text-align: center; padding: 48px 20px; color: var(--text-muted); }
-.dt td.dt-empty { display: flex; flex-direction: column; align-items: center; overflow: visible; white-space: normal; }
+.dt-empty-inner { display: flex; flex-direction: column; align-items: center; }
 .dt-empty-icon { color: var(--text-muted); opacity: 0.4; margin-bottom: 10px; }
 .dt-empty-title { font-weight: 700; color: var(--text-primary); font-size: 15px; }
 .dt-empty-sub { font-size: 13px; margin-top: 3px; }

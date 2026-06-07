@@ -20,7 +20,7 @@
     <!-- ═══════════ PRODUCTS TAB ═══════════ -->
     <div v-if="activeTab === 'products'">
       <!-- STICKY toolbar: search + category quick-filter + Filter -->
-      <div class="dt-toolbar" ref="toolbarRef">
+      <div class="dt-toolbar">
         <div class="dt-search">
           <Search :size="15" class="dt-search-icon" />
           <input v-model="search" class="dt-search-input" placeholder="Search by name, SKU…" @input="debouncedFetch" />
@@ -124,9 +124,9 @@
       <div class="dt-card" :class="{ editing }">
         <div class="dt-xscroll">
           <table class="dt" :style="{ minWidth: tableMin + 'px' }">
-            <thead :style="{ top: theadTop + 'px' }">
+            <thead>
               <tr>
-                <th v-if="bulkMode" class="dt-th dt-selcol" :style="{ top: theadTop + 'px' }">
+                <th v-if="bulkMode" class="dt-th dt-selcol">
                   <input type="checkbox" class="dt-cb" :checked="allOnPageSelected" @change="toggleSelectAll" />
                 </th>
                 <th
@@ -139,8 +139,8 @@
                     colDragOver === col.key && colDragKey !== col.key && colDragMoved ? 'col-drag-over' : ''
                   ]"
                   :style="col.key === 'product'
-                    ? { minWidth: colWidths[col.key] + 'px', top: theadTop + 'px', position: 'sticky', left: '0', zIndex: 22, background: 'var(--bg-app)' }
-                    : { width: colWidths[col.key] + 'px', top: theadTop + 'px' }"
+                    ? { minWidth: colWidths[col.key] + 'px', position: 'sticky', left: '0', zIndex: 22, background: 'var(--bg-app)' }
+                    : { width: colWidths[col.key] + 'px' }"
                   @click="col.sort && handleSort(col)"
                   @pointerdown="startColDrag(col.key, $event)"
                   @pointerenter="colDragKey && (colDragOver = col.key)"
@@ -441,7 +441,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck, Plus,
@@ -796,11 +796,6 @@ function catScroll(d) {
 }
 function setCat(id) { activeCatId.value = id; fetchProducts(1) }
 
-/* ── sticky thead offset (measure toolbar) ── */
-const toolbarRef = ref(null)
-const theadTop = ref(64)
-let ro = null
-
 /* ── categories / suppliers CRUD ── */
 const categories = ref([])
 const suppliers = ref([])
@@ -1011,12 +1006,7 @@ async function confirmBulkDelete() {
   } catch { bulkDeleteModal.confirming = false } finally { bulkBusy.value = false }
 }
 
-onMounted(() => {
-  fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppliers()
-  ro = new ResizeObserver(() => { if (toolbarRef.value) theadTop.value = toolbarRef.value.offsetHeight })
-  if (toolbarRef.value) ro.observe(toolbarRef.value)
-})
-onUnmounted(() => { ro?.disconnect() })
+onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppliers() })
 </script>
 
 <style scoped>

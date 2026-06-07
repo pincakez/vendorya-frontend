@@ -19,7 +19,7 @@
     <!-- ══════════ INVOICES TAB ══════════ -->
     <div v-if="activeTab === 'invoices'">
       <!-- STICKY TOOLBAR -->
-      <div class="dt-toolbar" ref="toolbarRef">
+      <div class="dt-toolbar">
         <div class="dt-search">
           <Search :size="15" class="dt-search-icon" />
           <input v-model="search" class="dt-search-input" placeholder="Search customer, invoice #…" @input="debouncedFetch" />
@@ -91,7 +91,7 @@
                   :class="[col.align === 'right' ? 'ta-right' : '', col.sort ? 'sortable' : '',
                     colDragKey === col.key ? 'col-dragging' : '',
                     colDragOver === col.key && colDragKey !== col.key && colDragMoved ? 'col-drag-over' : '']"
-                  :style="{ width: colWidths[col.key] + 'px', top: theadTop + 'px' }"
+                  :style="{ width: colWidths[col.key] + 'px' }"
                   @click="col.sort && handleSort(col)"
                   @pointerdown="startColDrag(col.key, $event)"
                   @pointerenter="colDragKey && (colDragOver = col.key)"
@@ -110,9 +110,11 @@
             <tbody>
               <tr v-if="!loading && !invoices.length">
                 <td :colspan="displayColumns.length + 1" class="dt-empty">
-                  <FileText :size="40" class="dt-empty-icon" />
-                  <div class="dt-empty-title">No invoices found</div>
-                  <div class="dt-empty-sub">Create a new invoice to record a sale.</div>
+                  <div class="dt-empty-inner">
+                    <FileText :size="40" class="dt-empty-icon" />
+                    <div class="dt-empty-title">No invoices found</div>
+                    <div class="dt-empty-sub">Create a new invoice to record a sale.</div>
+                  </div>
                 </td>
               </tr>
               <tr v-for="inv in invoices" :key="inv.id" class="dt-row">
@@ -245,7 +247,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import {
   FileText, Search, X, CheckCircle, Ban, Trash2, Plus, Receipt, RotateCcw, Printer, Lock,
   ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown, Columns3, GripVertical, UserCog,
@@ -524,17 +526,7 @@ function balanceClass(inv) {
   return bal > 0.01 ? 'col-balance-due' : 'col-balance-paid'
 }
 
-/* ── sticky thead offset ── */
-const toolbarRef = ref(null)
-const theadTop   = ref(0)
-let ro = null
-
-onMounted(() => {
-  loadLayout(); fetchCustomers(); fetchVariants()
-  ro = new ResizeObserver(() => { if (toolbarRef.value) theadTop.value = toolbarRef.value.offsetHeight })
-  if (toolbarRef.value) ro.observe(toolbarRef.value)
-})
-onUnmounted(() => ro?.disconnect())
+onMounted(() => { loadLayout(); fetchCustomers(); fetchVariants() })
 </script>
 
 <style scoped>
@@ -582,7 +574,7 @@ onUnmounted(() => ro?.disconnect())
 .dt thead tr:first-child .dt-th:first-child { border-top-left-radius: 15px; }
 .dt thead tr:first-child .dt-th:last-child  { border-top-right-radius: 15px; }
 .dt { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
-.dt-th { position: sticky; z-index: 20; padding: 13px 16px; text-align: left; background: var(--bg-app); border-bottom: 1px solid var(--border); color: var(--text-primary); font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; user-select: none; }
+.dt-th { padding: 13px 16px; text-align: left; background: var(--bg-app); border-bottom: 1px solid var(--border); color: var(--text-primary); font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; user-select: none; }
 .dt-th.sortable { cursor: pointer; }
 .dt-th.sortable:hover { background: #eef2f7; }
 .dark .dt-th.sortable:hover { background: #2a2a2e; }
@@ -602,7 +594,7 @@ onUnmounted(() => ro?.disconnect())
 .ta-right { text-align: right; }
 .dt-actcol { width: 96px; white-space: nowrap; }
 .dt-empty { text-align: center; padding: 48px 20px; color: var(--text-muted); }
-.dt td.dt-empty { display: flex; flex-direction: column; align-items: center; overflow: visible; white-space: normal; }
+.dt-empty-inner { display: flex; flex-direction: column; align-items: center; }
 .dt-empty-icon { color: var(--text-muted); opacity: 0.4; margin-bottom: 10px; }
 .dt-empty-title { font-weight: 700; color: var(--text-primary); font-size: 15px; }
 .dt-empty-sub { font-size: 13px; margin-top: 3px; }
