@@ -116,17 +116,18 @@
           </select>
           <input v-model="item.quantity" type="number" min="1" step="1" class="form-input item-qty" placeholder="Qty" />
           <input v-model="item.unit_price" type="number" min="0" step="0.01" class="form-input item-price" placeholder="Price" />
+          <input v-model="item.discount_amount" type="number" min="0" step="0.01" class="form-input item-disc" placeholder="Disc." title="Line discount amount" />
           <button class="row-action danger" @click="modal.items.splice(i, 1)"><Trash2 :size="13" /></button>
         </div>
-        <button class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ variant: '', quantity: 1, unit_price: '', tax_amount: 0 })">
+        <button class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ variant: '', quantity: 1, unit_price: '', discount_amount: 0, tax_amount: 0 })">
           <Plus :size="13" /> Add Item
         </button>
       </div>
 
       <div class="invoice-totals">
         <div class="totals-row"><span>Subtotal</span><span><Money :value="modalSubtotal" /></span></div>
-        <div class="totals-row"><span>Discount</span><span>- <Money :value="modal.discount || 0" /></span></div>
-        <div class="totals-row total-line"><span>Total</span><span><Money :value="modalSubtotal - (modal.discount || 0)" /></span></div>
+        <div v-if="modal.discount > 0" class="totals-row"><span>Header Discount</span><span>- <Money :value="modal.discount || 0" /></span></div>
+        <div class="totals-row total-line"><span>Total</span><span><Money :value="Math.max(0, modalSubtotal - (modal.discount || 0))" /></span></div>
       </div>
 
       <template #footer>
@@ -229,7 +230,10 @@ const modal  = reactive({
 })
 
 const modalSubtotal = computed(() =>
-  modal.items.reduce((sum, i) => sum + (Number(i.quantity) * Number(i.unit_price) || 0), 0)
+  modal.items.reduce((sum, i) => {
+    const lineTotal = (Number(i.quantity) * Number(i.unit_price) || 0) - (Number(i.discount_amount) || 0)
+    return sum + Math.max(0, lineTotal)
+  }, 0)
 )
 
 function openModal() {
@@ -256,7 +260,7 @@ async function saveInvoice() {
         variant: i.variant,
         quantity: Number(i.quantity),
         unit_price: Number(i.unit_price),
-        tax_amount: 0,
+        discount_amount: Number(i.discount_amount) || 0,
       })),
     }
     await api.post('/api/finance/invoices/', payload)
@@ -342,6 +346,7 @@ onUnmounted(() => qab.clearActions())
 .item-variant { flex:2; min-width:0; }
 .item-qty     { width:70px; flex-shrink:0; }
 .item-price   { width:100px; flex-shrink:0; }
+.item-disc    { width:90px; flex-shrink:0; }
 
 .invoice-totals { margin-top:18px; border-top:1px solid var(--border); padding-top:14px; display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
 .totals-row { display:flex; gap:32px; font-size:13px; color:var(--text-secondary); }

@@ -58,6 +58,7 @@
             <td>
               <div class="it-name">{{ it.name }}</div>
               <div class="it-sku">{{ it.sku }}</div>
+              <div v-if="Number(it.discount_amount) > 0" class="it-disc">Disc: − <Money :value="it.discount_amount" /></div>
             </td>
             <td class="ta-right">{{ formatQty(it.quantity) }}</td>
             <td class="ta-right"><Money :value="it.unit_price" /></td>
@@ -186,6 +187,7 @@ onMounted(load)
 .inv-items td { padding:10px; border-bottom:1px solid #eef2f6; font-size:13px; vertical-align:top; }
 .it-name { font-weight:600; }
 .it-sku  { font-size:11px; color:#94a3b8; font-variant-numeric:tabular-nums; }
+.it-disc { font-size:11px; color:#dc2626; font-variant-numeric:tabular-nums; }
 
 .inv-totals { margin-left:auto; width:280px; display:flex; flex-direction:column; gap:6px; }
 .tot-row { display:flex; justify-content:space-between; font-size:13px; color:#334155; }
