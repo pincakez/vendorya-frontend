@@ -371,32 +371,37 @@ function printReceipt() {
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Service Receipt</title>
   <style>
+    @page { size: 80mm 120mm; margin: 0; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Courier New', monospace; font-size: 12px; background: #fff; }
+    body { font-family: 'Courier New', monospace; font-size: 10.5px; background: #fff; width: 80mm; }
     .receipt {
-      width: 80mm; margin: 0 auto; padding: 12px 10px;
-      border: 1px dashed #999;
-      page-break-after: always;
+      width: 80mm; padding: 5mm 4mm 4mm;
+      min-height: 110mm;
+      display: flex; flex-direction: column;
+      page-break-after: always; break-after: page;
     }
-    .receipt:last-child { page-break-after: auto; }
-    .r-header { text-align: center; border-bottom: 1px dashed #999; padding-bottom: 8px; margin-bottom: 8px; }
-    .r-store  { font-size: 16px; font-weight: bold; letter-spacing: .05em; }
-    .r-type   { font-size: 11px; background: #000; color: #fff; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 4px; }
-    .r-serial { font-size: 14px; font-weight: bold; text-align: center; margin: 8px 0; letter-spacing: .1em; }
-    .r-table  { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-    .r-table td { padding: 3px 2px; vertical-align: top; font-size: 11.5px; }
-    .r-lbl    { color: #555; width: 32%; white-space: nowrap; }
-    .r-footer { text-align: center; font-size: 10px; color: #777; border-top: 1px dashed #999; padding-top: 6px; margin-top: 6px; }
+    .receipt:last-child { page-break-after: auto; break-after: auto; }
+    .r-header { text-align: center; border-bottom: 1px dashed #999; padding-bottom: 4mm; margin-bottom: 3mm; }
+    .r-store  { font-size: 13px; font-weight: bold; letter-spacing: .05em; }
+    .r-type   { font-size: 9px; background: #000; color: #fff; display: inline-block; padding: 1px 6px; margin-top: 2mm; }
+    .r-serial { font-size: 12px; font-weight: bold; text-align: center; margin: 2.5mm 0; letter-spacing: .12em; }
+    .r-table  { width: 100%; border-collapse: collapse; margin-bottom: 3mm; flex: 1; }
+    .r-table td { padding: 1.2mm 1mm; vertical-align: top; font-size: 9.5px; line-height: 1.3; }
+    .r-lbl    { color: #444; width: 30%; white-space: nowrap; font-weight: bold; }
+    .r-footer { text-align: center; font-size: 8.5px; color: #666; border-top: 1px dashed #999; padding-top: 2.5mm; margin-top: auto; }
+    @media screen {
+      body { background: #e5e5e5; width: auto; }
+      .receipt { border: 1px dashed #aaa; margin: 8px auto; background: #fff; min-height: auto; }
+    }
     @media print {
-      body { margin: 0; }
-      .receipt { border: none; }
+      body { background: #fff; margin: 0; }
     }
   </style></head><body>
     ${receiptBlock('CLIENT RECEIPT')}
     ${receiptBlock('STORE RECEIPT')}
   </body></html>`
 
-  const w = window.open('', '_blank', 'width=400,height=600')
+  const w = window.open('', '_blank', 'width=340,height=580')
   w.document.write(html)
   w.document.close()
   w.focus()
