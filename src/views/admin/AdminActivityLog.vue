@@ -17,8 +17,32 @@
         <button class="refresh-btn" :class="{ loading }" @click="reload" title="Refresh now">
           <RefreshCw :size="14" />
         </button>
+        <button class="purge-btn" @click="openPurge" title="Delete old audit logs">
+          <Trash2 :size="14" /> Purge old
+        </button>
       </div>
     </div>
+
+    <AppModal :open="purge.open" title="Purge old audit logs" width="460px" @close="purge.open = false">
+      <p class="purge-intro">Permanently delete audit-log entries older than the retention window. This frees up space and cannot be undone.</p>
+      <div class="form-group">
+        <label class="form-label">Keep logs from the last</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input v-model.number="purge.years" type="number" min="1" max="20" class="form-input" style="width:90px;" />
+          <span>year(s)</span>
+          <button class="btn-ghost" :disabled="purge.checking" @click="previewPurge">Preview</button>
+        </div>
+      </div>
+      <p v-if="purge.count !== null" class="purge-preview">
+        <strong>{{ purge.count }}</strong> log(s) older than {{ purge.window }} (before {{ purge.cutoff }}) will be deleted.
+      </p>
+      <template #footer>
+        <button class="btn-ghost" @click="purge.open = false">Cancel</button>
+        <button class="btn-danger" :disabled="purge.deleting || purge.count === null || purge.count === 0" @click="doPurge">
+          {{ purge.deleting ? 'Deleting…' : 'Delete permanently' }}
+        </button>
+      </template>
+    </AppModal>
 
     <div class="table-wrap">
       <div v-if="loading && !logs.length" class="table-skeleton">
@@ -66,13 +90,33 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { Activity, RefreshCw } from 'lucide-vue-next'
+import { Activity, RefreshCw, Trash2 } from 'lucide-vue-next'
 import api from '@/api/axios'
+import AppModal from '@/components/ui/AppModal.vue'
 
 const logs = ref([])
 const meta = reactive({ stores: [], operation_types: [] })
 const filters = reactive({ store: '', operation_type: '' })
 const loading = ref(false)
+
+const purge = reactive({ open: false, years: 2, count: null, window: '', cutoff: '', checking: false, deleting: false })
+function openPurge() { Object.assign(purge, { open: true, years: 2, count: null, window: '', cutoff: '' }) }
+async function previewPurge() {
+  purge.checking = true; purge.count = null
+  try {
+    const res = await api.get('/api/admin/activity-logs/purge/', { params: { years: purge.years } })
+    purge.count = res.data.count; purge.window = res.data.window; purge.cutoff = res.data.cutoff
+  } catch (e) { alert(e.response?.data?.detail || 'Preview failed.') } finally { purge.checking = false }
+}
+async function doPurge() {
+  purge.deleting = true
+  try {
+    const res = await api.post('/api/admin/activity-logs/purge/', { years: purge.years })
+    alert(`Purged ${res.data.deleted} log(s) older than ${res.data.window}.`)
+    purge.open = false
+    reload()
+  } catch (e) { alert(e.response?.data?.detail || 'Purge failed.') } finally { purge.deleting = false }
+}
 const lastFetched = ref(null)
 const now = ref(Date.now())
 
@@ -194,6 +238,21 @@ onUnmounted(() => {
 .refresh-btn:active { transform:scale(0.92); }
 .refresh-btn.loading svg { animation:spin 0.8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
+
+.purge-btn { display:inline-flex; align-items:center; gap:5px; height:34px; padding:0 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); font-size:13px; font-weight:500; cursor:pointer; transition:background 100ms,color 100ms; }
+.purge-btn:hover { background:#fef2f2; color:#dc2626; border-color:#fca5a5; }
+
+.purge-intro { font-size:13px; color:var(--text-secondary); margin:0 0 14px; line-height:1.5; }
+.form-group { margin-bottom:12px; }
+.form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; }
+.form-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); font-size:13px; outline:none; }
+.purge-preview { font-size:13px; color:var(--text-primary); background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 12px; margin:10px 0 0; }
+.btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; }
+.btn-ghost:hover { background:var(--border); color:var(--text-primary); }
+.btn-ghost:disabled { opacity:.5; cursor:default; }
+.btn-danger { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#dc2626; color:#fff; cursor:pointer; transition:background 100ms,opacity 100ms; }
+.btn-danger:hover { background:#b91c1c; }
+.btn-danger:disabled { opacity:.5; cursor:default; }
 
 .table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .data-table { width:100%; border-collapse:collapse; font-size:13px; }
