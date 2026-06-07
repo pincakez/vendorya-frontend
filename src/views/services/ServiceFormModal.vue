@@ -371,27 +371,26 @@ function printReceipt() {
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Service Receipt</title>
   <style>
-    @page { size: 80mm 120mm; margin: 0; }
+    @page { size: 80mm auto; margin: 0; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Courier New', monospace; font-size: 10.5px; background: #fff; width: 80mm; }
+    body { font-family: 'Courier New', monospace; font-size: 11px; background: #fff; width: 80mm; }
     .receipt {
-      width: 80mm; padding: 5mm 4mm 4mm;
-      min-height: 110mm;
-      display: flex; flex-direction: column;
+      width: 80mm; padding: 5mm 4mm 6mm;
       page-break-after: always; break-after: page;
     }
     .receipt:last-child { page-break-after: auto; break-after: auto; }
     .r-header { text-align: center; border-bottom: 1px dashed #999; padding-bottom: 4mm; margin-bottom: 3mm; }
-    .r-store  { font-size: 13px; font-weight: bold; letter-spacing: .05em; }
-    .r-type   { font-size: 9px; background: #000; color: #fff; display: inline-block; padding: 1px 6px; margin-top: 2mm; }
-    .r-serial { font-size: 12px; font-weight: bold; text-align: center; margin: 2.5mm 0; letter-spacing: .12em; }
-    .r-table  { width: 100%; border-collapse: collapse; margin-bottom: 3mm; flex: 1; }
-    .r-table td { padding: 1.2mm 1mm; vertical-align: top; font-size: 9.5px; line-height: 1.3; }
+    .r-store  { font-size: 14px; font-weight: bold; letter-spacing: .05em; }
+    .r-type   { font-size: 9px; background: #000; color: #fff; display: inline-block; padding: 1px 7px; margin-top: 2mm; }
+    .r-serial { font-size: 13px; font-weight: bold; text-align: center; margin: 3mm 0; letter-spacing: .12em; }
+    .r-table  { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
+    .r-table td { padding: 1.5mm 1mm; vertical-align: top; font-size: 10px; line-height: 1.4; }
     .r-lbl    { color: #444; width: 30%; white-space: nowrap; font-weight: bold; }
-    .r-footer { text-align: center; font-size: 8.5px; color: #666; border-top: 1px dashed #999; padding-top: 2.5mm; margin-top: auto; }
+    .r-sep    { border-top: 1px dashed #999; padding-top: 2mm; }
+    .r-footer { text-align: center; font-size: 9px; color: #666; border-top: 1px dashed #999; padding-top: 3mm; margin-top: 2mm; }
     @media screen {
-      body { background: #e5e5e5; width: auto; }
-      .receipt { border: 1px dashed #aaa; margin: 8px auto; background: #fff; min-height: auto; }
+      body { background: #e5e5e5; width: auto; padding: 10px 0; }
+      .receipt { border: 1px dashed #aaa; margin: 10px auto; background: #fff; }
     }
     @media print {
       body { background: #fff; margin: 0; }
