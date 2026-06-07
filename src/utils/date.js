@@ -1,5 +1,5 @@
 import { format, formatDistanceToNow } from 'date-fns'
-import { arEG } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import { useAuthStore } from '@/stores/auth'
 
 // Re-export the new formatters so old import paths keep working.
@@ -25,11 +25,11 @@ export const formatDate = (date, fmt = 'dd MMM yyyy') => {
   // Intl with the user's tz, then run date-fns over the *adjusted* date.
   const tz = resolveTz()
   const adjusted = new Date(new Date(date).toLocaleString('en-US', { timeZone: tz }))
-  return format(adjusted, fmt, { locale: arEG })
+  return format(adjusted, fmt, { locale: enUS })
 }
 
 export const formatDateTime = (date) =>
   formatDate(date, 'dd MMM yyyy - hh:mm a')
 
 export const formatRelative = (date) =>
-  formatDistanceToNow(new Date(date), { addSuffix: true, locale: arEG })
+  formatDistanceToNow(new Date(date), { addSuffix: true, locale: enUS })

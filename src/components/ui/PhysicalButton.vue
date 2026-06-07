@@ -89,7 +89,7 @@ const tiltStyle = computed(() =>
 /* sidebar — nav rows inside group cards */
 .pb-sidebar {
   color: var(--sb-text); border-radius: 10px; padding: 9px 12px;
-  font-size: 13.5px; font-weight: 500; transition: background 120ms, color 120ms;
+  font-size: 15px; font-weight: 500; transition: background 120ms, color 120ms;
 }
 .pb-sidebar:hover { background: var(--sb-hover); color: var(--sb-text-active); }
 .pb-sidebar.pb-active {

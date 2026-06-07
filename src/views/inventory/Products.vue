@@ -1122,7 +1122,8 @@ onUnmounted(() => { ro?.disconnect() })
 .stock-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; padding: 3px 9px; border-radius: 8px; background: var(--text-primary); color: var(--bg-card); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 .dt-loading, .dt-empty { text-align: center; padding: 48px 20px; color: var(--text-muted); }
-.dt-empty { display: flex; flex-direction: column; align-items: center; }
+.dt-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.dt td.dt-empty { overflow: visible; white-space: normal; }
 .dt-empty-icon { color: var(--text-muted); opacity: 0.4; margin-bottom: 10px; }
 .dt-empty-title { font-weight: 700; color: var(--text-primary); font-size: 15px; }
 .dt-empty-sub { font-size: 13px; margin-top: 3px; }
