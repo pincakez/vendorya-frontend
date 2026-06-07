@@ -235,13 +235,14 @@ body {
    the scroll (each page drifted apart). Page-specific extras
    only (stock-badge, c-sku, col-frozen, edit-panel, etc.).
 
-   SCROLLING: there is ONE scrollbar — the browser/page one. The
-   table does NOT get its own vertical scroll box (that produced a
-   double scrollbar). The header therefore scrolls away with the
-   page, like a normal long page. .dt-xscroll only adds a
-   HORIZONTAL scrollbar for wide tables (Products' many columns +
-   frozen first column); it has no height cap, so it never creates
-   a second vertical scrollbar.
+   SCROLLING (single scrollbar + pinned header): the `v-fill`
+   directive caps .dt-xscroll's height to "down to the bottom of
+   the screen", so the TABLE BODY scrolls inside that box while the
+   <thead> stays pinned (sticky top:0). Because the table fills the
+   viewport, the PAGE itself doesn't scroll — so there's exactly
+   ONE scrollbar (the table's), not a second page-level one. Title,
+   tabs and toolbar stay put above it. .dt-xscroll also handles
+   horizontal scroll for wide tables (Products + frozen column).
    ══════════════════════════════════════════════════════════ */
 
 /* Card shell. overflow:hidden clips the rounded corners cleanly. */
@@ -267,10 +268,12 @@ body {
 .dt thead tr:first-child .dt-th:first-child { border-top-left-radius: 15px; }
 .dt thead tr:first-child .dt-th:last-child  { border-top-right-radius: 15px; }
 
-/* Header is NOT sticky — it scrolls away with the page (single
-   scrollbar). Products' frozen first-column header still pins
+/* Pinned header: sticks to the top of its .dt-xscroll scroll box
+   (which v-fill sizes to the viewport), so it stays put while rows
+   scroll under it. Products' frozen first-column header also pins
    horizontally via its own inline position:sticky;left:0. */
 .dt-th {
+  position: sticky; top: 0; z-index: 20;
   padding: 13px 16px; text-align: left; background: var(--bg-app);
   border-bottom: 1px solid var(--border); color: var(--text-primary);
   font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;

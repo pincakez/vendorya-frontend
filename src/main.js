@@ -13,6 +13,10 @@ app.use(router)
 // Global display component for currency amounts (colored symbol, right-side).
 app.component('Money', Money)
 
+// v-fill — table scrolls inside the viewport (single scrollbar + pinned header)
+import { vFill } from './directives/fillHeight'
+app.directive('fill', vFill)
+
 // Init theme before mount so no flash of wrong theme
 import { useThemeStore } from './stores/theme'
 useThemeStore(pinia).init()
