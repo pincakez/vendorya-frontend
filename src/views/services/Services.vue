@@ -61,7 +61,7 @@
               <div>No services{{ activeTab !== 'OPEN' ? ' in this status' : '' }}</div>
             </td>
           </tr>
-          <tr v-for="s in items" :key="s.id" class="table-row">
+          <tr v-for="s in items" :key="s.id" class="table-row" @click.stop="openDetail(s)" style="cursor:pointer;">
             <td class="col-serial">
               <span class="serial-chip">{{ s.serial_number }}</span>
             </td>
@@ -80,7 +80,7 @@
               </span>
             </td>
             <td><Money :value="s.cost" /></td>
-            <td style="text-align:center;">
+            <td style="text-align:center;" @click.stop>
               <button
                 class="bell-btn"
                 :class="{ active: s.notify_bell }"
@@ -90,7 +90,7 @@
                 <Bell :size="13" />
               </button>
             </td>
-            <td class="col-actions">
+            <td class="col-actions" @click.stop>
               <!-- OPEN actions -->
               <template v-if="s.status === 'OPEN'">
                 <button class="row-action" title="Edit" @click="openEdit(s)"><Pencil :size="13" /></button>
@@ -100,6 +100,10 @@
               <!-- DONE / CANCELLED actions -->
               <template v-else-if="s.status === 'DONE' || s.status === 'CANCELLED'">
                 <button class="row-action" title="Archive" @click="confirmArchive(s)"><Archive :size="13" /></button>
+              </template>
+              <!-- Return button for DONE -->
+              <template v-if="s.status === 'DONE'">
+                <button class="row-action" title="Return service" @click="confirmReturn(s)"><RotateCcw :size="13" /></button>
               </template>
               <!-- Invoice link for DONE -->
               <a
@@ -163,15 +167,84 @@
         </button>
       </template>
     </AppModal>
+
+    <!-- Confirm: Return -->
+    <AppModal :open="confirm.return" title="Return Service?" @close="confirm.return = false">
+      <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
+        Mark <strong>{{ confirm.target?.serial_number }}</strong> as returned? The invoice stays — this is a record-only action with no financial impact.
+      </p>
+      <template #footer>
+        <button class="btn-ghost" @click="confirm.return = false">Cancel</button>
+        <button class="btn-primary" :disabled="confirm.busy" @click="executeReturn">
+          {{ confirm.busy ? 'Processing…' : 'Confirm Return' }}
+        </button>
+      </template>
+    </AppModal>
+
+    <!-- Detail modal: click a row -->
+    <AppModal :open="detail.open" :title="detail.service?.serial_number || 'Service'" @close="detail.open = false" width="520px">
+      <div v-if="detail.service" class="det-body">
+        <!-- Status badge -->
+        <div class="det-status-row">
+          <span :class="['det-badge', `det-badge-${detail.service.status?.toLowerCase()}`]">
+            {{ detail.service.status }}
+          </span>
+          <span class="det-serial">{{ detail.service.serial_number }}</span>
+        </div>
+
+        <div class="det-grid">
+          <div class="det-field"><span class="det-lbl">Client</span><span class="det-val">{{ detail.service.client_display_name || '—' }}</span></div>
+          <div class="det-field"><span class="det-lbl">Phone</span><span class="det-val">{{ detail.service.client_display_phone || '—' }}</span></div>
+          <div class="det-field"><span class="det-lbl">Service Type</span><span class="det-val">{{ detail.service.service_type || '—' }}</span></div>
+          <div class="det-field"><span class="det-lbl">Received</span><span class="det-val">{{ fmtDate(detail.service.receive_date) }}</span></div>
+          <div class="det-field"><span class="det-lbl">ETA</span>
+            <span class="det-val">
+              <span v-if="detail.service.no_eta || !detail.service.eta_label" class="eta-none">No ETA</span>
+              <span v-else :class="['eta-badge', detail.service.eta_label === 'overdue' ? 'overdue' : 'ok']">
+                {{ detail.service.eta_label === 'overdue' ? 'Overdue' : detail.service.eta_label }}
+              </span>
+            </span>
+          </div>
+          <div class="det-field det-full"><span class="det-lbl">Description</span><span class="det-val">{{ detail.service.info || '—' }}</span></div>
+          <div class="det-field det-full"><span class="det-lbl">Items Kept</span><span class="det-val">{{ detail.service.keeping || '—' }}</span></div>
+          <div class="det-field">
+            <span class="det-lbl">Cost</span>
+            <input
+              v-model.number="detail.editCost"
+              type="number" min="0" step="0.01"
+              class="form-input det-cost-input"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <template v-if="detail.service?.status === 'OPEN'">
+          <button class="btn-ghost" @click="detail.open = false">Not Yet</button>
+          <button class="btn-success" :disabled="detail.busy" @click="detailMarkDone">
+            {{ detail.busy ? 'Processing…' : '✓ Done' }}
+          </button>
+        </template>
+        <template v-else>
+          <button class="btn-ghost" @click="detail.open = false">Close</button>
+          <button
+            v-if="detail_costChanged"
+            class="btn-primary" :disabled="detail.busy"
+            @click="saveCost"
+          >{{ detail.busy ? 'Saving…' : 'Save Cost' }}</button>
+        </template>
+      </template>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Plus, Search, Wrench, Bell, Pencil, CheckCircle,
-  XCircle, Archive, FileText,
+  XCircle, Archive, FileText, RotateCcw,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
@@ -187,6 +260,7 @@ const statusTabs = reactive([
   { id: 'DONE',      label: 'Done',      count: null },
   { id: 'CANCELLED', label: 'Cancelled', count: null },
   { id: 'ARCHIVED',  label: 'Archived',  count: null },
+  { id: 'RETURNED',  label: 'Returned',  count: null },
 ])
 const activeTab = ref('OPEN')
 
@@ -204,9 +278,15 @@ const modal = reactive({ open: false, serviceId: null, data: null })
 
 /* ── confirm dialogs ─────────────────────────────────────────────── */
 const confirm = reactive({
-  done: false, cancel: false, archive: false,
+  done: false, cancel: false, archive: false, return: false,
   target: null, busy: false,
 })
+
+/* ── detail modal ────────────────────────────────────────────────── */
+const detail = reactive({ open: false, service: null, editCost: 0, busy: false })
+const detail_costChanged = computed(() =>
+  detail.service && parseFloat(detail.editCost) !== parseFloat(detail.service.cost)
+)
 
 /* ── date formatter ──────────────────────────────────────────────── */
 function fmtDate(d) {
@@ -233,7 +313,7 @@ async function fetchItems() {
 }
 
 async function fetchCounts() {
-  const statuses = ['OPEN', 'DONE', 'CANCELLED', 'ARCHIVED']
+  const statuses = ['OPEN', 'DONE', 'CANCELLED', 'ARCHIVED', 'RETURNED']
   const results = await Promise.allSettled(
     statuses.map(s => api.get('/api/services/', { params: { status: s, page_size: 1 } }))
   )
@@ -347,6 +427,53 @@ async function executeArchive() {
 /* ── invoice link ────────────────────────────────────────────────── */
 function viewInvoice(s) {
   if (s.invoice) router.push(`/finance/invoices/${s.invoice}`)
+}
+
+/* ── return service ──────────────────────────────────────────────── */
+function confirmReturn(s) {
+  confirm.target = s
+  confirm.return = true
+}
+async function executeReturn() {
+  confirm.busy = true
+  try {
+    await api.post(`/api/services/${confirm.target.id}/return/`)
+    confirm.return = false
+    fetchItems(); fetchCounts()
+  } catch (e) {
+    alert(e?.response?.data?.detail ?? 'Failed to return service.')
+  } finally { confirm.busy = false }
+}
+
+/* ── detail modal ────────────────────────────────────────────────── */
+function openDetail(s) {
+  detail.service  = s
+  detail.editCost = parseFloat(s.cost) || 0
+  detail.open     = true
+  detail.busy     = false
+}
+
+async function detailMarkDone() {
+  detail.busy = true
+  try {
+    await api.post(`/api/services/${detail.service.id}/done/`)
+    detail.open = false
+    fetchItems(); fetchCounts()
+  } catch (e) {
+    alert(e?.response?.data?.detail ?? 'Failed to mark as done.')
+  } finally { detail.busy = false }
+}
+
+async function saveCost() {
+  detail.busy = true
+  try {
+    const { data } = await api.patch(`/api/services/${detail.service.id}/`, { cost: detail.editCost })
+    Object.assign(detail.service, data)
+    detail.open = false
+    fetchItems()
+  } catch (e) {
+    alert(e?.response?.data?.detail ?? 'Failed to save cost.')
+  } finally { detail.busy = false }
 }
 
 /* ── init ────────────────────────────────────────────────────────── */
@@ -464,4 +591,33 @@ onMounted(() => {
   transition: opacity 120ms;
 }
 .btn-danger:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── detail modal ───────────────────────────────────────────── */
+.det-body { display: flex; flex-direction: column; gap: 16px; }
+.det-status-row { display: flex; align-items: center; gap: 10px; }
+.det-serial { font-size: 16px; font-weight: 800; font-family: monospace; color: var(--text-primary); }
+.det-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; text-transform: uppercase; letter-spacing: .04em;
+}
+.det-badge-open      { background: #dbeafe; color: #1d4ed8; }
+.det-badge-done      { background: #dcfce7; color: #16a34a; }
+.det-badge-cancelled { background: #f3f4f6; color: #6b7280; }
+.det-badge-archived  { background: #fef3c7; color: #92400e; }
+.det-badge-returned  { background: #ede9fe; color: #7c3aed; }
+
+.det-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.det-field { display: flex; flex-direction: column; gap: 3px; }
+.det-full  { grid-column: 1 / -1; }
+.det-lbl   { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+.det-val   { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
+.det-cost-input { max-width: 140px; padding: 6px 10px; font-size: 14px; font-weight: 600; }
+
+.btn-success {
+  padding: 8px 20px; border-radius: 8px; border: none;
+  background: #16a34a; color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: opacity 120ms;
+}
+.btn-success:hover   { opacity: .88; }
+.btn-success:disabled { opacity: .5; cursor: not-allowed; }
 </style>

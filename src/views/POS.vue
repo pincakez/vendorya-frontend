@@ -252,6 +252,14 @@
       </div>
     </Transition>
 
+    <!-- ─── Service modal (F7) ─────────────────────────────── -->
+    <ServiceFormModal
+      :open="showServiceModal"
+      :service-types="posServiceTypes"
+      @close="showServiceModal = false"
+      @saved="showServiceModal = false"
+    />
+
     <!-- ─── Held carts panel ───────────────────────────────── -->
     <Transition name="held-slide">
       <div v-if="showHeldPanel" class="pos-held-panel">
@@ -285,6 +293,7 @@ import BranchPickerModal   from '@/components/pos/BranchPickerModal.vue'
 import PaymentModal        from '@/components/pos/PaymentModal.vue'
 import DiscountModal       from '@/components/pos/DiscountModal.vue'
 import CustomerFormModal   from '@/components/shared/CustomerFormModal.vue'
+import ServiceFormModal    from '@/views/services/ServiceFormModal.vue'
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -295,6 +304,10 @@ const ui     = useUIStore()
 // ── Sidebar + POS mode ───────────────────────────────────────
 let prePosSidebarState = false
 const posRoot = ref(null)
+
+// ── Service modal (F7) ───────────────────────────────────────
+const showServiceModal = ref(false)
+const posServiceTypes  = ref([])
 
 onMounted(async () => {
   document.documentElement.classList.add('pos-mode')
@@ -327,10 +340,11 @@ async function init() {
     pos.paymentMethods = (res.data.results || res.data).filter(m => !m.is_deleted)
   } catch { /* ok */ }
 
-  // Load top-selling + favorites in parallel
+  // Load top-selling + favorites + service types in parallel
   Promise.all([
     api.get('/api/pos/top-selling/').then(r => { pos.topSelling = r.data.results || r.data }).catch(() => {}),
     api.get('/api/pos/favorites/').then(r => { pos.favorites = r.data.results || r.data }).catch(() => {}),
+    api.get('/api/core/settings/').then(r => { posServiceTypes.value = r.data.service_types ?? [] }).catch(() => {}),
   ])
 
   // Branch selection
@@ -688,6 +702,7 @@ function onGlobalKey(e) {
   const isFKey = /^F\d+$/.test(k)
   if (inInput && !isFKey) return
 
+  if (k === 'F7')                                  { e.preventDefault(); showServiceModal.value = true; return }
   if (k === (shortcuts.value.pay || 'F9'))         { e.preventDefault(); openPayment(); return }
   if (k === (shortcuts.value.discount || 'F8'))    { e.preventDefault(); showDiscount.value = true; return }
   if (k === (shortcuts.value.hold || 'F4'))        { e.preventDefault(); holdOrResume(); return }

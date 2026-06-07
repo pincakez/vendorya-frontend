@@ -29,6 +29,7 @@
 </template>
 
 <script setup>
+import { onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Eye } from 'lucide-vue-next'
 import { RouterView } from 'vue-router'
@@ -49,6 +50,12 @@ function exitPreview() {
   auth.exitPreview()
   router.push('/admin/dashboard')
 }
+
+function onF10(e) {
+  if (e.key === 'F10') { e.preventDefault(); router.push('/services') }
+}
+onMounted(()   => window.addEventListener('keydown', onF10))
+onUnmounted(() => window.removeEventListener('keydown', onF10))
 </script>
 
 <style scoped>

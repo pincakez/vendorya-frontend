@@ -13,11 +13,17 @@
         </button>
       </div>
 
-      <!-- POS (store only) -->
+      <!-- POS + SRV split (store only) -->
       <div v-if="!admin" class="nsb-pos">
-        <PhysicalButton variant="primary" :collapsed="collapsed" tooltip="POS System" @click="go('/pos')">
+        <div v-if="!collapsed" class="nsb-pos-row">
+          <PhysicalButton variant="primary" :collapsed="false" tooltip="POS System" class="nsb-pos-main" @click="go('/pos')">
+            <template #icon><Calculator :size="18" /></template>
+            POS
+          </PhysicalButton>
+          <button class="nsb-srv-btn" @click="go('/services')" title="Services (F10)">SRV</button>
+        </div>
+        <PhysicalButton v-else variant="primary" :collapsed="true" tooltip="POS System" @click="go('/pos')">
           <template #icon><Calculator :size="18" /></template>
-          POS SYSTEM
         </PhysicalButton>
       </div>
 
@@ -273,6 +279,22 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 
 /* POS + solo */
 .nsb-pos { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--sb-border); }
+.nsb-pos-row { display: flex; gap: 5%; align-items: stretch; }
+.nsb-pos-main { flex: 0 0 70%; }
+.nsb-srv-btn {
+  flex: 0 0 25%;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: background 140ms, transform 100ms;
+}
+.nsb-srv-btn:hover  { background: #1d4ed8; }
+.nsb-srv-btn:active { transform: scale(0.94); }
 .nsb-solo { margin-bottom: 16px; }
 
 /* Acting-as banner */

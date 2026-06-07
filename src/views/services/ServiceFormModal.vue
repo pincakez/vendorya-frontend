@@ -2,6 +2,7 @@
   <AppModal
     :open="open"
     :title="serviceId ? `Edit ${form.serial_number || 'Service'}` : 'New Service'"
+    no-backdrop-close
     @close="$emit('close')"
   >
     <div class="sfm-form">
@@ -147,6 +148,10 @@
     </div>
 
     <template #footer>
+      <button v-if="serviceId" class="btn-ghost sfm-print-btn" @click="printReceipt" title="Print 2 receipts">
+        🖨 Print
+      </button>
+      <div style="flex:1;" />
       <button class="btn-ghost" @click="$emit('close')">Cancel</button>
       <button
         class="btn-primary"
@@ -158,9 +163,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, nextTick } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
 
 const props = defineProps({
   open:         { type: Boolean, default: false },
@@ -328,11 +336,78 @@ async function save() {
     saving.value = false
   }
 }
+
+/* ── Print receipt ───────────────────────────────────────────── */
+function printReceipt() {
+  const storeName  = auth.storeName || auth.activeStore?.name || 'Store'
+  const clientName = form.freeText ? (form.client_name || 'Walk-in') : (form.clientName || 'Walk-in')
+  const clientPhone = form.freeText ? (form.client_phone || '') : ''
+  const serial     = form.serial_number || props.serviceId?.slice(0, 8) || '—'
+  const stype      = form.service_type === '__custom__' ? form.custom_type : (form.service_type || '—')
+  const rcvDate    = form.receive_date || '—'
+  const etaStr     = form.no_eta ? 'No ETA' : `${form.eta_days || 0}d ${form.eta_hours || 0}h from receive`
+  const info       = form.info || '—'
+  const keeping    = form.keeping || '—'
+  const cost       = `${auth.currencySymbol || ''} ${form.cost || 0}`
+
+  const receiptBlock = (title) => `
+    <div class="receipt">
+      <div class="r-header">
+        <div class="r-store">${storeName}</div>
+        <div class="r-type">${title}</div>
+      </div>
+      <div class="r-serial">SRV# ${serial}</div>
+      <table class="r-table">
+        <tr><td class="r-lbl">Client</td><td>${clientName}${clientPhone ? ' · ' + clientPhone : ''}</td></tr>
+        <tr><td class="r-lbl">Service</td><td>${stype}</td></tr>
+        <tr><td class="r-lbl">Received</td><td>${rcvDate}</td></tr>
+        <tr><td class="r-lbl">ETA</td><td>${etaStr}</td></tr>
+        <tr><td class="r-lbl">Items kept</td><td>${keeping}</td></tr>
+        <tr><td class="r-lbl">Description</td><td>${info}</td></tr>
+        <tr><td class="r-lbl">Cost</td><td><strong>${cost}</strong></td></tr>
+      </table>
+      <div class="r-footer">Thank you for choosing ${storeName}</div>
+    </div>`
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Service Receipt</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Courier New', monospace; font-size: 12px; background: #fff; }
+    .receipt {
+      width: 80mm; margin: 0 auto; padding: 12px 10px;
+      border: 1px dashed #999;
+      page-break-after: always;
+    }
+    .receipt:last-child { page-break-after: auto; }
+    .r-header { text-align: center; border-bottom: 1px dashed #999; padding-bottom: 8px; margin-bottom: 8px; }
+    .r-store  { font-size: 16px; font-weight: bold; letter-spacing: .05em; }
+    .r-type   { font-size: 11px; background: #000; color: #fff; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 4px; }
+    .r-serial { font-size: 14px; font-weight: bold; text-align: center; margin: 8px 0; letter-spacing: .1em; }
+    .r-table  { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .r-table td { padding: 3px 2px; vertical-align: top; font-size: 11.5px; }
+    .r-lbl    { color: #555; width: 32%; white-space: nowrap; }
+    .r-footer { text-align: center; font-size: 10px; color: #777; border-top: 1px dashed #999; padding-top: 6px; margin-top: 6px; }
+    @media print {
+      body { margin: 0; }
+      .receipt { border: none; }
+    }
+  </style></head><body>
+    ${receiptBlock('CLIENT RECEIPT')}
+    ${receiptBlock('STORE RECEIPT')}
+  </body></html>`
+
+  const w = window.open('', '_blank', 'width=400,height=600')
+  w.document.write(html)
+  w.document.close()
+  w.focus()
+  setTimeout(() => { w.print() }, 400)
+}
 </script>
 
 <style scoped>
 .sfm-form { display: flex; flex-direction: column; gap: 14px; }
 .sfm-row  { display: flex; flex-direction: column; gap: 5px; }
+.sfm-print-btn { color: var(--text-secondary); }
 .sfm-opt  { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
 .sfm-hint { font-size: 11px; color: var(--text-muted); margin: 3px 0 0; }
 .sfm-error { font-size: 12px; color: #dc2626; background: #fef2f2; border-radius: 8px; padding: 8px 12px; }
