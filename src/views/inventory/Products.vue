@@ -162,7 +162,7 @@
                   <td v-if="bulkMode" class="dt-selcol" @click.stop>
                     <input type="checkbox" class="dt-cb" :checked="isSelected(p.id)" @change="toggleSelect(p.id)" />
                   </td>
-                  <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '', col.key === 'product' ? 'col-frozen' : '']">
+                  <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '', col.key === 'product' ? 'col-frozen' : '']" :title="cellText(col, p)">
                     <span v-if="col.badge" class="stock-badge">{{ formatQty(p.total_stock) }}</span>
                     <template v-else-if="col.money && p[col.field] !== undefined && p[col.field] !== null && p[col.field] !== ''"><span v-if="col.plus">+</span><Money :value="p[col.field]" /></template>
                     <template v-else>
@@ -397,6 +397,17 @@
               </label>
             </div>
             <input v-model.number="prodModal.reorder_level" class="form-input" type="number" min="0" step="1" title="Low-stock alert threshold (0 = no alarm)" />
+          </div>
+
+          <div v-if="!prodModal.id">
+            <div class="prod-modal-field-head">
+              <label class="form-label">Initial Stock</label>
+              <label class="prod-default-cb" title="Pre-fill this value next time">
+                <input type="checkbox" v-model="prodDefaults.stock_enabled" @change="saveDefaults" />
+                <span>Default</span>
+              </label>
+            </div>
+            <input v-model.number="prodModal.initial_stock" class="form-input" type="number" min="0" step="1" title="Starting stock quantity (0 = no initial stock)" />
           </div>
 
           <!-- Attributes -->
@@ -958,6 +969,7 @@ const prodDefaults = reactive({
   category_enabled: false, category_value: '',
   supplier_enabled: false, supplier_value: '',
   reorder_enabled: false, reorder_value: 0,
+  stock_enabled: false, stock_value: 1,
 })
 function loadDefaults() {
   try {
@@ -966,17 +978,17 @@ function loadDefaults() {
   } catch { /* noop */ }
 }
 function saveDefaults() {
-  // When a checkbox is checked, snapshot the current modal value as the default
   if (prodDefaults.category_enabled) prodDefaults.category_value = prodModal.category
   if (prodDefaults.supplier_enabled) prodDefaults.supplier_value = prodModal.supplier
   if (prodDefaults.reorder_enabled)  prodDefaults.reorder_value  = prodModal.reorder_level
+  if (prodDefaults.stock_enabled)    prodDefaults.stock_value    = prodModal.initial_stock
   localStorage.setItem(PROD_DEFAULTS_KEY, JSON.stringify({ ...prodDefaults }))
 }
 
 /* ── product add / edit ── */
 const prodModal = reactive({
   open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
-  base_price: 0, cost_price: 0, sell_price: 0, reorder_level: 0, attrs: {}, saving: false, error: '',
+  base_price: 0, cost_price: 0, sell_price: 0, reorder_level: 0, initial_stock: 1, attrs: {}, saving: false, error: '',
 })
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
 function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
@@ -989,6 +1001,7 @@ function openAddProduct() {
     supplierName: '',
     base_price: 0, cost_price: 0, sell_price: 0,
     reorder_level: prodDefaults.reorder_enabled ? prodDefaults.reorder_value : 0,
+    initial_stock: prodDefaults.stock_enabled ? prodDefaults.stock_value : 1,
     saving: false, error: '',
   })
   resetAttrs()
@@ -1056,8 +1069,31 @@ async function saveProduct() {
   }
   if (!prodModal.id) payload.supplier = prodModal.supplier   // supplier locked on edit
   try {
-    if (prodModal.id) await api.patch(`/api/inventory/products/${prodModal.id}/`, payload)
-    else              await api.post('/api/inventory/products/', payload)
+    if (prodModal.id) {
+      await api.patch(`/api/inventory/products/${prodModal.id}/`, payload)
+    } else {
+      const { data: created } = await api.post('/api/inventory/products/', payload)
+      // Set initial stock via StockAdjustment if > 0
+      if (prodModal.initial_stock > 0) {
+        try {
+          const [detailRes, branchRes] = await Promise.all([
+            api.get(`/api/inventory/products/${created.id}/`),
+            api.get('/api/core/branches/'),
+          ])
+          const firstVariant = detailRes.data.variants?.[0]
+          const branches = branchRes.data.results ?? branchRes.data
+          if (firstVariant && branches.length) {
+            await api.post('/api/inventory/adjustments/', {
+              variant: firstVariant.id,
+              branch: branches[0].id,
+              quantity_change: prodModal.initial_stock,
+              reason: 'CORRECTION',
+              notes: 'Initial stock on creation',
+            })
+          }
+        } catch { /* stock adjustment failed silently — product still created */ }
+      }
+    }
     showSuccessToast('✓ Product saved')
     setDirty(false)
     prodModal.open = false

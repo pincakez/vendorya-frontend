@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Eye } from 'lucide-vue-next'
 import { RouterView } from 'vue-router'
@@ -51,11 +51,25 @@ function exitPreview() {
   router.push('/admin/dashboard')
 }
 
-function onF10(e) {
-  if (e.key === 'F10') { e.preventDefault(); router.push('/services') }
+// Dynamic global shortcuts: read open_pos / open_srv from user pos_settings
+// Falls back to F5 / F6 (matching UX Settings defaults) if not configured.
+const posKey = computed(() => auth.user?.pos_settings?.shortcuts?.open_pos ?? 'F5')
+const srvKey = computed(() => auth.user?.pos_settings?.shortcuts?.open_srv ?? 'F6')
+
+function matchesKey(e, shortcut) {
+  if (!shortcut) return false
+  if (shortcut.startsWith('Ctrl+')) return e.ctrlKey && e.key.toUpperCase() === shortcut.slice(5).toUpperCase()
+  if (shortcut.startsWith('Alt+')) return e.altKey && e.key.toUpperCase() === shortcut.slice(4).toUpperCase()
+  return e.key === shortcut
 }
-onMounted(()   => window.addEventListener('keydown', onF10))
-onUnmounted(() => window.removeEventListener('keydown', onF10))
+
+function onGlobalKey(e) {
+  if (matchesKey(e, posKey.value)) { e.preventDefault(); router.push('/pos'); return }
+  if (matchesKey(e, srvKey.value)) { e.preventDefault(); router.push('/services') }
+}
+
+onMounted(()   => window.addEventListener('keydown', onGlobalKey))
+onUnmounted(() => window.removeEventListener('keydown', onGlobalKey))
 </script>
 
 <style scoped>

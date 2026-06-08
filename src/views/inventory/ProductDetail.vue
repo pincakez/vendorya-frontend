@@ -15,8 +15,14 @@
         </div>
         <div v-else class="page-title">Product</div>
       </div>
-      <!-- Secret S button — reveals pricing/supplier panel -->
-      <button v-if="product" class="s-btn" :class="{ active: showSecret }" @click="showSecret = !showSecret" title="Show cost & supplier info">S</button>
+      <div v-if="product" style="display:flex;gap:8px;align-items:center;">
+        <!-- Edit Product button -->
+        <button class="edit-prod-btn" @click="openEditModal" title="Edit product">
+          <Pencil :size="14" /> Edit Product
+        </button>
+        <!-- Secret S button — reveals cost/supplier panel -->
+        <button class="s-btn" :class="{ active: showSecret }" @click="showSecret = !showSecret" title="Show cost & supplier info">S</button>
+      </div>
     </div>
 
     <div v-if="loading" class="skeleton-block" />
@@ -73,6 +79,11 @@
               <div class="info-label">Type</div>
               <div class="info-value">{{ product.product_type }}</div>
             </div>
+            <!-- Retail price always visible -->
+            <div v-if="primaryVariant" class="info-item">
+              <div class="info-label">Retail Price</div>
+              <div class="info-value retail-price-val"><Money :value="primaryVariant.sell_price" /></div>
+            </div>
           </div>
         </div>
 
@@ -87,10 +98,10 @@
           </div>
         </div>
 
-        <!-- Secret panel: cost + supplier + base price -->
+        <!-- Secret panel: cost + supplier + base price (NOT retail — it's always shown above) -->
         <Transition name="secret-slide">
           <div v-if="showSecret" class="secret-panel">
-            <div class="secret-title"><Eye :size="13" /> Pricing & Supplier</div>
+            <div class="secret-title"><Eye :size="13" /> Cost & Supplier</div>
             <div class="secret-grid">
               <div class="secret-item">
                 <div class="info-label">Base Price</div>
@@ -99,10 +110,6 @@
               <div v-if="primaryVariant" class="secret-item">
                 <div class="info-label">Cost Price</div>
                 <div class="info-value cost-val"><Money :value="primaryVariant.cost_price" /></div>
-              </div>
-              <div v-if="primaryVariant" class="secret-item">
-                <div class="info-label">Sell Price</div>
-                <div class="info-value"><Money :value="primaryVariant.sell_price" /></div>
               </div>
               <div v-if="product.supplier_name" class="secret-item">
                 <div class="info-label">Supplier</div>
@@ -166,14 +173,80 @@
       </div>
     </div>
 
+    <!-- ══ EDIT PRODUCT MODAL ══ -->
+    <AppModal v-if="product" :open="editModal.open" title="Edit Product" width="900px" :noBackdropClose="true" @close="editModal.open = false">
+      <div class="prod-modal-grid">
+        <!-- LEFT COLUMN -->
+        <div class="prod-modal-col">
+          <div>
+            <label class="form-label">Product Name</label>
+            <input v-model="editModal.name" class="form-input" placeholder="Product name" />
+          </div>
+          <div>
+            <label class="form-label">Description</label>
+            <textarea v-model="editModal.description" class="form-input" rows="3" placeholder="Optional" />
+          </div>
+          <div class="prod-prices-row">
+            <div><label class="form-label">Base price</label><input v-model.number="editModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">Cost price</label><input v-model.number="editModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">Sell price</label><input v-model.number="editModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
+          </div>
+        </div>
+        <!-- RIGHT COLUMN -->
+        <div class="prod-modal-col">
+          <div>
+            <label class="form-label">Category</label>
+            <select v-model="editModal.category" class="form-input">
+              <option value="">None</option>
+              <option v-for="c in editCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="display:flex;align-items:center;gap:5px;">
+              Supplier <Lock :size="11" />
+            </label>
+            <input class="form-input" :value="editModal.supplierName" disabled title="Supplier is locked after creation" />
+          </div>
+          <div>
+            <label class="form-label">Reorder level</label>
+            <input v-model.number="editModal.reorder_level" class="form-input" type="number" min="0" step="1" />
+          </div>
+          <!-- Attributes -->
+          <div v-if="editAttributes.length" class="prod-attrs-section">
+            <div class="form-label" style="margin-bottom:8px;">Attributes</div>
+            <div class="prod-attrs-grid">
+              <div v-for="def in editAttributes" :key="def.id">
+                <label class="form-label">{{ def.name }}</label>
+                <select v-if="def.options && def.options.length" v-model="editModal.attrs[def.id]" class="form-input">
+                  <option value="">—</option>
+                  <option v-for="(o, i) in def.options" :key="i" :value="optText(o)">{{ optText(o) }}</option>
+                </select>
+                <input v-else v-model="editModal.attrs[def.id]" class="form-input" :placeholder="def.name" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p v-if="editModal.error" class="form-label" style="color:var(--danger,#dc2626);margin-top:4px;">{{ editModal.error }}</p>
+      <template #footer>
+        <span style="font-size:11.5px;color:var(--text-muted);margin-right:auto;">Alt+S to save</span>
+        <button class="btn-ghost" @click="editModal.open = false">Cancel</button>
+        <button class="btn-primary" :disabled="!editModal.name.trim() || editModal.saving" @click="saveEdit">
+          {{ editModal.saving ? 'Saving…' : 'Save' }}
+        </button>
+      </template>
+    </AppModal>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { ChevronLeft, Eye, X, Camera, Image as ImageIcon } from 'lucide-vue-next'
+import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
+import { ChevronLeft, Eye, X, Camera, Image as ImageIcon, Pencil, Lock } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
+import AppModal from '@/components/ui/AppModal.vue'
+import { showSuccessToast } from '@/utils/toast'
 
 const props = defineProps({ id: String })
 
@@ -237,7 +310,92 @@ async function removeImage() {
   } catch { /* noop */ }
 }
 
-onMounted(fetchProduct)
+/* ── Edit modal ── */
+const editModal = reactive({
+  open: false, name: '', description: '', category: '',
+  supplierName: '', base_price: 0, cost_price: 0, sell_price: 0,
+  reorder_level: 0, attrs: {}, saving: false, error: '',
+})
+const editCategories = ref([])
+const editAttributes = ref([])
+
+function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
+
+async function openEditModal() {
+  if (!product.value) return
+  editModal.error = ''
+  editModal.saving = false
+
+  // Lazy-load categories and attributes if not yet loaded
+  if (!editCategories.value.length) {
+    try {
+      const [catRes, attrRes] = await Promise.all([
+        api.get('/api/inventory/categories/'),
+        api.get('/api/inventory/attributes/'),
+      ])
+      editCategories.value = catRes.data.results ?? catRes.data
+      editAttributes.value = attrRes.data.results ?? attrRes.data
+    } catch { /* noop */ }
+  }
+
+  const p = product.value
+  const v = p.variants?.[0]
+  editModal.name = p.name || ''
+  editModal.description = p.description || ''
+  editModal.category = p.category || ''
+  editModal.supplierName = p.supplier_name || '—'
+  editModal.base_price = Number(p.base_price || 0)
+  editModal.cost_price = v ? Number(v.cost_price || 0) : 0
+  editModal.sell_price = v ? Number(v.sell_price || 0) : 0
+  editModal.reorder_level = v ? Number(v.reorder_level ?? 0) : 0
+
+  // Build attrs map
+  const a = {}
+  for (const def of editAttributes.value) a[def.id] = ''
+  if (v?.attributes) for (const attr of v.attributes) a[attr.definition] = attr.value
+  editModal.attrs = a
+
+  editModal.open = true
+}
+
+async function saveEdit() {
+  editModal.error = ''
+  editModal.saving = true
+  const attributes_payload = Object.entries(editModal.attrs)
+    .filter(([, val]) => val !== '' && val != null)
+    .map(([definition, value]) => ({ definition, value }))
+  const payload = {
+    name: editModal.name.trim(),
+    description: editModal.description || '',
+    category: editModal.category || null,
+    base_price: editModal.base_price || 0,
+    cost_price: editModal.cost_price || 0,
+    sell_price: editModal.sell_price || 0,
+    reorder_level: editModal.reorder_level ?? 0,
+    attributes: attributes_payload,
+  }
+  try {
+    await api.patch(`/api/inventory/products/${props.id}/`, payload)
+    showSuccessToast('✓ Product saved')
+    editModal.open = false
+    await fetchProduct()
+  } catch (e) {
+    editModal.error = e.response?.data?.detail || 'Save failed.'
+  } finally { editModal.saving = false }
+}
+
+// Alt+S to save edit modal
+function handleKey(e) {
+  if (e.altKey && e.key === 's' && editModal.open && !editModal.saving) {
+    e.preventDefault()
+    saveEdit()
+  }
+}
+onMounted(() => {
+  fetchProduct()
+  document.addEventListener('keydown', handleKey)
+})
+onUnmounted(() => document.removeEventListener('keydown', handleKey))
 </script>
 
 <style scoped>
@@ -247,6 +405,15 @@ onMounted(fetchProduct)
 .back-btn:hover { background:var(--border); }
 .page-title { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
 .page-sub { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
+
+/* Edit product button */
+.edit-prod-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: none; color: var(--text-secondary); cursor: pointer;
+  font-size: 13px; font-weight: 500; transition: background 100ms, color 100ms;
+}
+.edit-prod-btn:hover { background: var(--border); color: var(--text-primary); }
 
 /* S secret button */
 .s-btn {
@@ -334,6 +501,8 @@ onMounted(fetchProduct)
 .info-item { }
 .info-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); font-weight: 600; }
 .info-value { font-size: 14px; color: var(--text-primary); margin-top: 2px; font-weight: 500; }
+.retail-price-val { color: #16a34a; font-weight: 700; font-size: 16px; }
+.dark .retail-price-val { color: #4ade80; }
 
 /* Attributes */
 .attrs-section { }
@@ -379,4 +548,18 @@ onMounted(fetchProduct)
 .attr-tag { display:inline-block; padding:2px 8px; border-radius:20px; background:var(--accent-soft,rgba(247,143,30,0.10)); color:var(--accent); font-size:11px; font-weight:600; margin:1px 3px 1px 0; }
 .branch-stock { display:flex; flex-wrap:wrap; gap:4px; }
 .branch-chip { display:inline-block; padding:2px 8px; border-radius:6px; background:var(--border); color:var(--text-secondary); font-size:11.5px; font-weight:500; }
+
+/* ── Edit modal shared styles ── */
+.prod-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 640px) { .prod-modal-grid { grid-template-columns: 1fr; } }
+.prod-modal-col { display: flex; flex-direction: column; gap: 14px; }
+.prod-prices-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.prod-attrs-section { border-top: 1px solid var(--border); padding-top: 12px; }
+.prod-attrs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+.btn-ghost { display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; border-radius: 9px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: none; color: var(--text-secondary); cursor: pointer; }
+.btn-ghost:hover { background: var(--border); color: var(--text-primary); }
+.btn-primary { display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; border-radius: 9px; font-size: 13px; font-weight: 600; border: none; background: var(--accent); color: #1a1208; cursor: pointer; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: .5; cursor: default; }
 </style>

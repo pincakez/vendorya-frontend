@@ -1,6 +1,8 @@
 <template>
   <aside class="nsb" :class="{ 'nsb-collapsed': collapsed }">
-    <div>
+
+    <!-- ── STICKY TOP: logo + collapse + POS/SRV + Dashboard ── -->
+    <div class="nsb-sticky-top">
       <!-- Logo + collapse -->
       <div class="nsb-logo-row" :class="{ 'nsb-col': collapsed }">
         <div class="nsb-logo">
@@ -20,11 +22,16 @@
             <template #icon><Calculator :size="18" /></template>
             POS
           </PhysicalButton>
-          <button class="nsb-srv-btn" @click="go('/services')" title="Services (F10)">SRV</button>
+          <button class="nsb-srv-btn" @click="go('/services')" title="Services">SRV</button>
         </div>
-        <PhysicalButton v-else variant="primary" :collapsed="true" tooltip="POS System" @click="go('/pos')">
-          <template #icon><Calculator :size="18" /></template>
-        </PhysicalButton>
+        <div v-else class="nsb-pos-collapsed-row">
+          <PhysicalButton variant="primary" :collapsed="true" tooltip="POS System" @click="go('/pos')">
+            <template #icon><Calculator :size="18" /></template>
+          </PhysicalButton>
+          <button class="nsb-srv-btn-col" @click="go('/services')" title="Services">
+            <Wrench :size="16" />
+          </button>
+        </div>
       </div>
 
       <!-- Top solo: Dashboard (store / acting) or Overview (general admin) -->
@@ -34,7 +41,10 @@
           {{ soloLabel }}
         </PhysicalButton>
       </div>
+    </div><!-- /nsb-sticky-top -->
 
+    <!-- ── SCROLLABLE MIDDLE: acting banner + groups ── -->
+    <div class="nsb-scroll-area">
       <!-- Acting-as-store banner -->
       <div v-if="acting && !collapsed" class="nsb-acting">
         <span class="nsb-acting-label">ACTING AS</span>
@@ -44,10 +54,25 @@
       <!-- Groups -->
       <div class="nsb-groups">
         <div v-for="g in displayGroups" :key="g.id" class="nsb-group">
-          <button class="nsb-group-head" :class="{ 'nsb-col': collapsed }" @click="toggle(g.id)" :data-tip="collapsed ? g.title : null">
-            <component :is="g.icon" v-if="collapsed" :size="20" class="grp-icon" />
-            <span v-else>{{ g.title }}</span>
-            <ChevronDown v-if="!collapsed" :size="14" class="nsb-chevron" :class="{ closed: !open[g.id] }" />
+          <!-- Collapsed: icon with rich tooltip showing group + pages -->
+          <div v-if="collapsed" class="nsb-group-icon-wrap">
+            <button class="nsb-group-head nsb-col" @click="toggle(g.id)">
+              <component :is="g.icon" :size="20" class="grp-icon" />
+            </button>
+            <!-- Rich tooltip: group title + page list -->
+            <div class="nsb-group-tooltip">
+              <div class="nsb-gtip-title">{{ g.title }}</div>
+              <div v-for="it in g.items" :key="it.to" class="nsb-gtip-item" @click.stop="go(it.to)">
+                <component :is="it.icon" :size="13" class="nsb-gtip-icon" />
+                {{ it.label }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Expanded: normal group header -->
+          <button v-else class="nsb-group-head" @click="toggle(g.id)">
+            <span>{{ g.title }}</span>
+            <ChevronDown :size="14" class="nsb-chevron" :class="{ closed: !open[g.id] }" />
           </button>
 
           <div class="nsb-group-body" :class="{ open: open[g.id] }">
@@ -67,9 +92,9 @@
           </div>
         </div>
       </div>
-    </div>
+    </div><!-- /nsb-scroll-area -->
 
-    <!-- Bottom -->
+    <!-- ── BOTTOM ── -->
     <div class="nsb-bottom">
       <div class="nsb-actions" :class="{ 'nsb-col': collapsed }">
         <!-- Exit to Admin (sudo acting on a store) -->
@@ -102,6 +127,7 @@
         </template>
       </div>
     </div>
+
   </aside>
 </template>
 
@@ -128,7 +154,6 @@ const route = useRoute()
 const router = useRouter()
 const auth  = useAuthStore()
 const theme = useThemeStore()
-// Admin sidebar is always dark → always use the dark-mode wordmark there.
 const logoSrc = computed(() =>
   props.admin ? '/logo-text-dark-mode.png'
               : (theme.dark ? '/logo-text-dark-mode.png' : '/logo-text-light-mode.png')
@@ -183,7 +208,7 @@ const groups = [
     { label: 'Billing', to: '/settings/billing', icon: CreditCard, ownerOnly: true },
     { label: 'POS Favorites', to: '/settings/pos/favorites', icon: Star },
     { label: 'POS Top Selling', to: '/settings/pos/top-selling', icon: TrendingUp },
-    { label: 'POS UX', to: '/settings/pos/ux', icon: Keyboard },
+    { label: 'UX Settings', to: '/settings/pos/ux', icon: Keyboard },
     { label: 'Profile', to: '/settings/profile', icon: User },
     { label: 'Security', to: '/settings/security', icon: Lock },
   ] },
@@ -222,7 +247,6 @@ const visibleGroups = computed(() =>
   groups.map(g => ({ ...g, items: g.items.filter(it => !it.ownerOnly || canBilling.value) }))
 )
 
-// Sudo acting on a specific store from inside the admin shell.
 const acting = computed(() => props.admin && !!auth.activeStore)
 
 const displayGroups = computed(() =>
@@ -251,14 +275,36 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb {
   width: var(--sb-width); min-width: var(--sb-width);
   background: var(--sb-bg); border-right: 1px solid var(--sb-border);
-  display: flex; flex-direction: column; justify-content: space-between;
-  padding: 20px 14px; overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-direction: column;
+  overflow: hidden;
   transition: width 220ms ease, min-width 220ms ease, padding 220ms ease;
 }
-.nsb-collapsed { width: var(--sb-collapsed); min-width: var(--sb-collapsed); padding: 20px 8px; }
+.nsb-collapsed { width: var(--sb-collapsed); min-width: var(--sb-collapsed); }
+
+/* Sticky top (logo + POS/SRV + dashboard) */
+.nsb-sticky-top {
+  flex-shrink: 0;
+  padding: 20px 14px 0;
+  background: var(--sb-bg);
+  border-bottom: 1px solid var(--sb-border);
+  padding-bottom: 12px;
+  z-index: 2;
+}
+.nsb-collapsed .nsb-sticky-top { padding: 20px 8px 12px; }
+
+/* Scrollable groups area */
+.nsb-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 14px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-border) transparent;
+}
+.nsb-collapsed .nsb-scroll-area { padding: 14px 8px 0; }
 
 /* Logo */
-.nsb-logo-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 22px; }
+.nsb-logo-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 18px; }
 .nsb-logo-row.nsb-col { flex-direction: column; gap: 14px; }
 .nsb-logo { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .nsb-logo-mark { width: 26px; height: 26px; flex-shrink: 0; }
@@ -278,24 +324,29 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-collapse-icon.flip { transform: rotate(180deg); }
 
 /* POS + solo */
-.nsb-pos { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--sb-border); }
+.nsb-pos { margin-bottom: 14px; }
 .nsb-pos-row { display: flex; gap: 5%; align-items: stretch; }
 .nsb-pos-main { flex: 0 0 70%; }
 .nsb-srv-btn {
   flex: 0 0 25%;
-  background: #16a34a;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: .06em;
-  cursor: pointer;
+  background: #16a34a; color: #fff; border: none; border-radius: 12px;
+  font-size: 13px; font-weight: 800; letter-spacing: .06em; cursor: pointer;
   transition: background 140ms, transform 100ms;
 }
 .nsb-srv-btn:hover  { background: #15803d; }
 .nsb-srv-btn:active { transform: scale(0.94); }
-.nsb-solo { margin-bottom: 16px; }
+
+/* Collapsed POS/SRV row */
+.nsb-pos-collapsed-row { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.nsb-srv-btn-col {
+  width: 40px; height: 36px; background: #16a34a; color: #fff; border: none; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: background 140ms, transform 100ms;
+}
+.nsb-srv-btn-col:hover  { background: #15803d; }
+.nsb-srv-btn-col:active { transform: scale(0.94); }
+
+.nsb-solo { margin-bottom: 0; }
 
 /* Acting-as banner */
 .nsb-acting {
@@ -308,7 +359,7 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-acting-name { font-size: 13px; font-weight: 600; color: var(--sb-text-active); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Groups */
-.nsb-groups { display: flex; flex-direction: column; gap: 16px; }
+.nsb-groups { display: flex; flex-direction: column; gap: 16px; padding-bottom: 16px; }
 .nsb-group-head {
   display: flex; align-items: center; justify-content: space-between; width: 100%;
   padding: 4px 8px; border: none; background: none; cursor: pointer;
@@ -319,28 +370,38 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-group-head.nsb-col { justify-content: center; padding: 4px 0; margin-bottom: 6px; }
 .grp-icon { color: var(--accent); }
 
-/* Tooltip for collapsed group headers */
-.nsb-group-head[data-tip] { position: relative; }
-.nsb-group-head[data-tip]::after {
-  content: attr(data-tip);
+/* Rich tooltip for collapsed group icons */
+.nsb-group-icon-wrap { position: relative; margin-bottom: 6px; }
+.nsb-group-icon-wrap:hover .nsb-group-tooltip { opacity: 1; pointer-events: all; transform: translateY(-50%) translateX(0); }
+.nsb-group-tooltip {
   position: absolute;
-  left: calc(100% + 10px);
+  left: calc(100% + 12px);
   top: 50%;
-  transform: translateY(-50%);
-  background: #1a1208;
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  padding: 5px 10px;
-  border-radius: 8px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 120ms;
+  transform: translateY(-50%) translateX(-4px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 0;
+  min-width: 170px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.18);
   z-index: 9999;
-  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms, transform 140ms;
 }
-.nsb-group-head[data-tip]:hover::after { opacity: 1; }
+.nsb-gtip-title {
+  font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); padding: 4px 14px 8px;
+  border-bottom: 1px solid var(--border); margin-bottom: 4px;
+}
+.nsb-gtip-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px; font-size: 12.5px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; transition: background 100ms, color 100ms;
+}
+.nsb-gtip-item:hover { background: var(--sb-hover); color: var(--text-primary); }
+.nsb-gtip-icon { color: var(--accent); flex-shrink: 0; opacity: 0.7; }
+
 .nsb-chevron { transition: transform 250ms ease; opacity: 0.7; }
 .nsb-chevron.closed { transform: rotate(-90deg); }
 
@@ -360,7 +421,8 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .ic-logout { color: #ef4444; }
 
 /* Bottom */
-.nsb-bottom { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--sb-border); display: flex; flex-direction: column; gap: 10px; }
+.nsb-bottom { padding: 18px 14px; border-top: 1px solid var(--sb-border); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; background: var(--sb-bg); }
+.nsb-collapsed .nsb-bottom { padding: 18px 8px; }
 .nsb-actions { display: flex; flex-direction: column; gap: 3px; }
 .nsb-actions.nsb-col { gap: 6px; }
 .lbl-logout { color: #ef4444; }
