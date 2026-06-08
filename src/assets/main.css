@@ -202,16 +202,13 @@ body {
      peeked through. Top spacing lives on .page-wrap instead. */
   padding: 0 24px 24px;
   background: var(--bg-app);
-  /* Gentle uniform scale on all store pages. The app sizes text in hundreds of
-     scoped px values, so a root font-size bump does nothing; zoom is the only
-     global lever. These are FALLBACK defaults — the per-user prefs (UI scale /
-     font sizes) are injected at runtime as #ui-prefs-style and override these.
-     See composables/applyUiPrefs.js. POS (POSLayout) is unaffected. (s53d) */
-  zoom: 1.05;
+  /* Per-user display size (UI scale / font sizes) is injected at runtime as
+     #ui-prefs-style and overrides this. This is just the 100% fallback for the
+     first paint before that runs. See composables/applyUiPrefs.js. (s53d) */
+  zoom: 1;
 }
-/* 1.05 × 0.952 ≈ 1.0 → the items/data tables render at their original size. */
 .app-content .dt,
-.app-content .data-table { zoom: 0.952; }
+.app-content .data-table { zoom: 1; }
 
 /* ── GLOBAL PAGE STANDARDS ─────────────────────────────── */
 /* Override scoped .page-title/.page-sub across all store views */
