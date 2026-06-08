@@ -38,6 +38,11 @@ const syncedLabel = ref('just now')
 let syncedAt = Date.now()
 let timer
 
+function onSynced() {
+  syncedAt = Date.now()
+  updateLabel()
+}
+
 // Server health
 const serverStatus = ref('loading')
 
@@ -107,11 +112,13 @@ onMounted(() => {
     checkAiStatus()
     aiTimer = setInterval(checkAiStatus, 60000)
   }
+  window.addEventListener('api:synced', onSynced)
 })
 
 onUnmounted(() => {
   clearInterval(timer)
   clearInterval(serverTimer)
   clearInterval(aiTimer)
+  window.removeEventListener('api:synced', onSynced)
 })
 </script>

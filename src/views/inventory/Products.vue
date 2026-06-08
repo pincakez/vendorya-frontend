@@ -327,62 +327,121 @@
     </AppModal>
 
     <!-- ═══════════ PRODUCT ADD / EDIT ═══════════ -->
-    <AppModal :open="prodModal.open" :title="prodModal.id ? 'Edit Product' : 'New Product'" @close="prodModal.open = false">
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">{{ fmtStore.itemLabel }}</label><input v-model="prodModal.name" class="form-input" :placeholder="`${fmtStore.itemLabel} name`" /></div>
+    <AppModal :open="prodModal.open" :title="prodModal.id ? 'Edit Product' : 'New Product'" width="900px" :noBackdropClose="true" @close="prodModal.open = false">
+      <div class="prod-modal-grid">
+        <!-- LEFT COLUMN: Name + Description -->
+        <div class="prod-modal-col">
+          <div>
+            <div class="prod-modal-field-head">
+              <label class="form-label">{{ fmtStore.itemLabel }}</label>
+              <label class="prod-default-cb" title="Pre-fill this value next time">
+                <input type="checkbox" v-model="prodDefaults.name_enabled" @change="saveDefaults" />
+                <span>Default</span>
+              </label>
+            </div>
+            <input v-model="prodModal.name" class="form-input" :placeholder="`${fmtStore.itemLabel} name`" />
+          </div>
 
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:160px;">
-            <label class="form-label">Category</label>
-            <select v-model="prodModal.category" class="form-input">
+          <div>
+            <label class="form-label">Description</label>
+            <textarea v-model="prodModal.description" class="form-input" rows="3" placeholder="Optional" />
+          </div>
+
+          <!-- Prices row -->
+          <div class="prod-prices-row">
+            <div><label class="form-label">Base price</label><input v-model.number="prodModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">Cost price</label><input v-model.number="prodModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">Sell price</label><input v-model.number="prodModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Category + Supplier + Reorder + Attrs -->
+        <div class="prod-modal-col">
+          <div>
+            <div class="prod-modal-field-head">
+              <label class="form-label">Category</label>
+              <label class="prod-default-cb" title="Pre-fill this value next time">
+                <input type="checkbox" v-model="prodDefaults.category_enabled" @change="saveDefaults" />
+                <span>Default</span>
+              </label>
+            </div>
+            <select v-model="prodModal.category" class="form-input" @change="prodDefaults.category_enabled && saveDefaults()">
               <option value="">None</option>
               <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
-          <div style="flex:1;min-width:160px;">
-            <label class="form-label" style="display:flex;align-items:center;gap:5px;">
-              Supplier <Lock v-if="prodModal.id" :size="11" />
-            </label>
-            <select v-if="!prodModal.id" v-model="prodModal.supplier" class="form-input">
+
+          <div>
+            <div class="prod-modal-field-head">
+              <label class="form-label" style="display:flex;align-items:center;gap:5px;">
+                Supplier <Lock v-if="prodModal.id" :size="11" />
+              </label>
+              <label v-if="!prodModal.id" class="prod-default-cb" title="Pre-fill this value next time">
+                <input type="checkbox" v-model="prodDefaults.supplier_enabled" @change="saveDefaults" />
+                <span>Default</span>
+              </label>
+            </div>
+            <select v-if="!prodModal.id" v-model="prodModal.supplier" class="form-input" @change="prodDefaults.supplier_enabled && saveDefaults()">
               <option value="">Select supplier…</option>
               <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }} ({{ s.code_prefix }})</option>
             </select>
             <input v-else class="form-input" :value="prodModal.supplierName" disabled title="Supplier is locked — the SKU is built from it" />
           </div>
-        </div>
 
-        <div><label class="form-label">Description</label><textarea v-model="prodModal.description" class="form-input" rows="2" placeholder="Optional" /></div>
+          <div>
+            <div class="prod-modal-field-head">
+              <label class="form-label">Reorder level</label>
+              <label class="prod-default-cb" title="Pre-fill this value next time">
+                <input type="checkbox" v-model="prodDefaults.reorder_enabled" @change="saveDefaults" />
+                <span>Default</span>
+              </label>
+            </div>
+            <input v-model.number="prodModal.reorder_level" class="form-input" type="number" min="0" step="1" title="Low-stock alert threshold (0 = no alarm)" />
+          </div>
 
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:110px;"><label class="form-label">Base price</label><input v-model.number="prodModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
-          <div style="flex:1;min-width:110px;"><label class="form-label">Cost price</label><input v-model.number="prodModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
-          <div style="flex:1;min-width:110px;"><label class="form-label">Sell price</label><input v-model.number="prodModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
-          <div style="flex:1;min-width:110px;"><label class="form-label">Reorder level</label><input v-model.number="prodModal.reorder_level" class="form-input" type="number" min="0" step="1" title="Low-stock alert threshold" /></div>
-        </div>
-
-        <div v-if="attributes.length" style="border-top:1px solid var(--border);padding-top:12px;">
-          <div class="form-label" style="margin-bottom:8px;">Attributes</div>
-          <div style="display:flex;flex-wrap:wrap;gap:12px;">
-            <div v-for="def in attributes" :key="def.id" style="flex:1;min-width:140px;">
-              <label class="form-label">{{ def.name }}</label>
-              <select v-if="def.options && def.options.length" v-model="prodModal.attrs[def.id]" class="form-input">
-                <option value="">—</option>
-                <option v-for="(o, i) in def.options" :key="i" :value="optText(o)">{{ optText(o) }}</option>
-              </select>
-              <input v-else v-model="prodModal.attrs[def.id]" class="form-input" :placeholder="def.name" />
+          <!-- Attributes -->
+          <div v-if="attributes.length" class="prod-attrs-section">
+            <div class="form-label" style="margin-bottom:8px;">Attributes</div>
+            <div class="prod-attrs-grid">
+              <div v-for="def in attributes" :key="def.id">
+                <label class="form-label">{{ def.name }}</label>
+                <div v-if="def.options && def.options.length" class="prod-attr-select-wrap">
+                  <select v-model="prodModal.attrs[def.id]" class="form-input">
+                    <option value="">—</option>
+                    <option v-for="(o, i) in def.options" :key="i" :value="optText(o)">{{ optText(o) }}</option>
+                  </select>
+                  <button class="prod-attr-add-btn" title="Add new option" @click.stop="openAddOption(def)"><Plus :size="13" /></button>
+                </div>
+                <input v-else v-model="prodModal.attrs[def.id]" class="form-input" :placeholder="def.name" />
+              </div>
             </div>
           </div>
         </div>
-
-        <p v-if="prodModal.error" class="form-label" style="color:var(--danger,#dc2626);">{{ prodModal.error }}</p>
       </div>
+      <p v-if="prodModal.error" class="form-label" style="color:var(--danger,#dc2626);margin-top:4px;">{{ prodModal.error }}</p>
       <template #footer>
+        <span style="font-size:11.5px;color:var(--text-muted);margin-right:auto;">Alt+S to save</span>
         <button class="btn-ghost" @click="prodModal.open = false">Cancel</button>
         <button
           class="btn-primary"
           :disabled="!prodModal.name.trim() || (!prodModal.id && !prodModal.supplier) || prodModal.saving"
           @click="saveProduct"
         >{{ prodModal.saving ? 'Saving…' : 'Save' }}</button>
+      </template>
+    </AppModal>
+
+    <!-- Add new attribute option mini-modal -->
+    <AppModal :open="addOptModal.open" :title="`Add option — ${addOptModal.defName}`" width="380px" @close="addOptModal.open = false">
+      <div>
+        <label class="form-label">New option value</label>
+        <input ref="addOptInput" v-model="addOptModal.value" class="form-input" placeholder="e.g. 256GB" @keyup.enter="confirmAddOption" />
+        <p v-if="addOptModal.error" class="form-label" style="color:var(--danger,#dc2626);margin-top:6px;">{{ addOptModal.error }}</p>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="addOptModal.open = false">Cancel</button>
+        <button class="btn-primary" :disabled="!addOptModal.value.trim() || addOptModal.saving" @click="confirmAddOption">
+          {{ addOptModal.saving ? 'Saving…' : 'Add' }}
+        </button>
       </template>
     </AppModal>
 
@@ -445,7 +504,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck, Plus,
@@ -465,6 +524,16 @@ const auth = useAuthStore()
 const fmtStore = useFormatStore()
 const router = useRouter()
 const { isDirty, setDirty } = useFormDirty()
+
+// Alt+S global shortcut — save product modal when open
+function handleGlobalKey(e) {
+  if (e.altKey && e.key === 's' && prodModal.open && !prodModal.saving) {
+    e.preventDefault()
+    saveProduct()
+  }
+}
+onMounted(() => document.addEventListener('keydown', handleGlobalKey))
+onUnmounted(() => document.removeEventListener('keydown', handleGlobalKey))
 
 // Column header label: product noun + per-store category tier names are dynamic.
 const _CAT_IDX = { cat1: 0, cat2: 1, cat3: 2, cat4: 3 }
@@ -566,21 +635,48 @@ function currentConfig() {
     sort: sortKey.value ? { key: sortKey.value, dir: sortDir.value } : null, page_size: pageSize.value,
   }
 }
-function saveAdhoc() { if (!editing.value) { localStorage.setItem(ADHOC_KEY, JSON.stringify(currentConfig())); hasAdhoc.value = true } }
+let _adhocSaveTimer = null
+function saveAdhoc() {
+  if (editing.value) return
+  const cfg = currentConfig()
+  localStorage.setItem(ADHOC_KEY, JSON.stringify(cfg))
+  hasAdhoc.value = true
+  // Debounce server save — avoid hammering on rapid resizes
+  clearTimeout(_adhocSaveTimer)
+  _adhocSaveTimer = setTimeout(() => {
+    api.post('/api/smart/presets/my-config/', { table_id: TABLE_ID, config: cfg }).catch(() => {})
+  }, 1500)
+}
 
 async function loadLayout() {
-  const adhoc = JSON.parse(localStorage.getItem(ADHOC_KEY) || 'null')
+  // Priority: localStorage (instant) > server adhoc > assigned preset/default
+  const localAdhoc = JSON.parse(localStorage.getItem(ADHOC_KEY) || 'null')
   try {
-    const { data } = await api.get('/api/smart/presets/effective/', { params: { table_id: TABLE_ID } })
-    baseConfig.value = data && data.config ? data.config : null
-  } catch { baseConfig.value = null }
-  applyLayout(adhoc || baseConfig.value)
+    const [effectiveRes, serverAdhocRes] = await Promise.all([
+      api.get('/api/smart/presets/effective/', { params: { table_id: TABLE_ID } }),
+      api.get('/api/smart/presets/my-config/', { params: { table_id: TABLE_ID } }),
+    ])
+    baseConfig.value = effectiveRes.data?.config ?? null
+    const serverAdhoc = serverAdhocRes.data && Object.keys(serverAdhocRes.data).length ? serverAdhocRes.data : null
+    // localStorage wins if it exists (most recent); server adhoc next; then preset default
+    applyLayout(localAdhoc || serverAdhoc || baseConfig.value)
+    // Sync localStorage from server if localStorage was empty
+    if (!localAdhoc && serverAdhoc) {
+      localStorage.setItem(ADHOC_KEY, JSON.stringify(serverAdhoc))
+      hasAdhoc.value = true
+    }
+  } catch {
+    baseConfig.value = null
+    applyLayout(localAdhoc)
+  }
   fetchProducts(1)
 }
 function resetLayout() {
   localStorage.removeItem(ADHOC_KEY); hasAdhoc.value = false
   colOrder.value = columns.value.map(c => c.key); colHidden.value = ['cat3', 'cat4', ...attrCols.value.map(c => c.key)]
   Object.assign(colWidths, DEFAULT_WIDTHS); sortKey.value = null; sortDir.value = 'asc'
+  // Also clear server adhoc
+  api.post('/api/smart/presets/my-config/', { table_id: TABLE_ID, config: {} }).catch(() => {})
   applyLayout(baseConfig.value)
   fetchProducts(1)
 }
@@ -855,20 +951,72 @@ async function saveSupplier() {
 }
 async function deleteSupplier(id) { if (!confirm('Delete this supplier?')) return; await api.delete(`/api/inventory/suppliers/${id}/`); fetchSuppliers() }
 
+/* ── product defaults (persisted in localStorage) ── */
+const PROD_DEFAULTS_KEY = 'prod_field_defaults'
+const prodDefaults = reactive({
+  name_enabled: false,
+  category_enabled: false, category_value: '',
+  supplier_enabled: false, supplier_value: '',
+  reorder_enabled: false, reorder_value: 0,
+})
+function loadDefaults() {
+  try {
+    const d = JSON.parse(localStorage.getItem(PROD_DEFAULTS_KEY) || '{}')
+    Object.assign(prodDefaults, d)
+  } catch { /* noop */ }
+}
+function saveDefaults() {
+  // When a checkbox is checked, snapshot the current modal value as the default
+  if (prodDefaults.category_enabled) prodDefaults.category_value = prodModal.category
+  if (prodDefaults.supplier_enabled) prodDefaults.supplier_value = prodModal.supplier
+  if (prodDefaults.reorder_enabled)  prodDefaults.reorder_value  = prodModal.reorder_level
+  localStorage.setItem(PROD_DEFAULTS_KEY, JSON.stringify({ ...prodDefaults }))
+}
+
 /* ── product add / edit ── */
 const prodModal = reactive({
   open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
-  base_price: 0, cost_price: 0, sell_price: 0, reorder_level: 5, attrs: {}, saving: false, error: '',
+  base_price: 0, cost_price: 0, sell_price: 0, reorder_level: 0, attrs: {}, saving: false, error: '',
 })
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
 function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
 
 function openAddProduct() {
   Object.assign(prodModal, {
-    open: true, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
-    base_price: 0, cost_price: 0, sell_price: 0, reorder_level: 5, saving: false, error: '',
+    open: true, id: null, name: '', description: '',
+    category: prodDefaults.category_enabled ? prodDefaults.category_value : '',
+    supplier: prodDefaults.supplier_enabled ? prodDefaults.supplier_value : '',
+    supplierName: '',
+    base_price: 0, cost_price: 0, sell_price: 0,
+    reorder_level: prodDefaults.reorder_enabled ? prodDefaults.reorder_value : 0,
+    saving: false, error: '',
   })
   resetAttrs()
+}
+
+/* ── add-option mini modal ── */
+const addOptInput = ref(null)
+const addOptModal = reactive({ open: false, defId: null, defName: '', value: '', saving: false, error: '' })
+
+function openAddOption(def) {
+  Object.assign(addOptModal, { open: true, defId: def.id, defName: def.name, value: '', saving: false, error: '' })
+  nextTick(() => addOptInput.value?.focus())
+}
+
+async function confirmAddOption() {
+  if (!addOptModal.value.trim() || addOptModal.saving) return
+  addOptModal.saving = true; addOptModal.error = ''
+  try {
+    const { data } = await api.post(`/api/inventory/attributes/${addOptModal.defId}/add-option/`, { value: addOptModal.value.trim() })
+    // update local attribute definition options
+    const def = attributes.value.find(a => a.id === addOptModal.defId)
+    if (def) def.options = data.options
+    // select the new option in the modal
+    prodModal.attrs[addOptModal.defId] = addOptModal.value.trim()
+    addOptModal.open = false
+  } catch (e) {
+    addOptModal.error = e.response?.data?.detail || 'Failed to add option.'
+  } finally { addOptModal.saving = false }
 }
 
 async function openEditProduct(p) {
@@ -886,7 +1034,7 @@ async function openEditProduct(p) {
     const v = (data.variants && data.variants[0]) || null
     prodModal.cost_price  = v ? Number(v.cost_price || 0) : 0
     prodModal.sell_price  = v ? Number(v.sell_price || 0) : 0
-    prodModal.reorder_level = v ? Number(v.reorder_level ?? 5) : 5
+    prodModal.reorder_level = v ? Number(v.reorder_level ?? 0) : 0
     if (v && v.attributes) for (const a of v.attributes) prodModal.attrs[a.definition] = a.value
   } catch { prodModal.error = 'Failed to load product details.' }
 }
@@ -903,7 +1051,7 @@ async function saveProduct() {
     base_price: prodModal.base_price || 0,
     cost_price: prodModal.cost_price || 0,
     sell_price: prodModal.sell_price || 0,
-    reorder_level: prodModal.reorder_level ?? 5,
+    reorder_level: prodModal.reorder_level ?? 0,
     attributes: attributes_payload,
   }
   if (!prodModal.id) payload.supplier = prodModal.supplier   // supplier locked on edit
@@ -1031,7 +1179,7 @@ async function confirmBulkDelete() {
   } catch { bulkDeleteModal.confirming = false } finally { bulkBusy.value = false }
 }
 
-onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppliers() })
+onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppliers(); loadDefaults() })
 </script>
 
 <style scoped>
@@ -1157,6 +1305,23 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-primary:disabled { opacity: .5; cursor: default; }
 .form-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+
+/* ── Product add/edit wide modal ── */
+.prod-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 640px) { .prod-modal-grid { grid-template-columns: 1fr; } }
+.prod-modal-col { display: flex; flex-direction: column; gap: 14px; }
+.prod-modal-field-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.prod-modal-field-head .form-label { margin-bottom: 0; }
+.prod-default-cb { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted); cursor: pointer; user-select: none; }
+.prod-default-cb input { accent-color: var(--accent); width: 12px; height: 12px; cursor: pointer; }
+.prod-default-cb:hover span { color: var(--accent); }
+.prod-prices-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.prod-attrs-section { border-top: 1px solid var(--border); padding-top: 12px; }
+.prod-attrs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.prod-attr-select-wrap { display: flex; gap: 6px; align-items: center; }
+.prod-attr-select-wrap .form-input { flex: 1; }
+.prod-attr-add-btn { flex-shrink: 0; width: 32px; height: 34px; border: 1px solid var(--border); background: none; border-radius: 8px; cursor: pointer; color: var(--accent); display: flex; align-items: center; justify-content: center; transition: background 100ms; }
+.prod-attr-add-btn:hover { background: var(--accent-soft); }
 
 /* row page transition */
 .slide-left-enter-active, .slide-left-leave-active, .slide-right-enter-active, .slide-right-leave-active { transition: all 0.35s cubic-bezier(0.25,0.8,0.25,1); }
