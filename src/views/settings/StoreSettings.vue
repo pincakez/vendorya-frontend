@@ -434,8 +434,9 @@
         <!-- QZ Tray install + test row -->
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
           <a
-            href="/media/downloads/qztray-setup.exe"
-            download
+            href="https://qz.io/download/"
+            target="_blank"
+            rel="noopener"
             class="btn-secondary btn-sm"
             style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;"
           >

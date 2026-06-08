@@ -434,6 +434,12 @@ const selectedRow = ref(-1)
 
 async function addToCart(product) {
   if (!pos.branchId) return
+  // Guard: a product with no sellable variant would poison the draft invoice
+  // (backend rejects the bad pk, the error gets swallowed, and Pay silently dies).
+  if (!product.default_variant_id) {
+    alert(`"${product.name || 'This product'}" has no sellable variant and can't be added.`)
+    return
+  }
   cart.addItem({
     id:    product.default_variant_id,
     name:  product.name,
@@ -461,10 +467,10 @@ function removeLast() {
 
 function addToCartFromFav(fav) {
   addToCart({
-    default_variant_id:    fav.product,
+    default_variant_id:    fav.default_variant_id,
     name:                  fav.product_name,
-    default_variant_price: fav.product_price,
-    default_variant_stock: 999,
+    default_variant_price: fav.default_variant_price ?? fav.product_price,
+    default_variant_stock: fav.default_variant_stock ?? 999,
   })
 }
 
@@ -624,7 +630,12 @@ async function openPayment() {
   if (!pos.currentInvoiceId) {
     await syncInvoice()
   }
-  if (pos.currentInvoiceId) showPayment.value = true
+  if (pos.currentInvoiceId) {
+    showPayment.value = true
+  } else {
+    // Draft never saved (e.g. a bad cart line). Don't die silently.
+    alert('Could not start the sale — please remove and re-add the items, then try again.')
+  }
 }
 
 function onPaymentSuccess(invoice) {
