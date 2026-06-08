@@ -37,31 +37,34 @@
     </div>
 
     <!-- Table -->
-    <div class="table-wrap">
-      <div v-if="loading" class="table-skeleton">
+    <div class="dt-card">
+      <div v-if="loading" class="svc-skeleton">
         <div v-for="i in 6" :key="i" class="skeleton-row" />
       </div>
-      <table v-else class="data-table">
+      <div v-else class="dt-xscroll">
+      <table class="dt">
         <thead>
           <tr>
-            <th>SRV #</th>
-            <th>Client</th>
-            <th>Type</th>
-            <th>Received</th>
-            <th>ETA</th>
-            <th>Cost</th>
-            <th style="width:32px;text-align:center;">🔔</th>
-            <th style="width:120px;"></th>
+            <th class="dt-th" style="width:100px;">SRV #</th>
+            <th class="dt-th">Client</th>
+            <th class="dt-th">Type</th>
+            <th class="dt-th" style="width:110px;">Received</th>
+            <th class="dt-th" style="width:110px;">ETA</th>
+            <th class="dt-th" style="width:90px;">Cost</th>
+            <th class="dt-th" style="width:44px;text-align:center;">🔔</th>
+            <th class="dt-th" style="width:120px;"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="items.length === 0">
-            <td colspan="8" class="table-empty">
-              <Wrench :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No services{{ activeTab !== 'OPEN' ? ' in this status' : '' }}</div>
+            <td colspan="8" class="dt-empty">
+              <div class="dt-empty-inner">
+                <Wrench :size="36" class="dt-empty-icon" />
+                <div class="dt-empty-title">No services{{ activeTab !== 'OPEN' ? ' in this status' : '' }}</div>
+              </div>
             </td>
           </tr>
-          <tr v-for="s in items" :key="s.id" class="table-row" @click.stop="openDetail(s)" style="cursor:pointer;">
+          <tr v-for="s in items" :key="s.id" class="dt-row clickable" @click.stop="openDetail(s)">
             <td class="col-serial">
               <span class="serial-chip">{{ s.serial_number }}</span>
             </td>
@@ -115,7 +118,8 @@
           </tr>
         </tbody>
       </table>
-    </div>
+      </div><!-- dt-xscroll -->
+    </div><!-- dt-card -->
 
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="goPage" />
 
@@ -620,4 +624,10 @@ onMounted(() => {
 }
 .btn-success:hover   { opacity: .88; }
 .btn-success:disabled { opacity: .5; cursor: not-allowed; }
+
+.svc-skeleton { padding: 8px 0; }
+.skeleton-row { height: 44px; margin: 4px 16px; border-radius: 6px;
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg-app) 50%, var(--border) 75%);
+  background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
 </style>
