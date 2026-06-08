@@ -23,6 +23,13 @@ import { useFormatStore } from './stores/format'
 const formatStore = useFormatStore(pinia)
 formatStore.applyColor()  // user's currency-symbol tint (persisted in localStorage)
 
+// Apply per-user display prefs (UI scale / font sizes) before mount, read from
+// the localStorage-hydrated user so there's no resize flash. Re-applied on login
+// and profile change via auth.setUser().
+import { applyUiPrefs } from './composables/applyUiPrefs'
+import { useAuthStore } from './stores/auth'
+applyUiPrefs(useAuthStore(pinia).user?.ui_prefs)
+
 // The router's first navigation restores auth from the httpOnly cookie (see the
 // bootstrap gate in router/index.js) and then loads store format prefs, so mount
 // can proceed normally here.

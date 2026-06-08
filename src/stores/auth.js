@@ -3,6 +3,7 @@ import api, { beginLogout, refreshAccessToken } from '@/api/axios'
 import { setAccessToken } from '@/api/token'
 import { useThemeStore } from './theme'
 import { useFormatStore } from './format'
+import { applyUiPrefs } from '@/composables/applyUiPrefs'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -96,6 +97,7 @@ export const useAuthStore = defineStore('auth', {
     setUser(user) {
       this.user = user
       localStorage.setItem('vendorya_user', JSON.stringify(user))
+      applyUiPrefs(user?.ui_prefs)   // per-user display scale/font
     },
     // Sudo picks a store from the admin topbar
     setActiveStore(store) {

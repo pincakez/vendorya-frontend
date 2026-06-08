@@ -70,6 +70,35 @@
           </label>
         </div>
 
+        <div class="section-label" style="margin-top:20px;">Display Size</div>
+        <p class="pref-hint">
+          Adjusts how big the app and its text appear — just for your account,
+          saved to your profile and applied instantly.
+        </p>
+        <div class="form-grid">
+          <div class="ui-pref">
+            <label class="form-label">UI Scale</label>
+            <select class="form-input" v-model.number="ui.ui_scale" @change="onUiChange">
+              <option v-for="o in UI_SCALE_OPTS" :key="o.v" :value="o.v">{{ o.label }}</option>
+            </select>
+            <p class="pref-hint">Zooms the whole window, like your browser's zoom.</p>
+          </div>
+          <div class="ui-pref">
+            <label class="form-label">Font size — pages</label>
+            <select class="form-input" v-model.number="ui.ui_font" @change="onUiChange">
+              <option v-for="v in UI_FONT_OPTS" :key="v" :value="v">{{ Math.round(v * 100) }}%</option>
+            </select>
+            <p class="pref-hint">Text size on pages (excludes tables).</p>
+          </div>
+          <div class="ui-pref">
+            <label class="form-label">Font size — tables</label>
+            <select class="form-input" v-model.number="ui.table_font" @change="onUiChange">
+              <option v-for="v in TABLE_FONT_OPTS" :key="v" :value="v">{{ Math.round(v * 100) }}%</option>
+            </select>
+            <p class="pref-hint">Text size inside data tables.</p>
+          </div>
+        </div>
+
         <div class="section-label" style="margin-top:20px;">Password &amp; Security</div>
         <RouterLink to="/settings/security" class="security-link">
           <span><ShieldCheck :size="15" /> Change password &amp; two-factor authentication</span>
@@ -94,6 +123,7 @@ import { ShieldCheck, ChevronRight, Palette, Camera } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
+import { applyUiPrefs, UI_DEFAULTS } from '@/composables/applyUiPrefs'
 import Money from '@/components/ui/Money.vue'
 
 const auth = useAuthStore()
@@ -101,6 +131,25 @@ const fmt  = useFormatStore()
 
 const CURRENCY_PRESETS = ['#16a34a', '#22c55e', '#0891b2', '#2563eb', '#f78f1e', '#6b7280']
 function pickColor(c) { fmt.setSymbolColor(c) }
+
+// ── Per-user display size (UI scale / font sizes) ──────────────
+const UI_SCALE_OPTS   = [{ v: 1, label: 'Normal (100%)' }, { v: 1.25, label: '125%' }, { v: 1.5, label: '150%' }]
+const UI_FONT_OPTS    = [0.9, 0.95, 1.0, 1.05, 1.1, 1.2, 1.3]
+const TABLE_FONT_OPTS = [0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15]
+const ui = reactive({ ...UI_DEFAULTS, ...(auth.user?.ui_prefs || {}) })
+
+let uiSaveTimer = null
+function onUiChange() {
+  applyUiPrefs(ui)                                 // instant preview
+  clearTimeout(uiSaveTimer)
+  uiSaveTimer = setTimeout(persistUi, 450)         // debounced save to profile
+}
+async function persistUi() {
+  try {
+    const res = await api.patch('/api/auth/me/', { ui_prefs: { ...ui } })
+    auth.setUser({ ...auth.user, ...res.data })     // keeps cache + re-applies
+  } catch { /* preview stays; next change retries */ }
+}
 
 const form = reactive({ first_name: '', last_name: '', email: '', phone_number: '', whatsapp_number: '' })
 const saving = ref(false)
@@ -197,6 +246,8 @@ onMounted(() => loadProfile())
 .security-link:hover { border-color:var(--accent); background:var(--bg-card); }
 
 .pref-hint { font-size:12.5px; color:var(--text-muted); margin:0 0 12px; line-height:1.5; }
+.ui-pref select.form-input { cursor:pointer; }
+.ui-pref .pref-hint { margin:5px 0 0; font-size:11.5px; }
 .swatch-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .swatch { width:30px; height:30px; border-radius:50%; border:2px solid var(--border); cursor:pointer; padding:0; transition:transform 80ms, box-shadow 120ms; position:relative; display:inline-flex; align-items:center; justify-content:center; }
 .swatch:hover  { transform:scale(1.08); }
