@@ -283,7 +283,7 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-pos-main { flex: 0 0 70%; }
 .nsb-srv-btn {
   flex: 0 0 25%;
-  background: #2563eb;
+  background: #16a34a;
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -293,7 +293,7 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
   cursor: pointer;
   transition: background 140ms, transform 100ms;
 }
-.nsb-srv-btn:hover  { background: #1d4ed8; }
+.nsb-srv-btn:hover  { background: #15803d; }
 .nsb-srv-btn:active { transform: scale(0.94); }
 .nsb-solo { margin-bottom: 16px; }
 

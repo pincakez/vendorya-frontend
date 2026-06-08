@@ -33,8 +33,8 @@
   --bg-header:       #ffffff;
   --border:          #e2e8f0;
   --text-primary:    #0f172a;
-  --text-secondary:  #475569;
-  --text-muted:      #94a3b8;
+  --text-secondary:  #334155;  /* darkened for contrast (was #475569) */
+  --text-muted:      #64748b;  /* darkened for contrast (was #94a3b8 — too light on white) */
   --text-inverse:    #ffffff;
 
   /* Footer */
@@ -202,7 +202,15 @@ body {
      peeked through. Top spacing lives on .page-wrap instead. */
   padding: 0 24px 24px;
   background: var(--bg-app);
+  /* "A little bigger" — gentle uniform scale on all store pages. The app sizes
+     text in hundreds of scoped px values, so a root font-size bump does nothing;
+     zoom is the only global lever. Dense data tables are counter-zoomed back to
+     normal below so columns don't overflow. POS (POSLayout) is unaffected. (s53) */
+  zoom: 1.06;
 }
+/* 1.06 × 0.943 ≈ 1.0 → the items/data tables render at their original size. */
+.app-content .dt,
+.app-content .data-table { zoom: 0.943; }
 
 /* ── GLOBAL PAGE STANDARDS ─────────────────────────────── */
 /* Override scoped .page-title/.page-sub across all store views */

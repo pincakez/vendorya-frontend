@@ -78,6 +78,10 @@ export const useAuthStore = defineStore('auth', {
       try {
         const access = await refreshAccessToken()
         this.accessToken = access   // token.js already holds it; mirror for the guard
+        // Refresh the cached user so a server-side change (e.g. role promotion
+        // CASHIER→OWNER) takes effect on reload instead of showing a stale role.
+        // Non-blocking: a failure here must not log the user out.
+        this.fetchMe().catch(() => {})
       } catch {
         // Cookie gone/expired → not actually logged in. Drop stale UX state so the
         // guard routes to /login (keep theme prefs).

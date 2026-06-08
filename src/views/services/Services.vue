@@ -489,6 +489,25 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Shared header / tab / button classes — these are NOT global; each page
+   defines its own scoped copy. Services.vue was missing them, so the
+   New Service button + tabs rendered unstyled. (s53) */
+.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+.page-title  { font-size:28px; font-weight:800; color:var(--text-primary); margin:0; letter-spacing:-0.4px; }
+.page-sub    { font-size:13.5px; color:var(--text-muted); margin:4px 0 0; }
+.header-actions { display:flex; align-items:center; gap:10px; }
+.btn-primary { display:inline-flex; align-items:center; gap:6px; padding:9px 17px; border-radius:9px; font-size:13.5px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
+.btn-primary:hover    { background:var(--accent-hover); }
+.btn-primary:active   { transform:scale(0.95); }
+.btn-primary:disabled { opacity:.5; cursor:default; }
+.btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:8px 13px; border-radius:9px; font-size:13.5px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
+.btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
+.btn-ghost:active { transform:scale(0.95); }
+.tab-bar { display:flex; gap:2px; border-bottom:1px solid var(--border); }
+.tab-btn { display:flex; align-items:center; gap:6px; padding:9px 16px; font-size:13.5px; font-weight:500; color:var(--text-muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms,border-color 120ms; }
+.tab-btn:hover  { color:var(--text-primary); }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
+
 .svc-toolbar {
   display: flex;
   align-items: center;
