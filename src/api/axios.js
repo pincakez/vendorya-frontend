@@ -59,7 +59,13 @@ api.interceptors.request.use(config => {
 })
 
 api.interceptors.response.use(
-  response => response,
+  response => {
+    // Emit sync event on successful writes
+    if (['POST', 'PATCH', 'PUT'].includes(response.config.method.toUpperCase())) {
+      window.dispatchEvent(new CustomEvent('api:synced'))
+    }
+    return response
+  },
   async error => {
     const original = error.config
     // Don't fight an in-progress logout — let the request die quietly.

@@ -445,7 +445,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck, Plus,
@@ -457,11 +457,14 @@ import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
 import { formatQty } from '@/utils/format'
+import { showSuccessToast } from '@/utils/toast'
+import { useFormDirty } from '@/composables/useFormDirty'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const auth = useAuthStore()
 const fmtStore = useFormatStore()
 const router = useRouter()
+const { isDirty, setDirty } = useFormDirty()
 
 // Column header label: product noun + per-store category tier names are dynamic.
 const _CAT_IDX = { cat1: 0, cat2: 1, cat3: 2, cat4: 3 }
@@ -907,6 +910,8 @@ async function saveProduct() {
   try {
     if (prodModal.id) await api.patch(`/api/inventory/products/${prodModal.id}/`, payload)
     else              await api.post('/api/inventory/products/', payload)
+    showSuccessToast('✓ Product saved')
+    setDirty(false)
     prodModal.open = false
     fetchProducts(prodModal.id ? page.value : 1)
   } catch (e) {
@@ -915,6 +920,22 @@ async function saveProduct() {
       || 'Save failed. Make sure the supplier prefix is confirmed (locked).'
   } finally { prodModal.saving = false }
 }
+
+watch(() => prodModal.open, (isOpen) => {
+  if (isOpen) setDirty(false)
+})
+
+watch([
+  () => prodModal.name,
+  () => prodModal.description,
+  () => prodModal.category,
+  () => prodModal.base_price,
+  () => prodModal.cost_price,
+  () => prodModal.sell_price,
+  () => prodModal.reorder_level,
+], () => {
+  if (prodModal.open && !prodModal.saving) setDirty(true)
+})
 
 /* ── ghost (hide from POS) + bulk ops ── */
 const bulkMode = ref(false)
