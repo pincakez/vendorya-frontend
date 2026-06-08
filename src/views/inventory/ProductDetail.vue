@@ -57,23 +57,24 @@
           <h2 class="section-title">Variants</h2>
           <span class="count-badge">{{ product.variants.length }}</span>
         </div>
-        <table class="data-table">
+        <div class="dt-xscroll">
+        <table class="dt">
           <thead>
             <tr>
-              <th>SKU</th>
-              <th>Barcode</th>
-              <th>Attributes</th>
-              <th>Cost</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Per Branch</th>
+              <th class="dt-th">SKU</th>
+              <th class="dt-th">Barcode</th>
+              <th class="dt-th">Attributes</th>
+              <th class="dt-th">Cost</th>
+              <th class="dt-th">Price</th>
+              <th class="dt-th">Stock</th>
+              <th class="dt-th">Per Branch</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="product.variants.length === 0">
-              <td colspan="7" class="table-empty">No variants.</td>
+              <td colspan="7" class="dt-empty">No variants.</td>
             </tr>
-            <tr v-for="v in product.variants" :key="v.id" class="table-row">
+            <tr v-for="v in product.variants" :key="v.id" class="dt-row">
               <td class="mono">{{ v.sku }}</td>
               <td class="mono text-muted">{{ v.barcode || '—' }}</td>
               <td>
@@ -94,7 +95,8 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </div><!-- dt-xscroll -->
+      </div><!-- existing -->
     </div>
   </div>
 </template>
@@ -149,12 +151,6 @@ onMounted(fetchProduct)
 .section-title { font-size:15px; font-weight:600; color:var(--text-primary); margin:0; }
 .count-badge { padding:2px 8px; border-radius:20px; background:var(--border); font-size:12px; font-weight:600; color:var(--text-muted); }
 
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:9px 14px; text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); vertical-align:top; }
 .table-empty { text-align:center; padding:40px 20px; color:var(--text-muted); }
 .mono { font-family:ui-monospace,monospace; font-size:12px; }
 .text-muted { color:var(--text-muted); }

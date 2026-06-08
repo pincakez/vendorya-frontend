@@ -7,30 +7,31 @@
       </div>
     </div>
 
-    <div class="table-wrap">
+    <div class="dt-card">
       <div v-if="loading" class="table-skeleton">
         <div v-for="i in 4" :key="i" class="skeleton-row" />
       </div>
-      <table v-else class="data-table">
+      <div v-else class="dt-xscroll">
+        <table class="dt">
         <thead>
           <tr>
-            <th>Plan</th>
-            <th>Monthly</th>
-            <th>Annual</th>
-            <th>Quotas</th>
-            <th>Active subs</th>
-            <th>Status</th>
-            <th style="width:80px;"></th>
+            <th class="dt-th">Plan</th>
+            <th class="dt-th">Monthly</th>
+            <th class="dt-th">Annual</th>
+            <th class="dt-th">Quotas</th>
+            <th class="dt-th">Active subs</th>
+            <th class="dt-th">Status</th>
+            <th class="dt-th" style="width:80px;"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="!plans.length">
-            <td colspan="7" class="table-empty">
+            <td colspan="7" class="dt-empty">
               <PackageOpen :size="32" style="opacity:.3;margin-bottom:8px;" />
               <div>No plans yet</div>
             </td>
           </tr>
-          <tr v-for="p in plans" :key="p.id" class="table-row" :class="{ inactive: !p.is_active }">
+          <tr v-for="p in plans" :key="p.id" class="dt-row" :class="{ inactive: !p.is_active }">
             <td>
               <div style="display:flex;flex-direction:column;">
                 <span style="font-weight:600;">{{ p.name }}</span>
@@ -59,7 +60,9 @@
           </tr>
         </tbody>
       </table>
-    </div>
+      </div><!-- dt-xscroll -->
+    </div><!-- /dt-card -->
+
 
     <AppModal :open="modal.open" :title="modal.id ? 'Edit Plan' : 'New Plan'" @close="close">
       <div style="display:flex;flex-direction:column;gap:14px;">
@@ -217,14 +220,7 @@ onUnmounted(() => qab.clearActions())
 .page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
 .page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
-.table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:10px 14px; text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
 .data-table tbody tr.table-row.inactive { opacity:.55; }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); vertical-align:top; }
 .table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .table-skeleton { padding:8px 0; }
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }

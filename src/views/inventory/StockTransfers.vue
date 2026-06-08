@@ -9,30 +9,31 @@
     </div>
 
     <!-- List -->
-    <div class="table-wrap">
+    <div class="dt-card">
       <div v-if="loading" class="table-skeleton">
         <div v-for="i in 6" :key="i" class="skeleton-row" />
       </div>
-      <table v-else class="data-table">
+      <div v-else class="dt-xscroll">
+        <table class="dt">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Items</th>
-            <th>Notes</th>
-            <th>By</th>
+            <th class="dt-th">Date</th>
+            <th class="dt-th">From</th>
+            <th class="dt-th">To</th>
+            <th class="dt-th">Items</th>
+            <th class="dt-th">Notes</th>
+            <th class="dt-th">By</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="transfers.length === 0">
-            <td colspan="6" class="table-empty">
+            <td colspan="6" class="dt-empty">
               <ArrowLeftRight :size="32" style="opacity:.3;margin-bottom:8px;" />
               <div>No transfers yet</div>
               <div class="table-empty-sub">Use "New Transfer" to move stock between branches</div>
             </td>
           </tr>
-          <tr v-for="t in transfers" :key="t.id" class="table-row" @click="viewTransfer(t)">
+          <tr v-for="t in transfers" :key="t.id" class="dt-row" @click="viewTransfer(t)">
             <td class="col-date">{{ fmtDate(t.created_at) }}</td>
             <td><span class="branch-pill from-pill">{{ t.from_branch_name }}</span></td>
             <td><span class="branch-pill to-pill">{{ t.to_branch_name }}</span></td>
@@ -46,6 +47,7 @@
           </tr>
         </tbody>
       </table>
+      </div><!-- dt-xscroll -->
       <AppPagination :total="total" :page="page" :page-size="pageSize" @change="p => { page = p; load() }" />
     </div>
 
@@ -99,10 +101,10 @@
           <table class="data-table mini-table">
             <thead>
               <tr>
-                <th>SKU</th>
-                <th>Product</th>
-                <th>Qty</th>
-                <th></th>
+                <th class="dt-th">SKU</th>
+                <th class="dt-th">Product</th>
+                <th class="dt-th">Qty</th>
+                <th class="dt-th"></th>
               </tr>
             </thead>
             <tbody>
@@ -167,7 +169,7 @@
         </div>
         <table class="data-table mini-table" style="margin-top:16px;">
           <thead>
-            <tr><th>SKU</th><th>Product</th><th>Qty</th></tr>
+            <tr><th class="dt-th">SKU</th><th class="dt-th">Product</th><th class="dt-th">Qty</th></tr>
           </thead>
           <tbody>
             <tr v-for="item in detail.transfer.items" :key="item.id">
@@ -177,7 +179,7 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </div><!-- existing -->
       <template #footer>
         <button class="btn-secondary" @click="detail.open = false">Close</button>
       </template>

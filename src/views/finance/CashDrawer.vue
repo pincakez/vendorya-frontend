@@ -51,22 +51,24 @@
       <!-- Today's cash payments table -->
       <div style="margin-top:28px;">
         <div class="section-title">Today's Cash Payments</div>
-        <div class="table-wrap">
-          <table class="data-table">
+        <div class="dt-card">
+          <div class="dt-xscroll">
+        <table class="dt">
             <thead>
-              <tr><th>Time</th><th>Invoice #</th><th>Amount</th></tr>
+              <tr><th class="dt-th">Time</th><th class="dt-th">Invoice #</th><th class="dt-th">Amount</th></tr>
             </thead>
             <tbody>
               <tr v-if="payments.length === 0">
-                <td colspan="3" class="table-empty">No cash payments today</td>
+                <td colspan="3" class="dt-empty">No cash payments today</td>
               </tr>
-              <tr v-for="p in payments" :key="p.id" class="table-row">
+              <tr v-for="p in payments" :key="p.id" class="dt-row">
                 <td>{{ fmtTime(p.created_at) }}</td>
                 <td class="col-ref">{{ p.invoice }}</td>
                 <td class="col-amount"><Money :value="p.amount" /></td>
               </tr>
             </tbody>
           </table>
+        </div><!-- dt-xscroll -->
         </div>
       </div>
     </div>
@@ -132,13 +134,6 @@ onMounted(fetchData)
 
 .section-title { font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:12px; }
 
-.table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:10px 14px; text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); }
 .table-empty { text-align:center; padding:32px; color:var(--text-muted); }
 
 .col-ref    { font-family:monospace; font-size:12px; color:var(--text-muted); }

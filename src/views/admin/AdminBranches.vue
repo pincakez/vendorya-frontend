@@ -18,29 +18,30 @@
       </div>
     </div>
 
-    <div class="table-wrap">
+    <div class="dt-card">
       <div v-if="loading" class="table-skeleton">
         <div v-for="i in 5" :key="i" class="skeleton-row" />
       </div>
-      <table v-else class="data-table">
+      <div v-else class="dt-xscroll">
+        <table class="dt">
         <thead>
           <tr>
-            <th>Branch</th>
-            <th>Store</th>
-            <th>City</th>
-            <th>Country</th>
-            <th>Main</th>
-            <th style="width:60px;"></th>
+            <th class="dt-th">Branch</th>
+            <th class="dt-th">Store</th>
+            <th class="dt-th">City</th>
+            <th class="dt-th">Country</th>
+            <th class="dt-th">Main</th>
+            <th class="dt-th" style="width:60px;"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="!filtered.length">
-            <td colspan="6" class="table-empty">
+            <td colspan="6" class="dt-empty">
               <Building :size="32" style="opacity:.3;margin-bottom:8px;" />
               <div>No branches found</div>
             </td>
           </tr>
-          <tr v-for="b in filtered" :key="b.id" class="table-row">
+          <tr v-for="b in filtered" :key="b.id" class="dt-row">
             <td><span style="font-weight:600;">{{ b.name }}</span></td>
             <td style="color:var(--text-secondary);">{{ b.store_name }}</td>
             <td>{{ b.city || '—' }}</td>
@@ -57,7 +58,9 @@
           </tr>
         </tbody>
       </table>
-    </div>
+      </div><!-- dt-xscroll -->
+    </div><!-- /dt-card -->
+
 
     <AppModal :open="modal.open" :title="modal.id ? 'Edit Branch' : 'New Branch'" @close="closeModal">
       <div style="display:flex;flex-direction:column;gap:14px;">
@@ -195,13 +198,6 @@ onMounted(() => {
 .search-input { padding:7px 12px 7px 30px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); font-size:13px; width:220px; outline:none; transition:border-color 120ms; }
 .search-input:focus { border-color:var(--admin-accent); }
 
-.table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:10px 14px; text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); }
 .table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .table-skeleton { padding:8px 0; }
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }

@@ -78,21 +78,22 @@
           <h2 class="section-title">Sales During Shift</h2>
           <span class="count-badge">{{ summary.invoice_count }}</span>
         </div>
-        <table class="data-table">
+        <div class="dt-xscroll">
+        <table class="dt">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Time</th>
-              <th>Customer</th>
-              <th>Total</th>
-              <th>Paid</th>
+              <th class="dt-th">#</th>
+              <th class="dt-th">Time</th>
+              <th class="dt-th">Customer</th>
+              <th class="dt-th">Total</th>
+              <th class="dt-th">Paid</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="summary.invoices.length === 0">
-              <td colspan="5" class="table-empty">No sales during this shift.</td>
+              <td colspan="5" class="dt-empty">No sales during this shift.</td>
             </tr>
-            <tr v-for="inv in summary.invoices" :key="inv.id" class="table-row">
+            <tr v-for="inv in summary.invoices" :key="inv.id" class="dt-row">
               <td class="mono">{{ inv.invoice_number || '—' }}</td>
               <td class="text-muted">{{ fmtTime(inv.created_at) }}</td>
               <td>{{ inv.customer }}</td>
@@ -104,7 +105,8 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </div><!-- dt-xscroll -->
+      </div><!-- existing -->
     </div>
   </div>
 </template>
@@ -176,12 +178,6 @@ onMounted(fetchSummary)
 .section-title { font-size:15px; font-weight:600; color:var(--text-primary); margin:0; }
 .count-badge { padding:2px 8px; border-radius:20px; background:var(--border); font-size:12px; font-weight:600; color:var(--text-muted); }
 
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:9px 14px; text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); cursor:default; transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); }
 .table-empty { text-align:center; padding:40px 20px; color:var(--text-muted); }
 .mono { font-family:ui-monospace,monospace; font-size:12px; }
 .text-muted { color:var(--text-muted); font-size:12px; }

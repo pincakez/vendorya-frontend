@@ -245,6 +245,13 @@ body {
    the scroll (each page drifted apart). Page-specific extras
    only (stock-badge, c-sku, col-frozen, edit-panel, etc.).
 
+   ⚠️  NEW PAGE CHECKLIST — before shipping any list view:
+       markup : .dt-card > .dt-xscroll > table.dt
+       headers: th.dt-th  (sticky is automatic)
+       rows   : tr.dt-row  (+ .clickable if row is clickable)
+       empty  : td.dt-empty > .dt-empty-inner > icon + title
+       NO custom table/thead/tr/td CSS in <style scoped>.
+
    SCROLLING (the global/browser scrollbar + pinned header): the
    page (.app-content) is the ONLY scroller — its scrollbar is the
    browser one on the right. The <thead> is `position: sticky;

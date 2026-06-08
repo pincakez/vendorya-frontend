@@ -66,28 +66,30 @@
       </div>
 
       <!-- per-endpoint table -->
-      <div class="table-wrap group-card">
+      <div class="dt-card">
         <div class="group-head">
           <span class="group-title">Per-screen results</span>
           <span class="group-count">{{ report.endpoints_checked }}</span>
         </div>
-        <table class="data-table">
+        <div class="dt-xscroll">
+        <table class="dt">
           <thead>
             <tr>
-              <th>Screen</th>
-              <th>Result</th>
-              <th>Details</th>
+              <th class="dt-th">Screen</th>
+              <th class="dt-th">Result</th>
+              <th class="dt-th">Details</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="e in report.endpoints" :key="e.endpoint" class="table-row">
+            <tr v-for="e in report.endpoints" :key="e.endpoint" class="dt-row">
               <td><span style="font-weight:600;">{{ e.endpoint }}</span></td>
               <td><span class="pill" :class="statusClass(e.status)">{{ statusLabel(e.status) }}</span></td>
               <td style="color:var(--text-secondary);">{{ detailText(e) }}</td>
             </tr>
           </tbody>
         </table>
-      </div>
+      </div><!-- dt-xscroll -->
+      </div><!-- existing -->
 
       <!-- seed warnings, only if any -->
       <div v-if="report.seed_warnings && report.seed_warnings.length" class="table-wrap warn-card">
@@ -199,12 +201,6 @@ function detailText(e) {
 .group-title { font-size:13px; font-weight:700; color:var(--text-primary); }
 .group-count { display:inline-block; min-width:20px; text-align:center; padding:1px 8px; border-radius:20px; font-size:11px; font-weight:700; background:var(--admin-accent-soft); color:var(--admin-accent); }
 
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:10px 16px; text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 16px; color:var(--text-primary); }
 
 .pill { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; }
 .pill.ok    { background:rgba(34,197,94,.14);  color:#16a34a; }

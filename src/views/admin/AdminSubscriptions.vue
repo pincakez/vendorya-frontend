@@ -27,26 +27,27 @@
     </div>
 
     <!-- CLIENTS tab -->
-    <div v-show="tab === 'clients'" class="table-wrap">
+    <div v-show="tab === 'clients'" class="dt-card">
       <div v-if="loading" class="table-skeleton">
         <div v-for="i in 5" :key="i" class="skeleton-row" />
       </div>
-      <table v-else class="data-table">
+      <div v-else class="dt-xscroll">
+        <table class="dt">
         <thead>
           <tr>
-            <th>Store</th>
-            <th>Owner</th>
-            <th>Plan</th>
-            <th>Status</th>
-            <th>Period</th>
-            <th style="width:130px;"></th>
+            <th class="dt-th">Store</th>
+            <th class="dt-th">Owner</th>
+            <th class="dt-th">Plan</th>
+            <th class="dt-th">Status</th>
+            <th class="dt-th">Period</th>
+            <th class="dt-th" style="width:130px;"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="!subs.length">
-            <td colspan="6" class="table-empty">No subscriptions match.</td>
+            <td colspan="6" class="dt-empty">No subscriptions match.</td>
           </tr>
-          <tr v-for="s in subs" :key="s.id" class="table-row">
+          <tr v-for="s in subs" :key="s.id" class="dt-row">
             <td>
               <div style="display:flex;align-items:center;gap:10px;">
                 <div class="mini-avatar">{{ (s.store?.name || '?').charAt(0).toUpperCase() }}</div>
@@ -73,31 +74,33 @@
           </tr>
         </tbody>
       </table>
+    </div><!-- dt-xscroll -->
     </div>
 
     <!-- INVOICES tab -->
-    <div v-show="tab === 'invoices'" class="table-wrap">
+    <div v-show="tab === 'invoices'" class="dt-card">
       <div v-if="invoicesLoading" class="table-skeleton">
         <div v-for="i in 5" :key="i" class="skeleton-row" />
       </div>
-      <table v-else class="data-table">
+      <div v-else class="dt-xscroll">
+        <table class="dt">
         <thead>
           <tr>
-            <th>Invoice</th>
-            <th>Store</th>
-            <th>Plan</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Issued</th>
-            <th>Due</th>
-            <th style="width:130px;"></th>
+            <th class="dt-th">Invoice</th>
+            <th class="dt-th">Store</th>
+            <th class="dt-th">Plan</th>
+            <th class="dt-th">Amount</th>
+            <th class="dt-th">Status</th>
+            <th class="dt-th">Issued</th>
+            <th class="dt-th">Due</th>
+            <th class="dt-th" style="width:130px;"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="!invoices.length">
-            <td colspan="8" class="table-empty">No invoices yet.</td>
+            <td colspan="8" class="dt-empty">No invoices yet.</td>
           </tr>
-          <tr v-for="inv in invoices" :key="inv.id" class="table-row">
+          <tr v-for="inv in invoices" :key="inv.id" class="dt-row">
             <td style="font-family:ui-monospace,monospace;font-size:12px;">{{ inv.invoice_number || '(draft)' }}</td>
             <td>{{ inv.store_name }}</td>
             <td>{{ inv.subscription?.display_label || inv.subscription?.plan_name }}</td>
@@ -112,6 +115,7 @@
           </tr>
         </tbody>
       </table>
+    </div><!-- dt-xscroll -->
     </div>
 
     <!-- Edit subscription modal -->
@@ -380,13 +384,6 @@ onMounted(() => {
 .tab:hover  { color:var(--text-primary); }
 .tab.active { color:var(--admin-accent); border-bottom-color:var(--admin-accent); }
 
-.table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:10px 14px; text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); vertical-align:top; }
 .table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); }
 .table-skeleton { padding:8px 0; }
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }

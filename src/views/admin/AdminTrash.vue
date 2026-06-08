@@ -18,7 +18,7 @@
       <div>Choose a store to view its deleted records.</div>
     </div>
 
-    <div v-else-if="loading" class="table-wrap">
+    <div v-else-if="loading" class="dt-card">
       <div class="table-skeleton"><div v-for="i in 4" :key="i" class="skeleton-row" /></div>
     </div>
 
@@ -28,21 +28,22 @@
     </div>
 
     <div v-else class="groups">
-      <div v-for="g in groups" :key="g.model" class="table-wrap group-card">
+      <div v-for="g in groups" :key="g.model" class="dt-card">
         <div class="group-head">
           <span class="group-title">{{ g.label }}</span>
           <span class="group-count">{{ g.count }}</span>
         </div>
-        <table class="data-table">
+        <div class="dt-xscroll">
+        <table class="dt">
           <thead>
             <tr>
-              <th>Record</th>
-              <th>Deleted</th>
-              <th style="width:110px;"></th>
+              <th class="dt-th">Record</th>
+              <th class="dt-th">Deleted</th>
+              <th class="dt-th" style="width:110px;"></th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="row in g.rows" :key="row.id" class="table-row">
+            <tr v-for="row in g.rows" :key="row.id" class="dt-row">
               <td><span style="font-weight:600;">{{ row.label || '—' }}</span></td>
               <td style="color:var(--text-secondary);">{{ fmtDate(row.deleted_at) }}</td>
               <td>
@@ -53,7 +54,8 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </div><!-- dt-xscroll -->
+      </div><!-- existing -->
     </div>
   </div>
 </template>
@@ -126,12 +128,6 @@ onMounted(fetchStores)
 .group-title { font-size:13px; font-weight:700; color:var(--text-primary); }
 .group-count { display:inline-block; min-width:20px; text-align:center; padding:1px 8px; border-radius:20px; font-size:11px; font-weight:700; background:var(--admin-accent-soft); color:var(--admin-accent); }
 
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:10px 16px; text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 16px; color:var(--text-primary); }
 
 .table-skeleton { padding:8px 0; }
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }

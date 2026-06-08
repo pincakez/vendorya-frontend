@@ -44,29 +44,30 @@
       </template>
     </AppModal>
 
-    <div class="table-wrap">
+    <div class="dt-card">
       <div v-if="loading && !logs.length" class="table-skeleton">
         <div v-for="i in 6" :key="i" class="skeleton-row" />
       </div>
-      <table v-else class="data-table">
+      <div v-else class="dt-xscroll">
+        <table class="dt">
         <thead>
           <tr>
-            <th style="width:140px;">When</th>
-            <th style="width:150px;">Store</th>
-            <th style="width:140px;">User</th>
-            <th style="width:120px;">Type</th>
-            <th>Action</th>
-            <th style="width:120px;">IP</th>
+            <th class="dt-th" style="width:140px;">When</th>
+            <th class="dt-th" style="width:150px;">Store</th>
+            <th class="dt-th" style="width:140px;">User</th>
+            <th class="dt-th" style="width:120px;">Type</th>
+            <th class="dt-th">Action</th>
+            <th class="dt-th" style="width:120px;">IP</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="!logs.length">
-            <td colspan="6" class="table-empty">
+            <td colspan="6" class="dt-empty">
               <Activity :size="32" style="opacity:.3;margin-bottom:8px;" />
               <div>No activity recorded yet</div>
             </td>
           </tr>
-          <tr v-for="log in logs" :key="log.id" class="table-row">
+          <tr v-for="log in logs" :key="log.id" class="dt-row">
             <td class="ts" :title="absoluteTime(log.timestamp)">{{ relative(log.timestamp) }}</td>
             <td><span class="store-cell">{{ log.store_name }}</span></td>
             <td>
@@ -84,7 +85,9 @@
           </tr>
         </tbody>
       </table>
-    </div>
+      </div><!-- dt-xscroll -->
+    </div><!-- /dt-card -->
+
   </div>
 </template>
 
@@ -254,13 +257,6 @@ onUnmounted(() => {
 .btn-danger:hover { background:#b91c1c; }
 .btn-danger:disabled { opacity:.5; cursor:default; }
 
-.table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:10px 14px; text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); vertical-align:top; }
 
 .ts { color:var(--text-muted); font-size:12px; white-space:nowrap; }
 .ip { color:var(--text-muted); font-size:11.5px; font-variant-numeric:tabular-nums; }

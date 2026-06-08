@@ -15,30 +15,31 @@
       </select>
     </div>
 
-    <div class="table-wrap">
+    <div class="dt-card">
       <div v-if="loading" class="table-skeleton">
         <div v-for="i in 8" :key="i" class="skeleton-row" />
       </div>
-      <table v-else class="data-table">
+      <div v-else class="dt-xscroll">
+        <table class="dt">
         <thead>
           <tr>
-            <th>Supplier</th>
-            <th>Ref #</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Total</th>
-            <th>Paid</th>
-            <th style="width:80px;"></th>
+            <th class="dt-th">Supplier</th>
+            <th class="dt-th">Ref #</th>
+            <th class="dt-th">Date</th>
+            <th class="dt-th">Status</th>
+            <th class="dt-th">Total</th>
+            <th class="dt-th">Paid</th>
+            <th class="dt-th" style="width:80px;"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="purchases.length === 0">
-            <td colspan="7" class="table-empty">
+            <td colspan="7" class="dt-empty">
               <ShoppingCart :size="32" style="opacity:.3;margin-bottom:8px;" />
               <div>No purchases yet</div>
             </td>
           </tr>
-          <tr v-for="p in purchases" :key="p.id" class="table-row" @click="openView(p)" style="cursor:pointer;">
+          <tr v-for="p in purchases" :key="p.id" class="dt-row" @click="openView(p)" style="cursor:pointer;">
             <td class="col-name">{{ p.supplier_name || p.supplier }}</td>
             <td class="col-ref">{{ p.vendor_reference || '—' }}</td>
             <td>{{ fmtDate(p.date) }}</td>
@@ -56,6 +57,7 @@
           </tr>
         </tbody>
       </table>
+    </div><!-- dt-xscroll -->
     </div>
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchPurchases" />
 
@@ -313,13 +315,6 @@ onUnmounted(() => qab.clearActions())
 .toolbar { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
 .filter-select { max-width:160px; }
 
-.table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:10px 14px; text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); white-space:nowrap; }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); }
 .table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .table-skeleton { padding:8px 0; }
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }

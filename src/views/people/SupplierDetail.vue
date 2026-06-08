@@ -43,23 +43,24 @@
           <span class="count-badge">{{ total }}</span>
         </div>
         <div v-if="purLoading" class="table-skeleton"><div v-for="i in 5" :key="i" class="skeleton-row" /></div>
-        <table v-else class="data-table">
+        <div v-else class="dt-xscroll">
+        <table class="dt">
           <thead>
             <tr>
-              <th>Ref</th>
-              <th>Date</th>
-              <th>Total</th>
-              <th>Paid</th>
-              <th>Outstanding</th>
-              <th>Status</th>
-              <th>Notes</th>
+              <th class="dt-th">Ref</th>
+              <th class="dt-th">Date</th>
+              <th class="dt-th">Total</th>
+              <th class="dt-th">Paid</th>
+              <th class="dt-th">Outstanding</th>
+              <th class="dt-th">Status</th>
+              <th class="dt-th">Notes</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="purchases.length === 0">
-              <td colspan="7" class="table-empty">No purchases yet.</td>
+              <td colspan="7" class="dt-empty">No purchases yet.</td>
             </tr>
-            <tr v-for="p in purchases" :key="p.id" class="table-row">
+            <tr v-for="p in purchases" :key="p.id" class="dt-row">
               <td class="mono">{{ p.vendor_reference || '—' }}</td>
               <td class="text-muted">{{ fmtDate(p.date) }}</td>
               <td><Money :value="p.total_amount" /></td>
@@ -73,6 +74,7 @@
             </tr>
           </tbody>
         </table>
+      </div><!-- dt-xscroll -->
         <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchPurchases" />
       </div>
     </div>
@@ -148,12 +150,6 @@ onMounted(() => { fetchSupplier(); fetchPurchases() })
 .section-title { font-size:15px; font-weight:600; color:var(--text-primary); margin:0; }
 .count-badge { padding:2px 8px; border-radius:20px; background:var(--border); font-size:12px; font-weight:600; color:var(--text-muted); }
 
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:9px 14px; text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); cursor:default; transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); }
 .table-empty { text-align:center; padding:40px 20px; color:var(--text-muted); }
 .table-skeleton { padding:8px 0; }
 .skeleton-row { height:38px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }

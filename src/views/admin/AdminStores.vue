@@ -17,32 +17,33 @@
       </div>
     </div>
 
-    <div class="table-wrap">
+    <div class="dt-card">
       <div v-if="loading" class="table-skeleton">
         <div v-for="i in 5" :key="i" class="skeleton-row" />
       </div>
-      <table v-else class="data-table">
+      <div v-else class="dt-xscroll">
+        <table class="dt">
         <thead>
           <tr>
-            <th>Store</th>
-            <th>Code</th>
-            <th>Owner</th>
-            <th>Plan</th>
-            <th>Currency</th>
-            <th>Branches</th>
-            <th>Staff</th>
-            <th>Status</th>
-            <th style="width:90px;"></th>
+            <th class="dt-th">Store</th>
+            <th class="dt-th">Code</th>
+            <th class="dt-th">Owner</th>
+            <th class="dt-th">Plan</th>
+            <th class="dt-th">Currency</th>
+            <th class="dt-th">Branches</th>
+            <th class="dt-th">Staff</th>
+            <th class="dt-th">Status</th>
+            <th class="dt-th" style="width:90px;"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="!stores.length">
-            <td colspan="9" class="table-empty">
+            <td colspan="9" class="dt-empty">
               <Store :size="32" style="opacity:.3;margin-bottom:8px;" />
               <div>No stores yet</div>
             </td>
           </tr>
-          <tr v-for="s in stores" :key="s.id" class="table-row" :class="{ inactive: !s.is_active }">
+          <tr v-for="s in stores" :key="s.id" class="dt-row" :class="{ inactive: !s.is_active }">
             <td>
               <div style="display:flex;align-items:center;gap:10px;">
                 <div class="store-mini-avatar">{{ s.name.charAt(0).toUpperCase() }}</div>
@@ -73,7 +74,9 @@
           </tr>
         </tbody>
       </table>
-    </div>
+      </div><!-- dt-xscroll -->
+    </div><!-- /dt-card -->
+
 
     <!-- Edit modal (single store) -->
     <AppModal :open="editModal.open" title="Edit Store" @close="closeEdit">
@@ -617,14 +620,7 @@ onMounted(() => {
 .search-input { padding:7px 12px 7px 30px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); font-size:13px; width:220px; outline:none; transition:border-color 120ms; }
 .search-input:focus { border-color:var(--admin-accent); }
 
-.table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:10px 14px; text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
 .data-table tbody tr.table-row.inactive { opacity:.55; }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); }
 .table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .table-skeleton { padding:8px 0; }
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
