@@ -1,159 +1,171 @@
 <template>
-  <div>
-    <!-- Header -->
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-sub">{{ today }}</p>
+  <div class="dash-page">
+
+    <!-- Skeleton -->
+    <div v-if="loading" class="dash-grid">
+      <div class="dash-b0 skel" />
+      <div class="dash-b1 skel" />
+      <div class="dash-b2 skel" />
+      <div class="dash-b3 skel" />
+      <div class="dash-b4 skel" />
+      <div class="dash-b5 skel" />
+      <div class="dash-b6 skel" />
+      <div class="dash-b7 skel" />
+    </div>
+
+    <!-- Live grid -->
+    <div v-else class="dash-grid">
+
+      <!-- B0: At a Glance ticker ─ full width, short strip -->
+      <div class="dash-b0 b0-strip intersect:motion-preset-fade intersect-once">
+        <span class="b0-label">AT A GLANCE</span>
+        <div class="b0-ticker-wrap">
+          <Transition name="ticker">
+            <p :key="tickerIdx" class="b0-text">{{ insights[tickerIdx] }}</p>
+          </Transition>
+        </div>
+        <div class="b0-dots">
+          <button v-for="(_, i) in insights" :key="i"
+            class="b0-dot" :class="{ active: i === tickerIdx }"
+            @click="tickerIdx = i" />
+        </div>
+        <button class="b0-refresh" @click="fetchData" :class="{ spinning: loading }">
+          <RefreshCw :size="13" />
+        </button>
       </div>
-      <button class="btn-refresh" @click="fetchData" :class="{ spinning: loading }">
-        <RefreshCw :size="15" />
-      </button>
-    </div>
 
-    <!-- KPI Skeleton -->
-    <div v-if="loading" class="kpi-grid">
-      <div v-for="i in 4" :key="i" class="kpi-card skeleton-card" />
-    </div>
-
-    <!-- KPI Cards -->
-    <div v-else class="kpi-grid">
-      <div class="kpi-card kpi-green">
-        <div class="kpi-label">Today's Sales</div>
-        <div class="kpi-value"><Money :value="data.today_sales_total" /></div>
+      <!-- B1: Today's Sales ─ 5 cols -->
+      <div class="dash-b1 b-card intersect:motion-preset-slide-left intersect:motion-delay-[100ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <div class="kpi-tag">Today's Sales</div>
+        <div class="kpi-num"><Money :value="data.today_sales_total" /></div>
         <div class="kpi-sub">{{ data.today_invoices_count }} invoice{{ data.today_invoices_count !== 1 ? 's' : '' }}</div>
-      </div>
-
-      <div class="kpi-card kpi-orange">
-        <div class="kpi-label">Items Sold Today</div>
-        <div class="kpi-value">{{ formatQty(data.today_items_sold) }}</div>
-        <div class="kpi-sub">units dispatched</div>
-      </div>
-
-      <div class="kpi-card" :class="data.open_shift ? 'kpi-green card-open' : 'kpi-gray'">
-        <div class="kpi-label">Active Shift</div>
-        <div class="kpi-value kpi-value--sm">
-          {{ data.open_shift ? 'Open' : 'No open shift' }}
+        <div class="kpi-progress">
+          <div class="kpi-bar kpi-bar-green" />
         </div>
-        <div class="kpi-sub" v-if="data.open_shift">
-          since {{ fmtTime(data.open_shift.start_time) }} · {{ data.open_shift.user }}
-        </div>
-        <div v-if="data.open_shift" class="pulse-dot" />
       </div>
 
-      <div class="kpi-card" :class="data.low_stock_count > 0 ? 'kpi-amber card-warn' : 'kpi-gray'">
-        <div class="kpi-label">Low Stock Alerts</div>
-        <div class="kpi-value" :class="data.low_stock_count > 0 ? 'text-amber' : ''">
-          {{ data.low_stock_count }}
-        </div>
-        <div class="kpi-sub">items at or below {{ LOW_STOCK_THRESHOLD }} units</div>
-      </div>
-    </div>
-
-    <!-- Upcoming Services Widget -->
-    <div v-if="!loading" class="services-widget">
-      <div class="services-header">
-        <span class="services-title">Upcoming Services</span>
-        <router-link v-if="data.upcoming_services.length > 0" to="/services" class="services-link">View all →</router-link>
-      </div>
-      <div v-if="data.upcoming_services.length === 0" class="services-empty">
-        <Briefcase :size="36" class="empty-icon" />
-        <p class="empty-title">No upcoming services</p>
-        <p class="empty-sub">Services with ETAs will appear here.</p>
-      </div>
-      <div v-else class="services-list">
-        <div v-for="svc in data.upcoming_services" :key="svc.id" class="service-item">
-          <div class="service-col-ref">{{ svc.serial_number }}</div>
-          <div class="service-col-main">
-            <div class="service-name">{{ svc.client_name }}</div>
-            <div class="service-type">{{ svc.service_type }}</div>
+      <!-- B2: Items Sold + Shift ─ 10 cols -->
+      <div class="dash-b2 b-card intersect:motion-preset-slide-left intersect:motion-delay-[200ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <div class="b2-split">
+          <div class="b2-half">
+            <div class="kpi-tag">Items Sold</div>
+            <div class="kpi-num kpi-num--md">{{ formatQty(data.today_items_sold) }}</div>
+            <div class="kpi-sub">units today</div>
           </div>
-          <div class="service-col-eta">
-            <div class="eta-label">{{ fmtETA(svc.eta_datetime) }}</div>
-            <div class="eta-time">{{ fmtTime(svc.eta_datetime) }}</div>
+          <div class="b2-rule" />
+          <div class="b2-half">
+            <div class="kpi-tag">Shift</div>
+            <div class="shift-badge" :class="data.open_shift ? 'shift-open' : 'shift-closed'">
+              <span v-if="data.open_shift" class="shift-pulse" />
+              {{ data.open_shift ? 'Open' : 'Closed' }}
+            </div>
+            <div class="kpi-sub" v-if="data.open_shift">since {{ fmtTime(data.open_shift.start_time) }}</div>
+            <div class="kpi-sub" v-else>no active shift</div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Bottom Grid: Recent Sales + Low Stock -->
-    <div v-if="!loading" class="bottom-grid">
-
-      <!-- Recent Sales -->
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">Recent Sales</span>
-          <router-link to="/finance/invoices" class="panel-link">View all →</router-link>
+      <!-- B3: Stock Health ─ 15 cols -->
+      <div class="dash-b3 b-card intersect:motion-preset-slide-left intersect:motion-delay-[300ms] intersect:motion-ease-spring-bouncier intersect-once"
+           :class="data.low_stock_count > 0 ? 'b-card--warn' : 'b-card--ok'">
+        <div class="b3-head">
+          <div class="kpi-tag">Stock Health</div>
+          <router-link to="/inventory/products" class="chip-link">View →</router-link>
         </div>
-        <div class="table-wrap">
-          <table class="data-table">
+        <div v-if="data.low_stock_count === 0" class="b3-ok">
+          <CheckCircle :size="16" /> All stock healthy
+        </div>
+        <div v-else>
+          <div class="b3-count">{{ data.low_stock_count }} <span class="b3-count-sub">items low</span></div>
+          <div class="chip-row">
+            <span v-for="item in data.low_stock_items.slice(0, 5)" :key="item.sku"
+              class="chip" :class="Number(item.quantity) === 0 ? 'chip-red' : 'chip-amber'">
+              {{ item.product_name }} &middot; {{ item.quantity }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- B4: Recent Sales ─ full width -->
+      <div class="dash-b4 b-card intersect:motion-preset-fade intersect:motion-delay-[200ms] intersect-once">
+        <div class="b-head">
+          <span class="b-title">Recent Sales</span>
+          <router-link to="/finance/invoices" class="chip-link">View all →</router-link>
+        </div>
+        <div class="b-table-wrap">
+          <table class="b-table">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Customer</th>
-                <th>Total</th>
-                <th>Time</th>
+                <th>#</th><th>Customer</th><th>Total</th><th>Time</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-if="data.recent_sales.length === 0">
+              <tr v-if="!data.recent_sales?.length">
                 <td colspan="4">
-                  <div class="empty-state">
-                    <ShoppingBag :size="36" class="empty-icon" />
-                    <p class="empty-title">No sales today</p>
-                    <p class="empty-sub">Sales will appear here once invoices are created.</p>
+                  <div class="b-empty">
+                    <ShoppingBag :size="28" /><span>No sales today</span>
                   </div>
                 </td>
               </tr>
-              <tr v-for="inv in data.recent_sales" :key="inv.id" class="table-row">
-                <td class="col-ref">{{ inv.invoice_number }}</td>
+              <tr v-for="inv in data.recent_sales" :key="inv.id" class="b-row">
+                <td class="c-mono">{{ inv.invoice_number }}</td>
                 <td>{{ inv.customer }}</td>
-                <td class="col-amount"><Money :value="inv.grand_total" /></td>
-                <td class="col-muted">{{ fmtTime(inv.date) }}</td>
+                <td class="c-green"><Money :value="inv.grand_total" /></td>
+                <td class="c-muted">{{ fmtTime(inv.date) }}</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Low Stock Alerts -->
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">Low Stock Items</span>
-          <router-link to="/inventory/products" class="panel-link">View all →</router-link>
+      <!-- B5: Upcoming Services ─ 10 cols -->
+      <div class="dash-b5 b-card intersect:motion-preset-slide-left intersect:motion-delay-[100ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <div class="b-head">
+          <span class="b-title">Upcoming Services</span>
+          <router-link v-if="data.upcoming_services?.length" to="/services" class="chip-link">View →</router-link>
         </div>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>SKU</th>
-                <th>Product</th>
-                <th>Branch</th>
-                <th>Qty</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="data.low_stock_items.length === 0">
-                <td colspan="4">
-                  <div class="empty-state">
-                    <CheckCircle :size="36" class="empty-icon empty-icon--green" />
-                    <p class="empty-title">All stock healthy</p>
-                    <p class="empty-sub">No items below {{ LOW_STOCK_THRESHOLD }} units.</p>
-                  </div>
-                </td>
-              </tr>
-              <tr v-for="(item, i) in data.low_stock_items" :key="i" class="table-row">
-                <td class="col-ref">{{ item.sku }}</td>
-                <td>{{ item.product_name }}</td>
-                <td class="col-muted">{{ item.branch }}</td>
-                <td>
-                  <span class="qty-badge" :class="Number(item.quantity) === 0 ? 'qty-zero' : 'qty-low'">
-                    {{ item.quantity }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-if="!data.upcoming_services?.length" class="b-empty">
+          <Briefcase :size="28" /><span>No upcoming services</span>
+        </div>
+        <div v-else class="svc-list">
+          <div v-for="svc in data.upcoming_services.slice(0, 5)" :key="svc.id" class="svc-row">
+            <div class="svc-info">
+              <span class="svc-name">{{ svc.client_name }}</span>
+              <span class="svc-type">{{ svc.service_type }}</span>
+            </div>
+            <div class="svc-eta">
+              <span class="eta-day">{{ fmtETA(svc.eta_datetime) }}</span>
+              <span class="eta-time">{{ fmtTime(svc.eta_datetime) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B6: Low Stock Detail ─ 10 cols -->
+      <div class="dash-b6 b-card intersect:motion-preset-slide-left intersect:motion-delay-[200ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <div class="b-head">
+          <span class="b-title">Low Stock Items</span>
+          <router-link to="/inventory/products" class="chip-link">View →</router-link>
+        </div>
+        <div v-if="!data.low_stock_items?.length" class="b-empty">
+          <CheckCircle :size="28" /><span>All stock healthy</span>
+        </div>
+        <div v-else class="stock-list">
+          <div v-for="(item, i) in data.low_stock_items.slice(0, 6)" :key="i" class="stock-row">
+            <span class="stock-name">{{ item.product_name }}</span>
+            <span class="chip" :class="Number(item.quantity) === 0 ? 'chip-red' : 'chip-amber'">
+              {{ item.quantity }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- B7: AI Insights placeholder ─ 10 cols -->
+      <div class="dash-b7 b-card b-card--dim intersect:motion-preset-slide-left intersect:motion-delay-[300ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <div class="placeholder-wrap">
+          <Zap :size="28" class="placeholder-icon" />
+          <p class="placeholder-title">AI Insights</p>
+          <p class="placeholder-sub">Smart recommendations coming soon</p>
         </div>
       </div>
 
@@ -162,33 +174,61 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { TrendingUp, ShoppingBag, Clock, AlertTriangle, CheckCircle, RefreshCw, Briefcase } from 'lucide-vue-next'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { RefreshCw, ShoppingBag, CheckCircle, Briefcase, Zap } from 'lucide-vue-next'
 import api from '@/api/axios'
-import { useAuthStore } from '@/stores/auth'
-import { formatNumber, formatQty } from '@/utils/format'
+import { formatQty } from '@/utils/format'
+import Money from '@/components/ui/Money.vue'
 
-const auth = useAuthStore()
 const loading = ref(false)
-const LOW_STOCK_THRESHOLD = 5
 
 const data = ref({
-  today_sales_total: 0,
+  today_sales_total:    0,
   today_invoices_count: 0,
-  today_items_sold: 0,
-  open_shift: null,
-  low_stock_count: 0,
-  low_stock_items: [],
-  recent_sales: [],
+  today_items_sold:     0,
+  open_shift:           null,
+  low_stock_count:      0,
+  low_stock_items:      [],
+  recent_sales:         [],
+  upcoming_services:    [],
 })
 
-const today = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+// ── At a Glance ticker ──────────────────────────────────────
+const tickerIdx = ref(0)
+let tickerTimer = null
 
+const insights = computed(() => {
+  const d = data.value
+  const list = []
+  const amt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(d.today_sales_total)
+  if (d.today_invoices_count > 0)
+    list.push(`Today — ${d.today_invoices_count} invoice${d.today_invoices_count !== 1 ? 's' : ''}, totaling ${amt}`)
+  if (d.today_items_sold > 0)
+    list.push(`${d.today_items_sold} unit${d.today_items_sold !== 1 ? 's' : ''} sold today`)
+  if (d.open_shift)
+    list.push(`Shift running since ${fmtTime(d.open_shift.start_time)} · ${d.open_shift.user}`)
+  if (d.low_stock_count > 0)
+    list.push(`${d.low_stock_count} item${d.low_stock_count !== 1 ? 's' : ''} need restocking`)
+  if (d.upcoming_services?.length)
+    list.push(`${d.upcoming_services.length} service${d.upcoming_services.length !== 1 ? 's' : ''} scheduled`)
+  if (list.length === 0)
+    list.push('Your store is all caught up — have a great day!')
+  return list
+})
+
+function startTicker() {
+  tickerTimer = setInterval(() => {
+    tickerIdx.value = (tickerIdx.value + 1) % insights.value.length
+  }, 5000)
+}
+
+// ── Data ────────────────────────────────────────────────────
 async function fetchData() {
   loading.value = true
   try {
     const res = await api.get('/api/core/dashboard/')
     data.value = res.data
+    tickerIdx.value = 0
   } catch {} finally {
     loading.value = false
   }
@@ -203,259 +243,179 @@ function fmtETA(d) {
   const eta = new Date(d)
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const etaDate = new Date(eta.getFullYear(), eta.getMonth(), eta.getDate())
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-
-  if (etaDate.getTime() === today.getTime()) return 'Today'
-  if (etaDate.getTime() === tomorrow.getTime()) return 'Tomorrow'
+  const etaDay = new Date(eta.getFullYear(), eta.getMonth(), eta.getDate())
+  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1)
+  if (etaDay.getTime() === today.getTime()) return 'Today'
+  if (etaDay.getTime() === tomorrow.getTime()) return 'Tomorrow'
   return eta.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
-onMounted(fetchData)
+onMounted(() => { fetchData(); startTicker() })
+onUnmounted(() => clearInterval(tickerTimer))
 </script>
 
 <style scoped>
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-.page-title { font-size: 28px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.5px; }
-.page-sub   { font-size: 13px; color: var(--text-muted); margin: 4px 0 0; font-weight: 500; }
+/* ── Page ───────────────────────────────────────────────────── */
+.dash-page { padding-top: 20px; }
 
-.btn-refresh {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text-muted);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: color 120ms, background 120ms;
+/* ── Grid ───────────────────────────────────────────────────── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(30, 1fr);
+  grid-auto-rows: 20px;
+  gap: 10px;
 }
-.btn-refresh:hover { color: var(--text-primary); background: var(--bg-app); }
-.btn-refresh.spinning svg { animation: spin 0.8s linear infinite; }
+
+.dash-b0 { grid-column: span 30; grid-row: span 4;  }
+.dash-b1 { grid-column: span 5;  grid-row: span 9;  }
+.dash-b2 { grid-column: span 10; grid-row: span 9;  }
+.dash-b3 { grid-column: span 15; grid-row: span 9;  }
+.dash-b4 { grid-column: span 30; grid-row: span 18; }
+.dash-b5 { grid-column: span 10; grid-row: span 16; }
+.dash-b6 { grid-column: span 10; grid-row: span 16; }
+.dash-b7 { grid-column: span 10; grid-row: span 16; }
+
+@media (max-width: 1100px) {
+  .dash-b1, .dash-b2, .dash-b3,
+  .dash-b5, .dash-b6, .dash-b7 { grid-column: span 30; }
+}
+
+/* ── Skeleton ───────────────────────────────────────────────── */
+.skel {
+  background: var(--border);
+  border-radius: 16px;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+/* ── Base card ──────────────────────────────────────────────── */
+.b-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+.b-card--warn { border-color: rgba(245,158,11,.35); background: linear-gradient(135deg, rgba(245,158,11,.05), transparent 60%); }
+.b-card--ok   { border-color: rgba(34,197,94,.25); }
+.b-card--dim  { border-style: dashed; opacity: .65; }
+
+/* ── KPI atoms ──────────────────────────────────────────────── */
+.kpi-tag  { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin-bottom: 6px; }
+.kpi-num  { font-size: 30px; font-weight: 800; color: var(--text-primary); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi-num--md { font-size: 22px; }
+.kpi-sub  { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+.kpi-progress { margin-top: auto; padding-top: 12px; }
+.kpi-bar  { height: 3px; border-radius: 99px; width: 100%; }
+.kpi-bar-green { background: linear-gradient(90deg, #22c55e 0%, var(--accent) 100%); animation: bar-in .8s ease forwards; transform-origin: left; }
+@keyframes bar-in { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+
+/* ── B0: Ticker strip ───────────────────────────────────────── */
+.b0-strip {
+  background: linear-gradient(135deg, rgba(247,143,30,.12) 0%, rgba(247,143,30,.04) 50%, transparent 100%);
+  border: 1px solid rgba(247,143,30,.22);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  overflow: hidden;
+  position: relative;
+}
+.dark .b0-strip { background: linear-gradient(135deg, rgba(247,143,30,.10) 0%, rgba(247,143,30,.03) 60%, transparent 100%); }
+.b0-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); flex-shrink: 0; }
+.b0-ticker-wrap { flex: 1; overflow: hidden; position: relative; height: 24px; }
+.b0-text { position: absolute; inset: 0; display: flex; align-items: center; font-size: 13.5px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b0-dots { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+.b0-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border); border: none; cursor: pointer; padding: 0; transition: background 200ms, transform 200ms; }
+.b0-dot.active { background: var(--accent); transform: scale(1.3); }
+.b0-refresh { width: 26px; height: 26px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: color 120ms; }
+.b0-refresh:hover { color: var(--text-primary); }
+.b0-refresh.spinning svg { animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* KPI Grid */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
-  margin-bottom: 24px;
-}
+/* Ticker transition */
+.ticker-enter-active { transition: opacity .4s ease, transform .4s ease; }
+.ticker-leave-active { transition: opacity .3s ease, transform .3s ease; position: absolute; }
+.ticker-enter-from   { opacity: 0; transform: translateY(8px); }
+.ticker-leave-to     { opacity: 0; transform: translateY(-8px); }
 
-.kpi-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  border-top-width: 3px;
-  padding: 20px 22px 18px;
-  position: relative;
-  transition: box-shadow 150ms, transform 150ms;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.kpi-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-1px); }
+/* ── B2: Split ──────────────────────────────────────────────── */
+.b2-split { display: flex; align-items: stretch; height: 100%; gap: 0; }
+.b2-half  { flex: 1; display: flex; flex-direction: column; }
+.b2-rule  { width: 1px; background: var(--border); margin: 0 18px; flex-shrink: 0; }
 
-/* accent top borders */
-.kpi-green  { border-top-color: #22c55e; background: linear-gradient(to bottom, rgba(34,197,94,.06) 0%, transparent 60%); }
-.kpi-orange { border-top-color: var(--accent); background: linear-gradient(to bottom, rgba(247,143,30,.07) 0%, transparent 60%); }
-.kpi-amber  { border-top-color: #f59e0b; background: linear-gradient(to bottom, rgba(245,158,11,.07) 0%, transparent 60%); }
-.kpi-gray   { border-top-color: var(--border); }
-
-.dark .kpi-green  { background: linear-gradient(to bottom, rgba(34,197,94,.08) 0%, transparent 60%); }
-.dark .kpi-orange { background: linear-gradient(to bottom, rgba(247,143,30,.09) 0%, transparent 60%); }
-.dark .kpi-amber  { background: linear-gradient(to bottom, rgba(245,158,11,.09) 0%, transparent 60%); }
-
-.kpi-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-.kpi-value { font-size: 32px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1.1; margin-top: 6px; }
-.kpi-value--sm { font-size: 18px; margin-top: 8px; }
-.kpi-sub   { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 4px; }
-.text-amber { color: #d97706; }
-
-.card-open { border-top-color: #22c55e; }
-.card-warn { border-top-color: #f59e0b; }
-
-.skeleton-card { height: 110px; background: var(--border); border-radius: 24px; animation: shimmer 1.4s ease-in-out infinite; }
-@keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
-
-/* Pulse dot for open shift */
-.pulse-dot {
-  position: absolute;
-  top: 16px; right: 16px;
-  width: 9px; height: 9px;
-  border-radius: 50%;
-  background: #16a34a;
-  box-shadow: 0 0 0 0 rgba(22,163,74,.4);
-  animation: pulse 1.8s ease-out infinite;
-}
+.shift-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; margin-top: 6px; margin-bottom: 4px; }
+.shift-open   { color: #16a34a; }
+.shift-closed { color: var(--text-muted); }
+.shift-pulse  { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; animation: pulse 1.8s ease-out infinite; flex-shrink: 0; }
 @keyframes pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(22,163,74,.4); }
-  70%  { box-shadow: 0 0 0 8px rgba(22,163,74,0); }
-  100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); }
+  0%  { box-shadow: 0 0 0 0 rgba(22,163,74,.5); }
+  70% { box-shadow: 0 0 0 7px rgba(22,163,74,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(22,163,74,0); }
 }
 
-/* Bottom grid */
-.bottom-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-@media (max-width: 900px) {
-  .bottom-grid { grid-template-columns: 1fr; }
-}
+/* ── B3: Stock ──────────────────────────────────────────────── */
+.b3-head  { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.b3-ok    { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: #16a34a; margin-top: 6px; }
+.b3-count { font-size: 26px; font-weight: 800; color: #d97706; margin: 2px 0 6px; line-height: 1; }
+.b3-count-sub { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
 
-.panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  overflow: hidden;
-}
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.panel-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-.panel-link  { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
-.panel-link:hover { text-decoration: underline; }
+/* ── Chips ──────────────────────────────────────────────────── */
+.chip       { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; }
+.chip-amber { background: rgba(245,158,11,.15); color: #92400e; }
+.chip-red   { background: rgba(239,68,68,.12);  color: #dc2626; }
+.dark .chip-amber { background: rgba(245,158,11,.20); color: #fbbf24; }
+.dark .chip-red   { background: rgba(239,68,68,.18);  color: #f87171; }
+.chip-link  { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
+.chip-link:hover { text-decoration: underline; }
 
-.table-wrap { overflow: hidden; }
-.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.data-table thead th {
-  padding: 10px 16px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--text-secondary);
-  background: var(--bg-app);
-  border-bottom: 1px solid var(--border);
-}
-.data-table tbody tr.table-row { border-bottom: 1px solid var(--border); transition: background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom: none; }
-.data-table tbody tr.table-row:hover { background: var(--bg-app); }
-.data-table tbody td { padding: 11px 16px; color: var(--text-primary); }
+/* ── Shared panel header ────────────────────────────────────── */
+.b-head  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-shrink: 0; }
+.b-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
 
-/* Empty state */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  text-align: center;
-}
-.empty-icon { color: var(--border); margin-bottom: 12px; }
-.empty-icon--green { color: #86efac; }
-.empty-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
-.empty-sub   { font-size: 13px; color: var(--text-muted); margin: 0; }
+/* ── Table ──────────────────────────────────────────────────── */
+.b-table-wrap { overflow: auto; flex: 1; margin: 0 -20px -18px; }
+.b-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.b-table thead th { padding: 8px 16px; text-align: left; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--text-secondary); background: var(--bg-app); border-bottom: 1px solid var(--border); white-space: nowrap; }
+.b-row { border-bottom: 1px solid var(--border); transition: background 100ms; }
+.b-row:last-child { border-bottom: none; }
+.b-row:hover { background: var(--bg-app); }
+.b-table td { padding: 10px 16px; color: var(--text-primary); }
+.c-mono  { font-family: monospace; font-size: 12px; color: var(--text-muted); }
+.c-muted { color: var(--text-muted); font-size: 12px; }
+.c-green { color: #16a34a; font-weight: 600; font-variant-numeric: tabular-nums; }
 
-.col-ref    { font-family: monospace; font-size: 12px; color: var(--text-muted); }
-.col-muted  { color: var(--text-muted); font-size: 12px; }
-.col-amount { font-variant-numeric: tabular-nums; color: #16a34a; font-weight: 600; }
+/* ── Empty state ────────────────────────────────────────────── */
+.b-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 8px; padding: 24px; text-align: center; color: var(--text-muted); }
+.b-empty span { font-size: 13px; font-weight: 500; }
 
-.qty-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.qty-zero { background: #fee2e2; color: #dc2626; }
-.qty-low  { background: #fef3c7; color: #92400e; }
+/* ── Services list ──────────────────────────────────────────── */
+.svc-list { display: flex; flex-direction: column; gap: 0; flex: 1; overflow: auto; margin: 0 -20px -18px; }
+.svc-row  { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; border-bottom: 1px solid var(--border); transition: background 100ms; }
+.svc-row:last-child { border-bottom: none; }
+.svc-row:hover { background: var(--bg-app); }
+.svc-info  { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.svc-name  { font-size: 13px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.svc-type  { font-size: 11px; color: var(--text-muted); text-transform: capitalize; }
+.svc-eta   { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; margin-left: 10px; }
+.eta-day   { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.eta-time  { font-size: 11px; color: var(--text-muted); }
 
-/* Services Widget */
-.services-widget {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  margin-bottom: 24px;
-  overflow: hidden;
-}
-.services-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.services-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-.services-link  { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
-.services-link:hover { text-decoration: underline; }
+/* ── Stock list ─────────────────────────────────────────────── */
+.stock-list { display: flex; flex-direction: column; gap: 0; flex: 1; overflow: auto; margin: 0 -20px -18px; }
+.stock-row  { display: flex; align-items: center; justify-content: space-between; padding: 9px 20px; border-bottom: 1px solid var(--border); transition: background 100ms; }
+.stock-row:last-child { border-bottom: none; }
+.stock-row:hover { background: var(--bg-app); }
+.stock-name { font-size: 13px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; margin-right: 10px; }
 
-.services-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  text-align: center;
-}
-
-.services-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.service-item {
-  display: grid;
-  grid-template-columns: 80px 1fr auto;
-  gap: 16px;
-  align-items: center;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--border);
-  transition: background 100ms;
-}
-.service-item:last-child { border-bottom: none; }
-.service-item:hover { background: var(--bg-app); }
-
-.service-col-ref {
-  font-family: monospace;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.service-col-main {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.service-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.service-type {
-  font-size: 11px;
-  color: var(--text-muted);
-  text-transform: capitalize;
-}
-
-.service-col-eta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-.eta-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.eta-time {
-  font-size: 11px;
-  color: var(--text-muted);
-}
+/* ── Placeholder ────────────────────────────────────────────── */
+.placeholder-wrap  { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 8px; text-align: center; padding: 16px; }
+.placeholder-icon  { color: var(--text-muted); opacity: .5; }
+.placeholder-title { font-size: 14px; font-weight: 700; color: var(--text-muted); margin: 0; }
+.placeholder-sub   { font-size: 12px; color: var(--text-muted); opacity: .7; margin: 0; }
 </style>

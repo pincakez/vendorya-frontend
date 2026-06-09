@@ -1,4 +1,33 @@
 @import "tailwindcss";
+@plugin "tailwindcss-motion";
+@import "tailwindcss-intersect";
+@plugin "flyonui";
+@source "./node_modules/flyonui/dist/index.js";
+
+/* ── FLYONUI THEME BRIDGE ───────────────────────────────────
+   Map FlyonUI's color system to our design tokens so every
+   FlyonUI component (progress, badge, stat…) inherits our
+   brand colors automatically in both light and dark mode.   */
+:root {
+  --color-primary:         oklch(71.6% 0.175 55);   /* #f78f1e orange */
+  --color-primary-content: oklch(100%  0     0);
+  --color-base-100:        oklch(100%  0     0);     /* #ffffff */
+  --color-base-200:        oklch(96.6% 0.008 237);   /* #f1f5f9 */
+  --color-base-300:        oklch(91.2% 0.010 234);   /* #e2e8f0 */
+  --color-base-content:    oklch(13.2% 0.028 264);   /* #0f172a */
+}
+.dark {
+  --color-primary:         oklch(71.6% 0.175 55);
+  --color-primary-content: oklch(100%  0     0);
+  --color-base-100:        oklch(13.5% 0.003 286);   /* #18181A */
+  --color-base-200:        oklch(9.8%  0.003 286);   /* #0F0F12 */
+  --color-base-300:        oklch(19.8% 0.003 286);   /* #27272A */
+  --color-base-content:    oklch(98.5% 0     0);     /* #fafafa */
+}
+.admin-shell {
+  --color-primary:         oklch(62.8% 0.258 27);    /* #ef4444 red */
+  --color-primary-content: oklch(100%  0     0);
+}
 
 /* ── THEME TOKENS ──────────────────────────────────────── */
 :root {

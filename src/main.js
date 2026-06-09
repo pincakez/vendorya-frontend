@@ -4,6 +4,7 @@ import router from './router'
 import App from './App.vue'
 import './assets/main.css'
 import Money from './components/ui/Money.vue'
+import { Observer } from 'tailwindcss-intersect'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -34,3 +35,8 @@ applyUiPrefs(useAuthStore(pinia).user?.ui_prefs)
 // bootstrap gate in router/index.js) and then loads store format prefs, so mount
 // can proceed normally here.
 app.mount('#app')
+
+// Start intersection observer for intersect: Tailwind variant
+Observer.start()
+// Restart on every route change so newly mounted elements are observed
+router.afterEach(() => Observer.restart())

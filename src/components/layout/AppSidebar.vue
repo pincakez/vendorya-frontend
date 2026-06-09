@@ -144,7 +144,7 @@ import {
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
-  BarChart2,
+  BarChart2, LayoutGrid,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -236,6 +236,9 @@ const adminGroups = [
   { id: 'aai', title: 'AI', icon: Bot, items: [
     { label: 'AI Profiles', to: '/admin/ai-profiles', icon: Bot },
     { label: 'Misc', to: '/admin/misc', icon: Wrench },
+  ] },
+  { id: 'adesign', title: 'DESIGN', icon: LayoutGrid, items: [
+    { label: 'Widget Gallery', to: '/admin/widget-gallery', icon: LayoutGrid },
   ] },
   { id: 'acomm', title: 'COMMUNICATION', icon: Bell, items: [
     { label: 'Alerts Center', to: '/admin/alerts', icon: Bell },
