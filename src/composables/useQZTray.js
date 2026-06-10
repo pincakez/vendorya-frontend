@@ -1,10 +1,20 @@
 import qz from 'qz-tray'
+import axios from 'axios'
 
-// Unsigned mode — no server-side certificate required.
-// The QZ Tray desktop app must allow unsigned connections (its default setting).
-qz.security.setCertificatePromise((resolve) => resolve(''))
+// Certificate: fetched from our server so QZ Tray permanently trusts this site.
+qz.security.setCertificatePromise((resolve) => {
+  axios.get('/api/core/qztray/cert/')
+    .then(r => resolve(r.data.certificate || ''))
+    .catch(() => resolve(''))
+})
+
+// Signing: our server signs the QZ Tray challenge with the RSA private key.
 qz.security.setSignatureAlgorithm('SHA512')
-qz.security.setSignaturePromise((_toSign) => (resolve) => resolve(null))
+qz.security.setSignaturePromise((toSign) => (resolve, reject) => {
+  axios.post('/api/core/qztray/sign/', { toSign })
+    .then(r => resolve(r.data.signature))
+    .catch(reject)
+})
 
 let _connecting = null
 

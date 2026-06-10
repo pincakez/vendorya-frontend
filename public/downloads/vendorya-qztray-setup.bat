@@ -13,22 +13,22 @@ echo  with Vendorya on this computer.
 echo.
 
 REM ── Step 1: Stop QZ Tray if running ─────────────────────────────────────
-echo  [1/4] Stopping QZ Tray if it is running...
+echo  [1/5] Stopping QZ Tray if it is running...
 taskkill /f /im "qz-tray.exe" >nul 2>&1
 timeout /t 2 /nobreak >nul
 echo        Done.
 echo.
 
 REM ── Step 2: Create config folder if it does not exist ───────────────────
-echo  [2/4] Preparing config folder...
+echo  [2/5] Preparing config folder...
 if not exist "%APPDATA%\qz" (
     mkdir "%APPDATA%\qz"
 )
 echo        Folder: %APPDATA%\qz
 echo.
 
-REM ── Step 3: Write the config (allow unsigned connections) ────────────────
-echo  [3/4] Writing QZ Tray configuration...
+REM ── Step 3: Write the config (allow unsigned connections as fallback) ────
+echo  [3/5] Writing QZ Tray configuration...
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "$file = $env:APPDATA + '\qz\qz-tray.properties';" ^
@@ -51,12 +51,25 @@ if %errorlevel% neq 0 (
 )
 echo.
 
-REM ── Step 4: Start QZ Tray ───────────────────────────────────────────────
-echo  [4/4] Starting QZ Tray...
+REM ── Step 4: Download and install Vendorya's signing certificate ──────────
+echo  [4/5] Installing Vendorya trust certificate...
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "$cert = $env:APPDATA + '\qz\digital-certificate.txt';" ^
+    "try {" ^
+    "    Invoke-WebRequest -Uri 'https://vendorya.gatesinnov.com/downloads/vendorya-qztray-cert.pem' -OutFile $cert -UseBasicParsing;" ^
+    "    Write-Host '       Certificate installed to: ' $cert;" ^
+    "} catch {" ^
+    "    Write-Host '       WARNING: Could not download certificate. Check internet connection.';" ^
+    "}"
+
+echo.
+
+REM ── Step 5: Start QZ Tray ───────────────────────────────────────────────
+echo  [5/5] Starting QZ Tray...
 
 set "QZ_EXE="
 
-REM Search common install locations
 for %%P in (
     "%PROGRAMFILES%\QZ Tray\qz-tray.exe"
     "%PROGRAMFILES(X86)%\QZ Tray\qz-tray.exe"
@@ -81,8 +94,9 @@ echo.
 echo  ============================================
 echo   Setup complete!
 echo.
-echo   QZ Tray is now configured to connect to
-echo   Vendorya automatically on this computer.
+echo   QZ Tray is now permanently trusted by
+echo   Vendorya on this computer.
+echo   No more Allow popups.
 echo.
 echo   If a printer test fails, make sure:
 echo     1. QZ Tray is running (check system tray)
