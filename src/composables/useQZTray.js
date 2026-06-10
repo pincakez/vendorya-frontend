@@ -1,9 +1,13 @@
 import qz from 'qz-tray'
-import axios from 'axios'
+import api from '@/api/axios'
+
+// Use the authenticated `api` instance, NOT raw axios — these endpoints require
+// a login token (IsAuthenticated). Raw axios sends no Authorization header, so
+// the sign endpoint 401s and QZ Tray reports "Failed to sign request".
 
 // Certificate: fetched from our server so QZ Tray permanently trusts this site.
 qz.security.setCertificatePromise((resolve) => {
-  axios.get('/api/core/qztray/cert/')
+  api.get('/api/core/qztray/cert/')
     .then(r => resolve(r.data.certificate || ''))
     .catch(() => resolve(''))
 })
@@ -11,7 +15,7 @@ qz.security.setCertificatePromise((resolve) => {
 // Signing: our server signs the QZ Tray challenge with the RSA private key.
 qz.security.setSignatureAlgorithm('SHA512')
 qz.security.setSignaturePromise((toSign) => (resolve, reject) => {
-  axios.post('/api/core/qztray/sign/', { toSign })
+  api.post('/api/core/qztray/sign/', { toSign })
     .then(r => resolve(r.data.signature))
     .catch(reject)
 })
