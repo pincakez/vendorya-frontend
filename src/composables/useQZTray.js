@@ -15,10 +15,7 @@ async function _connect() {
       .connect({
         host: 'localhost',
         port: { secure: [8182, 8181], insecure: [8181, 8182] },
-        retries: 2,
-        delay: 1,
         keepAlive: 60,
-        timeout: 30,  // 30 seconds — gives the user time to click Allow in QZ Tray's popup
       })
       .finally(() => { _connecting = null })
   }
