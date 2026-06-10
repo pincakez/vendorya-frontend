@@ -79,7 +79,11 @@ function _testReceipt() {
     '\n',
     '       Thank you for shopping with us!\n',
     '         No returns after 7 days.\n',
-    '\n\n\n\n',
+    '\n\n',
+    // ESC/POS: feed to the cutting position (clears the printhead->cutter gap so
+    // the tail isn't left inside the printer) + full cut. XPrinter *C models have
+    // an auto-cutter. GS V 65 0  =  1D 56 41 00.
+    '\x1D\x56\x41\x00',
   ].join('')
 }
 
@@ -122,7 +126,10 @@ export function useQZTray() {
     if (!printerName) throw new Error('Enter a printer name first.')
     await _connect()
     const config = qz.configs.create(printerName)
-    const data = type === 'label' ? _testLabel() : _testReceipt()
+    const one = type === 'label' ? _testLabel() : _testReceipt()
+    // Receipt test prints 2 copies (each auto-cut) so the cutter is easy to verify.
+    // TODO: make copy count a Settings option.
+    const data = type === 'receipt' ? one + one : one
     await qz.print(config, [{ type: 'raw', format: 'plain', data }])
   }
 
