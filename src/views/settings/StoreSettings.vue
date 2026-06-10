@@ -397,18 +397,29 @@
           </p>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
             <a
-              href="https://vendorya.gatesinnov.com/downloads/qz-tray-2.2.6.exe"
+              href="/downloads/qz-tray-2.2.6.exe"
               download="qz-tray-2.2.6.exe"
               class="btn-primary btn-sm"
               style="text-decoration:none;"
             >
               <Download :size="14" /> Download QZ Tray (v2.2.6)
             </a>
+            <a
+              href="/downloads/vendorya-qztray-setup.bat"
+              download="vendorya-qztray-setup.bat"
+              class="btn-secondary btn-sm"
+              style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;"
+            >
+              <Settings2 :size="14" /> Download Setup Script
+            </a>
             <button class="btn-secondary btn-sm" :disabled="qzTesting" @click="testQZTray">
               <span v-if="qzTesting">Testing…</span>
               <span v-else>Test Connection</span>
             </button>
           </div>
+          <p class="form-hint" style="margin-bottom:20px;">
+            Install QZ Tray first, then run the Setup Script — it configures everything automatically. No technical knowledge needed.
+          </p>
 
           <div class="section-divider">Printers</div>
           <p class="form-hint" style="margin-bottom:16px;">
