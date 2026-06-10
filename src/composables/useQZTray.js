@@ -29,11 +29,18 @@ export function useQZTray() {
   }
 
   async function sendRaw(printerName, data) {
-    if (!printerName) throw new Error('No printer name configured. Set it in Settings → Service Types.')
+    if (!printerName) throw new Error('No printer name configured. Set it in Settings → Printing Setup → Printers.')
     await _connect()
     const config = qz.configs.create(printerName)
     await qz.print(config, [{ type: 'raw', format: 'plain', data }])
   }
 
-  return { isAvailable, sendRaw }
+  async function testPrinter(printerName) {
+    if (!printerName) throw new Error('Enter a printer name first.')
+    await _connect()
+    const config = qz.configs.create(printerName)
+    await qz.print(config, [{ type: 'raw', format: 'plain', data: '\n** QZ Tray Test **\nPrinter is working.\n\n\n' }])
+  }
+
+  return { isAvailable, sendRaw, testPrinter }
 }

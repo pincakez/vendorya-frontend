@@ -309,30 +309,161 @@
       </div>
     </div>
 
-    <!-- ══ TAB: Receipt ══ -->
-    <div v-if="activeTab === 'receipt'">
-      <div class="settings-card">
-        <div class="form-group" style="margin-bottom:16px;">
-          <label class="form-label">Receipt Header</label>
-          <p class="form-hint">Shown at the top of every printed receipt</p>
-          <textarea v-model="settingsForm.receipt_header" class="form-input" rows="4" placeholder="e.g. Welcome to Trenda Fashion&#10;Port-Said — Tel: 01234567890" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Receipt Footer</label>
-          <p class="form-hint">Return policy, thank-you message, etc.</p>
-          <textarea v-model="settingsForm.receipt_footer" class="form-input" rows="4" placeholder="e.g. No returns after 7 days. Thank you!" />
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-item">
-            <div>
-              <div class="toggle-label">Print Tax ID on invoices</div>
-              <div class="toggle-desc">When on, your Tax ID prints on every invoice. Turn off to omit it entirely.</div>
+    <!-- ══ TAB: Printing Setup ══ -->
+    <div v-if="activeTab === 'printing'">
+      <!-- Sub-tab bar -->
+      <div class="sub-tab-bar">
+        <button class="sub-tab-btn" :class="{ active: printingTab === 'receipt' }"  @click="printingTab = 'receipt'"><Receipt :size="14" /> Receipt</button>
+        <button class="sub-tab-btn" :class="{ active: printingTab === 'labels' }"   @click="printingTab = 'labels'"><Tag :size="14" /> Label Presets</button>
+        <button class="sub-tab-btn" :class="{ active: printingTab === 'printers' }" @click="printingTab = 'printers'"><Printer :size="14" /> Printers Setup</button>
+      </div>
+
+      <!-- Sub-tab: Receipt -->
+      <div v-if="printingTab === 'receipt'">
+        <div class="settings-card">
+          <div class="form-group" style="margin-bottom:16px;">
+            <label class="form-label">Receipt Header</label>
+            <p class="form-hint">Shown at the top of every printed receipt</p>
+            <textarea v-model="settingsForm.receipt_header" class="form-input" rows="4" placeholder="e.g. Welcome to Trenda Fashion&#10;Port-Said — Tel: 01234567890" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Receipt Footer</label>
+            <p class="form-hint">Return policy, thank-you message, etc.</p>
+            <textarea v-model="settingsForm.receipt_footer" class="form-input" rows="4" placeholder="e.g. No returns after 7 days. Thank you!" />
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-item">
+              <div>
+                <div class="toggle-label">Print Tax ID on invoices</div>
+                <div class="toggle-desc">When on, your Tax ID prints on every invoice. Turn off to omit it entirely.</div>
+              </div>
+              <button class="toggle-btn" :class="{ on: settingsForm.print_tax_id }" @click="settingsForm.print_tax_id = !settingsForm.print_tax_id"><span class="toggle-knob" /></button>
             </div>
-            <button class="toggle-btn" :class="{ on: settingsForm.print_tax_id }" @click="settingsForm.print_tax_id = !settingsForm.print_tax_id"><span class="toggle-knob" /></button>
+          </div>
+          <div class="form-footer">
+            <button class="btn-primary" :disabled="storeSaving" @click="saveReceipt">{{ storeSaving ? 'Saving…' : 'Save Receipt' }}</button>
           </div>
         </div>
-        <div class="form-footer">
-          <button class="btn-primary" :disabled="storeSaving" @click="saveReceipt">{{ storeSaving ? 'Saving…' : 'Save Receipt' }}</button>
+      </div>
+
+      <!-- Sub-tab: Label Presets -->
+      <div v-if="printingTab === 'labels'">
+        <div class="section-heading-row">
+          <span class="section-group-title">Label Presets</span>
+          <button class="btn-primary btn-sm" @click="openNewPreset"><Plus :size="14" /> New Preset</button>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">Define label sizes for barcode/price stickers. You can print labels from any purchase invoice.</p>
+        <div class="table-wrap">
+          <div v-if="presetsLoading" class="table-skeleton"><div v-for="i in 3" :key="i" class="skeleton-row" /></div>
+          <table v-else class="data-table">
+            <thead><tr><th>Name</th><th>Size (mm)</th><th>Shows</th><th>Default</th><th style="width:70px;"></th></tr></thead>
+            <tbody>
+              <tr v-if="presets.length === 0">
+                <td colspan="5" class="table-empty"><Tag :size="28" style="opacity:.3;margin-bottom:8px;" /><div>No label presets yet</div></td>
+              </tr>
+              <tr v-for="p in presets" :key="p.id" class="table-row">
+                <td class="col-name">{{ p.name }}</td>
+                <td style="font-variant-numeric:tabular-nums;">{{ p.width_mm }} × {{ p.height_mm }}</td>
+                <td style="font-size:12px;color:var(--text-muted);">
+                  <span v-if="p.show_store_name">Store</span>
+                  <span v-if="p.show_product_name"> · Name</span>
+                  <span v-if="p.show_sku"> · SKU</span>
+                  <span v-if="p.show_barcode"> · Barcode</span>
+                  <span v-if="p.show_price"> · Price</span>
+                </td>
+                <td><span v-if="p.is_default" class="badge-cash">Default</span><span v-else class="text-muted-sm">—</span></td>
+                <td>
+                  <button class="row-action" title="Edit" @click="openEditPreset(p)"><Pencil :size="13" /></button>
+                  <button class="row-action danger" title="Delete" @click="deletePreset(p.id)"><Trash2 :size="13" /></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sub-tab: Printers Setup -->
+      <div v-if="printingTab === 'printers'">
+        <div class="settings-card">
+          <!-- QZ Tray status + actions row -->
+          <div class="section-divider" style="display:flex;align-items:center;gap:10px;">
+            QZ Tray
+            <span v-if="qzStatus === true"  class="qz-dot qz-ok">● Connected</span>
+            <span v-else-if="qzStatus === false" class="qz-dot qz-off">● Not running</span>
+          </div>
+          <p class="form-hint" style="margin-bottom:14px;">
+            QZ Tray is a desktop app that lets Vendorya print directly to USB/network printers without a print dialog.
+            Install it on the computer connected to your printer, then enter the exact printer name below.
+          </p>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+            <a
+              href="https://vendorya.gatesinnov.com/downloads/qz-tray-2.2.6.exe"
+              download="qz-tray-2.2.6.exe"
+              class="btn-primary btn-sm"
+              style="text-decoration:none;"
+            >
+              <Download :size="14" /> Download QZ Tray (v2.2.6)
+            </a>
+            <button class="btn-secondary btn-sm" :disabled="qzTesting" @click="testQZTray">
+              <span v-if="qzTesting">Testing…</span>
+              <span v-else>Test Connection</span>
+            </button>
+          </div>
+
+          <div class="section-divider">Printers</div>
+          <p class="form-hint" style="margin-bottom:16px;">
+            Enter the exact printer name as it appears in Windows
+            (<em>Control Panel → Devices and Printers</em>).
+            Leave blank to fall back to browser print.
+          </p>
+
+          <!-- Label Printer -->
+          <div style="margin-bottom:20px;">
+            <label class="form-label">Label Printer Name</label>
+            <div style="display:flex;gap:8px;align-items:flex-start;max-width:480px;">
+              <input v-model="settingsForm.label_printer_name" class="form-input" placeholder="e.g. XPrinter XP-420B" style="flex:1;" />
+              <button
+                class="btn-secondary btn-sm"
+                style="white-space:nowrap;flex-shrink:0;"
+                :disabled="printerTesting.label || !settingsForm.label_printer_name"
+                @click="testPrinter('label')"
+              >
+                <span v-if="printerTesting.label">Testing…</span>
+                <span v-else>Test Print</span>
+              </button>
+            </div>
+            <p class="form-hint">50 mm × 25 mm TSPL labels.</p>
+            <p v-if="printerTestResult.label === 'ok'" class="save-ok" style="margin-top:4px;">Test page sent successfully.</p>
+            <p v-else-if="printerTestResult.label" class="field-error" style="margin-top:4px;">{{ printerTestResult.label }}</p>
+          </div>
+
+          <!-- Receipt Printer -->
+          <div style="margin-bottom:20px;">
+            <label class="form-label">Receipt Printer Name</label>
+            <div style="display:flex;gap:8px;align-items:flex-start;max-width:480px;">
+              <input v-model="settingsForm.receipt_printer_name" class="form-input" placeholder="e.g. XPrinter XP-58" style="flex:1;" />
+              <button
+                class="btn-secondary btn-sm"
+                style="white-space:nowrap;flex-shrink:0;"
+                :disabled="printerTesting.receipt || !settingsForm.receipt_printer_name"
+                @click="testPrinter('receipt')"
+              >
+                <span v-if="printerTesting.receipt">Testing…</span>
+                <span v-else>Test Print</span>
+              </button>
+            </div>
+            <p class="form-hint">80 mm thermal receipts (ESC/POS).</p>
+            <p v-if="printerTestResult.receipt === 'ok'" class="save-ok" style="margin-top:4px;">Test page sent successfully.</p>
+            <p v-else-if="printerTestResult.receipt" class="field-error" style="margin-top:4px;">{{ printerTestResult.receipt }}</p>
+          </div>
+
+          <div class="form-footer">
+            <button class="btn-primary" :disabled="serviceSaving" @click="savePrinters">
+              {{ serviceSaving ? 'Saving…' : 'Save Printers' }}
+            </button>
+            <span v-if="serviceSuccess" class="save-ok">Saved.</span>
+            <span v-if="serviceError" class="field-error">{{ serviceError }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -420,62 +551,6 @@
           <span v-if="notifyOk" class="save-ok" style="margin-left:12px;">Notifications checked.</span>
         </div>
 
-        <div class="section-divider" style="margin-top:24px;display:flex;align-items:center;gap:10px;">
-          Printers (QZ Tray)
-          <span v-if="qzStatus === true"  class="qz-dot qz-ok">● Connected</span>
-          <span v-else-if="qzStatus === false" class="qz-dot qz-off">● Not running</span>
-        </div>
-        <p class="form-hint">
-          Enter the exact printer name as it appears in Windows
-          (<em>Control Panel → Devices and Printers</em>).
-          Leave blank to fall back to browser print.
-        </p>
-
-        <!-- QZ Tray install + test row -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-          <a
-            href="https://qz.io/download/"
-            target="_blank"
-            rel="noopener"
-            class="btn-secondary btn-sm"
-            style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;"
-          >
-            <Download :size="14" /> Download QZ Tray
-          </a>
-          <button
-            class="btn-secondary btn-sm"
-            :disabled="qzTesting"
-            @click="testQZTray"
-          >
-            <span v-if="qzTesting">Testing…</span>
-            <span v-else>Test Connection</span>
-          </button>
-          <span class="form-hint" style="margin:0;">
-            QZ Tray is a free desktop bridge (~10 MB) that lets Vendorya print directly to USB/network printers without a print dialog.
-          </span>
-        </div>
-
-        <div style="display:flex;gap:16px;flex-wrap:wrap;max-width:600px;">
-          <div style="flex:1;min-width:220px;">
-            <label class="form-label">Label Printer Name</label>
-            <input
-              v-model="settingsForm.label_printer_name"
-              class="form-input"
-              placeholder="e.g. XPrinter XP-420B"
-            />
-            <p class="form-hint">50 mm × 25 mm TSPL labels.</p>
-          </div>
-          <div style="flex:1;min-width:220px;">
-            <label class="form-label">Receipt Printer Name</label>
-            <input
-              v-model="settingsForm.receipt_printer_name"
-              class="form-input"
-              placeholder="e.g. XPrinter XP-58"
-            />
-            <p class="form-hint">80 mm thermal receipts (ESC/POS).</p>
-          </div>
-        </div>
-
         <div class="form-footer">
           <button class="btn-primary" :disabled="serviceSaving" @click="saveServiceSettings">
             {{ serviceSaving ? 'Saving…' : 'Save Service Settings' }}
@@ -553,42 +628,6 @@
       </template>
     </AppModal>
 
-    <!-- ══ TAB: Label Presets ══ -->
-    <div v-if="activeTab === 'labels'">
-      <div class="section-heading-row">
-        <span class="section-group-title">Label Presets</span>
-        <button class="btn-primary btn-sm" @click="openNewPreset"><Plus :size="14" /> New Preset</button>
-      </div>
-      <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">Define label sizes for barcode/price stickers. You can print labels from any purchase invoice.</p>
-      <div class="table-wrap">
-        <div v-if="presetsLoading" class="table-skeleton"><div v-for="i in 3" :key="i" class="skeleton-row" /></div>
-        <table v-else class="data-table">
-          <thead><tr><th>Name</th><th>Size (mm)</th><th>Shows</th><th>Default</th><th style="width:70px;"></th></tr></thead>
-          <tbody>
-            <tr v-if="presets.length === 0">
-              <td colspan="5" class="table-empty"><Tag :size="28" style="opacity:.3;margin-bottom:8px;" /><div>No label presets yet</div></td>
-            </tr>
-            <tr v-for="p in presets" :key="p.id" class="table-row">
-              <td class="col-name">{{ p.name }}</td>
-              <td style="font-variant-numeric:tabular-nums;">{{ p.width_mm }} × {{ p.height_mm }}</td>
-              <td style="font-size:12px;color:var(--text-muted);">
-                <span v-if="p.show_store_name">Store</span>
-                <span v-if="p.show_product_name"> · Name</span>
-                <span v-if="p.show_sku"> · SKU</span>
-                <span v-if="p.show_barcode"> · Barcode</span>
-                <span v-if="p.show_price"> · Price</span>
-              </td>
-              <td><span v-if="p.is_default" class="badge-cash">Default</span><span v-else class="text-muted-sm">—</span></td>
-              <td>
-                <button class="row-action" title="Edit" @click="openEditPreset(p)"><Pencil :size="13" /></button>
-                <button class="row-action danger" title="Delete" @click="deletePreset(p.id)"><Trash2 :size="13" /></button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
     <!-- Label Preset modal -->
     <AppModal :open="presetModal.open" :title="presetModal.id ? 'Edit Label Preset' : 'New Label Preset'" no-backdrop-close @close="presetModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
@@ -645,7 +684,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import {
   Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X,
-  Settings2, Shield, Plus, UserCog, Tag, Briefcase, Trash, Download,
+  Settings2, Shield, Plus, UserCog, Tag, Briefcase, Trash, Download, Printer,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
@@ -662,13 +701,13 @@ const tabs = [
   { id: 'branches', label: 'Branches & Owners', icon: GitBranch },
   { id: 'branding', label: 'Branding',          icon: ImageIcon },
   { id: 'rules',    label: 'Business Rules',    icon: Settings2 },
-  { id: 'receipt',  label: 'Receipt',           icon: Receipt },
-  { id: 'labels',   label: 'Label Presets',     icon: Tag },
+  { id: 'printing', label: 'Printing Setup',    icon: Printer },
   { id: 'payments', label: 'Payment Methods',   icon: CreditCard },
   { id: 'services', label: 'Service Types',     icon: Briefcase },
   { id: 'security', label: 'Security',          icon: Shield },
 ]
-const activeTab = ref('store')
+const activeTab   = ref('store')
+const printingTab = ref('receipt')
 
 const egyptCities = [
   'Cairo', 'Alexandria', 'Giza', 'Port Said', 'Suez', 'Luxor', 'Aswan',
@@ -951,14 +990,49 @@ const notifyOk       = ref(false)
 const newServiceType = ref('')
 
 // QZ Tray
-const { isAvailable: qzIsAvailable } = useQZTray()
+const { isAvailable: qzIsAvailable, testPrinter: qzTestPrinter } = useQZTray()
 const qzStatus  = ref(null)   // null = untested, true = connected, false = not running
 const qzTesting = ref(false)
+const printerTesting = reactive({ label: false, receipt: false })
+const printerTestResult = reactive({ label: null, receipt: null })
 
 async function testQZTray() {
   qzTesting.value = true
   qzStatus.value  = await qzIsAvailable()
   qzTesting.value = false
+}
+
+async function testPrinter(type) {
+  const name = type === 'label' ? settingsForm.label_printer_name : settingsForm.receipt_printer_name
+  printerTesting[type]    = true
+  printerTestResult[type] = null
+  try {
+    await qzTestPrinter(name)
+    printerTestResult[type] = 'ok'
+  } catch (e) {
+    printerTestResult[type] = e.message || 'Error'
+  } finally {
+    printerTesting[type] = false
+    setTimeout(() => { printerTestResult[type] = null }, 4000)
+  }
+}
+
+async function savePrinters() {
+  serviceSaving.value = true
+  serviceError.value = ''
+  serviceSuccess.value = false
+  try {
+    await api.patch('/api/core/settings/', {
+      label_printer_name:   settingsForm.label_printer_name,
+      receipt_printer_name: settingsForm.receipt_printer_name,
+    })
+    serviceSuccess.value = true
+    setTimeout(() => (serviceSuccess.value = false), 2500)
+  } catch (e) {
+    serviceError.value = e.response?.data?.detail || 'Failed to save printer settings.'
+  } finally {
+    serviceSaving.value = false
+  }
 }
 
 function addServiceType() {
@@ -980,8 +1054,6 @@ async function saveServiceSettings() {
     await api.patch('/api/core/settings/', {
       service_types:        settingsForm.service_types,
       service_notify_hours: settingsForm.service_notify_hours,
-      label_printer_name:   settingsForm.label_printer_name,
-      receipt_printer_name: settingsForm.receipt_printer_name,
     })
     serviceSuccess.value = true
     setTimeout(() => (serviceSuccess.value = false), 2500)
@@ -1010,7 +1082,7 @@ async function runNotifications() {
 watch(activeTab, tab => {
   if (tab === 'branches' && branches.value.length === 0) { fetchBranches(); fetchOwners() }
   if (tab === 'payments' && paymentMethods.value.length === 0) fetchPMs()
-  if (tab === 'labels'   && presets.value.length === 0) fetchPresets()
+  if (tab === 'printing' && presets.value.length === 0) fetchPresets()
 }, { immediate: true })
 
 onMounted(() => { loadStore(); initLogoPreviews() })
@@ -1123,4 +1195,9 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .qz-dot { font-size:12px; font-weight:600; letter-spacing:.01em; }
 .qz-ok  { color:#16a34a; }
 .qz-off { color:#dc2626; }
+
+.sub-tab-bar { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+.sub-tab-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; font-size:12.5px; font-weight:500; color:var(--text-muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms,border-color 120ms; border-radius:6px 6px 0 0; }
+.sub-tab-btn:hover  { color:var(--text-primary); }
+.sub-tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
 </style>
