@@ -1018,7 +1018,7 @@ async function testPrinter(type) {
   printerTesting[type]    = true
   printerTestResult[type] = null
   try {
-    await qzTestPrinter(name)
+    await qzTestPrinter(name, type)
     printerTestResult[type] = 'ok'
   } catch (e) {
     printerTestResult[type] = e.message || 'Error'
