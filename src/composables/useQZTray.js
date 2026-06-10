@@ -95,8 +95,8 @@ function _testLabel() {
     'TEXT 10,8,"3",0,1,1,"VENDORYA"\r\n',
     'TEXT 10,40,"2",0,1,1,"Laptop HP ProBook 450"\r\n',
     'TEXT 10,68,"2",0,1,1,"Price: 3,500.00 EGP"\r\n',
-    'BARCODE 10,95,"128",55,1,0,2,2,"TEST-SKU-001"\r\n',
-    'TEXT 10,158,"1",0,1,1,"SKU: TEST-SKU-001"\r\n',
+    'BARCODE 10,95,"128",50,0,0,2,2,"TEST-SKU-001"\r\n',
+    'TEXT 10,152,"1",0,1,1,"SKU: TEST-SKU-001"\r\n',
     'PRINT 1\r\n',
   ].join('')
 }
