@@ -3,8 +3,9 @@
     <p class="cg-intro">
       The <strong>approved</strong> building blocks. Anything not shown here doesn't ship —
       build new pages from these, don't reinvent them. Buttons &amp; inputs are <em>global</em>
-      (defined once in <code>main.css</code>); press the buttons to feel the tactile
-      <strong>rubber</strong> motion (snappy down, springy bounce-back).
+      (defined once in <code>main.css</code>). The default button skin is
+      <strong>OG Vendorya</strong> (rubber press) — use the switcher below to preview the
+      other <strong>theme sets</strong> live; each has its own look <em>and</em> tactile feel.
     </p>
 
     <!-- ─── BUTTONS ─────────────────────────────────────────── -->
@@ -13,7 +14,17 @@
         <h2 class="cg-h">Buttons</h2>
         <span class="cg-tag cg-tag--global">global · main.css</span>
       </div>
-      <div class="cg-grid">
+
+      <!-- Theme-set switcher — reskins the live demos below (look + tactile feel) -->
+      <div class="cg-setbar">
+        <div class="cg-settabs">
+          <button v-for="s in btnSets" :key="s.id" class="cg-settab" :class="{ on: activeSet === s.id }"
+                  @click="activeSet = s.id">{{ s.name }}</button>
+        </div>
+        <span class="cg-setdesc"><strong>{{ activeName }}</strong> — {{ activeDesc }}</span>
+      </div>
+
+      <div class="cg-grid" :data-btnset="activeSet">
         <div class="cg-item">
           <div class="cg-demo"><button class="btn-primary">Save changes</button></div>
           <code class="cg-code">.btn-primary</code>
@@ -174,12 +185,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Plus } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const showModal = ref(false)
 const switchOn  = ref(true)
+
+// Button theme sets — namespaced skins in main.css ([data-btnset="…"]).
+const btnSets = [
+  { id: 'og',     name: 'OG Vendorya', desc: 'orange, the rubber press — snappy down, springy bounce-back.' },
+  { id: 'aqua',   name: 'Aqua feel',   desc: 'liquid glass — glossy top sheen, sinks into water on press (no bounce).' },
+  { id: 'carbon', name: 'Carbon',      desc: 'matte graphite keycaps — a firm mechanical key-travel, no scale or bounce.' },
+]
+const activeSet  = ref('og')
+const activeName = computed(() => btnSets.find(s => s.id === activeSet.value).name)
+const activeDesc = computed(() => btnSets.find(s => s.id === activeSet.value).desc)
 
 const badges = [
   { cls: 'cg-badge--success', label: 'Paid',     token: '--success', note: 'Positive / completed state.' },
@@ -210,6 +231,19 @@ const badges = [
 }
 .cg-tag--global { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
 .cg-tag--ref    { background: var(--info-soft); color: var(--info); border-color: transparent; }
+
+/* Theme-set switcher */
+.cg-setbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; }
+.cg-settabs { display: inline-flex; gap: 3px; background: var(--bg-app); border: 1px solid var(--border); border-radius: 11px; padding: 3px; }
+.cg-settab {
+  border: none; background: none; cursor: pointer; padding: 6px 14px; border-radius: 8px;
+  font-size: 12.5px; font-weight: 700; color: var(--text-muted);
+  transition: background 140ms var(--ease-out), color 140ms var(--ease-out);
+}
+.cg-settab:hover { color: var(--text-primary); }
+.cg-settab.on { background: var(--bg-card); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.cg-setdesc { font-size: 12px; color: var(--text-muted); }
+.cg-setdesc strong { color: var(--text-secondary); }
 
 .cg-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

@@ -291,6 +291,122 @@
 /* Size modifier */
 .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
 
+/* ════ BUTTON THEME SETS (UI cleanup Step 5, s60) ══════════
+   Swappable button SKINS. The default global .btn-* above IS
+   the "OG Vendorya" set (orange, rubber bounce-back press).
+   Alternate sets are NAMESPACED: wrap any subtree in
+   [data-btnset="aqua"] / [data-btnset="carbon"] to reskin every
+   button inside it — its own LOOK and its own TACTILE feel —
+   without changing markup. Layout/size come from the base rules;
+   only colour, shape, shadow + the press motion are overridden.
+   A store can later set data-btnset on the app shell to pick a
+   theme globally. */
+
+/* ─── Aqua feel — liquid glass: glossy top sheen, sinks on press (no bounce) ─── */
+[data-btnset="aqua"] .btn-primary,
+[data-btnset="aqua"] .btn-ghost,
+[data-btnset="aqua"] .btn-danger,
+[data-btnset="aqua"] .btn-secondary {
+  position: relative;
+  overflow: hidden;
+  border-radius: 13px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background-color 200ms var(--ease-out),
+              box-shadow 220ms var(--ease-out),
+              color 200ms var(--ease-out),
+              transform 240ms var(--ease-out);   /* liquid settle, deliberately no spring */
+}
+/* glossy highlight across the top half (the "wet" sheen) */
+[data-btnset="aqua"] .btn-primary::before,
+[data-btnset="aqua"] .btn-danger::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,.38), rgba(255,255,255,0));
+  pointer-events: none;
+}
+/* press = depress into water: sinks + inner shadow, quick */
+[data-btnset="aqua"] .btn-primary:active:not(:disabled),
+[data-btnset="aqua"] .btn-ghost:active:not(:disabled),
+[data-btnset="aqua"] .btn-danger:active:not(:disabled),
+[data-btnset="aqua"] .btn-secondary:active:not(:disabled) {
+  transform: scale(.97);
+  transition-duration: 90ms;
+  box-shadow: inset 0 3px 9px rgba(0,0,0,.28);
+}
+[data-btnset="aqua"] .btn-primary {
+  border: none; color: #fff;
+  background: linear-gradient(180deg, #38bdf8, #0284c7);
+  box-shadow: 0 4px 14px rgba(2,132,199,.40), inset 0 1px 0 rgba(255,255,255,.55);
+}
+[data-btnset="aqua"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #4cc6fb, #0ea5e9);
+  box-shadow: 0 6px 20px rgba(2,132,199,.50), inset 0 1px 0 rgba(255,255,255,.65);
+}
+[data-btnset="aqua"] .btn-danger {
+  border: none; color: #fff;
+  background: linear-gradient(180deg, #fb7185, #e11d48);
+  box-shadow: 0 4px 14px rgba(225,29,72,.40), inset 0 1px 0 rgba(255,255,255,.5);
+}
+[data-btnset="aqua"] .btn-danger:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fb8497, #f43f5e);
+}
+[data-btnset="aqua"] .btn-ghost {
+  border: 1px solid rgba(56,189,248,.40); background: rgba(56,189,248,.10); color: #0284c7; font-weight: 600;
+}
+[data-btnset="aqua"] .btn-ghost:hover:not(:disabled) { background: rgba(56,189,248,.18); color: #0369a1; }
+[data-btnset="aqua"] .btn-secondary {
+  border: 1px solid rgba(255,255,255,.7); background: rgba(255,255,255,.55); color: #0f172a; font-weight: 600;
+  box-shadow: 0 2px 8px rgba(2,132,199,.12);
+}
+[data-btnset="aqua"] .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,.72); }
+.dark [data-btnset="aqua"] .btn-ghost { color: #7dd3fc; }
+.dark [data-btnset="aqua"] .btn-secondary { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); color: var(--text-primary); }
+
+/* ─── Carbon — matte graphite keycaps: firm mechanical key-travel (no scale, no bounce) ─── */
+[data-btnset="carbon"] .btn-primary,
+[data-btnset="carbon"] .btn-ghost,
+[data-btnset="carbon"] .btn-danger,
+[data-btnset="carbon"] .btn-secondary {
+  border-radius: 7px;
+  font-weight: 700;
+  transition: background-color 120ms var(--ease-out),
+              box-shadow 80ms var(--ease-out),
+              transform 80ms var(--ease-out);   /* fast + firm, no overshoot */
+}
+/* press = key travels straight down, its hard bottom edge collapses */
+[data-btnset="carbon"] .btn-primary:active:not(:disabled),
+[data-btnset="carbon"] .btn-ghost:active:not(:disabled),
+[data-btnset="carbon"] .btn-danger:active:not(:disabled),
+[data-btnset="carbon"] .btn-secondary:active:not(:disabled) {
+  transform: translateY(2px);
+}
+[data-btnset="carbon"] .btn-primary {
+  border: none; color: #fff; background: #3f3f46;
+  box-shadow: 0 3px 0 #18181b, 0 4px 7px rgba(0,0,0,.22);
+}
+[data-btnset="carbon"] .btn-primary:hover:not(:disabled) { background: #52525b; }
+[data-btnset="carbon"] .btn-primary:active:not(:disabled) { box-shadow: 0 1px 0 #18181b, 0 1px 3px rgba(0,0,0,.25); }
+[data-btnset="carbon"] .btn-danger {
+  border: none; color: #fff; background: #b91c1c;
+  box-shadow: 0 3px 0 #7f1d1d, 0 4px 7px rgba(0,0,0,.22);
+}
+[data-btnset="carbon"] .btn-danger:hover:not(:disabled) { background: #dc2626; }
+[data-btnset="carbon"] .btn-danger:active:not(:disabled) { box-shadow: 0 1px 0 #7f1d1d, 0 1px 3px rgba(0,0,0,.25); }
+[data-btnset="carbon"] .btn-ghost {
+  background: transparent; color: var(--text-secondary); border: 1px solid var(--border);
+  box-shadow: 0 2px 0 var(--border);
+}
+[data-btnset="carbon"] .btn-ghost:hover:not(:disabled) { color: var(--text-primary); background: var(--bg-app); }
+[data-btnset="carbon"] .btn-ghost:active:not(:disabled) { box-shadow: 0 0 0 var(--border); }
+[data-btnset="carbon"] .btn-secondary {
+  color: #27272a; background: #e4e4e7; border: none;
+  box-shadow: 0 3px 0 #a1a1aa, 0 4px 7px rgba(0,0,0,.12);
+}
+[data-btnset="carbon"] .btn-secondary:hover:not(:disabled) { background: #d4d4d8; }
+[data-btnset="carbon"] .btn-secondary:active:not(:disabled) { box-shadow: 0 1px 0 #a1a1aa, 0 1px 3px rgba(0,0,0,.15); }
+.dark [data-btnset="carbon"] .btn-secondary { color: #fff; background: #52525b; box-shadow: 0 3px 0 #27272a, 0 4px 7px rgba(0,0,0,.3); }
+.dark [data-btnset="carbon"] .btn-secondary:hover:not(:disabled) { background: #5f5f6a; }
+
 /* ── BASE ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
