@@ -80,7 +80,6 @@ async function save() {
 </script>
 
 <style scoped>
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; }
 .settings-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
 .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
 .field label { font-size: 13px; font-weight: 700; color: var(--text-secondary); }

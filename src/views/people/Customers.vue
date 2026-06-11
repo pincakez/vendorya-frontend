@@ -481,13 +481,12 @@ onMounted(() => { loadLayout() })
 .c-phone { font-variant-numeric: tabular-nums; color: var(--text-secondary); }
 .c-notes { color: var(--text-muted); font-size: 12.5px; }
 .c-mono  { font-family: ui-monospace, monospace; font-size: 13.5px; font-variant-numeric: tabular-nums; }
-.balance-owe    { font-weight: 600; color: #dc2626; font-variant-numeric: tabular-nums; font-size: 12.5px; }
-.balance-credit { font-weight: 600; color: #16a34a; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.balance-owe    { font-weight: 600; color: var(--danger); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.balance-credit { font-weight: 600; color: var(--success); font-variant-numeric: tabular-nums; font-size: 12.5px; }
 .balance-zero   { color: var(--text-muted); }
 .row-action { width: 28px; height: 28px; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; transition: background 100ms, color 100ms; }
 .row-action:hover { background: var(--border); color: var(--text-primary); }
-.row-action.danger:hover { background: #fee2e2; color: #dc2626; }
-.form-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+.row-action.danger:hover { background: var(--danger-soft); color: var(--danger); }
 .form-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-app); color: var(--text-primary); font-size: 13px; outline: none; box-sizing: border-box; transition: border-color 120ms; resize: vertical; }
 .form-input:focus { border-color: var(--accent); }
 </style>

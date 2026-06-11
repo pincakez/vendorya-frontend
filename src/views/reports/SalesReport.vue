@@ -89,9 +89,6 @@ async function fetchData() {
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 .tab-bar { display:flex; gap:4px; margin-bottom:18px; border-bottom:1px solid var(--border); }
 .tab-btn { padding:9px 16px; border:none; background:transparent; color:var(--text-muted); font-size:13.5px; font-weight:600; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms, border-color 120ms; }
 .tab-btn:hover { color:var(--text-primary); }

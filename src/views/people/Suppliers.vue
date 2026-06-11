@@ -531,7 +531,7 @@ onMounted(() => { loadLayout() })
 .c-prefix  { }
 .c-contact { color: var(--text-muted); font-size: 12.5px; }
 .c-mono    { font-family: ui-monospace, monospace; font-size: 13.5px; font-variant-numeric: tabular-nums; }
-.balance-owe  { font-weight: 600; color: #dc2626; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.balance-owe  { font-weight: 600; color: var(--danger); font-variant-numeric: tabular-nums; font-size: 12.5px; }
 .balance-zero { color: var(--text-muted); }
 .prefix-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--bg-app); border: 1px solid var(--border); font-family: monospace; font-size: 12px; font-weight: 700; color: var(--text-secondary); }
 .lock-icon    { color: var(--text-muted); flex-shrink: 0; }
@@ -539,18 +539,17 @@ onMounted(() => { loadLayout() })
 
 .row-action { width: 28px; height: 28px; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; transition: background 100ms, color 100ms; }
 .row-action:hover { background: var(--border); color: var(--text-primary); }
-.row-action.danger:hover { background: #fee2e2; color: #dc2626; }
-.form-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+.row-action.danger:hover { background: var(--danger-soft); color: var(--danger); }
 .label-hint { font-weight: 400; color: var(--text-muted); }
-.req { color: #dc2626; font-weight: 700; }
+.req { color: var(--danger); font-weight: 700; }
 .form-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-app); color: var(--text-primary); font-size: 13px; outline: none; box-sizing: border-box; transition: border-color 120ms; resize: vertical; }
 .form-input:focus { border-color: var(--accent); }
 .field-note  { margin: 4px 0 0; font-size: 11.5px; color: var(--text-muted); line-height: 1.4; }
 .btn-check { padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-app); color: var(--text-primary); font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 100ms, border-color 100ms; flex-shrink: 0; }
 .btn-check:hover:not(:disabled) { background: rgba(247,143,30,0.08); border-color: var(--accent); color: var(--accent); }
 .btn-check:disabled { opacity: .5; cursor: default; }
-.check-ok    { font-size: 12px; font-weight: 600; color: #16a34a; white-space: nowrap; }
-.check-taken { font-size: 12px; font-weight: 600; color: #dc2626; white-space: nowrap; }
+.check-ok    { font-size: 12px; font-weight: 600; color: var(--success); white-space: nowrap; }
+.check-taken { font-size: 12px; font-weight: 600; color: var(--danger); white-space: nowrap; }
 .confirm-body { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 0 4px; text-align: center; }
 .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background: rgba(247,143,30,0.1); display: flex; align-items: center; justify-content: center; color: var(--accent); }
 .confirm-text { font-size: 15px; font-weight: 500; color: var(--text-primary); margin: 0; line-height: 1.5; }

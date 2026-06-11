@@ -403,8 +403,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 .header-left { display:flex; align-items:flex-start; gap:12px; }
 .back-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 10px; border-radius:8px; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; font-size:13px; font-weight:500; transition:background 100ms; margin-top:2px; }
 .back-btn:hover { background:var(--border); }
-.page-title { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 /* Edit product button */
 .edit-prod-btn {
@@ -473,7 +471,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
   background: none; color: var(--text-muted); cursor: pointer;
   transition: background 100ms, color 100ms;
 }
-.img-remove-btn:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+.img-remove-btn:hover { background: var(--danger-soft); color: var(--danger); border-color: #fca5a5; }
 
 .quick-stats {
   display: grid; grid-template-columns: 1fr 1fr 1fr;
@@ -501,7 +499,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 .info-item { }
 .info-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); font-weight: 600; }
 .info-value { font-size: 14px; color: var(--text-primary); margin-top: 2px; font-weight: 500; }
-.retail-price-val { color: #16a34a; font-weight: 700; font-size: 16px; }
+.retail-price-val { color: var(--success); font-weight: 700; font-size: 16px; }
 .dark .retail-price-val { color: #4ade80; }
 
 /* Attributes */
@@ -525,7 +523,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 }
 .secret-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
 .secret-item { }
-.cost-val { color: #dc2626; font-weight: 700; }
+.cost-val { color: var(--danger); font-weight: 700; }
 
 .secret-slide-enter-active { transition: opacity 180ms, transform 180ms cubic-bezier(0.34,1.56,0.64,1); }
 .secret-slide-leave-active { transition: opacity 120ms ease; }
@@ -556,5 +554,4 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 .prod-prices-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 .prod-attrs-section { border-top: 1px solid var(--border); padding-top: 12px; }
 .prod-attrs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.form-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
 </style>

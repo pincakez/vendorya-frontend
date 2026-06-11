@@ -195,17 +195,14 @@ onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .shift-banner { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-radius:12px; margin-bottom:20px; border:1px solid; }
 .shift-banner.open { background:#f0fdf4; border-color:#86efac; }
 .banner-left  { display:flex; align-items:center; gap:12px; }
 .banner-dot   { width:10px; height:10px; border-radius:50%; }
-.open-dot     { background:#16a34a; box-shadow:0 0 0 3px #bbf7d0; animation:pulse 2s infinite; }
+.open-dot     { background:var(--success); box-shadow:0 0 0 3px #bbf7d0; animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-.banner-title { font-weight:700; font-size:14px; color:#15803d; }
+.banner-title { font-weight:700; font-size:14px; color:var(--success-hover); }
 .banner-sub   { font-size:12px; color:#166534; margin-top:2px; }
 
 .tab-bar { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:20px; }
@@ -226,11 +223,11 @@ onUnmounted(() => qab.clearActions())
 @keyframes shimmer { to { background-position:-200% 0; } }
 
 .col-amount { font-variant-numeric:tabular-nums; }
-.diff-over  { color:#16a34a; font-weight:600; }
-.diff-short { color:#dc2626; font-weight:600; }
+.diff-over  { color:var(--success); font-weight:600; }
+.diff-short { color:var(--danger); font-weight:600; }
 
 .status-badge { display:inline-flex; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
-.status-open   { background:#dcfce7; color:#15803d; }
+.status-open   { background:var(--success-soft); color:var(--success-hover); }
 .status-closed { background:#f3f4f6; color:#6b7280; }
 
 .shift-summary { background:var(--bg-app); border:1px solid var(--border); border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; }
@@ -238,11 +235,10 @@ onUnmounted(() => qab.clearActions())
 .summary-row span:last-child { font-variant-numeric:tabular-nums; font-weight:600; }
 
 .diff-preview { padding:10px 14px; border-radius:8px; font-size:13px; font-weight:600; text-align:center; }
-.diff-preview.diff-over  { background:#f0fdf4; color:#15803d; }
-.diff-preview.diff-short { background:#fef2f2; color:#dc2626; }
+.diff-preview.diff-over  { background:#f0fdf4; color:var(--success-hover); }
+.diff-preview.diff-short { background:#fef2f2; color:var(--danger); }
 
-.form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
-.btn-danger-solid { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#dc2626; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms; }
-.btn-danger-solid:hover  { background:#b91c1c; }
+.btn-danger-solid { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--danger); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms; }
+.btn-danger-solid:hover  { background:var(--danger-hover); }
 .btn-danger-solid:active { transform:scale(0.95); }
 </style>

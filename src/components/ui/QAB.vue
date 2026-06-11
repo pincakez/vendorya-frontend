@@ -98,7 +98,7 @@ onUnmounted(() => {
   gap: 6px;
   padding: 8px 16px;
   border-radius: 9999px;
-  background: #16a34a;
+  background: var(--success);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -110,7 +110,7 @@ onUnmounted(() => {
 }
 
 .qab-pill:hover {
-  background: #15803d;
+  background: var(--success-hover);
   box-shadow: 0 4px 16px rgba(22,163,74,0.45);
 }
 
@@ -118,7 +118,7 @@ onUnmounted(() => {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #dc2626;
+  background: var(--danger);
   color: #fff;
   border: none;
   cursor: pointer;
@@ -130,7 +130,7 @@ onUnmounted(() => {
 }
 
 .qab-toggle:hover {
-  background: #b91c1c;
+  background: var(--danger-hover);
   box-shadow: 0 4px 18px rgba(220,38,38,0.5);
 }
 

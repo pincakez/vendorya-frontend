@@ -325,7 +325,6 @@ async function applyToAll() {
 </script>
 
 <style scoped>
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; }
 .tab-bar { display: flex; gap: 4px; border-bottom: 1px solid var(--border); }
 .tab-btn { display: flex; align-items: center; gap: 6px; padding: 10px 14px; font-size: 13.5px; font-weight: 500; color: var(--text-muted); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 120ms, border-color 120ms; }
 .tab-btn:hover { color: var(--text-primary); }

@@ -492,7 +492,6 @@ onMounted(() => {
 /* Shared header / tab / button classes — these are NOT global; each page
    defines its own scoped copy. Services.vue was missing them, so the
    New Service button + tabs rendered unstyled. (s53) */
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
 .page-title  { font-size:28px; font-weight:800; color:var(--text-primary); margin:0; letter-spacing:-0.4px; }
 .page-sub    { font-size:13.5px; color:var(--text-muted); margin:4px 0 0; }
 .header-actions { display:flex; align-items:center; gap:10px; }
@@ -575,8 +574,8 @@ onMounted(() => {
   padding: 2px 8px;
   border-radius: 20px;
 }
-.eta-badge.ok { background: #dcfce7; color: #16a34a; }
-.eta-badge.overdue { background: #fee2e2; color: #dc2626; }
+.eta-badge.ok { background: var(--success-soft); color: var(--success); }
+.eta-badge.overdue { background: var(--danger-soft); color: var(--danger); }
 
 .bell-btn {
   background: none;
@@ -592,8 +591,8 @@ onMounted(() => {
 
 .col-actions { display: flex; gap: 4px; align-items: center; }
 
-.row-action.success { color: #16a34a; }
-.row-action.success:hover { background: #dcfce7; }
+.row-action.success { color: var(--success); }
+.row-action.success:hover { background: var(--success-soft); }
 
 /* ── detail modal ───────────────────────────────────────────── */
 .det-body { display: flex; flex-direction: column; gap: 16px; }
@@ -603,10 +602,10 @@ onMounted(() => {
   font-size: 11px; font-weight: 700; padding: 3px 10px;
   border-radius: 20px; text-transform: uppercase; letter-spacing: .04em;
 }
-.det-badge-open      { background: #dbeafe; color: #1d4ed8; }
-.det-badge-done      { background: #dcfce7; color: #16a34a; }
+.det-badge-open      { background: var(--info-soft); color: var(--info-hover); }
+.det-badge-done      { background: var(--success-soft); color: var(--success); }
 .det-badge-cancelled { background: #f3f4f6; color: #6b7280; }
-.det-badge-archived  { background: #fef3c7; color: #92400e; }
+.det-badge-archived  { background: var(--warning-soft); color: #92400e; }
 .det-badge-returned  { background: #ede9fe; color: #7c3aed; }
 
 .det-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -618,7 +617,7 @@ onMounted(() => {
 
 .btn-success {
   padding: 8px 20px; border-radius: 8px; border: none;
-  background: #16a34a; color: #fff; font-size: 13px; font-weight: 700;
+  background: var(--success); color: #fff; font-size: 13px; font-weight: 700;
   cursor: pointer; transition: opacity 120ms;
 }
 .btn-success:hover   { opacity: .88; }

@@ -225,8 +225,6 @@ onMounted(load)
 
 <style scoped>
 .page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .skeleton-card { height:300px; border-radius:12px; background:var(--border); animation:shimmer 1.4s ease-in-out infinite; }
 @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
@@ -242,7 +240,7 @@ onMounted(load)
 .policy-footer { display:flex; align-items:center; justify-content:space-between; }
 
 .policy-status { font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; }
-.status-on  { background:#dcfce7; color:#166534; }
+.status-on  { background:var(--success-soft); color:#166534; }
 .status-off { background:#f3f4f6; color:#6b7280; }
 
 .toggle-btn  { width:44px; height:24px; border-radius:12px; border:none; background:var(--border); cursor:pointer; position:relative; transition:background 200ms; padding:0; flex-shrink:0; }
@@ -262,7 +260,7 @@ onMounted(load)
 .ip-area:focus { border-color:var(--accent); }
 
 .save-bar { display:flex; align-items:center; gap:12px; margin-top:24px; }
-.save-confirm { display:inline-flex; align-items:center; gap:5px; font-size:13px; color:#16a34a; font-weight:500; }
+.save-confirm { display:inline-flex; align-items:center; gap:5px; font-size:13px; color:var(--success); font-weight:500; }
 
 
 .mode-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-muted); font-size:12.5px; font-weight:600; cursor:pointer; transition:background 100ms,border-color 100ms,color 100ms; }

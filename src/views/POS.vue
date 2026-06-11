@@ -898,10 +898,10 @@ function fmtNum(n) {
 
 .pib-discount-chip {
   display: flex; align-items: center; gap: 6px; flex-shrink: 0;
-  font-size: 12px; font-weight: 700; color: #dc2626;
+  font-size: 12px; font-weight: 700; color: var(--danger);
   padding: 4px 10px; border-radius: 8px; background: #fef2f2; border: 1px solid #fecaca;
 }
-.pib-discount-chip button { background: none; border: none; cursor: pointer; color: #dc2626; display: flex; align-items: center; padding: 0; }
+.pib-discount-chip button { background: none; border: none; cursor: pointer; color: var(--danger); display: flex; align-items: center; padding: 0; }
 
 .pos-cart-header {
   display: grid; grid-template-columns: 1fr 96px 90px 36px;
@@ -941,7 +941,7 @@ function fmtNum(n) {
   cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
   transition: background 120ms, color 120ms; justify-self: center;
 }
-.pcr-del:hover { background: #fef2f2; color: #dc2626; }
+.pcr-del:hover { background: #fef2f2; color: var(--danger); }
 .pos-cart-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 12px; padding: 48px 24px; color: var(--text-muted); font-size: 13.5px;
@@ -987,14 +987,14 @@ function fmtNum(n) {
   display: flex; flex-direction: column; gap: 7px;
 }
 .psum-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-secondary); }
-.psum-discount { color: #dc2626; font-size: 12px; }
+.psum-discount { color: var(--danger); font-size: 12px; }
 .psum-divider  { height: 1px; background: var(--border); margin: 2px 0; }
 .psum-total    { font-size: 17px; font-weight: 900; color: var(--text-primary); }
 .psum-items    { font-size: 11px; color: var(--text-muted); text-align: right; }
 
 .pos-pay-btn {
   width: 100%; padding: 16px 12px; border-radius: 14px; border: none;
-  background: #16a34a; color: #fff; cursor: pointer;
+  background: var(--success); color: #fff; cursor: pointer;
   display: flex; align-items: center; justify-content: space-between;
   font-size: 18px; font-weight: 900; letter-spacing: 0.08em;
   transition: opacity 150ms; margin-top: auto;
@@ -1021,7 +1021,7 @@ function fmtNum(n) {
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   min-width: 340px; box-shadow: 0 24px 80px rgba(0,0,0,0.3);
 }
-.psc-icon   { color: #16a34a; }
+.psc-icon   { color: var(--success); }
 .psc-label  { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em; }
 .psc-num    { font-size: 22px; font-weight: 900; color: var(--text-primary); }
 .psc-amount { font-size: 34px; font-weight: 900; color: var(--text-primary); }

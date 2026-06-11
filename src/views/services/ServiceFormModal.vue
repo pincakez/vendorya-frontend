@@ -557,7 +557,7 @@ async function doServicePrint(copies = 2) {
 .sfm-print-btn { color: var(--text-secondary); }
 .sfm-opt  { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
 .sfm-hint { font-size: 11px; color: var(--text-muted); margin: 3px 0 0; }
-.sfm-error { font-size: 12px; color: #dc2626; background: #fef2f2; border-radius: 8px; padding: 8px 12px; }
+.sfm-error { font-size: 12px; color: var(--danger); background: #fef2f2; border-radius: 8px; padding: 8px 12px; }
 
 .sfm-toggle-row { display: flex; gap: 8px; }
 .sfm-toggle-btn {

@@ -75,9 +75,6 @@ async function changePassword() {
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 .back-link   { font-size:13px; color:var(--accent); text-decoration:none; font-weight:600; }
 .back-link:hover { text-decoration:underline; }
 
@@ -86,11 +83,10 @@ async function changePassword() {
 .settings-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px; }
 .section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
 .form-col { display:flex; flex-direction:column; gap:14px; max-width:360px; }
-.form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-input { width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; transition:border-color 120ms; }
 .form-input:focus { border-color:var(--accent); }
-.error-text { font-size:12px; color:#dc2626; margin-top:10px; }
-.saved-msg  { font-size:13px; color:#16a34a; font-weight:500; }
+.error-text { font-size:12px; color:var(--danger); margin-top:10px; }
+.saved-msg  { font-size:13px; color:var(--success); font-weight:500; }
 .form-footer { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:18px; padding-top:16px; border-top:1px solid var(--border); }
 
 </style>

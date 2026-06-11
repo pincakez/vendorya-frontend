@@ -574,20 +574,19 @@ onMounted(() => { loadLayout(); fetchCustomers(); fetchVariants() })
 .c-num     { font-family: ui-monospace, monospace; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
 .c-name    { font-weight: 500; }
 .c-amount  { font-variant-numeric: tabular-nums; }
-.col-balance-due  { color: #dc2626; font-weight: 600; font-variant-numeric: tabular-nums; }
-.col-balance-paid { color: #16a34a; font-variant-numeric: tabular-nums; }
+.col-balance-due  { color: var(--danger); font-weight: 600; font-variant-numeric: tabular-nums; }
+.col-balance-paid { color: var(--success); font-variant-numeric: tabular-nums; }
 .status-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-.status-draft  { background: #fef3c7; color: #92400e; }
-.status-posted { background: #dcfce7; color: #15803d; }
+.status-draft  { background: var(--warning-soft); color: #92400e; }
+.status-posted { background: var(--success-soft); color: var(--success-hover); }
 .status-void   { background: #f3f4f6; color: #6b7280; }
 
 .row-action { width: 28px; height: 28px; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; transition: background 100ms, color 100ms; }
 .row-action:hover        { background: var(--border); color: var(--text-primary); }
-.row-action.success:hover { background: #dcfce7; color: #16a34a; }
-.row-action.danger:hover  { background: #fee2e2; color: #dc2626; }
+.row-action.success:hover { background: var(--success-soft); color: var(--success); }
+.row-action.danger:hover  { background: var(--danger-soft); color: var(--danger); }
 
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.form-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
 .form-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-app); color: var(--text-primary); font-size: 13px; outline: none; box-sizing: border-box; transition: border-color 120ms; resize: vertical; }
 .form-input:focus { border-color: var(--accent); }
 .section-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 10px; }

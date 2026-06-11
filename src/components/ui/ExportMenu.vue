@@ -51,10 +51,10 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
 .export-btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 12px; border-radius: 999px; border: none; cursor: pointer;
-  background: #16a34a; color: #fff; font-size: 13px; font-weight: 600;
+  background: var(--success); color: #fff; font-size: 13px; font-weight: 600;
   transition: background 120ms, transform 80ms;
 }
-.export-btn:hover:not(:disabled) { background: #15803d; }
+.export-btn:hover:not(:disabled) { background: var(--success-hover); }
 .export-btn:active:not(:disabled) { transform: scale(.95); }
 .export-btn:disabled { opacity: .5; cursor: not-allowed; }
 .export-btn svg.flip { transform: rotate(180deg); transition: transform 150ms; }

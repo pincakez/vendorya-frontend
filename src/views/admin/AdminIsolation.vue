@@ -158,8 +158,6 @@ function detailText(e) {
 </script>
 
 <style scoped>
-.page-header  { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.page-title   { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
 .page-sub     { font-size:13px; color:var(--text-muted); margin:2px 0 0; max-width:620px; line-height:1.5; }
 .header-right { display:flex; align-items:center; gap:10px; }
 
@@ -177,8 +175,8 @@ function detailText(e) {
 .verdict.fail { background:rgba(239,68,68,.08);  border-color:rgba(239,68,68,.4); }
 .verdict.warn { background:rgba(234,179,8,.08);  border-color:rgba(234,179,8,.35); }
 .verdict-icon { flex-shrink:0; }
-.verdict.pass .verdict-icon { color:#16a34a; }
-.verdict.fail .verdict-icon { color:#dc2626; }
+.verdict.pass .verdict-icon { color:var(--success); }
+.verdict.fail .verdict-icon { color:var(--danger); }
 .verdict.warn .verdict-icon { color:#ca8a04; }
 .verdict-body { flex:1; }
 .verdict-title { font-size:16px; font-weight:700; color:var(--text-primary); }
@@ -186,7 +184,7 @@ function detailText(e) {
 .verdict-stats { display:flex; gap:18px; flex-shrink:0; }
 .stat { text-align:center; }
 .stat-num { display:block; font-size:20px; font-weight:700; color:var(--text-primary); }
-.stat.bad .stat-num { color:#dc2626; }
+.stat.bad .stat-num { color:var(--danger); }
 .stat-lbl { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
 
 .coverage { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:11px 16px; margin-bottom:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; font-size:12.5px; color:var(--text-secondary); }
@@ -203,8 +201,8 @@ function detailText(e) {
 
 
 .pill { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; }
-.pill.ok    { background:rgba(34,197,94,.14);  color:#16a34a; }
-.pill.bad   { background:rgba(239,68,68,.14);  color:#dc2626; }
+.pill.ok    { background:rgba(34,197,94,.14);  color:var(--success); }
+.pill.bad   { background:rgba(239,68,68,.14);  color:var(--danger); }
 .pill.muted { background:var(--bg-app); color:var(--text-muted); }
 .pill.err   { background:rgba(234,179,8,.14);  color:#ca8a04; }
 

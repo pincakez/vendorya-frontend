@@ -114,9 +114,6 @@ onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .data-table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -135,9 +132,8 @@ onUnmounted(() => qab.clearActions())
 
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action:hover        { background:var(--border); color:var(--text-primary); }
-.row-action.danger:hover { background:#fee2e2; color:#dc2626; }
+.row-action.danger:hover { background:var(--danger-soft); color:var(--danger); }
 
-.form-label  { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-input  { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; }
 .form-input:focus { border-color:var(--accent); }
 </style>

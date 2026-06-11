@@ -187,9 +187,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .table-empty { text-align:center; padding:48px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .table-skeleton { padding:8px 0; }
@@ -202,22 +199,21 @@ onMounted(() => {
 .row-actions { display:flex; gap:4px; }
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action:hover        { background:var(--border); color:var(--text-primary); }
-.row-action.danger:hover { background:#fee2e2; color:#dc2626; }
+.row-action.danger:hover { background:var(--danger-soft); color:var(--danger); }
 
 .type-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
 .type-text   { background:#f3f4f6; color:#4b5563; }
 .type-select { background:var(--accent-soft); color:var(--accent-hover); }
-.type-number { background:#fef3c7; color:#92400e; }
+.type-number { background:var(--warning-soft); color:#92400e; }
 
 .options-list { display:flex; flex-wrap:wrap; gap:4px; align-items:center; }
 .option-chip { display:inline-block; padding:2px 7px; border-radius:999px; font-size:11px; background:var(--bg-app); border:1px solid var(--border); color:var(--text-secondary); }
 .option-chip.editable { display:inline-flex; align-items:center; gap:4px; }
 .option-more { font-size:11px; color:var(--text-muted); }
 .chip-remove { border:none; background:none; cursor:pointer; color:var(--text-muted); font-size:13px; padding:0; line-height:1; display:flex; align-items:center; }
-.chip-remove:hover { color:#dc2626; }
+.chip-remove:hover { color:var(--danger); }
 
 /* Form */
-.form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .key-hint   { font-size:11px; color:var(--text-muted); font-weight:400; margin-left:4px; }
 .form-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; width:100%; box-sizing:border-box; transition:border-color 120ms; }
 .form-input:focus { border-color:var(--accent); }

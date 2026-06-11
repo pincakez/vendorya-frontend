@@ -203,7 +203,7 @@ async function confirm() {
 .pm-method.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .pm-agel-badge {
   font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
-  background: #fef3c7; color: #92400e;
+  background: var(--warning-soft); color: #92400e;
 }
 
 .pm-cash-section { display: flex; flex-direction: column; gap: 10px; }
@@ -218,7 +218,7 @@ async function confirm() {
   flex: 1; border: none; background: none; font-size: 24px; font-weight: 800;
   color: var(--text-primary); outline: none;
 }
-.pm-change { font-size: 14px; color: #16a34a; font-weight: 700; text-align: right; }
+.pm-change { font-size: 14px; color: var(--success); font-weight: 700; text-align: right; }
 
 .pm-agel-warn {
   display: flex; align-items: flex-start; gap: 10px;
@@ -234,12 +234,12 @@ async function confirm() {
 
 .pm-error {
   padding: 12px 16px; border-radius: 10px; background: #fef2f2;
-  border: 1px solid #fecaca; color: #dc2626; font-size: 13px; font-weight: 600;
+  border: 1px solid #fecaca; color: var(--danger); font-size: 13px; font-weight: 600;
 }
 
 .pm-confirm {
   padding: 16px; border-radius: 14px; border: none;
-  background: #16a34a; color: #fff; cursor: pointer;
+  background: var(--success); color: #fff; cursor: pointer;
   font-size: 16px; font-weight: 800; transition: opacity 150ms;
 }
 .pm-confirm:disabled { opacity: 0.4; cursor: not-allowed; }

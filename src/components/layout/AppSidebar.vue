@@ -332,21 +332,21 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-pos-main { flex: 0 0 70%; }
 .nsb-srv-btn {
   flex: 0 0 25%;
-  background: #16a34a; color: #fff; border: none; border-radius: 12px;
+  background: var(--success); color: #fff; border: none; border-radius: 12px;
   font-size: 13px; font-weight: 800; letter-spacing: .06em; cursor: pointer;
   transition: background 140ms, transform 100ms;
 }
-.nsb-srv-btn:hover  { background: #15803d; }
+.nsb-srv-btn:hover  { background: var(--success-hover); }
 .nsb-srv-btn:active { transform: scale(0.94); }
 
 /* Collapsed POS/SRV row */
 .nsb-pos-collapsed-row { display: flex; flex-direction: column; gap: 6px; align-items: center; }
 .nsb-srv-btn-col {
-  width: 40px; height: 36px; background: #16a34a; color: #fff; border: none; border-radius: 10px;
+  width: 40px; height: 36px; background: var(--success); color: #fff; border: none; border-radius: 10px;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
   transition: background 140ms, transform 100ms;
 }
-.nsb-srv-btn-col:hover  { background: #15803d; }
+.nsb-srv-btn-col:hover  { background: var(--success-hover); }
 .nsb-srv-btn-col:active { transform: scale(0.94); }
 
 .nsb-solo { margin-bottom: 0; }

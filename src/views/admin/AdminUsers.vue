@@ -177,9 +177,6 @@ onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
-.page-header  { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.page-title   { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub     { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 .header-right { display:flex; align-items:center; gap:10px; }
 
 .search-wrap  { position:relative; }
@@ -195,8 +192,8 @@ onUnmounted(() => qab.clearActions())
 
 .user-avatar { width:30px; height:30px; border-radius:50%; background:var(--admin-accent-soft); color:var(--admin-accent); font-weight:700; display:flex; align-items:center; justify-content:center; font-size:11px; }
 
-.status-active   { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; color:#16a34a; }
-.status-active::before  { content:''; width:6px; height:6px; border-radius:50%; background:#16a34a; }
+.status-active   { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; color:var(--success); }
+.status-active::before  { content:''; width:6px; height:6px; border-radius:50%; background:var(--success); }
 .status-inactive { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; color:#9ca3af; }
 .status-inactive::before { content:''; width:6px; height:6px; border-radius:50%; background:#9ca3af; }
 
@@ -208,7 +205,6 @@ onUnmounted(() => qab.clearActions())
 .toggle-knob { position:absolute; width:16px; height:16px; border-radius:50%; background:#fff; top:3px; left:3px; transition:left 200ms; box-shadow:0 1px 3px rgba(0,0,0,.2); }
 .toggle-btn.on .toggle-knob { left:21px; }
 
-.form-label  { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-input  { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; }
 .form-input:focus { border-color:var(--admin-accent); }
 .form-input:disabled { opacity:.5; }

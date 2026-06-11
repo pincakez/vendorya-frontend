@@ -211,9 +211,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .data-table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -230,21 +227,20 @@ onMounted(() => {
 .col-num    { font-family:monospace; font-size:12px; font-weight:600; color:var(--text-secondary); }
 .col-name   { font-weight:500; }
 .col-ref    { font-family:monospace; font-size:12px; color:var(--text-muted); }
-.col-refund { color:#dc2626; font-weight:600; font-variant-numeric:tabular-nums; }
+.col-refund { color:var(--danger); font-weight:600; font-variant-numeric:tabular-nums; }
 .col-fee    { color:var(--text-muted); font-size:12px; font-variant-numeric:tabular-nums; }
 .col-reason { color:var(--text-muted); font-size:12px; max-width:200px; }
 
 .method-pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; }
 .method-pill.cash   { background:var(--bg-app); color:var(--text-secondary); border:1px solid var(--border); }
-.method-pill.credit { background:#fef3c7; color:#b45309; }
+.method-pill.credit { background:var(--warning-soft); color:var(--warning-hover); }
 
 .mode-btn { padding:7px 14px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:all 100ms; }
 .mode-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
 
-.fee-note { margin:14px 0 0; padding:8px 12px; background:#fef3c7; color:#b45309; border-radius:8px; font-size:12.5px; }
+.fee-note { margin:14px 0 0; padding:8px 12px; background:var(--warning-soft); color:var(--warning-hover); border-radius:8px; font-size:12.5px; }
 
 .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-.form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .section-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:10px; }
 
 .item-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
@@ -254,6 +250,6 @@ onMounted(() => {
 .restock-label { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--text-secondary); white-space:nowrap; cursor:pointer; }
 
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
-.row-action.danger:hover { background:#fee2e2; color:#dc2626; }
+.row-action.danger:hover { background:var(--danger-soft); color:var(--danger); }
 
 </style>

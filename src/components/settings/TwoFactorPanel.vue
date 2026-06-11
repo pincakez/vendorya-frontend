@@ -157,15 +157,14 @@ onMounted(loadStatus)
 
 .tfa-row { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; }
 .tfa-state { display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:var(--text-primary); }
-.tfa-req { font-size:11px; font-weight:700; color:#b45309; background:#fef3c7; padding:2px 8px; border-radius:20px; text-transform:uppercase; letter-spacing:.04em; }
+.tfa-req { font-size:11px; font-weight:700; color:var(--warning-hover); background:var(--warning-soft); padding:2px 8px; border-radius:20px; text-transform:uppercase; letter-spacing:.04em; }
 .tfa-hint { font-size:12.5px; color:var(--text-muted); margin:6px 0 0; }
 .tfa-actions { display:flex; gap:8px; flex-wrap:wrap; }
 
 .modal-text { font-size:13px; color:var(--text-secondary); margin:0 0 10px; line-height:1.5; }
-.form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-input { width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; transition:border-color 120ms; }
 .form-input:focus { border-color:var(--accent); }
-.error-text { font-size:12px; color:#dc2626; margin-top:8px; }
+.error-text { font-size:12px; color:var(--danger); margin-top:8px; }
 
 .backup-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
 .backup-grid code { font-family:monospace; font-size:13px; background:var(--bg-app); border:1px solid var(--border); border-radius:6px; padding:6px 8px; text-align:center; color:var(--text-primary); letter-spacing:1px; }

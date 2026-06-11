@@ -223,15 +223,11 @@ onMounted(loadAllStores)
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .card        { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; }
 .card-title  { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:16px; }
 
 .form-group  { margin-bottom:14px; }
-.form-label  { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .optional    { font-weight:400; color:var(--text-muted); }
 .form-input  { width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-primary); font-size:13.5px; outline:none; transition:border-color 150ms; box-sizing:border-box; }
 .form-input:focus { border-color:var(--primary,#3b82f6); }
@@ -259,7 +255,7 @@ onMounted(loadAllStores)
 
 .form-actions{ display:flex; align-items:center; gap:12px; margin-top:4px; }
 .send-result { font-size:13px; }
-.send-result.ok  { color:#16a34a; }
+.send-result.ok  { color:var(--success); }
 .send-result.err { color:#ef4444; }
 
 /* History */

@@ -204,7 +204,7 @@ onMounted(load)
 
 .save-ok {
   font-size: 12.5px;
-  color: var(--success, #16a34a);
+  color: var(--success, var(--success));
 }
 
 .hint-text {

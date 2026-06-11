@@ -165,9 +165,6 @@ onMounted(load)
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .settings-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px; }
 .loading-msg   { color:var(--text-muted); font-size:13px; padding:16px 0; }
@@ -182,7 +179,7 @@ onMounted(load)
 
 .pt-type    { display:flex; align-items:flex-start; gap:10px; }
 .pt-dot     { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:4px; }
-.dot-info    { background:#16a34a; }
+.dot-info    { background:var(--success); }
 .dot-warning { background:#f59e0b; }
 .dot-alert   { background:#ef4444; }
 .dot-admin   { background:#1e293b; }
@@ -205,5 +202,5 @@ onMounted(load)
 .sound-select:disabled { opacity:.5; cursor:not-allowed; }
 
 .form-actions { display:flex; align-items:center; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
-.save-ok { font-size:13px; color:#16a34a; }
+.save-ok { font-size:13px; color:var(--success); }
 </style>

@@ -125,9 +125,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr)); gap:14px; margin-bottom:20px; min-width:0; }
 .kpi-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; align-items:center; gap:14px; min-width:0; transition:border-color 120ms,transform 80ms; }

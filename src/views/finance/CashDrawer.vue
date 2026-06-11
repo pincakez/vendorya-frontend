@@ -120,9 +120,6 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:14px; }
 .kpi-card { display:flex; align-items:center; gap:14px; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
@@ -137,5 +134,5 @@ onMounted(fetchData)
 .table-empty { text-align:center; padding:32px; color:var(--text-muted); }
 
 .col-ref    { font-family:monospace; font-size:12px; color:var(--text-muted); }
-.col-amount { font-variant-numeric:tabular-nums; color:#16a34a; font-weight:600; }
+.col-amount { font-variant-numeric:tabular-nums; color:var(--success); font-weight:600; }
 </style>

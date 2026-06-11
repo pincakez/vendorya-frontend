@@ -89,9 +89,9 @@ function cellClass(c, row) {
 
 .rt-num { font-variant-numeric: tabular-nums; }
 .col-value { font-weight: 600; }
-.col-revenue { color: #16a34a; font-weight: 600; }
-.rt-neg { color: #dc2626; font-weight: 600; }
-.rt-pos { color: #16a34a; font-weight: 600; }
+.col-revenue { color: var(--success); font-weight: 600; }
+.rt-neg { color: var(--danger); font-weight: 600; }
+.rt-pos { color: var(--success); font-weight: 600; }
 
 .rt-total-row td { padding: 11px 14px; font-weight: 700; color: var(--text-primary); background: var(--bg-app); border-top: 2px solid var(--border); font-variant-numeric: tabular-nums; }
 </style>

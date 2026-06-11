@@ -349,9 +349,9 @@ onUnmounted(() => clearInterval(tickerTimer))
 .b2-rule  { width: 1px; background: var(--border); margin: 0 18px; flex-shrink: 0; }
 
 .shift-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; margin-top: 6px; margin-bottom: 4px; }
-.shift-open   { color: #16a34a; }
+.shift-open   { color: var(--success); }
 .shift-closed { color: var(--text-muted); }
-.shift-pulse  { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; animation: pulse 1.8s ease-out infinite; flex-shrink: 0; }
+.shift-pulse  { width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse 1.8s ease-out infinite; flex-shrink: 0; }
 @keyframes pulse {
   0%  { box-shadow: 0 0 0 0 rgba(22,163,74,.5); }
   70% { box-shadow: 0 0 0 7px rgba(22,163,74,0); }
@@ -360,15 +360,15 @@ onUnmounted(() => clearInterval(tickerTimer))
 
 /* ── B3: Stock ──────────────────────────────────────────────── */
 .b3-head  { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
-.b3-ok    { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: #16a34a; margin-top: 6px; }
-.b3-count { font-size: 26px; font-weight: 800; color: #d97706; margin: 2px 0 6px; line-height: 1; }
+.b3-ok    { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--success); margin-top: 6px; }
+.b3-count { font-size: 26px; font-weight: 800; color: var(--warning); margin: 2px 0 6px; line-height: 1; }
 .b3-count-sub { font-size: 13px; font-weight: 500; color: var(--text-muted); }
 .chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
 
 /* ── Chips ──────────────────────────────────────────────────── */
 .chip       { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; }
 .chip-amber { background: rgba(245,158,11,.15); color: #92400e; }
-.chip-red   { background: rgba(239,68,68,.12);  color: #dc2626; }
+.chip-red   { background: rgba(239,68,68,.12);  color: var(--danger); }
 .dark .chip-amber { background: rgba(245,158,11,.20); color: #fbbf24; }
 .dark .chip-red   { background: rgba(239,68,68,.18);  color: #f87171; }
 .chip-link  { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
@@ -388,7 +388,7 @@ onUnmounted(() => clearInterval(tickerTimer))
 .b-table td { padding: 10px 16px; color: var(--text-primary); }
 .c-mono  { font-family: monospace; font-size: 12px; color: var(--text-muted); }
 .c-muted { color: var(--text-muted); font-size: 12px; }
-.c-green { color: #16a34a; font-weight: 600; font-variant-numeric: tabular-nums; }
+.c-green { color: var(--success); font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* ── Empty state ────────────────────────────────────────────── */
 .b-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 8px; padding: 24px; text-align: center; color: var(--text-muted); }

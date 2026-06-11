@@ -272,7 +272,7 @@ onMounted(async () => {
 .tb-btn:disabled { opacity:.5; cursor:default; }
 
 .print-state { max-width:760px; margin:48px auto; text-align:center; color:var(--text-muted,#94a3b8); font-size:14px; }
-.print-state.error { color:#dc2626; }
+.print-state.error { color:var(--danger); }
 
 .invoice-sheet { max-width:760px; margin:24px auto; background:#fff; color:#0f172a; padding:40px 44px;
   border-radius:10px; box-shadow:0 4px 24px rgba(0,0,0,.06); }
@@ -285,9 +285,9 @@ onMounted(async () => {
 .inv-num { font-size:20px; font-weight:800; }
 .inv-date { font-size:12px; color:#475569; margin-bottom:6px; }
 .inv-status { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; }
-.st-posted { background:#dcfce7; color:#15803d; }
-.st-draft  { background:#fef3c7; color:#b45309; }
-.st-void   { background:#fee2e2; color:#b91c1c; }
+.st-posted { background:var(--success-soft); color:var(--success-hover); }
+.st-draft  { background:var(--warning-soft); color:var(--warning-hover); }
+.st-void   { background:var(--danger-soft); color:var(--danger-hover); }
 
 .inv-parties { display:flex; justify-content:space-between; gap:24px; margin:22px 0; }
 .party-label { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; margin-bottom:3px; }
@@ -299,12 +299,12 @@ onMounted(async () => {
 .inv-items td { padding:10px; border-bottom:1px solid #eef2f6; font-size:13px; vertical-align:top; }
 .it-name { font-weight:600; }
 .it-sku  { font-size:11px; color:#94a3b8; font-variant-numeric:tabular-nums; }
-.it-disc { font-size:11px; color:#dc2626; font-variant-numeric:tabular-nums; }
+.it-disc { font-size:11px; color:var(--danger); font-variant-numeric:tabular-nums; }
 
 .inv-totals { margin-left:auto; width:280px; display:flex; flex-direction:column; gap:6px; }
 .tot-row { display:flex; justify-content:space-between; font-size:13px; color:#334155; }
 .tot-row.grand { border-top:1.5px solid #0f172a; margin-top:6px; padding-top:8px; font-size:16px; font-weight:800; color:#0f172a; }
-.tot-row.balance { font-weight:700; color:#b91c1c; }
+.tot-row.balance { font-weight:700; color:var(--danger-hover); }
 
 .inv-payments { margin-top:24px; border-top:1px solid #eef2f6; padding-top:12px; }
 .pay-row { display:flex; justify-content:space-between; font-size:12.5px; color:#475569; padding:3px 0; }

@@ -90,16 +90,13 @@ async function fetchData() {
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 .kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; margin-bottom:14px; }
 .kpi-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
 .kpi-label { font-size:11.5px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
 .kpi-value { font-size:20px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
-.kpi-net.net-pos { border-color:#16a34a; }
-.kpi-net.net-pos .kpi-value { color:#16a34a; }
-.kpi-net.net-neg { border-color:#dc2626; }
-.kpi-net.net-neg .kpi-value { color:#dc2626; }
-.recon-warn { color:#dc2626; font-size:13px; font-weight:600; margin:0 0 14px; }
+.kpi-net.net-pos { border-color:var(--success); }
+.kpi-net.net-pos .kpi-value { color:var(--success); }
+.kpi-net.net-neg { border-color:var(--danger); }
+.kpi-net.net-neg .kpi-value { color:var(--danger); }
+.recon-warn { color:var(--danger); font-size:13px; font-weight:600; margin:0 0 14px; }
 </style>

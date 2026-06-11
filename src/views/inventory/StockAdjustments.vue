@@ -239,9 +239,6 @@ onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .data-table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -262,17 +259,16 @@ onUnmounted(() => qab.clearActions())
 .col-notes { color:var(--text-muted); font-size:12px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
 .qty-badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; }
-.qty-pos   { background:#dcfce7; color:#166534; }
-.qty-neg   { background:#fee2e2; color:#991b1b; }
+.qty-pos   { background:var(--success-soft); color:#166534; }
+.qty-neg   { background:var(--danger-soft); color:#991b1b; }
 
 .reason-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
-.reason-theft      { background:#fee2e2; color:#991b1b; }
-.reason-damage     { background:#fef3c7; color:#92400e; }
+.reason-theft      { background:var(--danger-soft); color:#991b1b; }
+.reason-damage     { background:var(--warning-soft); color:#92400e; }
 .reason-correction { background:var(--accent-soft); color:var(--accent-hover); }
 .reason-gift       { background:#f3e8ff; color:#6b21a8; }
 
 /* Form */
-.form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-hint  { font-size:11.5px; color:var(--text-muted); margin:4px 0 0; }
 .form-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; width:100%; box-sizing:border-box; transition:border-color 120ms; resize:vertical; }
 .form-input:focus { border-color:var(--accent); }
@@ -284,6 +280,6 @@ onUnmounted(() => qab.clearActions())
 .search-item-name { font-size:13px; color:var(--text-primary); font-weight:500; }
 .search-item-sku  { font-size:12px; color:var(--text-muted); font-family:monospace; }
 
-.selected-chip { display:inline-flex; align-items:center; gap:5px; margin-top:6px; padding:4px 10px; background:#dcfce7; color:#166534; border-radius:999px; font-size:12px; font-weight:600; }
+.selected-chip { display:inline-flex; align-items:center; gap:5px; margin-top:6px; padding:4px 10px; background:var(--success-soft); color:#166534; border-radius:999px; font-size:12px; font-weight:600; }
 
 </style>

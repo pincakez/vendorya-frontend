@@ -209,7 +209,7 @@ onMounted(async () => {
 .search-icon  { position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--text-muted); }
 .search-input { padding:7px 10px 7px 30px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:var(--surface); color:var(--text-primary); width:200px; }
 .btn-admin { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; background:var(--admin-accent,#ef4444); color:#fff; font-size:13px; font-weight:600; border:none; cursor:pointer; transition:background 100ms,transform 70ms; }
-.btn-admin:hover { background:#dc2626; }
+.btn-admin:hover { background:var(--danger); }
 .btn-admin:disabled { opacity:.55; cursor:not-allowed; }
 
 .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:18px; }
@@ -229,7 +229,7 @@ onMounted(async () => {
 .card-store-name { font-size:15px; font-weight:700; margin:0 0 4px; }
 .card-code { font-size:11px; font-weight:600; color:var(--text-muted); background:var(--bg-subtle,rgba(0,0,0,.04)); padding:2px 7px; border-radius:5px; margin-right:6px; }
 .store-status { font-size:11px; font-weight:600; padding:2px 7px; border-radius:5px; }
-.store-status.active   { color:#16a34a; background:rgba(22,163,74,.1); }
+.store-status.active   { color:var(--success); background:rgba(22,163,74,.1); }
 .store-status.inactive { color:#9ca3af; background:rgba(156,163,175,.1); }
 .card-actions { display:flex; gap:6px; }
 .icon-btn { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:7px; border:1px solid var(--border); background:var(--surface); cursor:pointer; color:var(--text-secondary); transition:background 100ms; }

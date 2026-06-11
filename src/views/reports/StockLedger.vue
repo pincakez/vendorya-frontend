@@ -100,9 +100,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 .variant-pick { margin-bottom:16px; }
 .filter-field { display:flex; flex-direction:column; gap:4px; max-width:420px; }
 .filter-field span { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }

@@ -324,7 +324,7 @@ onMounted(() => { load(); loadBranches() })
 .remove-btn:hover { background: #fef2f2; }
 
 .branch-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
-.from-pill { background: #fef3c7; color: #b45309; }
+.from-pill { background: var(--warning-soft); color: var(--warning-hover); }
 .to-pill { background: #d1fae5; color: #065f46; }
 
 .item-chip { display: inline-block; font-size: 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; margin: 2px; font-family: monospace; }

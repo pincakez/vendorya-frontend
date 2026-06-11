@@ -114,8 +114,6 @@ onMounted(fetchStores)
 </script>
 
 <style scoped>
-.page-header  { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.page-title   { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
 .page-sub     { font-size:13px; color:var(--text-muted); margin:2px 0 0; max-width:560px; }
 .header-right { display:flex; align-items:center; gap:10px; }
 .filter-select { padding:7px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); font-size:13px; outline:none; min-width:200px; }

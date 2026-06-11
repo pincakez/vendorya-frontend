@@ -257,6 +257,6 @@ function bySize(size) {
 .wg-desc  { font-size: 11.5px; color: var(--text-muted); line-height: 1.4; }
 .wg-dim   { font-size: 10px; font-weight: 700; font-family: monospace; color: var(--text-muted); background: var(--bg-app); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
 .wg-status { font-size: 10.5px; font-weight: 700; white-space: nowrap; }
-.status-ready { color: #16a34a; }
+.status-ready { color: var(--success); }
 .status-draft { color: var(--text-muted); }
 </style>

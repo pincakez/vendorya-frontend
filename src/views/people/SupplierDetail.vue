@@ -127,13 +127,11 @@ onMounted(() => { fetchSupplier(); fetchPurchases() })
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
 .header-left { display:flex; align-items:flex-start; gap:12px; }
 .back-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 10px; border-radius:8px; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; font-size:13px; font-weight:500; transition:background 100ms; margin-top:2px; }
 .back-btn:hover { background:var(--border); }
-.page-title { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
 .page-sub { font-size:13px; color:var(--text-muted); margin:2px 0 0; display:flex; align-items:center; gap:6px; }
-.lock-badge { display:inline-flex; align-items:center; gap:3px; padding:1px 7px; border-radius:20px; background:rgba(245,158,11,0.12); color:#b45309; font-size:11px; font-weight:600; }
+.lock-badge { display:inline-flex; align-items:center; gap:3px; padding:1px 7px; border-radius:20px; background:rgba(245,158,11,0.12); color:var(--warning-hover); font-size:11px; font-weight:600; }
 
 .detail-layout { display:flex; flex-direction:column; gap:20px; }
 .skeleton-block { height:160px; border-radius:12px; background:var(--border); }
@@ -156,10 +154,10 @@ onMounted(() => { fetchSupplier(); fetchPurchases() })
 @keyframes shimmer { to { background-position:-200% 0; } }
 .text-muted { color:var(--text-muted); font-size:12px; }
 
-.badge-owe { display:inline-block; padding:2px 8px; border-radius:20px; background:rgba(220,38,38,0.10); color:#dc2626; font-size:12px; font-weight:600; }
-.badge-paid { display:inline-block; padding:2px 8px; border-radius:20px; background:rgba(16,163,74,0.10); color:#16a34a; font-size:12px; font-weight:600; }
+.badge-owe { display:inline-block; padding:2px 8px; border-radius:20px; background:rgba(220,38,38,0.10); color:var(--danger); font-size:12px; font-weight:600; }
+.badge-paid { display:inline-block; padding:2px 8px; border-radius:20px; background:rgba(16,163,74,0.10); color:var(--success); font-size:12px; font-weight:600; }
 .status-pill { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
-.s-received { background:rgba(16,163,74,0.12); color:#16a34a; }
+.s-received { background:rgba(16,163,74,0.12); color:var(--success); }
 .s-draft    { background:var(--border); color:var(--text-muted); }
-.s-void     { background:rgba(220,38,38,0.10); color:#dc2626; }
+.s-void     { background:rgba(220,38,38,0.10); color:var(--danger); }
 </style>

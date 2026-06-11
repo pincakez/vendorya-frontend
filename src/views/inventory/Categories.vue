@@ -328,9 +328,6 @@ async function doPurge() {
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .table-wrap  { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 
@@ -351,7 +348,7 @@ async function doPurge() {
 .tree-row:hover .tree-actions { opacity:1; }
 .row-action  { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action:hover { background:var(--border); color:var(--text-primary); }
-.row-action.danger:hover { background:#fef2f2; color:#dc2626; }
+.row-action.danger:hover { background:#fef2f2; color:var(--danger); }
 
 .tree-empty  { text-align:center; padding:56px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .tree-empty-title { font-size:15px; font-weight:700; color:var(--text-secondary); }
@@ -361,11 +358,10 @@ async function doPurge() {
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
 @keyframes shimmer { to { background-position:-200% 0; } }
 
-.form-label  { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-input  { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; }
 .form-input:focus { border-color:var(--accent); }
 .field-hint  { font-size:11.5px; color:var(--text-muted); margin:5px 0 0; }
-.form-error  { font-size:12.5px; color:#dc2626; margin:0; }
+.form-error  { font-size:12.5px; color:var(--danger); margin:0; }
 
 
 .resolve-summary { font-size:13px; color:var(--text-secondary); margin:0; line-height:1.5; }
@@ -373,8 +369,8 @@ async function doPurge() {
 .resolve-opt:hover  { border-color:var(--accent); }
 .resolve-opt:active { transform:scale(0.99); }
 .resolve-opt:disabled { opacity:.5; cursor:default; }
-.resolve-opt.danger { color:#dc2626; }
-.resolve-opt.danger:hover { border-color:#dc2626; background:#fef2f2; }
+.resolve-opt.danger { color:var(--danger); }
+.resolve-opt.danger:hover { border-color:var(--danger); background:#fef2f2; }
 .resolve-opt-text  { display:flex; flex-direction:column; gap:2px; }
 .resolve-opt-title { font-size:13px; font-weight:700; }
 .resolve-opt-sub   { font-size:11.5px; color:var(--text-muted); font-weight:400; }

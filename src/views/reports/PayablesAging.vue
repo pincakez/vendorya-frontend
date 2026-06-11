@@ -54,9 +54,6 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 .btn-refresh { width:34px; height:34px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; }
 .btn-refresh:hover { color:var(--text-primary); background:var(--bg-app); }
 .btn-refresh.spinning svg { animation:spin .8s linear infinite; }

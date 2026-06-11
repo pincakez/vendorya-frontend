@@ -784,7 +784,7 @@ function fmtDate(iso) {
   flex-shrink: 0;
   transition: background 200ms;
 }
-.panel-avatar.connected { background: rgba(22,163,74,0.12); color: #16a34a; }
+.panel-avatar.connected { background: rgba(22,163,74,0.12); color: var(--success); }
 .panel-avatar.error     { background: rgba(239,68,68,0.12); color: #ef4444; }
 
 .panel-title-block { display: flex; flex-direction: column; min-width: 0; }
@@ -800,7 +800,7 @@ function fmtDate(iso) {
   background: var(--text-muted);
   flex-shrink: 0;
 }
-.status-dot.connected { background: #16a34a; }
+.status-dot.connected { background: var(--success); }
 .status-dot.error     { background: #ef4444; }
 .panel-status-text { font-size: 11px; color: var(--text-muted); }
 
@@ -1081,7 +1081,7 @@ function fmtDate(iso) {
   transition: border-color 120ms, background 100ms;
 }
 .profile-switch-item:hover { border-color: var(--admin-accent); }
-.profile-switch-item.active { border-color: #16a34a; background: rgba(22,163,74,0.05); }
+.profile-switch-item.active { border-color: var(--success); background: rgba(22,163,74,0.05); }
 .psi-avatar {
   width: 36px; height: 36px;
   border-radius: 50%;
@@ -1092,7 +1092,7 @@ function fmtDate(iso) {
 .active-dot {
   width: 9px; height: 9px;
   border-radius: 50%;
-  background: #16a34a;
+  background: var(--success);
   flex-shrink: 0;
 }
 </style>

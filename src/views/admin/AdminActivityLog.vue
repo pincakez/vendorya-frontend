@@ -230,9 +230,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.page-header  { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.page-title   { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub     { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 .header-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 
 .filter-select { padding:7px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); font-size:13px; outline:none; min-width:160px; }
@@ -243,7 +240,7 @@ onUnmounted(() => {
 @keyframes spin { to { transform:rotate(360deg); } }
 
 .purge-btn { display:inline-flex; align-items:center; gap:5px; height:34px; padding:0 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); font-size:13px; font-weight:500; cursor:pointer; transition:background 100ms,color 100ms; }
-.purge-btn:hover { background:#fef2f2; color:#dc2626; border-color:#fca5a5; }
+.purge-btn:hover { background:#fef2f2; color:var(--danger); border-color:#fca5a5; }
 
 .purge-intro { font-size:13px; color:var(--text-secondary); margin:0 0 14px; line-height:1.5; }
 .form-group { margin-bottom:12px; }
@@ -260,11 +257,11 @@ onUnmounted(() => {
 .user-dot   { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 
 .op-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
-.op-sale       { background:rgba(34,197,94,0.15);  color:#16a34a; }
-.op-return     { background:rgba(239,68,68,0.15);  color:#dc2626; }
+.op-sale       { background:rgba(34,197,94,0.15);  color:var(--success); }
+.op-return     { background:rgba(239,68,68,0.15);  color:var(--danger); }
 .op-discount   { background:rgba(168,85,247,0.15); color:#a855f7; }
-.op-purchase   { background:rgba(59,130,246,0.15); color:#2563eb; }
-.op-adjustment { background:rgba(245,158,11,0.15); color:#d97706; }
+.op-purchase   { background:rgba(59,130,246,0.15); color:var(--info); }
+.op-adjustment { background:rgba(245,158,11,0.15); color:var(--warning); }
 .op-expense    { background:rgba(236,72,153,0.15); color:#ec4899; }
 .op-shift      { background:rgba(14,165,233,0.15); color:#0891b2; }
 .op-staff      { background:rgba(99,102,241,0.15); color:#6366f1; }

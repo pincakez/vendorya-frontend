@@ -369,9 +369,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 .header-right{ display:flex; align-items:center; gap:10px; }
 
 .search-wrap  { position:relative; }
@@ -393,23 +390,22 @@ onMounted(() => {
 .plan-pill   { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; background:rgba(239,68,68,0.15); color:var(--admin-accent); }
 
 .status-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
-.status-trial    { background:#dbeafe; color:#1d4ed8; }
-.status-active   { background:rgba(16,163,74,0.15); color:#16a34a; }
-.status-past_due { background:rgba(245,158,11,0.15); color:#b45309; }
+.status-trial    { background:var(--info-soft); color:var(--info-hover); }
+.status-active   { background:rgba(16,163,74,0.15); color:var(--success); }
+.status-past_due { background:rgba(245,158,11,0.15); color:var(--warning-hover); }
 .status-cancelled{ background:#f3f4f6; color:#6b7280; }
 
 .inv-draft  { background:#f3f4f6; color:#6b7280; }
-.inv-issued { background:#dbeafe; color:#1d4ed8; }
-.inv-paid   { background:rgba(16,163,74,0.15); color:#16a34a; }
-.inv-void   { background:rgba(220,38,38,0.10); color:#b91c1c; }
+.inv-issued { background:var(--info-soft); color:var(--info-hover); }
+.inv-paid   { background:rgba(16,163,74,0.15); color:var(--success); }
+.inv-void   { background:rgba(220,38,38,0.10); color:var(--danger-hover); }
 
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; margin-right:4px; }
 .row-action:hover { background:var(--admin-accent-soft); color:var(--admin-accent); }
 
-.form-label  { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-input  { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; font-family:inherit; }
 .form-input:focus { border-color:var(--admin-accent); }
-.req { color:#dc2626; font-weight:700; }
+.req { color:var(--danger); font-weight:700; }
 .hint{ color:var(--text-muted); font-weight:400; font-size:11px; }
 .step-help { font-size:12px; color:var(--text-muted); margin:4px 0 0; line-height:1.5; }
 

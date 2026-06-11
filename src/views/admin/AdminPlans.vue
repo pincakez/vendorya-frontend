@@ -216,9 +216,6 @@ onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .data-table tbody tr.table-row.inactive { opacity:.55; }
 .table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
@@ -226,19 +223,18 @@ onUnmounted(() => qab.clearActions())
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
 @keyframes shimmer { to { background-position:-200% 0; } }
 
-.status-active   { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; color:#16a34a; }
-.status-active::before  { content:''; width:6px; height:6px; border-radius:50%; background:#16a34a; }
+.status-active   { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; color:var(--success); }
+.status-active::before  { content:''; width:6px; height:6px; border-radius:50%; background:var(--success); }
 .status-inactive { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; color:#9ca3af; }
 .status-inactive::before{ content:''; width:6px; height:6px; border-radius:50%; background:#9ca3af; }
 
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action:hover { background:var(--admin-accent-soft); color:var(--admin-accent); }
 
-.form-label  { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 .form-input  { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; font-family:inherit; }
 .form-input:focus { border-color:var(--admin-accent); }
 .quota-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.req { color:#dc2626; font-weight:700; }
+.req { color:var(--danger); font-weight:700; }
 .hint{ color:var(--text-muted); font-weight:400; font-size:11px; }
 
 .toggle-btn { width:40px; height:22px; border-radius:11px; border:none; background:var(--border); cursor:pointer; position:relative; transition:background 200ms; padding:0; flex-shrink:0; }

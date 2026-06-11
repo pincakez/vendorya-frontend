@@ -914,8 +914,6 @@ onMounted(load)
 <style scoped>
 /* ── Page layout ────────────────────────────────────────────────────────── */
 .page-header  { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:nowrap; gap:12px; }
-.page-title   { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub     { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .ap-skeleton {
   background: var(--surface);
@@ -989,7 +987,7 @@ onMounted(load)
   display: inline-block;
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #16a34a;
+  background: var(--success);
   margin-left: 6px;
   vertical-align: middle;
 }
@@ -1187,7 +1185,7 @@ onMounted(load)
   padding: 3px 8px;
   border-radius: 6px;
   background: rgba(22,163,74,0.12);
-  color: #16a34a;
+  color: var(--success);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .05em;
@@ -1265,7 +1263,7 @@ onMounted(load)
   font-weight: 600;
 }
 .quota-chip.rpm { background: rgba(59,130,246,0.12); color: #3b82f6; }
-.quota-chip.rpd { background: rgba(22,163,74,0.12);  color: #16a34a; }
+.quota-chip.rpd { background: rgba(22,163,74,0.12);  color: var(--success); }
 .quota-chip.tok { background: rgba(239,68,68,0.12);  color: var(--admin-accent); }
 
 .range-hint {
@@ -1489,7 +1487,7 @@ onMounted(load)
   border-radius: 7px;
   font-size: 11.5px; font-weight: 700;
 }
-.diff-chip.new { background: rgba(22,163,74,0.15);  color: #16a34a; }
+.diff-chip.new { background: rgba(22,163,74,0.15);  color: var(--success); }
 .diff-chip.del { background: rgba(239,68,68,0.12);  color: #ef4444; }
 .diff-chip.ok  { background: var(--border); color: var(--text-muted); }
 
@@ -1517,7 +1515,7 @@ onMounted(load)
 }
 .banner-ok {
   font-size: 12.5px;
-  color: var(--success, #16a34a);
+  color: var(--success, var(--success));
   background: rgba(22,163,74,0.08);
   border-radius: 7px;
   padding: 8px 14px;

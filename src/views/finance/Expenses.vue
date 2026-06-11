@@ -228,9 +228,6 @@ function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { yea
 </script>
 
 <style scoped>
-.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
-.page-sub    { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 
 .tab-bar { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:20px; }
 .tab-btn { display:flex; align-items:center; gap:6px; padding:9px 16px; font-size:13.5px; font-weight:500; color:var(--text-muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms,border-color 120ms; }
@@ -250,12 +247,11 @@ function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { yea
 @keyframes shimmer { to { background-position:-200% 0; } }
 
 .col-name   { font-weight:500; }
-.col-amount { font-variant-numeric:tabular-nums; color:#dc2626; font-weight:600; }
+.col-amount { font-variant-numeric:tabular-nums; color:var(--danger); font-weight:600; }
 .col-desc   { color:var(--text-muted); font-size:12px; max-width:220px; }
 
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action:hover        { background:var(--border); color:var(--text-primary); }
-.row-action.danger:hover { background:#fee2e2; color:#dc2626; }
+.row-action.danger:hover { background:var(--danger-soft); color:var(--danger); }
 
-.form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; }
 </style>

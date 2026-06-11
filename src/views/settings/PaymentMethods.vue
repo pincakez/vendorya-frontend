@@ -98,15 +98,14 @@ async function deleteMethod(m) {
 </script>
 
 <style scoped>
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; }
 .badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
-.badge-blue  { background: #dbeafe; color: #1d4ed8; }
-.badge-amber { background: #fef3c7; color: #92400e; }
+.badge-blue  { background: var(--info-soft); color: var(--info-hover); }
+.badge-amber { background: var(--warning-soft); color: #92400e; }
 .badge-gray  { background: var(--bg-app); color: var(--text-muted); border: 1px solid var(--border); }
-.badge-green { background: #dcfce7; color: #15803d; }
-.badge-red   { background: #fef2f2; color: #dc2626; }
+.badge-green { background: var(--success-soft); color: var(--success-hover); }
+.badge-red   { background: #fef2f2; color: var(--danger); }
 .btn-icon { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 6px; border-radius: 8px; }
-.btn-icon:hover { background: #fef2f2; color: #dc2626; }
+.btn-icon:hover { background: #fef2f2; color: var(--danger); }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 .field label { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
 .toggle-label { display: flex; align-items: center; justify-content: space-between; }

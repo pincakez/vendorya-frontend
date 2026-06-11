@@ -1300,8 +1300,8 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .c-sup { color: var(--text-secondary); font-size: 14.5px; }
 .c-mono { font-family: ui-monospace, monospace; font-size: 14.5px; font-variant-numeric: tabular-nums; }
 .c-muted { color: var(--text-muted); }
-.c-retail { color: #16a34a; font-weight: 600; }
-.c-profit { color: #16a34a; font-weight: 700; }
+.c-retail { color: var(--success); font-weight: 600; }
+.c-profit { color: var(--success); font-weight: 700; }
 .dark .c-retail, .dark .c-profit { color: #4ade80; }
 
 .stock-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; padding: 3px 9px; border-radius: 8px; background: var(--text-primary); color: var(--bg-card); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -1318,8 +1318,8 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .bulk-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .bulk-exit { display: flex; margin-left: auto; border: none; background: var(--border); color: var(--text-muted); border-radius: 7px; padding: 5px; cursor: pointer; }
 .bulk-exit:hover { color: var(--text-primary); }
-.btn-ghost.danger { color: #dc2626; border-color: #f3b1b1; }
-.btn-ghost.danger:hover { background: #fee2e2; color: #b91c1c; }
+.btn-ghost.danger { color: var(--danger); border-color: #f3b1b1; }
+.btn-ghost.danger:hover { background: var(--danger-soft); color: var(--danger-hover); }
 
 /* ── select column + ghosted rows ── */
 .dt-selcol { width: 42px; text-align: center; padding-left: 14px; padding-right: 0; }
@@ -1330,8 +1330,7 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .ghost-tag { display: inline-flex; vertical-align: middle; margin-right: 5px; color: var(--text-muted); }
 .row-action { width: 28px; height: 28px; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; transition: background 100ms, color 100ms; }
 .row-action:hover { background: var(--border); color: var(--text-primary); }
-.row-action.danger:hover { background: #fee2e2; color: #dc2626; }
-.form-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+.row-action.danger:hover { background: var(--danger-soft); color: var(--danger); }
 
 /* ── Product add/edit wide modal ── */
 .prod-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
