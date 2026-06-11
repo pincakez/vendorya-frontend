@@ -56,6 +56,22 @@
      Overridden at runtime on <html> by the format store; this is the default. */
   --currency-color: #16a34a;
 
+  /* Semantic status colors (success / danger / warning / info).
+     -soft = low-tint background for chips/banners; base = text/icon/border.
+     Added s58e to replace ~600 hardcoded hex across view <style> blocks. */
+  --success:        #16a34a;
+  --success-hover:  #15803d;
+  --success-soft:   #dcfce7;
+  --danger:         #dc2626;
+  --danger-hover:   #b91c1c;
+  --danger-soft:    #fee2e2;
+  --warning:        #d97706;
+  --warning-hover:  #b45309;
+  --warning-soft:   #fef3c7;
+  --info:           #2563eb;
+  --info-hover:     #1d4ed8;
+  --info-soft:      #dbeafe;
+
   /* App shell */
   --bg-app:          #f1f5f9;
   --bg-card:         #ffffff;
@@ -111,6 +127,21 @@
   --text-secondary:  #a1a1aa;
   --text-muted:      #8a8a90;
   --text-inverse:    #18181b;
+
+  /* Semantic status colors — brighter bases for contrast on dark panels,
+     translucent soft tints so chips/banners read correctly on zinc. */
+  --success:        #22c55e;
+  --success-hover:  #16a34a;
+  --success-soft:   rgba(34,197,94,0.15);
+  --danger:         #ef4444;
+  --danger-hover:   #dc2626;
+  --danger-soft:    rgba(239,68,68,0.15);
+  --warning:        #f59e0b;
+  --warning-hover:  #d97706;
+  --warning-soft:   rgba(245,158,11,0.15);
+  --info:           #3b82f6;
+  --info-hover:     #2563eb;
+  --info-soft:      rgba(59,130,246,0.15);
 
   /* Footer */
   --footer-bg:       #18181A;
