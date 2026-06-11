@@ -2,11 +2,24 @@
   <div class="page-wrap">
     <div class="page-header">
       <div>
-        <h1 class="page-title">Widget Gallery</h1>
-        <p class="page-sub">Browse and preview all available dashboard widgets — assign them to store dashboards via store config.</p>
+        <h1 class="page-title">Gallery</h1>
+        <p class="page-sub">The design system's source of truth — approved components and dashboard widgets.</p>
       </div>
     </div>
 
+    <!-- Tabs -->
+    <div class="g-tabs">
+      <button class="g-tab" :class="{ active: tab === 'components' }" @click="tab = 'components'">
+        <Component :size="15" /> Components
+      </button>
+      <button class="g-tab" :class="{ active: tab === 'widgets' }" @click="tab = 'widgets'">
+        <LayoutGrid :size="15" /> Widgets
+      </button>
+    </div>
+
+    <ComponentGallery v-if="tab === 'components'" />
+
+    <template v-else>
     <!-- Full Width (30 cols) -->
     <section class="wg-section">
       <div class="wg-section-label">
@@ -114,12 +127,17 @@
         </div>
       </div>
     </section>
+    </template>
 
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref } from 'vue'
+import { Component, LayoutGrid } from 'lucide-vue-next'
+import ComponentGallery from './ComponentGallery.vue'
+
+const tab = ref('components')
 
 const widgets = [
   /* ─ Full Width ─────────────────────────────────────────── */
@@ -154,6 +172,20 @@ function bySize(size) {
 .page-header { margin-bottom: 32px; }
 .page-title  { font-size: 28px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -.4px; }
 .page-sub    { font-size: 13px; color: var(--text-muted); margin: 4px 0 0; font-weight: 500; }
+
+/* Tabs */
+.g-tabs { display: flex; gap: 6px; margin-bottom: 28px; }
+.g-tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: 10px; cursor: pointer;
+  font-size: 13.5px; font-weight: 700; font-family: inherit;
+  border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary);
+  transition: background-color 140ms var(--ease-out), color 140ms var(--ease-out),
+              border-color 140ms var(--ease-out), transform var(--press-back) var(--ease-spring);
+}
+.g-tab:hover:not(.active) { color: var(--text-primary); }
+.g-tab:active { transform: scale(var(--press-scale)); transition-duration: var(--press-down); }
+.g-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 /* Section */
 .wg-section { margin-bottom: 40px; }

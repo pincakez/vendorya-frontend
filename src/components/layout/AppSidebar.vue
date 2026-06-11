@@ -238,7 +238,7 @@ const adminGroups = [
     { label: 'Misc', to: '/admin/misc', icon: Wrench },
   ] },
   { id: 'adesign', title: 'DESIGN', icon: LayoutGrid, items: [
-    { label: 'Widget Gallery', to: '/admin/widget-gallery', icon: LayoutGrid },
+    { label: 'Gallery', to: '/admin/widget-gallery', icon: LayoutGrid },
   ] },
   { id: 'acomm', title: 'COMMUNICATION', icon: Bell, items: [
     { label: 'Alerts Center', to: '/admin/alerts', icon: Bell },
