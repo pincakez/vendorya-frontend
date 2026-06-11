@@ -2,153 +2,180 @@
   <AppModal
     :open="open"
     :title="serviceId ? `Edit ${form.serial_number || 'Service'}` : 'New Service'"
+    width="760px"
     no-backdrop-close
     @close="$emit('close')"
   >
     <div class="sfm-form">
 
-      <!-- Client: toggle registered vs free-text -->
-      <div class="sfm-row">
-        <label class="form-label">Client</label>
-        <div class="sfm-toggle-row">
-          <button
-            type="button" class="sfm-toggle-btn" :class="{ active: !form.freeText }"
-            @click="form.freeText = false"
-          >Registered</button>
-          <button
-            type="button" class="sfm-toggle-btn" :class="{ active: form.freeText }"
-            @click="form.freeText = true"
-          >Walk-in / Free text</button>
-        </div>
-      </div>
+      <div class="sfm-grid">
 
-      <!-- Registered customer search -->
-      <div v-if="!form.freeText" class="sfm-row">
-        <label class="form-label">Customer</label>
-        <div class="sfm-customer-search">
-          <input
-            v-model="customerQuery"
-            class="form-input"
-            placeholder="Search by name or phone…"
-            @input="searchCustomers"
-            @focus="showDropdown = true"
-          />
-          <div v-if="showDropdown && customerResults.length" class="sfm-dropdown">
-            <button
-              v-for="c in customerResults" :key="c.id"
-              type="button" class="sfm-dropdown-item"
-              @click="selectCustomer(c)"
-            >
-              <span class="sfm-dd-name">{{ c.name }}</span>
-              <span class="sfm-dd-phone">{{ c.phone_number || '' }}</span>
-            </button>
+        <!-- ══ FULL WIDTH: Client ══ -->
+        <div class="sfm-full">
+          <!-- Client: toggle registered vs free-text -->
+          <div class="sfm-row">
+            <label class="form-label">Client</label>
+            <div class="sfm-toggle-row">
+              <button
+                type="button" class="sfm-toggle-btn" :class="{ active: !form.freeText }"
+                @click="form.freeText = false"
+              >Registered</button>
+              <button
+                type="button" class="sfm-toggle-btn" :class="{ active: form.freeText }"
+                @click="form.freeText = true"
+              >Walk-in / Free text</button>
+            </div>
           </div>
-          <div v-if="form.client" class="sfm-selected-customer">
-            <span>{{ form.clientName }}</span>
-            <button type="button" class="sfm-clear-btn" @click="clearCustomer">×</button>
+
+          <!-- Registered customer search -->
+          <div v-if="!form.freeText" class="sfm-row">
+            <label class="form-label">Customer</label>
+            <div class="sfm-customer-search">
+              <input
+                v-model="customerQuery"
+                class="form-input"
+                placeholder="Search by name or phone…"
+                @input="searchCustomers"
+                @focus="showDropdown = true"
+              />
+              <div v-if="showDropdown && customerResults.length" class="sfm-dropdown">
+                <button
+                  v-for="c in customerResults" :key="c.id"
+                  type="button" class="sfm-dropdown-item"
+                  @click="selectCustomer(c)"
+                >
+                  <span class="sfm-dd-name">{{ c.name }}</span>
+                  <span class="sfm-dd-phone">{{ c.phone_number || '' }}</span>
+                </button>
+              </div>
+              <div v-if="form.client" class="sfm-selected-customer">
+                <span>{{ form.clientName }}</span>
+                <button type="button" class="sfm-clear-btn" @click="clearCustomer">×</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Free-text client -->
+          <div v-if="form.freeText" class="sfm-subrow">
+            <div class="sfm-row">
+              <label class="form-label">Client Name <span class="sfm-opt">(optional)</span></label>
+              <input v-model="form.client_name" class="form-input" placeholder="e.g. Ahmed Hassan" />
+            </div>
+            <div class="sfm-row">
+              <label class="form-label">Client Phone <span class="sfm-opt">(optional)</span></label>
+              <input v-model="form.client_phone" class="form-input" placeholder="e.g. 01012345678" />
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Free-text client -->
-      <template v-if="form.freeText">
-        <div class="sfm-row">
-          <label class="form-label">Client Name <span class="sfm-opt">(optional)</span></label>
-          <input v-model="form.client_name" class="form-input" placeholder="e.g. Ahmed Hassan" />
-        </div>
-        <div class="sfm-row">
-          <label class="form-label">Client Phone <span class="sfm-opt">(optional)</span></label>
-          <input v-model="form.client_phone" class="form-input" placeholder="e.g. 01012345678" />
-        </div>
-      </template>
-
-      <!-- Service type -->
-      <div class="sfm-row">
-        <label class="form-label">Service Type</label>
-        <select v-model="form.service_type" class="form-input">
-          <option value="">— Select type —</option>
-          <option v-for="t in serviceTypes" :key="t" :value="t">{{ t }}</option>
-          <option value="__custom__">Other (custom)…</option>
-        </select>
-        <input
-          v-if="form.service_type === '__custom__'"
-          v-model="form.custom_type"
-          class="form-input"
-          style="margin-top:6px;"
-          placeholder="Enter custom type…"
-        />
-      </div>
-
-      <!-- Receive Date -->
-      <div class="sfm-row">
-        <label class="form-label">Receive Date</label>
-        <input v-model="form.receive_date" type="date" class="form-input" />
-      </div>
-
-      <!-- ETA -->
-      <div class="sfm-row">
-        <label class="form-label">ETA</label>
-        <div class="sfm-checkbox-row">
-          <input id="no_eta" type="checkbox" v-model="form.no_eta" />
-          <label for="no_eta" class="sfm-check-label">No ETA</label>
-        </div>
-        <div v-if="!form.no_eta" class="sfm-eta-row">
-          <div class="sfm-eta-field">
-            <label class="sfm-eta-label">Days</label>
-            <select v-model.number="form.eta_days" class="form-input">
-              <option :value="null">0</option>
-              <option v-for="d in 31" :key="d" :value="d">{{ d }}</option>
+        <!-- ══ LEFT COLUMN ══ -->
+        <div class="sfm-col">
+          <!-- Service type -->
+          <div class="sfm-row">
+            <label class="form-label">Service Type</label>
+            <select v-model="form.service_type" class="form-input">
+              <option value="">— Select type —</option>
+              <option v-for="t in serviceTypes" :key="t" :value="t">{{ t }}</option>
+              <option value="__custom__">Other (custom)…</option>
             </select>
+            <input
+              v-if="form.service_type === '__custom__'"
+              v-model="form.custom_type"
+              class="form-input"
+              style="margin-top:6px;"
+              placeholder="Enter custom type…"
+            />
           </div>
-          <div class="sfm-eta-field">
-            <label class="sfm-eta-label">Hours</label>
-            <select v-model.number="form.eta_hours" class="form-input">
-              <option :value="null">0</option>
-              <option v-for="h in 24" :key="h" :value="h">{{ h }}</option>
-            </select>
+
+          <!-- Receive Date -->
+          <div class="sfm-row">
+            <label class="form-label">Receive Date</label>
+            <input v-model="form.receive_date" type="date" class="form-input" />
+          </div>
+
+          <!-- ETA -->
+          <div class="sfm-row">
+            <label class="form-label">ETA</label>
+            <div class="sfm-checkbox-row">
+              <input id="no_eta" type="checkbox" v-model="form.no_eta" />
+              <label for="no_eta" class="sfm-check-label">No ETA</label>
+            </div>
+            <div v-if="!form.no_eta" class="sfm-eta-row">
+              <div class="sfm-eta-field">
+                <label class="sfm-eta-label">Days</label>
+                <select v-model.number="form.eta_days" class="form-input">
+                  <option :value="null">0</option>
+                  <option v-for="d in 31" :key="d" :value="d">{{ d }}</option>
+                </select>
+              </div>
+              <div class="sfm-eta-field">
+                <label class="sfm-eta-label">Hours</label>
+                <select v-model.number="form.eta_hours" class="form-input">
+                  <option :value="null">0</option>
+                  <option v-for="h in 24" :key="h" :value="h">{{ h }}</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- ══ RIGHT COLUMN ══ -->
+        <div class="sfm-col">
+          <!-- Info (problem description) -->
+          <div class="sfm-row">
+            <label class="form-label">Problem / Description <span class="sfm-opt">(optional)</span></label>
+            <textarea
+              v-model="form.info"
+              class="form-input"
+              rows="2"
+              placeholder="Describe the issue or service needed…"
+            />
+          </div>
+
+          <!-- Keeping (items received) -->
+          <div class="sfm-row">
+            <label class="form-label">Items Received <span class="sfm-opt">(optional)</span></label>
+            <input
+              v-model="form.keeping"
+              class="form-input"
+              placeholder="e.g. Laptop + charger + bag"
+            />
+            <p class="sfm-hint">What the client left with you.</p>
+          </div>
+
+          <!-- Cost -->
+          <div class="sfm-row">
+            <label class="form-label">Cost</label>
+            <input
+              v-model.number="form.cost"
+              type="number" min="0" step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+            <p class="sfm-hint">Amount to invoice when marked Done.</p>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Info (problem description) -->
-      <div class="sfm-row">
-        <label class="form-label">Problem / Description <span class="sfm-opt">(optional)</span></label>
-        <textarea
-          v-model="form.info"
-          class="form-input"
-          rows="2"
-          placeholder="Describe the issue or service needed…"
-        />
-      </div>
-
-      <!-- Keeping (items received) -->
-      <div class="sfm-row">
-        <label class="form-label">Items Received <span class="sfm-opt">(optional)</span></label>
-        <input
-          v-model="form.keeping"
-          class="form-input"
-          placeholder="e.g. Laptop + charger + bag"
-        />
-        <p class="sfm-hint">What the client left with you.</p>
-      </div>
-
-      <!-- Cost -->
-      <div class="sfm-row">
-        <label class="form-label">Cost</label>
-        <input
-          v-model.number="form.cost"
-          type="number" min="0" step="0.01"
-          class="form-input"
-          placeholder="0.00"
-        />
-        <p class="sfm-hint">Amount to invoice when marked Done.</p>
+      <!-- Print options -->
+      <div class="sfm-print-opts">
+        <label class="sfm-print-cb">
+          <input type="checkbox" v-model="printReceipt" />
+          <span>Print the receipt</span>
+        </label>
+        <label class="sfm-print-cb" :class="{ disabled: !printReceipt }">
+          <input type="checkbox" v-model="doublePrint" :disabled="!printReceipt" />
+          <span>2× printing</span>
+        </label>
+        <span class="sfm-print-hint">Ctrl+S to save</span>
       </div>
 
       <p v-if="errorMsg" class="sfm-error">{{ errorMsg }}</p>
     </div>
 
     <template #footer>
-      <button v-if="serviceId" class="btn-ghost sfm-print-btn" @click="printReceipt" title="Print 2 receipts">
+      <button v-if="serviceId" class="btn-ghost sfm-print-btn" @click="doServicePrint(doublePrint ? 2 : 1)" title="Print receipt now">
         🖨 Print
       </button>
       <div style="flex:1;" />
@@ -163,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -182,6 +209,20 @@ const emit = defineEmits(['close', 'saved'])
 
 const saving   = ref(false)
 const errorMsg = ref('')
+
+/* ── print options (pre-checked from store defaults) ─────────────── */
+const printReceipt = ref(true)
+const doublePrint  = ref(true)
+
+/* ── Ctrl+S to save (not Enter) ──────────────────────────────────── */
+function handleKey(e) {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S') && props.open) {
+    e.preventDefault()
+    if (canSave.value && !saving.value) save()
+  }
+}
+onMounted(() => document.addEventListener('keydown', handleKey))
+onUnmounted(() => document.removeEventListener('keydown', handleKey))
 
 /* ── form state ─────────────────────────────────────────────────── */
 const form = reactive({
@@ -251,6 +292,7 @@ watch(() => props.open, (val) => {
   errorMsg.value = ''
   clearCustomer()
   customerResults.value = []
+  loadPrintDefaults()
 
   if (props.serviceData) {
     const s = props.serviceData
@@ -283,6 +325,17 @@ watch(() => props.open, (val) => {
     })
   }
 })
+
+/* ── print defaults from store settings ──────────────────────────── */
+async function loadPrintDefaults() {
+  try {
+    const { data } = await api.get('/api/core/settings/')
+    printReceipt.value = data.srv_print_default ?? true
+    doublePrint.value  = data.srv_double_print_default ?? true
+  } catch {
+    // keep safe fallbacks
+  }
+}
 
 /* ── save ────────────────────────────────────────────────────────── */
 async function save() {
@@ -319,10 +372,13 @@ async function save() {
   }
 
   try {
-    if (props.serviceId) {
-      await api.patch(`/api/services/${props.serviceId}/`, payload)
-    } else {
-      await api.post('/api/services/', payload)
+    const res = props.serviceId
+      ? await api.patch(`/api/services/${props.serviceId}/`, payload)
+      : await api.post('/api/services/', payload)
+    // Print before closing — fill in the backend-generated serial first.
+    if (printReceipt.value) {
+      if (res?.data?.serial_number) form.serial_number = res.data.serial_number
+      await doServicePrint(doublePrint.value ? 2 : 1)
     }
     emit('saved')
     emit('close')
@@ -391,7 +447,7 @@ function buildServiceESCPOS(copy) {
   return out
 }
 
-function printReceiptCSS() {
+function printReceiptCSS(copies = 2) {
   const storeName  = auth.storeName || auth.activeStore?.name || 'Store'
   const clientName = form.freeText ? (form.client_name || 'Walk-in') : (form.clientName || 'Walk-in')
   const clientPhone = form.freeText ? (form.client_phone || '') : ''
@@ -441,7 +497,7 @@ function printReceiptCSS() {
     @media print  { body { background: #fff; margin: 0; } }
   </style></head><body>
     ${block('CLIENT RECEIPT')}
-    ${block('STORE RECEIPT')}
+    ${copies >= 2 ? block('STORE RECEIPT') : ''}
   </body></html>`
 
   const w = window.open('', '_blank', 'width=340,height=580')
@@ -451,7 +507,7 @@ function printReceiptCSS() {
   setTimeout(() => { w.print() }, 400)
 }
 
-async function printReceipt() {
+async function doServicePrint(copies = 2) {
   try {
     const available = await isAvailable()
     if (available) {
@@ -459,14 +515,14 @@ async function printReceipt() {
       const printerName = settingsRes.data.receipt_printer_name || ''
       if (printerName) {
         await sendRaw(printerName, buildServiceESCPOS('CLIENT RECEIPT'))
-        await sendRaw(printerName, buildServiceESCPOS('STORE RECEIPT'))
+        if (copies >= 2) await sendRaw(printerName, buildServiceESCPOS('STORE RECEIPT'))
         return
       }
     }
   } catch {
     // silent — fall through to CSS print
   }
-  printReceiptCSS()
+  printReceiptCSS(copies)
 }
 </script>
 
@@ -483,6 +539,28 @@ async function printReceipt() {
 
 .sfm-form { display: flex; flex-direction: column; gap: 14px; }
 .sfm-row  { display: flex; flex-direction: column; gap: 5px; }
+
+/* Two-column layout: client block spans full width, then two field columns.
+   Keeps the modal short so the Create button stays visible on small laptops. */
+.sfm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.sfm-full { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 14px; }
+.sfm-col  { display: flex; flex-direction: column; gap: 14px; }
+.sfm-subrow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 600px) {
+  .sfm-grid { grid-template-columns: 1fr; }
+  .sfm-subrow { grid-template-columns: 1fr; }
+}
+
+.sfm-print-opts {
+  display: flex; align-items: center; gap: 22px;
+  padding: 12px 4px 2px; margin-top: 2px; border-top: 1px solid var(--border);
+}
+.sfm-print-cb { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; user-select: none; }
+.sfm-print-cb input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+.sfm-print-cb.disabled { opacity: .45; cursor: not-allowed; }
+.sfm-print-cb.disabled input { cursor: not-allowed; }
+.sfm-print-hint { margin-left: auto; font-size: 11.5px; color: var(--text-muted); }
+
 .sfm-print-btn { color: var(--text-secondary); }
 .sfm-opt  { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
 .sfm-hint { font-size: 11px; color: var(--text-muted); margin: 3px 0 0; }

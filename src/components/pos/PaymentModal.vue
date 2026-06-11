@@ -49,6 +49,18 @@
         <span>This sale will be recorded as credit for {{ cart.customerObj?.name || 'the customer' }}. The customer's outstanding balance will increase.</span>
       </div>
 
+      <!-- Print options -->
+      <div class="pm-print-opts">
+        <label class="pm-print-cb">
+          <input type="checkbox" v-model="printReceipt" />
+          <span>Print the receipt</span>
+        </label>
+        <label class="pm-print-cb" :class="{ disabled: !printReceipt }">
+          <input type="checkbox" v-model="doublePrint" :disabled="!printReceipt" />
+          <span>2× printing</span>
+        </label>
+      </div>
+
       <!-- Error -->
       <div v-if="error" class="pm-error">{{ error }}</div>
 
@@ -80,6 +92,20 @@ const cashReceived   = ref('')
 const loading        = ref(false)
 const error          = ref('')
 const cashInput      = ref(null)
+
+// Print options — pre-checked from the store's saved defaults (Settings → Printers).
+const printReceipt = ref(true)
+const doublePrint  = ref(false)
+
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/api/core/settings/')
+    printReceipt.value = data.pos_print_default ?? true
+    doublePrint.value  = data.pos_double_print_default ?? false
+  } catch {
+    // keep safe fallbacks
+  }
+})
 
 const change = computed(() => {
   const received = parseFloat(cashReceived.value) || 0
@@ -125,7 +151,10 @@ async function confirm() {
       amount: cart.grandTotal,
     })
 
-    emit('success', checkoutRes.data)
+    emit('success', checkoutRes.data, {
+      print:  printReceipt.value,
+      copies: doublePrint.value ? 2 : 1,
+    })
   } catch (e) {
     const detail = e?.response?.data?.detail
     if (typeof detail === 'string') error.value = detail
@@ -196,6 +225,12 @@ async function confirm() {
   padding: 14px; border-radius: 12px; background: #fffbeb; border: 1px solid #fde68a;
   font-size: 13px; color: #92400e;
 }
+
+.pm-print-opts { display: flex; gap: 22px; padding: 2px 4px; }
+.pm-print-cb { display: flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 600; color: var(--text-secondary); cursor: pointer; user-select: none; }
+.pm-print-cb input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+.pm-print-cb.disabled { opacity: .45; cursor: not-allowed; }
+.pm-print-cb.disabled input { cursor: not-allowed; }
 
 .pm-error {
   padding: 12px 16px; border-radius: 10px; background: #fef2f2;

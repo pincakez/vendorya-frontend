@@ -638,10 +638,12 @@ async function openPayment() {
   }
 }
 
-function onPaymentSuccess(invoice) {
+function onPaymentSuccess(invoice, printPrefs = {}) {
   showPayment.value = false
   pos.lastPostedInvoiceId = invoice.id
   successInvoice.value = invoice
+  // Auto-print per the cashier's choice in the payment modal.
+  if (printPrefs.print) printInvoice(invoice.id, printPrefs.copies || 1)
 }
 
 function newSale() {
@@ -651,8 +653,9 @@ function newSale() {
   loadWalkIn()
 }
 
-function printInvoice(id) {
-  window.open(`/finance/invoices/${id}/print`, '_blank')
+function printInvoice(id, copies = 1) {
+  const q = copies > 1 ? `?auto=1&copies=${copies}` : '?auto=1'
+  window.open(`/finance/invoices/${id}/print${q}`, '_blank')
 }
 
 function reprint() {

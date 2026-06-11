@@ -468,6 +468,37 @@
             <p v-else-if="printerTestResult.receipt" class="field-error" style="margin-top:4px;">{{ printerTestResult.receipt }}</p>
           </div>
 
+          <div class="section-divider">Receipt &amp; Label Printing Defaults</div>
+          <p class="form-hint" style="margin-bottom:16px;">
+            Pre-tick the print boxes that appear when finishing a sale or a service, so the cashier
+            never has to check them every time. They can still override per transaction.
+          </p>
+
+          <div class="print-defaults-grid">
+            <div class="print-defaults-col">
+              <div class="print-defaults-head">Point of Sale (POS)</div>
+              <label class="print-default-cb">
+                <input type="checkbox" v-model="settingsForm.pos_print_default" />
+                <span>Print the receipt by default</span>
+              </label>
+              <label class="print-default-cb">
+                <input type="checkbox" v-model="settingsForm.pos_double_print_default" />
+                <span>2× printing by default</span>
+              </label>
+            </div>
+            <div class="print-defaults-col">
+              <div class="print-defaults-head">Services (SRV)</div>
+              <label class="print-default-cb">
+                <input type="checkbox" v-model="settingsForm.srv_print_default" />
+                <span>Print the receipt by default</span>
+              </label>
+              <label class="print-default-cb">
+                <input type="checkbox" v-model="settingsForm.srv_double_print_default" />
+                <span>2× printing by default</span>
+              </label>
+            </div>
+          </div>
+
           <div class="form-footer">
             <button class="btn-primary" :disabled="serviceSaving" @click="savePrinters">
               {{ serviceSaving ? 'Saving…' : 'Save Printers' }}
@@ -796,6 +827,8 @@ const settingsForm = reactive({
   session_timeout_minutes: 0, login_ip_allowlist: '',
   service_types: [], service_notify_hours: 1,
   label_printer_name: '', receipt_printer_name: '',
+  pos_print_default: true, pos_double_print_default: false,
+  srv_print_default: true, srv_double_print_default: true,
 })
 const taxes      = ref([])
 const currencies = ref([])
@@ -1036,6 +1069,10 @@ async function savePrinters() {
     await api.patch('/api/core/settings/', {
       label_printer_name:   settingsForm.label_printer_name,
       receipt_printer_name: settingsForm.receipt_printer_name,
+      pos_print_default:        settingsForm.pos_print_default,
+      pos_double_print_default: settingsForm.pos_double_print_default,
+      srv_print_default:        settingsForm.srv_print_default,
+      srv_double_print_default: settingsForm.srv_double_print_default,
     })
     serviceSuccess.value = true
     setTimeout(() => (serviceSuccess.value = false), 2500)
@@ -1139,7 +1176,14 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .mode-btn:hover { border-color:var(--accent); color:var(--accent); }
 .mode-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
 
-.form-footer { display:flex; justify-content:flex-end; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+.form-footer { display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+
+.print-defaults-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; max-width:560px; }
+@media (max-width:560px) { .print-defaults-grid { grid-template-columns:1fr; } }
+.print-defaults-col { display:flex; flex-direction:column; gap:10px; }
+.print-defaults-head { font-size:12.5px; font-weight:700; color:var(--text-primary); }
+.print-default-cb { display:flex; align-items:center; gap:9px; font-size:13px; color:var(--text-secondary); cursor:pointer; user-select:none; }
+.print-default-cb input { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
 
 .table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .data-table { width:100%; border-collapse:collapse; font-size:13px; }

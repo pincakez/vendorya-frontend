@@ -229,22 +229,34 @@ function buildInvoiceESCPOS() {
   return out
 }
 
-async function doPrint() {
+async function doPrint(copies = 1) {
+  // The toolbar button passes a click event — coerce anything non-numeric to 1.
+  const n = Number.isInteger(copies) && copies > 0 ? copies : 1
   try {
     const available = await isAvailable()
     if (available && receiptPrinterName.value) {
-      await sendRaw(receiptPrinterName.value, buildInvoiceESCPOS())
+      for (let i = 0; i < n; i++) {
+        await sendRaw(receiptPrinterName.value, buildInvoiceESCPOS())
+      }
       return
     }
   } catch {
     // silent — fall through to browser print
   }
-  window.print()
+  // Browser fallback: one dialog per copy.
+  for (let i = 0; i < n; i++) window.print()
 }
 
 function goBack() { router.push('/finance/invoices') }
 
-onMounted(load)
+onMounted(async () => {
+  await load()
+  // Auto-print when opened from POS checkout (?auto=1&copies=N).
+  if (route.query.auto && !error.value) {
+    const copies = Math.max(1, parseInt(route.query.copies, 10) || 1)
+    doPrint(copies)
+  }
+})
 </script>
 
 <style scoped>

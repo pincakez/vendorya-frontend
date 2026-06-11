@@ -46,6 +46,11 @@ defineEmits(['close'])
   width: 100%;
   box-shadow: 0 8px 40px rgba(0,0,0,0.18);
   overflow: hidden;
+  /* Keep header + footer (action buttons) always on-screen; scroll the body
+     instead of letting a tall form push the footer off small laptops. */
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 48px);
 }
 
 .modal-header {
@@ -54,6 +59,7 @@ defineEmits(['close'])
   justify-content: space-between;
   padding: 16px 20px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .modal-title {
@@ -78,13 +84,14 @@ defineEmits(['close'])
 
 .modal-close:hover { background: var(--border); color: var(--text-primary); }
 
-.modal-body  { padding: 20px; }
+.modal-body  { padding: 20px; overflow-y: auto; flex: 1 1 auto; }
 .modal-footer {
   padding: 12px 20px;
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 /* Transitions */
