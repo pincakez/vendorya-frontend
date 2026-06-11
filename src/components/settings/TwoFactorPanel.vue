@@ -170,14 +170,6 @@ onMounted(loadStatus)
 .backup-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
 .backup-grid code { font-family:monospace; font-size:13px; background:var(--bg-app); border:1px solid var(--border); border-radius:6px; padding:6px 8px; text-align:center; color:var(--text-primary); letter-spacing:1px; }
 
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,opacity 100ms; }
-.btn-primary:hover { background:var(--accent-hover); }
-.btn-primary:disabled { opacity:.5; cursor:default; }
-.btn-ghost { padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; border:1px solid var(--border); background:transparent; color:var(--text-secondary); cursor:pointer; }
-.btn-ghost:hover { background:var(--border); }
-.btn-danger { padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#dc2626; color:#fff; cursor:pointer; }
-.btn-danger:hover { background:#b91c1c; }
-.btn-danger:disabled { opacity:.5; cursor:default; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>

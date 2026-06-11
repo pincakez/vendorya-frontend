@@ -93,7 +93,4 @@ async function changePassword() {
 .saved-msg  { font-size:13px; color:#16a34a; font-weight:500; }
 .form-footer { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:18px; padding-top:16px; border-top:1px solid var(--border); }
 
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,opacity 100ms; }
-.btn-primary:hover { background:var(--accent-hover); }
-.btn-primary:disabled { opacity:.5; cursor:default; }
 </style>

@@ -557,9 +557,4 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 .prod-attrs-section { border-top: 1px solid var(--border); padding-top: 12px; }
 .prod-attrs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .form-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
-.btn-ghost { display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; border-radius: 9px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: none; color: var(--text-secondary); cursor: pointer; }
-.btn-ghost:hover { background: var(--border); color: var(--text-primary); }
-.btn-primary { display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; border-radius: 9px; font-size: 13px; font-weight: 600; border: none; background: var(--accent); color: #1a1208; cursor: pointer; }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-primary:disabled { opacity: .5; cursor: default; }
 </style>

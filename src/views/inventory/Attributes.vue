@@ -232,11 +232,4 @@ onMounted(() => {
 .btn-add-opt:hover { background:var(--border); }
 .options-chips { display:flex; flex-wrap:wrap; gap:6px; }
 
-.btn-ghost   { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,transform 70ms; }
-.btn-ghost:hover  { background:var(--border); }
-.btn-ghost:active { transform:scale(.95); }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:var(--accent-hover); }
-.btn-primary:active   { transform:scale(.95); }
-.btn-primary:disabled { opacity:.5; cursor:default; }
 </style>

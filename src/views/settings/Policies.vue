@@ -264,10 +264,6 @@ onMounted(load)
 .save-bar { display:flex; align-items:center; gap:12px; margin-top:24px; }
 .save-confirm { display:inline-flex; align-items:center; gap:5px; font-size:13px; color:#16a34a; font-weight:500; }
 
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:9px 22px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:var(--accent-hover); }
-.btn-primary:active   { transform:scale(.95); }
-.btn-primary:disabled { opacity:.5; cursor:default; }
 
 .mode-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-muted); font-size:12.5px; font-weight:600; cursor:pointer; transition:background 100ms,border-color 100ms,color 100ms; }
 .mode-btn:hover { border-color:var(--accent); color:var(--accent); }

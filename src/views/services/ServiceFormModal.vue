@@ -529,13 +529,6 @@ async function doServicePrint(copies = 2) {
 <style scoped>
 /* Footer buttons — scoped classes were missing, so Cancel / Create Service
    rendered as bare text. (s53) */
-.btn-primary { display:inline-flex; align-items:center; gap:6px; padding:9px 17px; border-radius:9px; font-size:13.5px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:var(--accent-hover); }
-.btn-primary:active   { transform:scale(0.95); }
-.btn-primary:disabled { opacity:.5; cursor:default; }
-.btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:8px 13px; border-radius:9px; font-size:13.5px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
-.btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
-.btn-ghost:active { transform:scale(0.95); }
 
 .sfm-form { display: flex; flex-direction: column; gap: 14px; }
 .sfm-row  { display: flex; flex-direction: column; gap: 5px; }

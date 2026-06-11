@@ -212,6 +212,4 @@ onUnmounted(() => qab.clearActions())
 .form-input  { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; }
 .form-input:focus { border-color:var(--admin-accent); }
 .form-input:disabled { opacity:.5; }
-.btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms; }
-.btn-ghost:hover { background:var(--border); color:var(--text-primary); }
 </style>

@@ -367,17 +367,6 @@ async function doPurge() {
 .field-hint  { font-size:11.5px; color:var(--text-muted); margin:5px 0 0; }
 .form-error  { font-size:12.5px; color:#dc2626; margin:0; }
 
-.btn-ghost   { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
-.btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
-.btn-ghost:active { transform:scale(0.95); }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:var(--accent-hover); }
-.btn-primary:active   { transform:scale(0.95); }
-.btn-primary:disabled { opacity:.5; cursor:default; }
-.btn-danger  { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#dc2626; color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-danger:hover    { background:#b91c1c; }
-.btn-danger:active   { transform:scale(0.95); }
-.btn-danger:disabled { opacity:.6; cursor:default; }
 
 .resolve-summary { font-size:13px; color:var(--text-secondary); margin:0; line-height:1.5; }
 .resolve-opt { display:flex; align-items:flex-start; gap:11px; text-align:left; width:100%; padding:12px 13px; border:1px solid var(--border); border-radius:10px; background:var(--bg-app); color:var(--text-primary); cursor:pointer; transition:border-color 120ms, background 120ms, transform 70ms; }

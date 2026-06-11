@@ -1524,24 +1524,6 @@ onMounted(load)
   margin: 12px 28px 0;
 }
 
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 8px 18px;
-  border-radius: 9px;
-  background: var(--admin-accent);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: background 120ms, transform 80ms, opacity 100ms;
-}
-.btn-primary:hover    { background: #ea6c00; }
-.btn-primary:active   { transform: scale(0.97); }
-.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
-
 .btn-outline {
   display: inline-flex;
   align-items: center;
@@ -1577,11 +1559,6 @@ onMounted(load)
 .btn-api-reload:active   { transform: scale(0.97); }
 .btn-api-reload:disabled { opacity: 0.55; cursor: not-allowed; }
 
-.btn-sm {
-  padding: 6px 14px !important;
-  font-size: 12.5px !important;
-}
-
 .btn-ghost-sm {
   padding: 5px 10px;
   border-radius: 7px;
@@ -1593,19 +1570,6 @@ onMounted(load)
   transition: background 100ms, color 100ms;
 }
 .btn-ghost-sm:hover { background: var(--bg-card); color: var(--text-primary); }
-
-.btn-danger {
-  padding: 8px 20px;
-  border-radius: 9px;
-  background: #ef4444;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  transition: background 120ms, transform 80ms;
-}
-.btn-danger:hover  { background: #dc2626; }
-.btn-danger:active { transform: scale(0.97); }
-.btn-danger:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

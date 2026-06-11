@@ -205,9 +205,5 @@ onMounted(load)
 .sound-select:disabled { opacity:.5; cursor:not-allowed; }
 
 .form-actions { display:flex; align-items:center; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
-.btn-primary  { display:inline-flex; align-items:center; gap:6px; padding:9px 20px; border-radius:8px; background:var(--primary,var(--accent)); color:#fff; font-size:13.5px; font-weight:600; border:none; cursor:pointer; transition:background 120ms,transform 80ms; }
-.btn-primary:hover   { background:var(--accent); }
-.btn-primary:active  { transform:scale(0.97); }
-.btn-primary:disabled{ opacity:.5; cursor:not-allowed; }
 .save-ok { font-size:13px; color:#16a34a; }
 </style>

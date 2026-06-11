@@ -346,13 +346,6 @@ onUnmounted(() => qab.clearActions())
 .totals-row span:last-child { font-variant-numeric:tabular-nums; min-width:90px; text-align:right; }
 .total-line { font-size:15px; font-weight:700; color:var(--text-primary); }
 
-.btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
-.btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
-.btn-ghost:active { transform:scale(0.95); }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:var(--accent-hover); }
-.btn-primary:active   { transform:scale(0.95); }
-.btn-primary:disabled { opacity:.5; cursor:default; }
 
 .preset-option { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:border-color 100ms,background 100ms; }
 .preset-option:hover   { background:var(--bg-app); }

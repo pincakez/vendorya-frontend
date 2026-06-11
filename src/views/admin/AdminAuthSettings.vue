@@ -227,9 +227,4 @@ function genPassword() {
 .form-input:focus { border-color:#2563eb; }
 .error-text { font-size:12px; color:#dc2626; margin-top:10px; }
 
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#2563eb; color:#fff; cursor:pointer; }
-.btn-primary:hover { background:#1d4ed8; }
-.btn-primary:disabled { opacity:.5; cursor:default; }
-.btn-ghost { padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; border:1px solid var(--border); background:transparent; color:var(--text-secondary); cursor:pointer; white-space:nowrap; }
-.btn-ghost:hover { background:var(--border); }
 </style>

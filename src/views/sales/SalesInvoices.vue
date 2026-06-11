@@ -600,11 +600,6 @@ onMounted(() => { loadLayout(); fetchCustomers(); fetchVariants() })
 .totals-row { display: flex; gap: 32px; font-size: 13px; color: var(--text-secondary); }
 .totals-row span:last-child { font-variant-numeric: tabular-nums; min-width: 90px; text-align: right; }
 .total-line { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-.btn-ghost   { display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; border-radius: 9px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: none; color: var(--text-secondary); cursor: pointer; }
-.btn-ghost:hover { background: var(--border); color: var(--text-primary); }
-.btn-primary { display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; border-radius: 9px; font-size: 13px; font-weight: 600; border: none; background: var(--accent); color: #1a1208; cursor: pointer; }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-primary:disabled { opacity: .5; cursor: default; }
 </style>
 
 <style>

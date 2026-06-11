@@ -243,11 +243,6 @@ onMounted(() => { fetchCustomer(); fetchInvoices() })
 .s-void   { background:rgba(220,38,38,0.10); color:#dc2626; }
 
 .header-right { display:flex; align-items:center; gap:8px; }
-.btn-secondary { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-primary); font-size:13px; font-weight:500; cursor:pointer; transition:background 100ms; }
-.btn-secondary:hover { background:var(--border); }
-.btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; }
-.btn-primary:disabled { opacity:.6; cursor:not-allowed; }
 .form-label { font-size:12px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; display:block; margin-bottom:6px; }
 .form-input { width:100%; padding:8px 11px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; box-sizing:border-box; outline:none; }
 .form-input:focus { border-color:var(--accent); }

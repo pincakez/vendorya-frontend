@@ -150,10 +150,6 @@ onUnmounted(() => clearInterval(pollTimer))
 .page-title   { font-size:22px; font-weight:700; color:var(--text-primary); margin:0; }
 .page-sub     { font-size:13px; color:var(--text-muted); margin:2px 0 0; }
 .header-right { display:flex; align-items:center; gap:8px; }
-.btn-ghost    { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:12.5px; font-weight:500; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); cursor:pointer; transition:background 100ms,transform 70ms; }
-.btn-ghost:hover   { background:var(--border); color:var(--text-primary); }
-.btn-ghost:active  { transform:scale(0.96); }
-.btn-ghost:disabled{ opacity:.5; cursor:not-allowed; }
 .spin { animation:spin 800ms linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 

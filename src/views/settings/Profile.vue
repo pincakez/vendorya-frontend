@@ -256,8 +256,4 @@ onMounted(() => loadProfile())
 .swatch.custom input[type="color"] { position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; }
 .form-footer { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
 
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:var(--accent-hover); }
-.btn-primary:active   { transform:scale(0.95); }
-.btn-primary:disabled { opacity:.5; cursor:default; }
 </style>

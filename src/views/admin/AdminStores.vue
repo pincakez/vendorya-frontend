@@ -651,9 +651,6 @@ onMounted(() => {
 .req { color:#dc2626; font-weight:700; }
 .hint { color:var(--text-muted); font-weight:400; font-size:11px; }
 
-.btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
-.btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
-.btn-ghost:active { transform:scale(0.95); }
 
 /* Stepper */
 .stepper { display:flex; align-items:center; gap:6px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border); }
@@ -677,8 +674,4 @@ onMounted(() => {
 .check-ok    { font-size:12px; font-weight:600; color:#16a34a; }
 .check-taken { font-size:12px; font-weight:600; color:#dc2626; }
 
-.btn-danger { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600; border:1.5px solid rgba(239,68,68,0.5); background:rgba(239,68,68,0.08); color:var(--admin-accent); cursor:pointer; white-space:nowrap; transition:background 100ms,border-color 100ms,transform 70ms; }
-.btn-danger:hover:not(:disabled) { background:rgba(239,68,68,0.18); border-color:var(--admin-accent); }
-.btn-danger:active:not(:disabled) { transform:scale(0.95); }
-.btn-danger:disabled { opacity:.5; cursor:default; }
 </style>

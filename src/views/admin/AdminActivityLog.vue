@@ -250,12 +250,6 @@ onUnmounted(() => {
 .form-label { display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; }
 .form-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); font-size:13px; outline:none; }
 .purge-preview { font-size:13px; color:var(--text-primary); background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 12px; margin:10px 0 0; }
-.btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; }
-.btn-ghost:hover { background:var(--border); color:var(--text-primary); }
-.btn-ghost:disabled { opacity:.5; cursor:default; }
-.btn-danger { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:#dc2626; color:#fff; cursor:pointer; transition:background 100ms,opacity 100ms; }
-.btn-danger:hover { background:#b91c1c; }
-.btn-danger:disabled { opacity:.5; cursor:default; }
 
 
 .ts { color:var(--text-muted); font-size:12px; white-space:nowrap; }

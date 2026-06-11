@@ -256,21 +256,4 @@ onMounted(load)
   100% { background-position: -200% 0; }
 }
 
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: background 100ms, transform 70ms;
-}
-.btn-secondary:hover:not(:disabled) { background: var(--border); }
-.btn-secondary:active:not(:disabled) { transform: scale(0.96); }
-.btn-secondary:disabled { opacity: .55; cursor: default; }
 </style>

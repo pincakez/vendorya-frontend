@@ -198,14 +198,6 @@ async function doExport() {
 .req { font-size:10px; font-weight:700; color:var(--accent-hover); background:var(--accent-soft); border-radius:8px; padding:1px 6px; margin-left:4px; }
 .help-note { margin-top:12px !important; font-size:12px; color:var(--text-muted); }
 
-.btn-ghost   { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
-.btn-ghost:hover:not(:disabled)  { background:var(--border); color:var(--text-primary); }
-.btn-ghost:active { transform:scale(0.96); }
-.btn-ghost:disabled { opacity:.5; cursor:default; }
-.btn-primary { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover:not(:disabled)    { background:var(--accent-hover); }
-.btn-primary:active   { transform:scale(0.96); }
-.btn-primary:disabled { opacity:.5; cursor:default; }
 .btn-text { background:none; border:none; color:var(--text-muted); font-size:12.5px; cursor:pointer; text-decoration:underline; }
 .btn-text:disabled { opacity:.5; cursor:default; }
 </style>

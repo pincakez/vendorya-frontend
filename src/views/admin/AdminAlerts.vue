@@ -258,10 +258,6 @@ onMounted(loadAllStores)
 .tag-remove:hover { color:var(--text-primary); }
 
 .form-actions{ display:flex; align-items:center; gap:12px; margin-top:4px; }
-.btn-primary { display:inline-flex; align-items:center; gap:6px; padding:9px 20px; border-radius:8px; background:var(--primary,#3b82f6); color:#fff; font-size:13.5px; font-weight:600; border:none; cursor:pointer; transition:background 120ms,transform 80ms; }
-.btn-primary:hover   { background:#2563eb; }
-.btn-primary:active  { transform:scale(0.97); }
-.btn-primary:disabled{ opacity:.5; cursor:not-allowed; }
 .send-result { font-size:13px; }
 .send-result.ok  { color:#16a34a; }
 .send-result.err { color:#ef4444; }

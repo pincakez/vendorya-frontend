@@ -296,11 +296,6 @@ onMounted(async () => {
 
 .paid-note { margin-top:18px; padding:10px 14px; background:rgba(16,163,74,0.10); color:#15803d; border-radius:8px; font-size:13px; font-weight:600; }
 
-.btn-ghost { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms,transform 70ms; }
-.btn-ghost:hover  { background:var(--border); color:var(--text-primary); }
-.btn-ghost:active { transform:scale(0.95); }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--primary, var(--accent-hover)); color:#fff; cursor:pointer; transition:transform 70ms; }
-.btn-primary:active { transform:scale(0.96); }
 
 .section-block { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin-bottom:24px; }
 .quota-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; }

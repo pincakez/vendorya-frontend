@@ -1209,13 +1209,6 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .row-action:hover        { background:var(--border); color:var(--text-primary); }
 .row-action.danger:hover { background:#fee2e2; color:#dc2626; }
 
-.btn-ghost   { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:8px; font-size:13px; font-weight:500; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; transition:background 100ms,color 100ms; }
-.btn-ghost:hover { background:var(--border); color:var(--text-primary); }
-.btn-primary { display:inline-flex; align-items:center; gap:5px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms,opacity 100ms; }
-.btn-primary:hover    { background:var(--accent-hover); }
-.btn-primary:active   { transform:scale(0.95); }
-.btn-primary:disabled { opacity:.5; cursor:default; }
-.btn-sm { padding:6px 12px; font-size:12px; }
 .req { color:#dc2626; font-weight:700; }
 
 /* Branding */
@@ -1244,7 +1237,6 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .btn-remove { width:28px; height:28px; border-radius:6px; border:none; background:transparent; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .btn-remove:hover { background:rgba(220,38,38,0.1); color:#dc2626; }
 .add-service-type { display:flex; gap:8px; align-items:center; margin-bottom:16px; }
-.btn-sm { padding:6px 12px; font-size:13px; }
 .save-ok { font-size:12.5px; color:var(--success, #16a34a); }
 .field-error { font-size:12.5px; color:var(--danger, #dc2626); }
 .qz-dot { font-size:12px; font-weight:600; letter-spacing:.01em; }
