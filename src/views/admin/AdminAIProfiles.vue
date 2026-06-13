@@ -1026,7 +1026,7 @@ onMounted(load)
   transition: opacity 100ms, background 100ms, color 100ms;
 }
 .profile-item:hover .pi-delete { opacity: 1; }
-.pi-delete:hover { background: rgba(239,68,68,0.12); color: #ef4444; }
+.pi-delete:hover { background: var(--admin-accent-soft); color: var(--admin-accent); }
 .pi-delete.visible { opacity: 1; }
 
 .sidebar-empty {
@@ -1341,7 +1341,7 @@ onMounted(load)
   font-weight: 700;
   letter-spacing: .05em;
 }
-.tool-badge.write { background: rgba(239,68,68,0.12);  color: #ef4444; }
+.tool-badge.write { background: var(--admin-accent-soft);  color: var(--admin-accent); }
 .tool-badge.read  { background: rgba(59,130,246,0.12); color: #3b82f6; }
 .tool-badge.store { background: rgba(239,68,68,0.12); color: var(--admin-accent); }
 
@@ -1488,7 +1488,7 @@ onMounted(load)
   font-size: 11.5px; font-weight: 700;
 }
 .diff-chip.new { background: rgba(22,163,74,0.15);  color: var(--success); }
-.diff-chip.del { background: rgba(239,68,68,0.12);  color: #ef4444; }
+.diff-chip.del { background: var(--admin-accent-soft);  color: var(--admin-accent); }
 .diff-chip.ok  { background: var(--border); color: var(--text-muted); }
 
 .diff-table { display: flex; flex-direction: column; gap: 4px; max-height: 400px; overflow-y: auto; }
@@ -1507,7 +1507,7 @@ onMounted(load)
 /* ── Misc ───────────────────────────────────────────────────────────────── */
 .banner-error {
   font-size: 12.5px;
-  color: #ef4444;
+  color: var(--admin-accent);
   background: rgba(239,68,68,0.08);
   border-radius: 7px;
   padding: 8px 14px;

@@ -308,7 +308,7 @@ onMounted(() => { load(); loadBranches() })
 .form-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
 .form-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; width: 100%; }
 .form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
-.form-error { color: #ef4444; font-size: 13px; }
+.form-error { color: var(--danger); font-size: 13px; }
 
 .search-row { position: relative; }
 .search-dropdown { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); box-shadow: 0 4px 16px rgba(0,0,0,.12); overflow: hidden; margin-top: 4px; }
@@ -320,8 +320,8 @@ onMounted(() => { load(); loadBranches() })
 .items-table { border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
 .mini-table { width: 100%; }
 .qty-input { width: 72px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; text-align: center; }
-.remove-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 4px; }
-.remove-btn:hover { background: #fef2f2; }
+.remove-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 4px; }
+.remove-btn:hover { background: var(--danger-soft); }
 
 .branch-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
 .from-pill { background: var(--warning-soft); color: var(--warning-hover); }

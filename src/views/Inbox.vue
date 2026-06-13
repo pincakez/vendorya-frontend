@@ -160,7 +160,7 @@ onUnmounted(() => clearInterval(pollTimer))
 .dot-all     { background:#6b7280; }
 .dot-info    { background:var(--success); }
 .dot-warning { background:#f59e0b; }
-.dot-alert   { background:#ef4444; }
+.dot-alert   { background:var(--danger); }
 .dot-admin   { background:#1e293b; }
 .tab-count { background:rgba(0,0,0,0.12); border-radius:10px; padding:1px 6px; font-size:11px; }
 .filter-tab.active .tab-count { background:rgba(255,255,255,0.25); }
@@ -181,13 +181,13 @@ onUnmounted(() => clearInterval(pollTimer))
 .ii-priority-bar { position:absolute; left:0; top:0; bottom:0; width:3px; }
 .bar-info    { background:var(--success); }
 .bar-warning { background:#f59e0b; }
-.bar-alert   { background:#ef4444; }
+.bar-alert   { background:var(--danger); }
 .bar-admin   { background:#1e293b; }
 
 .ii-icon      { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .icon-info    { background:rgba(22,163,74,0.12);  color:var(--success); }
 .icon-warning { background:rgba(245,158,11,0.12); color:#f59e0b; }
-.icon-alert   { background:rgba(239,68,68,0.12);  color:#ef4444; }
+.icon-alert   { background:var(--danger-soft);  color:var(--danger); }
 .icon-admin   { background:rgba(30,41,59,0.12);   color:#1e293b; }
 
 .ii-body  { flex:1; min-width:0; padding-left:4px; }

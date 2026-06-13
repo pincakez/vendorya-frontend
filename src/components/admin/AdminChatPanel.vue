@@ -785,7 +785,7 @@ function fmtDate(iso) {
   transition: background 200ms;
 }
 .panel-avatar.connected { background: rgba(22,163,74,0.12); color: var(--success); }
-.panel-avatar.error     { background: rgba(239,68,68,0.12); color: #ef4444; }
+.panel-avatar.error     { background: var(--admin-accent-soft); color: var(--admin-accent); }
 
 .panel-title-block { display: flex; flex-direction: column; min-width: 0; }
 .panel-profile-name {
@@ -801,7 +801,7 @@ function fmtDate(iso) {
   flex-shrink: 0;
 }
 .status-dot.connected { background: var(--success); }
-.status-dot.error     { background: #ef4444; }
+.status-dot.error     { background: var(--admin-accent); }
 .panel-status-text { font-size: 11px; color: var(--text-muted); }
 
 .panel-icon-btn {
@@ -1040,7 +1040,7 @@ function fmtDate(iso) {
   padding: 0 4px;
   transition: color 100ms;
 }
-.att-remove:hover { color: #ef4444; }
+.att-remove:hover { color: var(--admin-accent); }
 
 .context-badge {
   display: inline-flex;

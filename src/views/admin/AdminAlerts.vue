@@ -256,7 +256,7 @@ onMounted(loadAllStores)
 .form-actions{ display:flex; align-items:center; gap:12px; margin-top:4px; }
 .send-result { font-size:13px; }
 .send-result.ok  { color:var(--success); }
-.send-result.err { color:#ef4444; }
+.send-result.err { color:var(--admin-accent); }
 
 /* History */
 .history-head       { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap; }

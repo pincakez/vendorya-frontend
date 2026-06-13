@@ -435,7 +435,7 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 /* Icon tint */
 .ic { opacity: 0.7; flex-shrink: 0; }
 .ic-active { color: var(--accent); flex-shrink: 0; }
-.ic-logout { color: #ef4444; }
+.ic-logout { color: var(--danger); }
 
 /* Scroll-end actions row (settings gear + logout — not sticky) */
 .nsb-actions-row {
@@ -452,8 +452,8 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-gear-btn:hover { background: var(--sb-hover); color: var(--sb-text-active); }
 .nsb-logout-btn {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
-  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
-  color: #ef4444; border-radius: 10px; padding: 8px 12px;
+  background: var(--danger-soft); border: 1px solid rgba(239,68,68,0.25);
+  color: var(--danger); border-radius: 10px; padding: 8px 12px;
   cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit;
   transition: background 120ms, border-color 120ms;
 }

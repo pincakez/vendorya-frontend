@@ -612,12 +612,12 @@ async function handleOtp() {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  background: rgba(239,68,68,0.10);
+  background: var(--danger-soft);
   border: 1px solid rgba(239,68,68,0.28);
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 18px;
-  color: #ef4444;
+  color: var(--danger);
   font-size: 13px;
 }
 

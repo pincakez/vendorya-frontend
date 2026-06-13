@@ -362,7 +362,7 @@ onUnmounted(() => {
 .bell-btn  { position: relative; }
 .bell-badge {
   position: absolute; top: 1px; right: 1px; min-width: 16px; height: 16px;
-  padding: 0 4px; border-radius: 8px; background: #ef4444; color: #fff;
+  padding: 0 4px; border-radius: 8px; background: var(--danger); color: #fff;
   font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;
   line-height: 1; box-shadow: 0 0 0 2px var(--bg-header);
 }
@@ -383,7 +383,7 @@ onUnmounted(() => {
 .nd-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
 .dot-info    { background: var(--success); }
 .dot-warning { background: #f59e0b; }
-.dot-alert   { background: #ef4444; }
+.dot-alert   { background: var(--danger); }
 .dot-admin   { background: #1e293b; }
 .nd-body        { flex: 1; min-width: 0; }
 .nd-item-title  { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.35; }
