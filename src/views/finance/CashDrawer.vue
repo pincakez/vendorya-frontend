@@ -22,21 +22,21 @@
           </div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-icon" style="background:#fee2e2;color:#dc2626;"><ArrowUpFromLine :size="20" /></div>
+          <div class="kpi-icon" style="background:var(--danger-soft);color:var(--danger);"><ArrowUpFromLine :size="20" /></div>
           <div class="kpi-body">
             <div class="kpi-label">Cash Out (Expenses)</div>
             <div class="kpi-value"><Money :value="stats.cash_out" /></div>
           </div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-icon" style="background:#dcfce7;color:#16a34a;"><Wallet :size="20" /></div>
+          <div class="kpi-icon" style="background:var(--success-soft);color:var(--success);"><Wallet :size="20" /></div>
           <div class="kpi-body">
             <div class="kpi-label">Expected Balance</div>
             <div class="kpi-value"><Money :value="stats.expected_balance" /></div>
           </div>
         </div>
         <div class="kpi-card" :class="openShift ? 'card-open' : 'card-closed'">
-          <div class="kpi-icon" :style="openShift ? 'background:#dcfce7;color:#16a34a;' : 'background:#f3f4f6;color:#6b7280;'">
+          <div class="kpi-icon" :style="openShift ? 'background:var(--success-soft);color:var(--success);' : 'background:var(--bg-app);color:var(--text-muted);'">
             <Clock :size="20" />
           </div>
           <div class="kpi-body">

@@ -215,7 +215,7 @@
         <div>
           <label class="form-label">Username <span class="req">*</span> <span class="hint">(min 6 chars, unique)</span></label>
           <input v-model="form.owner.username" class="form-input" placeholder="ahmedh" autocomplete="off" />
-          <span v-if="form.owner.username && form.owner.username.length < 6" style="font-size:11.5px;color:#dc2626;margin-top:3px;display:block;">At least 6 characters required</span>
+          <span v-if="form.owner.username && form.owner.username.length < 6" style="font-size:11.5px;color:var(--danger);margin-top:3px;display:block;">At least 6 characters required</span>
         </div>
         <div>
           <label class="form-label">Password <span class="req">*</span> <span class="hint">(min 8 chars)</span></label>
@@ -224,7 +224,7 @@
         <div>
           <label class="form-label">Confirm Password <span class="req">*</span></label>
           <input v-model="form.owner.password_confirm" class="form-input" type="password" autocomplete="new-password" />
-          <span v-if="form.owner.password_confirm && form.owner.password !== form.owner.password_confirm" style="font-size:11.5px;color:#dc2626;margin-top:3px;display:block;">Passwords do not match</span>
+          <span v-if="form.owner.password_confirm && form.owner.password !== form.owner.password_confirm" style="font-size:11.5px;color:var(--danger);margin-top:3px;display:block;">Passwords do not match</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>

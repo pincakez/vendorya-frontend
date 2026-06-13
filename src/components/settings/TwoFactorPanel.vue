@@ -5,8 +5,8 @@
     <div class="tfa-row">
       <div>
         <div class="tfa-state">
-          <ShieldCheck v-if="status.enrolled" :size="16" style="color:#16a34a;" />
-          <ShieldAlert v-else :size="16" style="color:#d97706;" />
+          <ShieldCheck v-if="status.enrolled" :size="16" style="color:var(--success);" />
+          <ShieldAlert v-else :size="16" style="color:var(--warning);" />
           <span>{{ status.enrolled ? 'Enabled' : 'Not enabled' }}</span>
           <span v-if="status.required && !status.enrolled" class="tfa-req">Required for your role</span>
         </div>

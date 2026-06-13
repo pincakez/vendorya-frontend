@@ -29,7 +29,7 @@
 
       <!-- Credit Policy -->
       <div class="policy-card">
-        <div class="policy-icon" style="background:#dcfce7;color:#16a34a;"><CreditCard :size="20" /></div>
+        <div class="policy-icon" style="background:var(--success-soft);color:var(--success);"><CreditCard :size="20" /></div>
         <div class="policy-body">
           <div class="policy-title">Allow Credit Sales (Agel)</div>
           <div class="policy-desc">When enabled, customers can buy on credit — the outstanding amount is added to their balance. When disabled, all invoices must be paid in full at time of sale.</div>
@@ -70,7 +70,7 @@
 
       <!-- Default Tax -->
       <div class="policy-card">
-        <div class="policy-icon" style="background:#fef3c7;color:#d97706;"><Percent :size="20" /></div>
+        <div class="policy-icon" style="background:var(--warning-soft);color:var(--warning);"><Percent :size="20" /></div>
         <div class="policy-body">
           <div class="policy-title">Default Tax</div>
           <div class="policy-desc">The tax applied automatically to new invoices if no tax is specified on the product. Set to "None" for tax-exempt stores.</div>
@@ -85,7 +85,7 @@
 
       <!-- Product Numbering Mode -->
       <div class="policy-card">
-        <div class="policy-icon" style="background:#f0fdf4;color:#16a34a;"><Hash :size="20" /></div>
+        <div class="policy-icon" style="background:var(--success-soft);color:var(--success);"><Hash :size="20" /></div>
         <div class="policy-body">
           <div class="policy-title">Product Numbering Mode</div>
           <div class="policy-desc">Controls how the 4-digit product counter (last segment of every SKU) is assigned when a new variant is created.</div>
@@ -131,7 +131,7 @@
 
       <!-- IP Allowlist -->
       <div class="policy-card">
-        <div class="policy-icon" style="background:#dcfce7;color:#16a34a;"><Globe :size="20" /></div>
+        <div class="policy-icon" style="background:var(--success-soft);color:var(--success);"><Globe :size="20" /></div>
         <div class="policy-body">
           <div class="policy-title">Owner / Admin Login IP Allowlist</div>
           <div class="policy-desc">Restrict OWNER and ADMIN logins to specific IP addresses or CIDR ranges (one per line or comma-separated). Leave empty to allow login from anywhere. Cashiers and Managers are not affected.</div>

@@ -40,7 +40,7 @@
       </div>
 
       <div class="kpi-card">
-        <div class="kpi-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;">
+        <div class="kpi-icon" style="background:var(--success-soft);color:var(--success);">
           <TrendingUp :size="20" />
         </div>
         <div>

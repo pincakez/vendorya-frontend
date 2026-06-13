@@ -30,7 +30,7 @@
         </div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-icon" style="background:#dcfce7;color:#16a34a;"><BarChart2 :size="20" /></div>
+        <div class="kpi-icon" style="background:var(--success-soft);color:var(--success);"><BarChart2 :size="20" /></div>
         <div class="kpi-body">
           <div class="kpi-label">Total Stock Units</div>
           <div class="kpi-value">{{ formatQty(summary.totalUnits) }}</div>
