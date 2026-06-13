@@ -148,7 +148,7 @@ import {
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
-  BarChart2, LayoutGrid, Terminal, AlertTriangle,
+  BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -250,7 +250,8 @@ const adminGroups = computed(() => [
     { label: t('nav.items.misc'),        to: '/admin/misc',        icon: Wrench },
   ] },
   { id: 'adesign', title: t('nav.groups.design'), icon: LayoutGrid, items: [
-    { label: t('nav.items.gallery'), to: '/admin/widget-gallery', icon: LayoutGrid },
+    { label: t('nav.items.gallery'),            to: '/admin/widget-gallery',    icon: LayoutGrid },
+    { label: t('nav.items.component_gallery'),  to: '/admin/component-gallery', icon: Palette },
   ] },
   { id: 'acomm', title: t('nav.groups.communication'), icon: Bell, items: [
     { label: t('nav.items.alerts_center'), to: '/admin/alerts', icon: Bell },
@@ -292,6 +293,7 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
   background: var(--sb-bg); border-right: 1px solid var(--sb-border);
   display: flex; flex-direction: column;
   overflow: hidden;
+  box-shadow: var(--sb-panel-shadow);
   transition: width 220ms ease, min-width 220ms ease, padding 220ms ease;
 }
 .nsb-collapsed { width: var(--sb-collapsed); min-width: var(--sb-collapsed); }
@@ -378,7 +380,7 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-group-head {
   display: flex; align-items: center; justify-content: space-between; width: 100%;
   padding: 4px 8px; border: none; background: none; cursor: pointer;
-  font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--sb-text); margin-bottom: 8px; transition: color 120ms; outline: none;
 }
 .nsb-group-head:hover { color: var(--sb-text-active); }
@@ -426,7 +428,7 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-group-card {
   display: flex; flex-direction: column; gap: 3px;
   background: var(--sb-group-bg); border: 1px solid var(--sb-group-border);
-  border-radius: 14px; padding: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  border-radius: 14px; padding: 6px; box-shadow: var(--sb-card-shadow);
 }
 .nsb-group-card.nsb-col { background: transparent; border-color: transparent; box-shadow: none; padding: 0; gap: 6px; }
 

@@ -71,7 +71,8 @@
       "isolation_check": "Isolation Check",
       "ai_profiles": "AI Profiles",
       "misc": "Misc",
-      "gallery": "Gallery",
+      "gallery": "Widget Gallery",
+      "component_gallery": "Design Lab",
       "alerts_center": "Alerts Center"
     }
   },

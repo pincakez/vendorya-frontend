@@ -181,16 +181,136 @@
         <button class="btn-primary" @click="showModal = false">Confirm</button>
       </template>
     </AppModal>
+
+    <!-- ─── TYPOGRAPHY ────────────────────────────────────── -->
+    <section class="cg-section">
+      <div class="cg-head">
+        <h2 class="cg-h">Typography</h2>
+        <span class="cg-tag">global · CSS vars</span>
+      </div>
+      <p class="cg-ref-note" style="margin-bottom:16px;">
+        Controls the font size, weight, and style of the app's heading levels. Changes apply live and persist across sessions (localStorage). Reset removes all overrides and restores defaults.
+      </p>
+
+      <div class="typo-table">
+        <div class="typo-row typo-header">
+          <span>Level</span>
+          <span>Preview</span>
+          <span>Size (px)</span>
+          <span>Bold</span>
+          <span>Italic</span>
+        </div>
+        <div v-for="h in headings" :key="h.key" class="typo-row">
+          <span class="typo-level-name">{{ h.label }}</span>
+          <span class="typo-preview" :style="h.previewStyle">{{ h.sample }}</span>
+          <span class="typo-controls">
+            <input
+              type="number" min="8" max="64" step="1"
+              :value="h.size"
+              @change="setTypo(h, 'size', $event.target.value)"
+              class="typo-input"
+            />
+          </span>
+          <span class="typo-controls">
+            <button class="typo-toggle" :class="{ on: h.bold }" @click="setTypo(h, 'bold', !h.bold)">B</button>
+          </span>
+          <span class="typo-controls">
+            <button class="typo-toggle" :class="{ on: h.italic }" @click="setTypo(h, 'italic', !h.italic)"><em>I</em></button>
+          </span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn-ghost btn-sm" @click="resetTypo">Reset to defaults</button>
+        <span v-if="typoSaved" class="typo-saved">Saved ✓</span>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import { Plus } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const showModal = ref(false)
 const switchOn  = ref(true)
+
+/* ── Typography controls ─────────────────────────────────── */
+const TYPO_KEY = 'vya_typography'
+
+const defaults = {
+  page:  { size: 28, bold: true,  italic: false },
+  h2:    { size: 18, bold: true,  italic: false },
+  h3:    { size: 15, bold: true,  italic: false },
+  h4:    { size: 14, bold: true,  italic: false },
+  label: { size: 12, bold: true,  italic: false },
+}
+
+const stored = JSON.parse(localStorage.getItem(TYPO_KEY) || '{}')
+
+const headings = reactive([
+  { key: 'page',  label: 'Page Title (H1)', sample: 'Sales Invoices',        cssBase: '--typo-page',  ...defaults.page,  ...stored.page  },
+  { key: 'h2',    label: 'Section Title (H2)', sample: 'Label Presets',      cssBase: '--typo-h2',    ...defaults.h2,    ...stored.h2    },
+  { key: 'h3',    label: 'Group Title (H3)', sample: 'Basic Information',    cssBase: '--typo-h3',    ...defaults.h3,    ...stored.h3    },
+  { key: 'h4',    label: 'Divider Label (H4)', sample: 'DISPLAY & FORMAT',  cssBase: '--typo-h4',    ...defaults.h4,    ...stored.h4    },
+  { key: 'label', label: 'Form Label',        sample: 'Store Name',          cssBase: '--typo-label', ...defaults.label, ...stored.label },
+])
+
+const headingStyle = (h) => ({
+  fontSize: h.size + 'px',
+  fontWeight: h.bold ? 700 : 400,
+  fontStyle: h.italic ? 'italic' : 'normal',
+})
+
+const previewStyle = computed(() => (h) => headingStyle(h))
+
+headings.forEach(h => {
+  Object.defineProperty(h, 'previewStyle', {
+    get() { return { fontSize: this.size + 'px', fontWeight: this.bold ? 700 : 400, fontStyle: this.italic ? 'italic' : 'normal' } },
+    enumerable: false,
+  })
+})
+
+const typoSaved = ref(false)
+
+function applyToCss(h) {
+  const el = document.documentElement
+  el.style.setProperty(`${h.cssBase}-size`,   h.size + 'px')
+  el.style.setProperty(`${h.cssBase}-weight`,  h.bold   ? '700' : '400')
+  el.style.setProperty(`${h.cssBase}-style`,   h.italic ? 'italic' : 'normal')
+}
+
+function setTypo(h, prop, val) {
+  if (prop === 'size')   h.size   = parseInt(val, 10) || h.size
+  if (prop === 'bold')   h.bold   = !!val
+  if (prop === 'italic') h.italic = !!val
+  applyToCss(h)
+  persistTypo()
+}
+
+function persistTypo() {
+  const data = {}
+  headings.forEach(h => { data[h.key] = { size: h.size, bold: h.bold, italic: h.italic } })
+  localStorage.setItem(TYPO_KEY, JSON.stringify(data))
+  typoSaved.value = true
+  setTimeout(() => { typoSaved.value = false }, 1500)
+}
+
+function resetTypo() {
+  headings.forEach(h => {
+    const d = defaults[h.key]
+    h.size = d.size; h.bold = d.bold; h.italic = d.italic
+    applyToCss(h)
+  })
+  localStorage.removeItem(TYPO_KEY)
+  typoSaved.value = true
+  setTimeout(() => { typoSaved.value = false }, 1500)
+}
+
+onMounted(() => {
+  headings.forEach(h => applyToCss(h))
+})
 
 // Button theme sets — namespaced skins in main.css ([data-btnset="…"]).
 const btnSets = [
@@ -304,4 +424,37 @@ const badges = [
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
   padding: 14px 16px; margin: 0;
 }
+
+/* Typography controls */
+.typo-table { display: flex; flex-direction: column; gap: 2px; }
+.typo-row {
+  display: grid; grid-template-columns: 160px 1fr 90px 60px 60px;
+  gap: 12px; align-items: center;
+  padding: 10px 14px; border-radius: 10px;
+  background: var(--bg-card); border: 1px solid var(--border);
+}
+.typo-header {
+  background: var(--bg-app); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted);
+  border-color: transparent;
+}
+.typo-level-name { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+.typo-preview { color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.typo-controls { display: flex; align-items: center; }
+.typo-input {
+  width: 64px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 7px;
+  background: var(--bg-app); color: var(--text-primary); font-size: 13px;
+  outline: none; text-align: center; font-weight: 600;
+  transition: border-color 120ms;
+}
+.typo-input:focus { border-color: var(--accent); }
+.typo-toggle {
+  width: 32px; height: 28px; border: 1.5px solid var(--border); border-radius: 7px;
+  background: var(--bg-app); color: var(--text-muted); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: background 120ms, color 120ms, border-color 120ms;
+  display: flex; align-items: center; justify-content: center;
+}
+.typo-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.typo-toggle.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.typo-saved { font-size: 12.5px; color: var(--success); font-weight: 600; }
 </style>

@@ -1348,8 +1348,8 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .prod-modal-col { display: flex; flex-direction: column; gap: 14px; }
 .prod-modal-field-head { display: flex; align-items: center; flex-direction: row-reverse; justify-content: space-between; margin-bottom: 5px; }
 .prod-modal-field-head .form-label { margin-bottom: 0; }
-.prod-default-cb { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-muted); cursor: pointer; user-select: none; }
-.prod-default-cb input { accent-color: var(--accent); width: 12px; height: 12px; cursor: pointer; }
+.prod-default-cb { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer; user-select: none; }
+.prod-default-cb input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
 .prod-default-cb:hover span { color: var(--accent); }
 .prod-prices-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 .prod-attrs-section { border-top: 1px solid var(--border); padding-top: 12px; }

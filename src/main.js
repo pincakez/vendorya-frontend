@@ -26,6 +26,20 @@ import { useFormatStore } from './stores/format'
 const formatStore = useFormatStore(pinia)
 formatStore.applyColor()  // user's currency-symbol tint (persisted in localStorage)
 
+// Apply saved typography vars from Gallery › Typography tab (admin design tool)
+;(function applyTypography() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('vya_typography') || '{}')
+    const map = { page: '--typo-page', h2: '--typo-h2', h3: '--typo-h3', h4: '--typo-h4', label: '--typo-label' }
+    Object.entries(saved).forEach(([key, v]) => {
+      const base = map[key]; if (!base) return
+      document.documentElement.style.setProperty(`${base}-size`,   v.size   + 'px')
+      document.documentElement.style.setProperty(`${base}-weight`, v.bold   ? '700' : '400')
+      document.documentElement.style.setProperty(`${base}-style`,  v.italic ? 'italic' : 'normal')
+    })
+  } catch { /* noop */ }
+})()
+
 // Apply per-user display prefs (UI scale / font sizes) before mount, read from
 // the localStorage-hydrated user so there's no resize flash. Re-applied on login
 // and profile change via auth.setUser().

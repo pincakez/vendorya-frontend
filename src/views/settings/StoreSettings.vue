@@ -313,9 +313,10 @@
     <div v-if="activeTab === 'printing'">
       <!-- Sub-tab bar -->
       <div class="sub-tab-bar">
-        <button class="sub-tab-btn" :class="{ active: printingTab === 'receipt' }"  @click="printingTab = 'receipt'"><Receipt :size="14" /> Receipt</button>
+        <button class="sub-tab-btn" :class="{ active: printingTab === 'setup' }"    @click="printingTab = 'setup'"><Printer :size="14" /> Initial Setup</button>
+        <button class="sub-tab-btn" :class="{ active: printingTab === 'receipt' }"  @click="printingTab = 'receipt'"><Receipt :size="14" /> Receipt Settings</button>
         <button class="sub-tab-btn" :class="{ active: printingTab === 'labels' }"   @click="printingTab = 'labels'"><Tag :size="14" /> Label Presets</button>
-        <button class="sub-tab-btn" :class="{ active: printingTab === 'printers' }" @click="printingTab = 'printers'"><Printer :size="14" /> Printers Setup</button>
+        <button class="sub-tab-btn" :class="{ active: printingTab === 'designs' }"  @click="printingTab = 'designs'"><Palette :size="14" /> Print Designs</button>
       </div>
 
       <!-- Sub-tab: Receipt -->
@@ -382,8 +383,8 @@
         </div>
       </div>
 
-      <!-- Sub-tab: Printers Setup -->
-      <div v-if="printingTab === 'printers'">
+      <!-- Sub-tab: Initial Setup (printers + QZ Tray) -->
+      <div v-if="printingTab === 'setup'">
         <div class="settings-card">
           <!-- QZ Tray status + actions row -->
           <div class="section-divider" style="display:flex;align-items:center;gap:10px;">
@@ -507,6 +508,57 @@
             <span v-if="serviceError" class="field-error">{{ serviceError }}</span>
           </div>
         </div>
+      </div>
+
+      <!-- Sub-tab: Print Designs -->
+      <div v-if="printingTab === 'designs'">
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">Choose a visual design template for your receipts and labels. The active design is used when printing from POS, purchases, and services.</p>
+
+        <!-- Receipt Designs -->
+        <div class="section-heading-row" style="margin-bottom:14px;">
+          <span class="section-group-title">Receipt Designs</span>
+        </div>
+        <div class="design-grid" style="margin-bottom:32px;">
+          <div v-for="d in receiptDesigns" :key="d.id"
+               class="design-card" :class="{ active: activeReceiptDesign === d.id }"
+               @click="activeReceiptDesign = d.id; saveDesignPref()">
+            <div class="design-preview" v-html="d.preview"></div>
+            <div class="design-info">
+              <span class="design-name">{{ d.name }}</span>
+              <span class="design-desc">{{ d.desc }}</span>
+            </div>
+            <div class="design-actions">
+              <span v-if="activeReceiptDesign === d.id" class="design-active-badge">Active</span>
+              <button class="btn-secondary btn-sm" @click.stop="testDesign('receipt', d.id)">
+                <Printer :size="13" /> Test
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Label Designs -->
+        <div class="section-heading-row" style="margin-bottom:14px;">
+          <span class="section-group-title">Label Designs</span>
+        </div>
+        <div class="design-grid">
+          <div v-for="d in labelDesigns" :key="d.id"
+               class="design-card" :class="{ active: activeLabelDesign === d.id }"
+               @click="activeLabelDesign = d.id; saveDesignPref()">
+            <div class="design-preview design-preview--label" v-html="d.preview"></div>
+            <div class="design-info">
+              <span class="design-name">{{ d.name }}</span>
+              <span class="design-desc">{{ d.desc }}</span>
+            </div>
+            <div class="design-actions">
+              <span v-if="activeLabelDesign === d.id" class="design-active-badge">Active</span>
+              <button class="btn-secondary btn-sm" @click.stop="testDesign('label', d.id)">
+                <Printer :size="13" /> Test
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p v-if="designSaveMsg" class="save-ok" style="margin-top:16px;">{{ designSaveMsg }}</p>
       </div>
     </div>
 
@@ -726,7 +778,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import {
   Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X,
-  Settings2, Shield, Plus, UserCog, Tag, Briefcase, Trash, Download, Printer,
+  Settings2, Shield, Plus, UserCog, Tag, Briefcase, Trash, Download, Printer, Palette,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
@@ -749,7 +801,65 @@ const tabs = [
   { id: 'security', label: 'Security',          icon: Shield },
 ]
 const activeTab   = ref('store')
-const printingTab = ref('receipt')
+const printingTab = ref('setup')
+
+/* ── Print Designs ─────────────────────────────────────────────────── */
+const activeReceiptDesign = ref(localStorage.getItem('vya_receipt_design') || 'classic')
+const activeLabelDesign   = ref(localStorage.getItem('vya_label_design')   || 'standard')
+const designSaveMsg       = ref('')
+
+const receiptDesigns = [
+  {
+    id: 'classic',
+    name: 'Classic',
+    desc: 'Standard layout — store header, items table, totals, footer.',
+    preview: `<div class="dp-receipt"><div class="dp-store">My Store</div><div class="dp-line"></div><div class="dp-row"><span>Item A</span><span>100.00</span></div><div class="dp-row"><span>Item B</span><span>50.00</span></div><div class="dp-line"></div><div class="dp-total">Total: 150.00</div><div class="dp-footer">Thank you!</div></div>`,
+  },
+  {
+    id: 'compact',
+    name: 'Compact',
+    desc: 'Minimal whitespace — great for high-volume POS.',
+    preview: `<div class="dp-receipt dp-compact"><div class="dp-store dp-sm">Store</div><div class="dp-row dp-sm"><span>Item A</span><span>100</span></div><div class="dp-row dp-sm"><span>Item B</span><span>50</span></div><div class="dp-total dp-sm">Total 150</div></div>`,
+  },
+  {
+    id: 'modern',
+    name: 'Modern',
+    desc: 'Bold logo area + larger item names. Looks premium.',
+    preview: `<div class="dp-receipt dp-modern"><div class="dp-store dp-lg">MY STORE</div><div class="dp-badge">★ RECEIPT ★</div><div class="dp-line"></div><div class="dp-row"><span>Item A</span><span>100.00</span></div><div class="dp-row"><span>Item B</span><span>50.00</span></div><div class="dp-line"></div><div class="dp-total dp-lg">150.00 EGP</div></div>`,
+  },
+]
+
+const labelDesigns = [
+  {
+    id: 'standard',
+    name: 'Standard',
+    desc: 'Name + price + barcode — the most common layout.',
+    preview: `<div class="dp-label"><div class="dp-lname">Product Name</div><div class="dp-lbarcode">|||||||||||||||</div><div class="dp-lprice">150.00</div></div>`,
+  },
+  {
+    id: 'compact',
+    name: 'Compact',
+    desc: 'SKU + price only — for small labels.',
+    preview: `<div class="dp-label dp-compact"><div class="dp-lsku">SKU-001</div><div class="dp-lprice">150.00</div></div>`,
+  },
+  {
+    id: 'detailed',
+    name: 'Detailed',
+    desc: 'Store name + product name + SKU + barcode + price.',
+    preview: `<div class="dp-label"><div class="dp-lstore">My Store</div><div class="dp-lname dp-sm">Product Name</div><div class="dp-lbarcode">|||||||||||||||</div><div class="dp-lsku">SKU-001</div><div class="dp-lprice">150.00</div></div>`,
+  },
+]
+
+function saveDesignPref() {
+  localStorage.setItem('vya_receipt_design', activeReceiptDesign.value)
+  localStorage.setItem('vya_label_design',   activeLabelDesign.value)
+  designSaveMsg.value = 'Design preference saved.'
+  setTimeout(() => { designSaveMsg.value = '' }, 2000)
+}
+
+function testDesign(type, id) {
+  alert(`Test ${type} print sent (design: ${id}). Make sure your printer is connected via QZ Tray.`)
+}
 
 const egyptCities = [
   'Cairo', 'Alexandria', 'Giza', 'Port Said', 'Suez', 'Luxor', 'Aswan',
@@ -1154,11 +1264,11 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .form-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; width:100%; box-sizing:border-box; transition:border-color 120ms; resize:vertical; }
 .form-input:focus { border-color:var(--accent); }
 
-.section-divider { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); margin:8px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+.section-divider { font-size:var(--typo-h4-size,14px); font-weight:var(--typo-h4-weight,700); font-style:var(--typo-h4-style,normal); text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); margin:8px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
 .check-row { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-secondary); cursor:pointer; }
 
 .section-heading-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.section-group-title { font-size:13px; font-weight:700; color:var(--text-primary); }
+.section-group-title { font-size:var(--typo-h3-size,15px); font-weight:var(--typo-h3-weight,700); font-style:var(--typo-h3-style,normal); color:var(--text-primary); }
 
 .toggle-row  { display:flex; flex-direction:column; gap:12px; padding:16px 0; border-top:1px solid var(--border); margin-top:4px; }
 .toggle-item { display:flex; align-items:center; justify-content:space-between; gap:16px; }
@@ -1244,4 +1354,43 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .sub-tab-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; font-size:12.5px; font-weight:500; color:var(--text-muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms,border-color 120ms; border-radius:6px 6px 0 0; }
 .sub-tab-btn:hover  { color:var(--text-primary); }
 .sub-tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
+
+/* Print Designs tab */
+.design-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+.design-card {
+  border:2px solid var(--border); border-radius:14px; padding:14px; cursor:pointer;
+  background:var(--bg-card); transition:border-color 140ms,box-shadow 140ms;
+  display:flex; flex-direction:column; gap:10px;
+}
+.design-card:hover { border-color:var(--accent); box-shadow:0 2px 12px var(--accent-soft); }
+.design-card.active { border-color:var(--accent); background:var(--accent-soft); }
+.design-preview {
+  background:#ffffff; border:1px solid var(--border); border-radius:8px;
+  padding:10px; min-height:110px; font-family:monospace; overflow:hidden;
+  font-size:10px; color:#222; line-height:1.4;
+}
+.design-preview--label { min-height:70px; }
+.design-info { display:flex; flex-direction:column; gap:3px; }
+.design-name { font-size:13.5px; font-weight:700; color:var(--text-primary); }
+.design-desc { font-size:11.5px; color:var(--text-muted); }
+.design-actions { display:flex; align-items:center; justify-content:space-between; }
+.design-active-badge { font-size:11px; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:2px 8px; border-radius:20px; }
+
+/* mini receipt / label preview elements */
+:deep(.dp-receipt) { display:flex; flex-direction:column; gap:3px; font-family:monospace; }
+:deep(.dp-store)   { font-weight:bold; text-align:center; font-size:11px; }
+:deep(.dp-lg)      { font-size:12px; }
+:deep(.dp-sm)      { font-size:9px; }
+:deep(.dp-line)    { border-top:1px dashed #ccc; margin:3px 0; }
+:deep(.dp-row)     { display:flex; justify-content:space-between; font-size:9.5px; }
+:deep(.dp-total)   { font-weight:bold; font-size:10px; text-align:right; }
+:deep(.dp-footer)  { text-align:center; font-size:9px; color:#888; }
+:deep(.dp-badge)   { text-align:center; font-size:8px; letter-spacing:.1em; color:#888; }
+:deep(.dp-label)   { display:flex; flex-direction:column; gap:2px; font-family:monospace; }
+:deep(.dp-lname)   { font-weight:bold; font-size:11px; }
+:deep(.dp-lbarcode){ font-size:13px; letter-spacing:-.5px; color:#333; }
+:deep(.dp-lprice)  { font-size:13px; font-weight:bold; }
+:deep(.dp-lsku)    { font-size:9px; color:#888; }
+:deep(.dp-lstore)  { font-size:9px; color:#888; font-weight:bold; }
+:deep(.dp-compact) { gap:2px; }
 </style>
