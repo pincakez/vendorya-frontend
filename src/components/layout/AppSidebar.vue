@@ -40,6 +40,10 @@
           <template #icon><LayoutDashboard :size="17" :class="itemActive(soloTo) ? 'ic-active' : 'ic'" /></template>
           {{ soloLabel }}
         </PhysicalButton>
+        <PhysicalButton v-if="admin && !acting" variant="sidebar" :collapsed="collapsed" :active="itemActive('/admin/commands')" tooltip="Commands" @click="go('/admin/commands')">
+          <template #icon><Terminal :size="17" :class="itemActive('/admin/commands') ? 'ic-active' : 'ic'" /></template>
+          Commands
+        </PhysicalButton>
       </div>
     </div><!-- /nsb-sticky-top -->
 
@@ -150,7 +154,7 @@ import {
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
-  BarChart2, LayoutGrid, Languages,
+  BarChart2, LayoutGrid, Languages, Terminal,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })

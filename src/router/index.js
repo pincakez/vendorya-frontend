@@ -85,6 +85,7 @@ const router = createRouter({
         { path: 'admin/widget-gallery', component: () => import('@/views/admin/WidgetGallery.vue'),     meta: { admin: true } },
         { path: 'admin/isolation-check', component: () => import('@/views/admin/AdminIsolation.vue'),     meta: { admin: true } },
         { path: 'admin/usage',           component: () => import('@/views/admin/AdminUsage.vue'),          meta: { admin: true } },
+        { path: 'admin/commands',        component: () => import('@/views/admin/AdminCommands.vue'),       meta: { admin: true } },
       ]
     },
     // Bare printable pages — no app shell.
