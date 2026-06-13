@@ -119,7 +119,9 @@
               </tr>
               <tr v-for="inv in invoices" :key="inv.id" class="dt-row">
                 <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '']">
-                  <template v-if="col.key === 'invoice_number'">{{ inv.invoice_number ? `#${inv.invoice_number}` : '—' }}</template>
+                  <template v-if="col.key === 'invoice_number'">
+                    <span class="row-link" @click="router.push(`/finance/invoices/${inv.id}`)">{{ inv.invoice_number ? `#${inv.invoice_number}` : '—' }}</span>
+                  </template>
                   <template v-else-if="col.key === 'date'">{{ fmtDate(inv.date) }}</template>
                   <template v-else-if="col.key === 'customer'">{{ inv.customer_name || inv.customer }}</template>
                   <template v-else-if="col.key === 'status'">
@@ -530,6 +532,12 @@ onMounted(() => { loadLayout(); fetchCustomers(); fetchVariants() })
 </script>
 
 <style scoped>
+.row-link {
+  color: var(--accent); font-weight: 700; cursor: pointer;
+  transition: opacity 120ms;
+}
+.row-link:hover { opacity: 0.75; }
+
 .inv-head  { margin-bottom: 18px; }
 .inv-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-primary); margin: 0 0 4px; }
 .inv-sub   { font-size: 13.5px; color: var(--text-muted); margin: 0; }
