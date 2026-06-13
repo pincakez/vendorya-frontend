@@ -264,6 +264,7 @@ onUnmounted(() => clearInterval(tickerTimer))
   grid-template-columns: repeat(30, 1fr);
   grid-auto-rows: 20px;
   gap: 10px;
+  container-type: inline-size;
 }
 
 .dash-b0 { grid-column: span 30; grid-row: span 4;  }
@@ -275,7 +276,7 @@ onUnmounted(() => clearInterval(tickerTimer))
 .dash-b6 { grid-column: span 10; grid-row: span 16; }
 .dash-b7 { grid-column: span 10; grid-row: span 16; }
 
-@media (max-width: 1100px) {
+@container (max-width: 1100px) {
   .dash-b1, .dash-b2, .dash-b3,
   .dash-b5, .dash-b6, .dash-b7 { grid-column: span 30; }
 }
