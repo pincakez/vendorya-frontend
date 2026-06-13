@@ -5,11 +5,13 @@ import App from './App.vue'
 import './assets/main.css'
 import Money from './components/ui/Money.vue'
 import { Observer } from 'tailwindcss-intersect'
+import i18n from './i18n'
 
 const app = createApp(App)
 const pinia = createPinia()
 app.use(pinia)
 app.use(router)
+app.use(i18n)
 
 // Global display component for currency amounts (colored symbol, right-side).
 app.component('Money', Money)

@@ -55,6 +55,9 @@ api.interceptors.request.use(config => {
   // Server ignores this header for non-super-admin users.
   const storeId = localStorage.getItem('vendorya_active_store')
   if (storeId) config.headers['X-Store-ID'] = storeId
+  // Send locale so Django returns validation errors in the right language.
+  const locale = localStorage.getItem('vendorya_locale') || 'en'
+  config.headers['Accept-Language'] = locale
   return config
 })
 

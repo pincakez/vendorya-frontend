@@ -47,7 +47,7 @@
     <div class="nsb-scroll-area">
       <!-- Acting-as-store banner -->
       <div v-if="acting && !collapsed" class="nsb-acting">
-        <span class="nsb-acting-label">ACTING AS</span>
+        <span class="nsb-acting-label">{{ t('nav.acting_as') }}</span>
         <span class="nsb-acting-name">{{ auth.activeStore.name }}</span>
       </div>
 
@@ -98,18 +98,23 @@
     <div class="nsb-bottom">
       <div class="nsb-actions" :class="{ 'nsb-col': collapsed }">
         <!-- Exit to Admin (sudo acting on a store) -->
-        <PhysicalButton v-if="acting" variant="sidebar" :collapsed="collapsed" tooltip="Exit to Admin" @click="exitToAdmin">
+        <PhysicalButton v-if="acting" variant="sidebar" :collapsed="collapsed" :tooltip="t('nav.exit_to_admin')" @click="exitToAdmin">
           <template #icon><ArrowLeft :size="16" /></template>
-          Exit to Admin
+          {{ t('nav.exit_to_admin') }}
         </PhysicalButton>
         <!-- Settings (store users only) -->
-        <PhysicalButton v-if="!admin" variant="sidebar" :collapsed="collapsed" tooltip="Store Settings" @click="go('/settings')">
+        <PhysicalButton v-if="!admin" variant="sidebar" :collapsed="collapsed" :tooltip="t('nav.store_settings_btn')" @click="go('/settings')">
           <template #icon><Settings :size="16" /></template>
-          Store Settings
+          {{ t('nav.store_settings_btn') }}
         </PhysicalButton>
-        <PhysicalButton variant="sidebar" :collapsed="collapsed" tooltip="Log Out" @click="auth.logout()">
+        <!-- Language toggle -->
+        <PhysicalButton variant="sidebar" :collapsed="collapsed" :tooltip="locale === 'ar' ? 'English' : 'عربي'" @click="toggleLocale">
+          <template #icon><Languages :size="16" /></template>
+          {{ locale === 'ar' ? 'EN' : 'ع' }}
+        </PhysicalButton>
+        <PhysicalButton variant="sidebar" :collapsed="collapsed" :tooltip="t('nav.log_out')" @click="auth.logout()">
           <template #icon><LogOut :size="16" class="ic-logout" /></template>
-          <span class="lbl-logout">Log Out</span>
+          <span class="lbl-logout">{{ t('nav.log_out') }}</span>
         </PhysicalButton>
       </div>
 
@@ -121,7 +126,7 @@
         <template v-if="!collapsed">
           <div class="nsb-user-info">
             <span class="nsb-user-name">{{ auth.displayName }}</span>
-            <span class="nsb-user-role">{{ admin || auth.isSuperadmin ? 'Super Admin' : (auth.userRole || 'User') }}</span>
+            <span class="nsb-user-role">{{ admin || auth.isSuperadmin ? t('nav.super_admin') : (auth.userRole || 'User') }}</span>
           </div>
           <ChevronRight :size="15" class="nsb-user-chev" />
         </template>
@@ -134,6 +139,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import PhysicalButton from '@/components/ui/PhysicalButton.vue'
@@ -144,7 +150,7 @@ import {
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
-  BarChart2, LayoutGrid,
+  BarChart2, LayoutGrid, Languages,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -154,110 +160,118 @@ const route = useRoute()
 const router = useRouter()
 const auth  = useAuthStore()
 const theme = useThemeStore()
+const { t, locale } = useI18n()
+
 const logoSrc = computed(() =>
   props.admin ? '/logo-text-dark-mode.png'
               : (theme.dark ? '/logo-text-dark-mode.png' : '/logo-text-light-mode.png')
 )
 
+function toggleLocale() {
+  const next = locale.value === 'ar' ? 'en' : 'ar'
+  locale.value = next
+  localStorage.setItem('vendorya_locale', next)
+}
+
 /* ── Store nav ─────────────────────────────────────────────────────────────── */
-const groups = [
-  { id: 'inventory', title: 'INVENTORY', icon: Package, items: [
-    { label: 'Products', to: '/inventory/products', icon: Package },
-    { label: 'Purchases', to: '/inventory/purchases', icon: ShoppingCart },
-    { label: 'Stock Adjustments', to: '/inventory/adjustments', icon: SlidersHorizontal },
-    { label: 'Stock Transfers',   to: '/inventory/transfers',   icon: ArrowLeftRight },
-    { label: 'Categories', to: '/inventory/categories', icon: Tag },
-    { label: 'Attributes', to: '/inventory/attributes', icon: List },
-    { label: 'Reports', to: '/inventory/reports', icon: FileBarChart },
-    { label: 'Import / Export', to: '/inventory/import-export', icon: ArrowDownUp },
+const groups = computed(() => [
+  { id: 'inventory', title: t('nav.groups.inventory'), icon: Package, items: [
+    { label: t('nav.items.products'),          to: '/inventory/products',    icon: Package },
+    { label: t('nav.items.purchases'),         to: '/inventory/purchases',   icon: ShoppingCart },
+    { label: t('nav.items.stock_adjustments'), to: '/inventory/adjustments', icon: SlidersHorizontal },
+    { label: t('nav.items.stock_transfers'),   to: '/inventory/transfers',   icon: ArrowLeftRight },
+    { label: t('nav.items.categories'),        to: '/inventory/categories',  icon: Tag },
+    { label: t('nav.items.attributes'),        to: '/inventory/attributes',  icon: List },
+    { label: t('nav.items.inventory_reports'), to: '/inventory/reports',     icon: FileBarChart },
+    { label: t('nav.items.import_export'),     to: '/inventory/import-export', icon: ArrowDownUp },
   ] },
-  { id: 'finance', title: 'FINANCE', icon: Wallet, items: [
-    { label: 'Sales Invoices', to: '/finance/invoices', icon: FileText },
-    { label: 'Returns', to: '/finance/returns', icon: CornerDownLeft },
-    { label: 'Expenses', to: '/finance/expenses', icon: Receipt },
-    { label: 'Shifts', to: '/finance/shifts', icon: Clock },
-    { label: 'Cash Drawer', to: '/finance/cash-drawer', icon: Wallet },
+  { id: 'finance', title: t('nav.groups.finance'), icon: Wallet, items: [
+    { label: t('nav.items.sales_invoices'), to: '/finance/invoices',     icon: FileText },
+    { label: t('nav.items.returns'),        to: '/finance/returns',      icon: CornerDownLeft },
+    { label: t('nav.items.expenses'),       to: '/finance/expenses',     icon: Receipt },
+    { label: t('nav.items.shifts'),         to: '/finance/shifts',       icon: Clock },
+    { label: t('nav.items.cash_drawer'),    to: '/finance/cash-drawer',  icon: Wallet },
   ] },
-  { id: 'reports', title: 'REPORTS', icon: LineChart, items: [
-    { label: 'Sales', to: '/reports/sales', icon: LineChart },
-    { label: 'Profit Margin', to: '/reports/profit', icon: TrendingUp },
-    { label: 'A/R Aging', to: '/reports/ar-aging', icon: Clock },
-    { label: 'A/P Aging', to: '/reports/ap-aging', icon: Clock },
-    { label: 'Profit & Loss', to: '/reports/pnl', icon: DollarSign },
-    { label: 'Expenses', to: '/reports/expenses', icon: Receipt },
-    { label: 'Stock Ledger', to: '/reports/stock-ledger', icon: BookOpen },
-    { label: 'Cashier Perf.', to: '/reports/cashiers', icon: UserCheck },
-    { label: 'Tax', to: '/reports/tax', icon: Percent },
+  { id: 'reports', title: t('nav.groups.reports'), icon: LineChart, items: [
+    { label: t('nav.items.sales'),         to: '/reports/sales',        icon: LineChart },
+    { label: t('nav.items.profit_margin'), to: '/reports/profit',       icon: TrendingUp },
+    { label: t('nav.items.ar_aging'),      to: '/reports/ar-aging',     icon: Clock },
+    { label: t('nav.items.ap_aging'),      to: '/reports/ap-aging',     icon: Clock },
+    { label: t('nav.items.pnl'),           to: '/reports/pnl',          icon: DollarSign },
+    { label: t('nav.items.expenses'),      to: '/reports/expenses',     icon: Receipt },
+    { label: t('nav.items.stock_ledger'),  to: '/reports/stock-ledger', icon: BookOpen },
+    { label: t('nav.items.cashier_perf'),  to: '/reports/cashiers',     icon: UserCheck },
+    { label: t('nav.items.tax'),           to: '/reports/tax',          icon: Percent },
   ] },
-  { id: 'people', title: 'PEOPLE', icon: Users, items: [
-    { label: 'Customers', to: '/people/customers', icon: Users },
-    { label: 'Suppliers', to: '/people/suppliers', icon: Truck },
-    { label: 'Staff', to: '/people/staff', icon: Briefcase },
+  { id: 'people', title: t('nav.groups.people'), icon: Users, items: [
+    { label: t('nav.items.customers'), to: '/people/customers', icon: Users },
+    { label: t('nav.items.suppliers'), to: '/people/suppliers', icon: Truck },
+    { label: t('nav.items.staff'),     to: '/people/staff',     icon: Briefcase },
   ] },
-  { id: 'services', title: 'SERVICES', icon: Wrench, items: [
-    { label: 'Services', to: '/services', icon: Wrench },
+  { id: 'services', title: t('nav.groups.services'), icon: Wrench, items: [
+    { label: t('nav.items.services'), to: '/services', icon: Wrench },
   ] },
-  { id: 'general', title: 'GENERAL', icon: Folder, items: [
-    { label: 'Activity Log', to: '/activity-log', icon: Activity },
-    { label: 'Inbox', to: '/inbox', icon: Inbox },
+  { id: 'general', title: t('nav.groups.general'), icon: Folder, items: [
+    { label: t('nav.items.activity_log'), to: '/activity-log', icon: Activity },
+    { label: t('nav.items.inbox'),        to: '/inbox',         icon: Inbox },
   ] },
-  { id: 'settings', title: 'SETTINGS', icon: Settings, items: [
-    { label: 'Store Settings', to: '/settings', icon: Store },
-    { label: 'Taxes', to: '/settings/taxes', icon: Percent },
-    { label: 'Notifications', to: '/settings/notifications', icon: Bell },
-    { label: 'Billing', to: '/settings/billing', icon: CreditCard, ownerOnly: true },
-    { label: 'POS Favorites', to: '/settings/pos/favorites', icon: Star },
-    { label: 'POS Top Selling', to: '/settings/pos/top-selling', icon: TrendingUp },
-    { label: 'UX Settings', to: '/settings/pos/ux', icon: Keyboard },
-    { label: 'Profile', to: '/settings/profile', icon: User },
-    { label: 'Security', to: '/settings/security', icon: Lock },
+  { id: 'settings', title: t('nav.groups.settings'), icon: Settings, items: [
+    { label: t('nav.items.store_settings'),  to: '/settings',                icon: Store },
+    { label: t('nav.items.taxes'),           to: '/settings/taxes',          icon: Percent },
+    { label: t('nav.items.notifications'),   to: '/settings/notifications',  icon: Bell },
+    { label: t('nav.items.billing'),         to: '/settings/billing',        icon: CreditCard, ownerOnly: true },
+    { label: t('nav.items.pos_favorites'),   to: '/settings/pos/favorites',  icon: Star },
+    { label: t('nav.items.pos_top_selling'), to: '/settings/pos/top-selling',icon: TrendingUp },
+    { label: t('nav.items.ux_settings'),     to: '/settings/pos/ux',         icon: Keyboard },
+    { label: t('nav.items.profile'),         to: '/settings/profile',        icon: User },
+    { label: t('nav.items.security'),        to: '/settings/security',       icon: Lock },
   ] },
-]
+])
 
 /* ── Admin nav (general super-admin mode) ──────────────────────────────────── */
-const adminGroups = [
-  { id: 'platform', title: 'PLATFORM', icon: Store, items: [
-    { label: 'Stores', to: '/admin/stores', icon: Store },
-    { label: 'Branches', to: '/admin/branches', icon: Building2 },
-    { label: 'Admin Users', to: '/admin/users', icon: Shield },
-    { label: 'Auth Settings', to: '/admin/auth-settings', icon: KeyRound },
+const adminGroups = computed(() => [
+  { id: 'platform', title: t('nav.groups.platform'), icon: Store, items: [
+    { label: t('nav.items.stores'),        to: '/admin/stores',       icon: Store },
+    { label: t('nav.items.branches'),      to: '/admin/branches',     icon: Building2 },
+    { label: t('nav.items.admin_users'),   to: '/admin/users',        icon: Shield },
+    { label: t('nav.items.auth_settings'), to: '/admin/auth-settings',icon: KeyRound },
   ] },
-  { id: 'abilling', title: 'BILLING', icon: CreditCard, items: [
-    { label: 'Subscriptions', to: '/admin/subscriptions', icon: CreditCard },
-    { label: 'Plans', to: '/admin/plans', icon: Package },
-    { label: 'Billing Settings', to: '/admin/billing-settings', icon: SlidersHorizontal },
+  { id: 'abilling', title: t('nav.groups.billing'), icon: CreditCard, items: [
+    { label: t('nav.items.subscriptions'),    to: '/admin/subscriptions',    icon: CreditCard },
+    { label: t('nav.items.plans'),            to: '/admin/plans',            icon: Package },
+    { label: t('nav.items.billing_settings'), to: '/admin/billing-settings', icon: SlidersHorizontal },
   ] },
-  { id: 'asystem', title: 'SYSTEM', icon: Activity, items: [
-    { label: 'Activity Log', to: '/admin/activity-log', icon: Activity },
-    { label: 'Tenant Usage', to: '/admin/usage', icon: BarChart2 },
-    { label: 'Trash', to: '/admin/trash', icon: Trash2 },
-    { label: 'Isolation Check', to: '/admin/isolation-check', icon: ShieldCheck },
+  { id: 'asystem', title: t('nav.groups.system'), icon: Activity, items: [
+    { label: t('nav.items.activity_log'),   to: '/admin/activity-log',    icon: Activity },
+    { label: t('nav.items.tenant_usage'),   to: '/admin/usage',           icon: BarChart2 },
+    { label: t('nav.items.trash'),          to: '/admin/trash',           icon: Trash2 },
+    { label: t('nav.items.isolation_check'),to: '/admin/isolation-check', icon: ShieldCheck },
   ] },
-  { id: 'aai', title: 'AI', icon: Bot, items: [
-    { label: 'AI Profiles', to: '/admin/ai-profiles', icon: Bot },
-    { label: 'Misc', to: '/admin/misc', icon: Wrench },
+  { id: 'aai', title: t('nav.groups.ai'), icon: Bot, items: [
+    { label: t('nav.items.ai_profiles'), to: '/admin/ai-profiles', icon: Bot },
+    { label: t('nav.items.misc'),        to: '/admin/misc',        icon: Wrench },
   ] },
-  { id: 'adesign', title: 'DESIGN', icon: LayoutGrid, items: [
-    { label: 'Gallery', to: '/admin/widget-gallery', icon: LayoutGrid },
+  { id: 'adesign', title: t('nav.groups.design'), icon: LayoutGrid, items: [
+    { label: t('nav.items.gallery'), to: '/admin/widget-gallery', icon: LayoutGrid },
   ] },
-  { id: 'acomm', title: 'COMMUNICATION', icon: Bell, items: [
-    { label: 'Alerts Center', to: '/admin/alerts', icon: Bell },
+  { id: 'acomm', title: t('nav.groups.communication'), icon: Bell, items: [
+    { label: t('nav.items.alerts_center'), to: '/admin/alerts', icon: Bell },
   ] },
-]
+])
 
 const canBilling = computed(() => auth.userRole === 'OWNER' || auth.isSuperadmin)
 const visibleGroups = computed(() =>
-  groups.map(g => ({ ...g, items: g.items.filter(it => !it.ownerOnly || canBilling.value) }))
+  groups.value.map(g => ({ ...g, items: g.items.filter(it => !it.ownerOnly || canBilling.value) }))
 )
 
 const acting = computed(() => props.admin && !!auth.activeStore)
 
 const displayGroups = computed(() =>
-  (props.admin && !acting.value) ? adminGroups : visibleGroups.value
+  (props.admin && !acting.value) ? adminGroups.value : visibleGroups.value
 )
 
 const soloTo    = computed(() => (props.admin && !acting.value) ? '/admin/dashboard' : '/dashboard')
-const soloLabel = computed(() => (props.admin && !acting.value) ? 'Overview' : 'Dashboard')
+const soloLabel = computed(() => (props.admin && !acting.value) ? t('nav.overview') : t('nav.dashboard'))
 const userCardTo = computed(() => props.admin ? '/admin/users' : '/settings/profile')
 
 function itemActive(to) {
@@ -267,7 +281,7 @@ function itemActive(to) {
 }
 
 const open = reactive({})
-;[...groups, ...adminGroups].forEach(g => { open[g.id] = g.items.some(it => itemActive(it.to)) })
+;[...groups.value, ...adminGroups.value].forEach(g => { open[g.id] = g.items.some(it => itemActive(it.to)) })
 
 function toggle(id) { open[id] = !open[id] }
 function go(to) { if (route.path !== to) router.push(to) }
