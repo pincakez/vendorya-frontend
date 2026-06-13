@@ -1346,9 +1346,9 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .prod-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 @media (max-width: 640px) { .prod-modal-grid { grid-template-columns: 1fr; } }
 .prod-modal-col { display: flex; flex-direction: column; gap: 14px; }
-.prod-modal-field-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.prod-modal-field-head { display: flex; align-items: center; flex-direction: row-reverse; justify-content: space-between; margin-bottom: 5px; }
 .prod-modal-field-head .form-label { margin-bottom: 0; }
-.prod-default-cb { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted); cursor: pointer; user-select: none; }
+.prod-default-cb { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-muted); cursor: pointer; user-select: none; }
 .prod-default-cb input { accent-color: var(--accent); width: 12px; height: 12px; cursor: pointer; }
 .prod-default-cb:hover span { color: var(--accent); }
 .prod-prices-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }

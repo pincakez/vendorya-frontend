@@ -4,7 +4,7 @@
     "overview": "نظرة عامة",
     "acting_as": "يعمل كـ",
     "exit_to_admin": "الخروج إلى الإدارة",
-    "store_settings_btn": "إعدادات المتجر",
+    "store_settings_btn": "الإعدادات",
     "log_out": "تسجيل الخروج",
     "super_admin": "مدير النظام",
     "groups": {
@@ -50,7 +50,7 @@
       "services": "الخدمات",
       "activity_log": "سجل النشاط",
       "inbox": "صندوق الوارد",
-      "store_settings": "إعدادات المتجر",
+      "store_settings": "الإعدادات",
       "taxes": "الضرائب",
       "notifications": "الإشعارات",
       "billing": "الفوترة",

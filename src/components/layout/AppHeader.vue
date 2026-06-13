@@ -140,6 +140,11 @@
         <Sun v-if="theme.dark" :size="18" />
         <Moon v-else :size="18" />
       </button>
+
+      <!-- Language toggle -->
+      <button class="header-lang-btn" @click="toggleLocale" :title="locale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'">
+        {{ locale === 'ar' ? 'EN' : 'AR' }}
+      </button>
     </template>
   </header>
 </template>
@@ -147,6 +152,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import {
   Bell, Sun, Moon, Search, ChevronDown, Check, ArrowLeft, Bot, Eye,
   LayoutDashboard, Package, ShoppingCart, SlidersHorizontal, Tag, List, FileBarChart,
@@ -164,6 +170,13 @@ defineEmits(['toggleSidebar', 'toggleChat'])
 const auth   = useAuthStore()
 const theme  = useThemeStore()
 const router = useRouter()
+const { locale } = useI18n()
+
+function toggleLocale() {
+  const next = locale.value === 'ar' ? 'en' : 'ar'
+  locale.value = next
+  localStorage.setItem('vendorya_locale', next)
+}
 
 const storeLogo = computed(() => {
   const store = auth.user?.store || auth.activeStore
@@ -379,7 +392,16 @@ onUnmounted(() => {
 .nd-view-all { display: block; width: 100%; padding: 10px 16px; text-align: center; font-size: 12.5px; font-weight: 600; color: var(--accent); background: none; border: none; border-top: 1px solid var(--border); cursor: pointer; transition: background 100ms; }
 .nd-view-all:hover { background: var(--bg-app); }
 
-.nhdr-brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-right: 4px; }
+.nhdr-brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-right: 100px; }
+
+.header-lang-btn {
+  flex-shrink: 0; padding: 5px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-secondary); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.05em; cursor: pointer; font-family: inherit;
+  transition: border-color 120ms, color 120ms, background 120ms;
+}
+.header-lang-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .nhdr-store-logo { height: 28px; width: auto; max-width: 160px; object-fit: contain; flex-shrink: 0; }
 .nhdr-premium-badge {
   flex-shrink: 0; font-size: 8.5px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 5px;

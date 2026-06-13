@@ -96,32 +96,26 @@
           </div>
         </div>
       </div>
+      <!-- ── SCROLL-END ACTIONS (settings + logout — scrolls with nav) ── -->
+      <div class="nsb-actions-row" :class="{ 'nsb-col': collapsed }">
+        <!-- Exit to Admin (sudo acting on a store) -->
+        <button v-if="acting" class="nsb-gear-btn" :title="t('nav.exit_to_admin')" @click="exitToAdmin">
+          <ArrowLeft :size="22" />
+        </button>
+        <!-- Settings gear (store users only) -->
+        <button v-if="!admin" class="nsb-gear-btn" :title="t('nav.store_settings_btn')" @click="go('/settings')">
+          <Settings :size="22" />
+        </button>
+        <!-- Logout red button -->
+        <button class="nsb-logout-btn" :class="{ 'nsb-logout-col': collapsed }" @click="auth.logout()" :title="t('nav.log_out')">
+          <AlertTriangle :size="15" />
+          <span v-if="!collapsed">{{ t('nav.log_out') }}</span>
+        </button>
+      </div>
     </div><!-- /nsb-scroll-area -->
 
-    <!-- ── BOTTOM ── -->
+    <!-- ── BOTTOM (user card only — pinned) ── -->
     <div class="nsb-bottom">
-      <div class="nsb-actions" :class="{ 'nsb-col': collapsed }">
-        <!-- Exit to Admin (sudo acting on a store) -->
-        <PhysicalButton v-if="acting" variant="sidebar" :collapsed="collapsed" :tooltip="t('nav.exit_to_admin')" @click="exitToAdmin">
-          <template #icon><ArrowLeft :size="16" /></template>
-          {{ t('nav.exit_to_admin') }}
-        </PhysicalButton>
-        <!-- Settings (store users only) -->
-        <PhysicalButton v-if="!admin" variant="sidebar" :collapsed="collapsed" :tooltip="t('nav.store_settings_btn')" @click="go('/settings')">
-          <template #icon><Settings :size="16" /></template>
-          {{ t('nav.store_settings_btn') }}
-        </PhysicalButton>
-        <!-- Language toggle -->
-        <PhysicalButton variant="sidebar" :collapsed="collapsed" :tooltip="locale === 'ar' ? 'English' : 'عربي'" @click="toggleLocale">
-          <template #icon><Languages :size="16" /></template>
-          {{ locale === 'ar' ? 'EN' : 'ع' }}
-        </PhysicalButton>
-        <PhysicalButton variant="sidebar" :collapsed="collapsed" :tooltip="t('nav.log_out')" @click="auth.logout()">
-          <template #icon><LogOut :size="16" class="ic-logout" /></template>
-          <span class="lbl-logout">{{ t('nav.log_out') }}</span>
-        </PhysicalButton>
-      </div>
-
       <div class="nsb-user" :class="{ 'nsb-col': collapsed }" @click="go(userCardTo)">
         <div class="nsb-avatar">
           <img v-if="auth.user?.photo" :src="auth.user.photo" alt="" />
@@ -154,7 +148,7 @@ import {
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
-  BarChart2, LayoutGrid, Languages, Terminal,
+  BarChart2, LayoutGrid, Terminal, AlertTriangle,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -384,7 +378,7 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-group-head {
   display: flex; align-items: center; justify-content: space-between; width: 100%;
   padding: 4px 8px; border: none; background: none; cursor: pointer;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--sb-text); margin-bottom: 8px; transition: color 120ms; outline: none;
 }
 .nsb-group-head:hover { color: var(--sb-text-active); }
@@ -441,12 +435,32 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .ic-active { color: var(--accent); flex-shrink: 0; }
 .ic-logout { color: #ef4444; }
 
-/* Bottom */
-.nsb-bottom { padding: 18px 14px; border-top: 1px solid var(--sb-border); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; background: var(--sb-bg); }
-.nsb-collapsed .nsb-bottom { padding: 18px 8px; }
-.nsb-actions { display: flex; flex-direction: column; gap: 3px; }
-.nsb-actions.nsb-col { gap: 6px; }
-.lbl-logout { color: #ef4444; }
+/* Scroll-end actions row (settings gear + logout — not sticky) */
+.nsb-actions-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 12px 0 16px; border-top: 1px solid var(--sb-border); margin-top: 8px;
+}
+.nsb-actions-row.nsb-col { flex-direction: column; align-items: center; }
+.nsb-gear-btn {
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer;
+  color: var(--sb-text); padding: 8px; border-radius: 10px;
+  transition: background 120ms, color 120ms; flex-shrink: 0;
+}
+.nsb-gear-btn:hover { background: var(--sb-hover); color: var(--sb-text-active); }
+.nsb-logout-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
+  color: #ef4444; border-radius: 10px; padding: 8px 12px;
+  cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit;
+  transition: background 120ms, border-color 120ms;
+}
+.nsb-logout-btn:hover { background: rgba(239,68,68,0.16); border-color: rgba(239,68,68,0.5); }
+.nsb-logout-btn.nsb-logout-col { flex: unset; padding: 8px; }
+
+/* Bottom (user card only — pinned) */
+.nsb-bottom { padding: 10px 14px 14px; border-top: 1px solid var(--sb-border); display: flex; flex-direction: column; gap: 0; flex-shrink: 0; background: var(--sb-bg); }
+.nsb-collapsed .nsb-bottom { padding: 10px 8px 14px; }
 .nsb-user {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   padding: 8px 10px; border-radius: 12px; cursor: pointer; transition: background 120ms;
