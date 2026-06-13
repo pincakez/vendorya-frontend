@@ -258,6 +258,8 @@
 .btn-ghost,
 .btn-danger,
 .btn-secondary {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -294,6 +296,36 @@
   cursor: default;
   transform: none;
 }
+
+/* ── BUTTON RIPPLE (s72) ────────────────────────────────────
+   JS (main.js) sets --ripple-x/y on mousedown and toggles
+   .btn-rippling to fire the animation.                       */
+@keyframes btn-ripple {
+  0%   { transform: translate(-50%, -50%) scale(0);   opacity: 0.38; }
+  100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0;    }
+}
+.btn-primary::after,
+.btn-ghost::after,
+.btn-danger::after,
+.btn-secondary::after {
+  content: '';
+  position: absolute;
+  left: var(--ripple-x, 50%);
+  top:  var(--ripple-y, 50%);
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+}
+/* Ghost/secondary: dark tint on light bg, light tint in dark mode */
+.btn-ghost::after,
+.btn-secondary::after                { background: rgba(0, 0, 0, 0.07); }
+.dark .btn-ghost::after,
+.dark .btn-secondary::after          { background: rgba(255, 255, 255, 0.12); }
+.btn-rippling::after { animation: btn-ripple 420ms var(--ease-out) forwards; }
 
 /* Primary — solid accent */
 .btn-primary { border: none; background: var(--accent); color: #fff; }
@@ -1095,9 +1127,12 @@ body {
   transition: border-color 150ms, box-shadow 150ms;
 }
 
-.form-input:focus {
+.form-input:focus,
+select.form-input:focus,
+textarea.form-input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
+  outline: none;
 }
 
 .form-input::placeholder {
@@ -1124,6 +1159,31 @@ body {
 /* ── UTILITIES ─────────────────────────────────────────── */
 .transition-theme {
   transition: background 200ms, color 200ms, border-color 200ms;
+}
+
+/* ── PAGE TRANSITIONS (s72) ────────────────────────────────
+   Used in DefaultLayout + AdminLayout via <Transition :name="transitionName">.
+   forward = slide in from right; back = slide in from left.
+   Mobile (<768px) fades only — no slide to avoid motion on small screens. */
+.slide-forward-enter-active,
+.slide-forward-leave-active { transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out); }
+.slide-forward-enter-from   { opacity: 0; transform: translateX(22px); }
+.slide-forward-leave-to     { opacity: 0; transform: translateX(-22px); }
+
+.slide-back-enter-active,
+.slide-back-leave-active    { transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out); }
+.slide-back-enter-from      { opacity: 0; transform: translateX(-22px); }
+.slide-back-leave-to        { opacity: 0; transform: translateX(22px); }
+
+@media (max-width: 768px) {
+  .slide-forward-enter-active,
+  .slide-forward-leave-active,
+  .slide-back-enter-active,
+  .slide-back-leave-active    { transition: opacity 150ms var(--ease-out); }
+  .slide-forward-enter-from,
+  .slide-forward-leave-to,
+  .slide-back-enter-from,
+  .slide-back-leave-to        { transform: none; }
 }
 
 /* ── POS MODE ──────────────────────────────────────────── */

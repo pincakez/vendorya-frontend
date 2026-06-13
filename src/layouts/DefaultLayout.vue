@@ -10,7 +10,11 @@
 
       <main class="app-content">
         <div class="page-wrap">
-          <RouterView />
+          <RouterView v-slot="{ Component, route }">
+            <Transition :name="transitionName" mode="out-in">
+              <component :is="Component" :key="route.path" />
+            </Transition>
+          </RouterView>
         </div>
       </main>
 
@@ -29,7 +33,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, computed } from 'vue'
+import { onMounted, onUnmounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Eye } from 'lucide-vue-next'
 import { RouterView } from 'vue-router'
@@ -45,6 +49,16 @@ useIdleTimeout()
 const auth   = useAuthStore()
 const ui     = useUIStore()
 const router = useRouter()
+
+// Page transition direction: popstate = browser back/forward, everything else = forward
+const navDir = ref('forward')
+let isBack = false
+const onPopState = () => { isBack = true }
+onMounted(()   => window.addEventListener('popstate', onPopState))
+onUnmounted(() => window.removeEventListener('popstate', onPopState))
+const unguard = router.beforeEach(() => { navDir.value = isBack ? 'back' : 'forward'; isBack = false })
+onUnmounted(unguard)
+const transitionName = computed(() => navDir.value === 'back' ? 'slide-back' : 'slide-forward')
 
 function exitPreview() {
   auth.exitPreview()

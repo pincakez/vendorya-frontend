@@ -56,3 +56,16 @@ app.mount('#app')
 Observer.start()
 // Restart on every route change so newly mounted elements are observed
 router.afterEach(() => Observer.restart())
+
+// Button ripple effect (s72): set click origin vars, toggle .btn-rippling
+document.addEventListener('mousedown', (e) => {
+  const btn = e.target.closest('.btn-primary, .btn-ghost, .btn-secondary, .btn-danger')
+  if (!btn || btn.disabled) return
+  const rect = btn.getBoundingClientRect()
+  btn.style.setProperty('--ripple-x', (e.clientX - rect.left) + 'px')
+  btn.style.setProperty('--ripple-y', (e.clientY - rect.top) + 'px')
+  btn.classList.remove('btn-rippling')
+  void btn.offsetWidth // force reflow to restart animation
+  btn.classList.add('btn-rippling')
+  setTimeout(() => btn.classList.remove('btn-rippling'), 450)
+}, { passive: true })

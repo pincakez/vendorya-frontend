@@ -16,7 +16,11 @@
 
       <main class="app-content">
         <div class="page-wrap">
-          <RouterView />
+          <RouterView v-slot="{ Component, route }">
+            <Transition :name="transitionName" mode="out-in">
+              <component :is="Component" :key="route.path" />
+            </Transition>
+          </RouterView>
         </div>
       </main>
 
@@ -38,8 +42,8 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { RouterView } from 'vue-router'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
+import { RouterView, useRouter } from 'vue-router'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
@@ -49,9 +53,20 @@ import AdminChatPanel from '@/components/admin/AdminChatPanel.vue'
 const CHAT_WIDTH_KEY    = 'vendorya_chat_width'
 const SIDEBAR_STATE_KEY = 'vendorya_sidebar'
 
+const router           = useRouter()
 const sidebarCollapsed = ref(localStorage.getItem(SIDEBAR_STATE_KEY) === 'collapsed')
 const chatOpen         = ref(false)
 const chatWidth        = ref(parseInt(localStorage.getItem(CHAT_WIDTH_KEY) || '380', 10))
+
+// Page transition direction
+const navDir = ref('forward')
+let isBack = false
+const onPopState = () => { isBack = true }
+onMounted(()   => window.addEventListener('popstate', onPopState))
+onUnmounted(() => window.removeEventListener('popstate', onPopState))
+const unguard = router.beforeEach(() => { navDir.value = isBack ? 'back' : 'forward'; isBack = false })
+onUnmounted(unguard)
+const transitionName = computed(() => navDir.value === 'back' ? 'slide-back' : 'slide-forward')
 
 watch(sidebarCollapsed, val => {
   localStorage.setItem(SIDEBAR_STATE_KEY, val ? 'collapsed' : 'open')
