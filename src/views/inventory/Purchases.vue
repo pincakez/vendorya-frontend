@@ -2,16 +2,16 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Purchases</h1>
-        <p class="page-sub">Supplier purchase invoices and stock receiving</p>
+        <h1 class="page-title">{{ t('inventory.purchases.title') }}</h1>
+        <p class="page-sub">{{ t('inventory.purchases.sub') }}</p>
       </div>
     </div>
 
     <div class="toolbar">
       <select v-model="statusFilter" class="form-input filter-select" @change="fetchPurchases(1)">
-        <option value="">All statuses</option>
-        <option value="DRAFT">Draft</option>
-        <option value="RECEIVED">Received</option>
+        <option value="">{{ t('inventory.purchases.status_all') }}</option>
+        <option value="DRAFT">{{ t('inventory.purchases.status_draft') }}</option>
+        <option value="RECEIVED">{{ t('inventory.purchases.status_received') }}</option>
       </select>
     </div>
 
@@ -23,12 +23,12 @@
         <table class="dt">
         <thead>
           <tr>
-            <th class="dt-th">Supplier</th>
-            <th class="dt-th">Ref #</th>
-            <th class="dt-th">Date</th>
-            <th class="dt-th">Status</th>
-            <th class="dt-th">Total</th>
-            <th class="dt-th">Paid</th>
+            <th class="dt-th">{{ t('inventory.purchases.table_supplier') }}</th>
+            <th class="dt-th">{{ t('inventory.purchases.table_ref') }}</th>
+            <th class="dt-th">{{ t('inventory.purchases.table_date') }}</th>
+            <th class="dt-th">{{ t('inventory.purchases.table_status') }}</th>
+            <th class="dt-th">{{ t('inventory.purchases.table_total') }}</th>
+            <th class="dt-th">{{ t('inventory.purchases.table_paid') }}</th>
             <th class="dt-th" style="width:80px;"></th>
           </tr>
         </thead>
@@ -36,21 +36,21 @@
           <tr v-if="purchases.length === 0">
             <td colspan="7" class="dt-empty">
               <ShoppingCart :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No purchases yet</div>
+              <div>{{ t('inventory.purchases.empty') }}</div>
             </td>
           </tr>
           <tr v-for="p in purchases" :key="p.id" class="dt-row" @click="openView(p)" style="cursor:pointer;">
             <td class="col-name">{{ p.supplier_name || p.supplier }}</td>
             <td class="col-ref">{{ p.vendor_reference || '—' }}</td>
             <td>{{ fmtDate(p.date) }}</td>
-            <td><span class="status-badge" :class="`status-${p.status.toLowerCase()}`">{{ p.status }}</span></td>
+            <td><span class="status-badge" :class="`status-${p.status.toLowerCase()}`">{{ statusLabel(p.status) }}</span></td>
             <td class="col-amount"><Money :value="p.total_amount" /></td>
             <td class="col-amount"><Money :value="p.paid_amount" /></td>
             <td @click.stop>
-              <button v-if="p.status === 'DRAFT'" class="row-action success" title="Receive stock" @click="receivePurchase(p)">
+              <button v-if="p.status === 'DRAFT'" class="row-action success" :title="t('inventory.purchases.receive_hint')" @click="receivePurchase(p)">
                 <PackageCheck :size="13" />
               </button>
-              <button v-if="p.status === 'DRAFT'" class="row-action danger" title="Delete" @click="deletePurchase(p)">
+              <button v-if="p.status === 'DRAFT'" class="row-action danger" :title="t('common.delete')" @click="deletePurchase(p)">
                 <Trash2 :size="13" />
               </button>
             </td>
@@ -62,69 +62,69 @@
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchPurchases" />
 
     <!-- MODAL: New / View Purchase -->
-    <AppModal :open="modal.open" :title="modal.id ? 'Purchase Details' : 'New Purchase'" width="720px" @close="closeModal">
+    <AppModal :open="modal.open" :title="modal.id ? t('inventory.purchases.modal_view_title') : t('inventory.purchases.modal_new_title')" width="720px" @close="closeModal">
       <div class="form-grid">
         <div>
-          <label class="form-label">Supplier</label>
+          <label class="form-label">{{ t('inventory.purchases.form_supplier') }}</label>
           <select v-model="modal.supplier" class="form-input" :disabled="!!modal.id">
-            <option value="">Select supplier…</option>
+            <option value="">{{ t('inventory.purchases.select_supplier') }}</option>
             <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
         <div>
-          <label class="form-label">Date</label>
+          <label class="form-label">{{ t('inventory.purchases.form_date') }}</label>
           <input v-model="modal.date" type="datetime-local" class="form-input" :disabled="!!modal.id" />
         </div>
         <div>
-          <label class="form-label">Supplier Invoice # (optional)</label>
-          <input v-model="modal.vendor_reference" class="form-input" placeholder="e.g. INV-2026-001" :disabled="!!modal.id" />
+          <label class="form-label">{{ t('inventory.purchases.form_vendor_ref') }}</label>
+          <input v-model="modal.vendor_reference" class="form-input" :placeholder="t('inventory.purchases.form_vendor_ref_placeholder')" :disabled="!!modal.id" />
         </div>
         <div>
-          <label class="form-label">Notes</label>
-          <input v-model="modal.notes" class="form-input" placeholder="Optional notes" :disabled="!!modal.id" />
+          <label class="form-label">{{ t('inventory.purchases.form_notes') }}</label>
+          <input v-model="modal.notes" class="form-input" :placeholder="t('inventory.purchases.form_notes_placeholder')" :disabled="!!modal.id" />
         </div>
       </div>
 
       <div style="margin-top:18px;">
-        <div class="section-label">Items</div>
+        <div class="section-label">{{ t('inventory.purchases.items_section') }}</div>
         <div v-for="(item, i) in modal.items" :key="i" class="item-row">
           <select v-model="item.variant" class="form-input item-variant" :disabled="!!modal.id">
-            <option value="">Select variant…</option>
+            <option value="">{{ t('inventory.purchases.select_variant') }}</option>
             <option v-for="v in variants" :key="v.id" :value="v.id">{{ v.product_name }} — {{ v.sku }}</option>
           </select>
-          <input v-model="item.quantity" type="number" min="1" class="form-input item-qty" placeholder="Qty" :disabled="!!modal.id" />
-          <input v-model="item.unit_cost" type="number" min="0" step="0.01" class="form-input item-price" placeholder="Cost" :disabled="!!modal.id" />
+          <input v-model="item.quantity" type="number" min="1" class="form-input item-qty" :placeholder="t('inventory.purchases.qty_placeholder')" :disabled="!!modal.id" />
+          <input v-model="item.unit_cost" type="number" min="0" step="0.01" class="form-input item-price" :placeholder="t('inventory.purchases.cost_placeholder')" :disabled="!!modal.id" />
           <button v-if="!modal.id" class="row-action danger" @click="modal.items.splice(i, 1)"><Trash2 :size="13" /></button>
         </div>
         <button v-if="!modal.id" class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ variant: '', quantity: 1, unit_cost: '' })">
-          <Plus :size="13" /> Add Item
+          <Plus :size="13" /> {{ t('inventory.purchases.add_item') }}
         </button>
       </div>
 
       <div class="invoice-totals">
         <div class="totals-row total-line">
-          <span>Total Cost</span>
+          <span>{{ t('inventory.purchases.total_cost') }}</span>
           <span><Money :value="modalTotal" /></span>
         </div>
       </div>
 
       <template #footer>
-        <button class="btn-ghost" @click="closeModal">{{ modal.id ? 'Close' : 'Cancel' }}</button>
-        <button v-if="modal.id" class="btn-ghost" @click="openLabelPicker"><Tag :size="14" /> Print Labels</button>
+        <button class="btn-ghost" @click="closeModal">{{ modal.id ? t('common.close') : t('common.cancel') }}</button>
+        <button v-if="modal.id" class="btn-ghost" @click="openLabelPicker"><Tag :size="14" /> {{ t('inventory.purchases.print_labels') }}</button>
         <button v-if="!modal.id" class="btn-primary" :disabled="saving || !modal.supplier || modal.items.length === 0" @click="savePurchase">
-          {{ saving ? 'Saving…' : 'Save Purchase' }}
+          {{ saving ? t('common.saving') : t('inventory.purchases.save_purchase') }}
         </button>
       </template>
     </AppModal>
 
     <!-- Label preset picker -->
-    <AppModal :open="labelPicker.open" title="Print Labels" width="400px" @close="labelPicker.open = false">
-      <div v-if="labelPicker.loading" style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>
+    <AppModal :open="labelPicker.open" :title="t('inventory.purchases.label_picker_title')" width="400px" @close="labelPicker.open = false">
+      <div v-if="labelPicker.loading" style="text-align:center;padding:24px;color:var(--text-muted);">{{ t('inventory.purchases.loading') }}</div>
       <div v-else-if="labelPicker.presets.length === 0" style="text-align:center;padding:24px;color:var(--text-muted);">
-        No label presets found. Go to Settings → Label Presets to create one.
+        {{ t('inventory.purchases.label_picker_no_presets') }}
       </div>
       <div v-else>
-        <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">Choose a label size, then print {{ labelPicker.totalQty }} label{{ labelPicker.totalQty !== 1 ? 's' : '' }} (one per unit received).</p>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">{{ t('inventory.purchases.label_picker_hint', { n: labelPicker.totalQty }, labelPicker.totalQty) }}</p>
         <div style="display:flex;flex-direction:column;gap:8px;">
           <label v-for="p in labelPicker.presets" :key="p.id" class="preset-option" :class="{ selected: labelPicker.selectedId === p.id }">
             <input type="radio" :value="p.id" v-model="labelPicker.selectedId" style="display:none;" />
@@ -132,13 +132,13 @@
               <div class="preset-name">{{ p.name }}</div>
               <div class="preset-size">{{ p.width_mm }} × {{ p.height_mm }} mm</div>
             </div>
-            <div v-if="p.is_default" class="badge-cash" style="font-size:10px;">Default</div>
+            <div v-if="p.is_default" class="badge-cash" style="font-size:10px;">{{ t('inventory.purchases.label_default_badge') }}</div>
           </label>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="labelPicker.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!labelPicker.selectedId || labelPicker.loading" @click="printLabels"><Tag :size="14" /> Print</button>
+        <button class="btn-ghost" @click="labelPicker.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!labelPicker.selectedId || labelPicker.loading" @click="printLabels"><Tag :size="14" /> {{ t('inventory.purchases.print_btn') }}</button>
       </template>
     </AppModal>
   </div>
@@ -146,6 +146,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ShoppingCart, PackageCheck, Trash2, Plus, Tag } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import api from '@/api/axios'
@@ -156,6 +157,7 @@ import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
+const { t }       = useI18n()
 const auth        = useAuthStore()
 const qab         = useQABStore()
 const labelsStore = useLabelsStore()
@@ -196,14 +198,20 @@ async function fetchVariants() {
   } catch {}
 }
 
+function statusLabel(s) {
+  if (s === 'DRAFT') return t('inventory.purchases.status_badge_draft')
+  if (s === 'RECEIVED') return t('inventory.purchases.status_badge_received')
+  return s
+}
+
 async function receivePurchase(p) {
-  if (!confirm(`Receive stock for this purchase from ${p.supplier_name || p.supplier}?`)) return
+  if (!confirm(t('inventory.purchases.confirm_receive', { supplier: p.supplier_name || p.supplier }))) return
   await api.post(`/api/finance/purchases/${p.id}/receive/`)
   fetchPurchases(page.value)
 }
 
 async function deletePurchase(p) {
-  if (!confirm('Delete this draft purchase?')) return
+  if (!confirm(t('inventory.purchases.confirm_delete_draft'))) return
   await api.delete(`/api/finance/purchases/${p.id}/`)
   fetchPurchases(page.value)
 }
@@ -259,7 +267,7 @@ async function savePurchase() {
     closeModal()
     fetchPurchases(1)
   } catch (e) {
-    alert(e.response?.data?.detail || 'Failed to save.')
+    alert(e.response?.data?.detail || t('inventory.purchases.err_save'))
   } finally {
     saving.value = false
   }
@@ -295,11 +303,11 @@ async function printLabels() {
     labelsStore.setJob({ preset, store_name: res.data.store_name, items: res.data.items })
     labelPicker.open = false
     router.push('/print/labels')
-  } catch { alert('Could not load label data.') }
+  } catch { alert(t('inventory.purchases.err_label_data')) }
 }
 
 onMounted(() => {
-  qab.setActions([{ id: 'new', label: 'New Purchase', icon: 'plus', handler: openNew }])
+  qab.setActions([{ id: 'new', label: t('inventory.purchases.modal_new_title'), icon: 'plus', handler: openNew }])
   fetchPurchases()
   fetchSuppliers()
   fetchVariants()

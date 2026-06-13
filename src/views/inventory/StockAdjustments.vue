@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Stock Adjustments</h1>
-        <p class="page-sub">Manual stock corrections — theft, damage, count corrections</p>
+        <h1 class="page-title">{{ t('inventory.adjustments.title') }}</h1>
+        <p class="page-sub">{{ t('inventory.adjustments.sub') }}</p>
       </div>
     </div>
 
@@ -14,21 +14,21 @@
       <table v-else class="data-table">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Product</th>
-            <th>SKU</th>
-            <th>Branch</th>
-            <th>Change</th>
-            <th>Reason</th>
-            <th>Notes</th>
-            <th>By</th>
+            <th>{{ t('inventory.adjustments.table_date') }}</th>
+            <th>{{ t('inventory.adjustments.table_product') }}</th>
+            <th>{{ t('inventory.adjustments.table_sku') }}</th>
+            <th>{{ t('inventory.adjustments.table_branch') }}</th>
+            <th>{{ t('inventory.adjustments.table_change') }}</th>
+            <th>{{ t('inventory.adjustments.table_reason') }}</th>
+            <th>{{ t('inventory.adjustments.table_notes') }}</th>
+            <th>{{ t('inventory.adjustments.table_by') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="adjustments.length === 0">
             <td colspan="8" class="table-empty">
               <PackageSearch :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No adjustments recorded yet</div>
+              <div>{{ t('inventory.adjustments.empty') }}</div>
             </td>
           </tr>
           <tr v-for="a in adjustments" :key="a.id" class="table-row">
@@ -51,15 +51,15 @@
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="p => { page = p; fetchAdjustments() }" />
 
     <!-- New Adjustment Modal -->
-    <AppModal :open="modal.open" title="New Stock Adjustment" @close="closeModal">
+    <AppModal :open="modal.open" :title="t('inventory.adjustments.modal_title')" @close="closeModal">
       <div style="display:flex;flex-direction:column;gap:14px;">
 
         <div>
-          <label class="form-label">Product / SKU</label>
+          <label class="form-label">{{ t('inventory.adjustments.form_product_label') }}</label>
           <input
             v-model="modal.search"
             class="form-input"
-            placeholder="Type product name or SKU…"
+            :placeholder="t('inventory.adjustments.form_product_placeholder')"
             @input="searchVariants"
           />
           <div v-if="variantResults.length" class="search-dropdown">
@@ -79,38 +79,38 @@
         </div>
 
         <div>
-          <label class="form-label">Branch</label>
+          <label class="form-label">{{ t('inventory.adjustments.form_branch') }}</label>
           <select v-model="modal.branchId" class="form-input">
-            <option value="">Select branch…</option>
+            <option value="">{{ t('inventory.adjustments.select_branch') }}</option>
             <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
           </select>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
-            <label class="form-label">Quantity Change</label>
-            <input v-model="modal.quantityChange" type="number" step="0.001" class="form-input" placeholder="e.g. -3 or +5" />
-            <p class="form-hint">Negative = stock loss, Positive = stock gain</p>
+            <label class="form-label">{{ t('inventory.adjustments.qty_change') }}</label>
+            <input v-model="modal.quantityChange" type="number" step="0.001" class="form-input" :placeholder="t('inventory.adjustments.qty_placeholder')" />
+            <p class="form-hint">{{ t('inventory.adjustments.qty_hint') }}</p>
           </div>
           <div>
-            <label class="form-label">Reason</label>
+            <label class="form-label">{{ t('inventory.adjustments.reason_label') }}</label>
             <select v-model="modal.reason" class="form-input">
-              <option value="">Select reason…</option>
+              <option value="">{{ t('inventory.adjustments.select_reason') }}</option>
               <option v-for="r in reasons" :key="r.value" :value="r.value">{{ r.label }}</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label class="form-label">Notes <span class="optional">optional</span></label>
-          <textarea v-model="modal.notes" class="form-input" rows="2" placeholder="Any additional details…" />
+          <label class="form-label">{{ t('inventory.adjustments.notes_label') }} <span class="optional">{{ t('common.optional') }}</span></label>
+          <textarea v-model="modal.notes" class="form-input" rows="2" :placeholder="t('inventory.adjustments.notes_placeholder')" />
         </div>
       </div>
 
       <template #footer>
-        <button class="btn-ghost" @click="closeModal">Cancel</button>
+        <button class="btn-ghost" @click="closeModal">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="!canSave || saving" @click="saveAdjustment">
-          {{ saving ? 'Saving…' : 'Save Adjustment' }}
+          {{ saving ? t('common.saving') : t('inventory.adjustments.save_adjustment') }}
         </button>
       </template>
     </AppModal>
@@ -119,12 +119,14 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { PackageSearch, CheckCircle } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 
+const { t } = useI18n()
 const qab = useQABStore()
 
 const adjustments   = ref([])
@@ -137,12 +139,12 @@ const total         = ref(0)
 const variantResults = ref([])
 let searchTimer = null
 
-const reasons = [
-  { value: 'THEFT',      label: 'Theft / Loss' },
-  { value: 'DAMAGE',     label: 'Damage' },
-  { value: 'CORRECTION', label: 'Count Correction' },
-  { value: 'GIFT',       label: 'Gift / Sample' },
-]
+const reasons = computed(() => [
+  { value: 'THEFT',      label: t('inventory.adjustments.reason_theft') },
+  { value: 'DAMAGE',     label: t('inventory.adjustments.reason_damage') },
+  { value: 'CORRECTION', label: t('inventory.adjustments.reason_correction') },
+  { value: 'GIFT',       label: t('inventory.adjustments.reason_gift') },
+])
 
 const modal = reactive({
   open: false,
@@ -223,7 +225,7 @@ async function saveAdjustment() {
 }
 
 function reasonLabel(r) {
-  return reasons.find(x => x.value === r)?.label || r
+  return reasons.value.find(x => x.value === r)?.label || r
 }
 
 function fmtDate(d) {
@@ -233,7 +235,7 @@ function fmtDate(d) {
 onMounted(() => {
   fetchAdjustments()
   fetchBranches()
-  qab.setActions([{ id: 'new-adj', label: 'New Adjustment', icon: 'plus', handler: openModal }])
+  qab.setActions([{ id: 'new-adj', label: t('inventory.adjustments.modal_title'), icon: 'plus', handler: openModal }])
 })
 onUnmounted(() => qab.clearActions())
 </script>

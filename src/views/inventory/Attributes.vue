@@ -2,12 +2,12 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Attributes</h1>
-        <p class="page-sub">Define product attributes like Season, Gender, Size, Color</p>
+        <h1 class="page-title">{{ t('inventory.attributes.title') }}</h1>
+        <p class="page-sub">{{ t('inventory.attributes.sub') }}</p>
       </div>
       <button class="btn-primary" @click="openNew">
         <Plus :size="14" />
-        Add Attribute
+        {{ t('inventory.attributes.add_attribute') }}
       </button>
     </div>
 
@@ -19,10 +19,10 @@
         <table class="dt">
         <thead>
           <tr>
-            <th class="dt-th">Name</th>
-            <th class="dt-th">Key</th>
-            <th class="dt-th">Type</th>
-            <th class="dt-th">Options</th>
+            <th class="dt-th">{{ t('inventory.attributes.table_name') }}</th>
+            <th class="dt-th">{{ t('inventory.attributes.table_key') }}</th>
+            <th class="dt-th">{{ t('inventory.attributes.table_type') }}</th>
+            <th class="dt-th">{{ t('inventory.attributes.table_options') }}</th>
             <th class="dt-th" style="width:60px;"></th>
           </tr>
         </thead>
@@ -30,14 +30,14 @@
           <tr v-if="attrs.length === 0">
             <td colspan="5" class="dt-empty">
               <Tag :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No attributes defined yet</div>
-              <div style="font-size:12px;margin-top:4px;">Attributes let you filter products by season, gender, size, etc.</div>
+              <div>{{ t('inventory.attributes.empty_title') }}</div>
+              <div style="font-size:12px;margin-top:4px;">{{ t('inventory.attributes.empty_sub') }}</div>
             </td>
           </tr>
           <tr v-for="a in attrs" :key="a.id" class="dt-row">
             <td class="col-name">{{ a.name }}</td>
             <td class="col-ref">{{ a.key }}</td>
-            <td><span class="type-badge" :class="`type-${a.input_type.toLowerCase()}`">{{ a.input_type }}</span></td>
+            <td><span class="type-badge" :class="`type-${a.input_type.toLowerCase()}`">{{ typeLabel(a.input_type) }}</span></td>
             <td>
               <span v-if="a.input_type === 'SELECT' && a.options.length" class="options-list">
                 <span v-for="opt in a.options.slice(0,4)" :key="opt" class="option-chip">{{ opt }}</span>
@@ -56,44 +56,44 @@
     </div>
 
     <!-- Modal -->
-    <AppModal :open="modal.open" :title="modal.id ? 'Edit Attribute' : 'New Attribute'" @close="closeModal">
+    <AppModal :open="modal.open" :title="modal.id ? t('inventory.attributes.modal_edit_title') : t('inventory.attributes.modal_new_title')" @close="closeModal">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
-            <label class="form-label">Display Name</label>
-            <input v-model="modal.name" class="form-input" placeholder="e.g. Season" @input="autoKey" />
+            <label class="form-label">{{ t('inventory.attributes.display_name') }}</label>
+            <input v-model="modal.name" class="form-input" :placeholder="t('inventory.attributes.display_name_placeholder')" @input="autoKey" />
           </div>
           <div>
-            <label class="form-label">Key <span class="key-hint">used in filters</span></label>
-            <input v-model="modal.key" class="form-input" placeholder="e.g. season" />
+            <label class="form-label">{{ t('inventory.attributes.key_label') }} <span class="key-hint">{{ t('inventory.attributes.key_hint') }}</span></label>
+            <input v-model="modal.key" class="form-input" :placeholder="t('inventory.attributes.key_placeholder')" />
           </div>
         </div>
 
         <div>
-          <label class="form-label">Input Type</label>
+          <label class="form-label">{{ t('inventory.attributes.input_type') }}</label>
           <div class="type-picker">
             <button
-              v-for="t in inputTypes" :key="t.value"
+              v-for="it in inputTypes" :key="it.value"
               class="type-option"
-              :class="{ active: modal.inputType === t.value }"
-              @click="modal.inputType = t.value"
+              :class="{ active: modal.inputType === it.value }"
+              @click="modal.inputType = it.value"
             >
-              <component :is="t.icon" :size="14" />
-              {{ t.label }}
+              <component :is="it.icon" :size="14" />
+              {{ it.label }}
             </button>
           </div>
         </div>
 
         <div v-if="modal.inputType === 'SELECT'">
-          <label class="form-label">Options</label>
+          <label class="form-label">{{ t('inventory.attributes.options_label') }}</label>
           <div class="options-input-row">
             <input
               v-model="optionInput"
               class="form-input"
-              placeholder="Type an option and press Enter"
+              :placeholder="t('inventory.attributes.options_placeholder')"
               @keydown.enter.prevent="addOption"
             />
-            <button class="btn-add-opt" @click="addOption">Add</button>
+            <button class="btn-add-opt" @click="addOption">{{ t('inventory.attributes.add_option') }}</button>
           </div>
           <div class="options-chips" v-if="modal.options.length">
             <span v-for="(opt, i) in modal.options" :key="opt" class="option-chip editable">
@@ -105,9 +105,9 @@
       </div>
 
       <template #footer>
-        <button class="btn-ghost" @click="closeModal">Cancel</button>
+        <button class="btn-ghost" @click="closeModal">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="!modal.name.trim() || !modal.key.trim() || saving" @click="saveAttr">
-          {{ saving ? 'Saving…' : (modal.id ? 'Save Changes' : 'Create Attribute') }}
+          {{ saving ? t('common.saving') : (modal.id ? t('inventory.attributes.save_changes') : t('inventory.attributes.create_attribute')) }}
         </button>
       </template>
     </AppModal>
@@ -115,21 +115,25 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Tag, Pencil, Trash2, AlignLeft, List, Hash, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
 
+const { t } = useI18n()
 const attrs   = ref([])
 const loading = ref(false)
 const saving  = ref(false)
 const optionInput = ref('')
 
-const inputTypes = [
-  { value: 'TEXT',   label: 'Free Text', icon: AlignLeft },
-  { value: 'SELECT', label: 'Dropdown',  icon: List },
-  { value: 'NUMBER', label: 'Number',    icon: Hash },
-]
+const inputTypes = computed(() => [
+  { value: 'TEXT',   label: t('inventory.attributes.type_free_text'), icon: AlignLeft },
+  { value: 'SELECT', label: t('inventory.attributes.type_dropdown'),  icon: List },
+  { value: 'NUMBER', label: t('inventory.attributes.type_number'),    icon: Hash },
+])
+const TYPE_KEYS = { TEXT: 'type_free_text', SELECT: 'type_dropdown', NUMBER: 'type_number' }
+function typeLabel(it) { return TYPE_KEYS[it] ? t('inventory.attributes.' + TYPE_KEYS[it]) : it }
 
 const modal = reactive({ open: false, id: null, name: '', key: '', inputType: 'TEXT', options: [] })
 

@@ -301,7 +301,21 @@
       "note_placeholder": "Add context…",
       "move_up_sub": "Keeps everything — just re-tags one level up. No stock change.",
       "delete_all_title": "Delete it and everything inside",
-      "delete_all_sub": "Removes the products too — a stock write-off, so a reason is required."
+      "delete_all_sub": "Removes the products too — a stock write-off, so a reason is required.",
+      "tier_fallback": "tier {n}",
+      "uncategorized": "Uncategorized",
+      "product_count": "{count} product | {count} products",
+      "subcat_frag": " and {count} sub-category | and {count} sub-categories",
+      "resolve_title": "Delete \"{name}\"",
+      "not_empty_summary": "{name} isn't empty — it holds {contents}. What should happen to them?",
+      "purge_summary": "About to delete {contents}. They move to Trash and stay restorable.",
+      "move_up_title": "Move contents up to {parent}",
+      "confirm_delete_simple": "Delete \"{name}\"?",
+      "err_check_contents": "Could not check what this category contains.",
+      "err_delete": "Could not delete category.",
+      "err_save": "Could not save category.",
+      "err_move": "Could not move contents.",
+      "err_purge": "Could not delete."
     },
     "attributes": {
       "title": "Attributes",
@@ -365,7 +379,15 @@
       "label_picker_title": "Print Labels",
       "label_picker_no_presets": "No label presets found. Go to Settings → Label Presets to create one.",
       "label_default_badge": "Default",
-      "print_btn": "Print"
+      "print_btn": "Print",
+      "status_badge_draft": "Draft",
+      "status_badge_received": "Received",
+      "loading": "Loading…",
+      "label_picker_hint": "Choose a label size, then print {n} label (one per unit received). | Choose a label size, then print {n} labels (one per unit received).",
+      "confirm_receive": "Receive stock for this purchase from {supplier}?",
+      "confirm_delete_draft": "Delete this draft purchase?",
+      "err_save": "Failed to save.",
+      "err_label_data": "Could not load label data."
     },
     "adjustments": {
       "title": "Stock Adjustments",
@@ -390,6 +412,7 @@
       "reason_label": "Reason",
       "select_reason": "Select reason…",
       "notes_label": "Notes",
+      "notes_placeholder": "Any additional details…",
       "save_adjustment": "Save Adjustment",
       "reason_theft": "Theft / Loss",
       "reason_damage": "Damage",
@@ -417,7 +440,19 @@
       "format_intro": "CSV only. SKU is generated for you — never include it. The header row defines everything:",
       "format_col_header": "Column",
       "format_meaning_header": "Meaning",
-      "format_note": "Validation is all-or-nothing: a single bad row rejects the whole file with a clear message."
+      "format_note": "Validation is all-or-nothing: a single bad row rejects the whole file with a clear message.",
+      "stat_products": "products",
+      "stat_category_branches": "category branches",
+      "stat_attributes": "attributes",
+      "required_badge": "required",
+      "row_supp": "Existing supplier name (the file can't create suppliers)",
+      "row_branch": "Branch for the stock (defaults to {main})",
+      "row_cat": "Main category",
+      "row_subcats": "Sub-categories (max 4 tiers total)",
+      "row_attrs": "Attributes: Dropdown · Free-text · Number (e.g. {example})",
+      "row_qty": "Opening stock quantity (defaults to 0)",
+      "row_prices": "Wholesale (cost) · Retail (sell)",
+      "row_name": "Optional — otherwise name = Brand + Model"
     },
     "reports": {
       "title": "Inventory Reports",

@@ -2,18 +2,18 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Import / Export</h1>
-        <p class="page-sub">Bulk-load your catalog from a CSV, or download it</p>
+        <h1 class="page-title">{{ t('inventory.import_export.title') }}</h1>
+        <p class="page-sub">{{ t('inventory.import_export.sub') }}</p>
       </div>
       <button class="btn-ghost" :disabled="exporting" @click="doExport">
-        <Download :size="15" /> {{ exporting ? 'Exporting…' : 'Export catalog (CSV)' }}
+        <Download :size="15" /> {{ exporting ? t('inventory.import_export.exporting') : t('inventory.import_export.export_btn') }}
       </button>
     </div>
 
     <!-- IMPORT -->
     <div class="card">
       <div class="card-head">
-        <Upload :size="16" /> <span>Import products</span>
+        <Upload :size="16" /> <span>{{ t('inventory.import_export.import_card_title') }}</span>
       </div>
 
       <div class="card-body">
@@ -22,64 +22,64 @@
           <input type="file" accept=".csv" class="file-input" @change="onPick" />
           <FileText :size="20" />
           <span v-if="file" class="dz-name">{{ file.name }}</span>
-          <span v-else class="dz-hint">Choose a <strong>.csv</strong> file…</span>
+          <span v-else class="dz-hint">{{ t('inventory.import_export.choose_file_hint') }}</span>
         </label>
 
         <div class="actions">
           <button class="btn-ghost" :disabled="!file || busy" @click="validate">
-            {{ checking ? 'Checking…' : 'Check file' }}
+            {{ checking ? t('inventory.import_export.checking') : t('inventory.import_export.check_file') }}
           </button>
           <button class="btn-primary" :disabled="!report || !report.ok || busy" @click="commit">
-            {{ importing ? 'Importing…' : (report && report.ok ? `Import ${report.summary.products} products` : 'Import') }}
+            {{ importing ? t('inventory.import_export.importing') : (report && report.ok ? t('inventory.import_export.import_n_products', { n: report.summary.products }) : t('inventory.import_export.import_btn_generic')) }}
           </button>
-          <button v-if="file" class="btn-text" :disabled="busy" @click="reset">Clear</button>
+          <button v-if="file" class="btn-text" :disabled="busy" @click="reset">{{ t('inventory.import_export.clear') }}</button>
         </div>
 
         <!-- report -->
         <div v-if="report" class="report">
           <div v-if="report.errors && report.errors.length" class="rep-box rep-err">
-            <div class="rep-title"><XCircle :size="15" /> {{ report.errors.length }} error{{ report.errors.length === 1 ? '' : 's' }} — fix these and check again</div>
+            <div class="rep-title"><XCircle :size="15" /> {{ t('inventory.import_export.errors_title', { n: report.errors.length }) }}</div>
             <ul><li v-for="(e, i) in report.errors" :key="i">{{ e }}</li></ul>
           </div>
 
           <div v-else class="rep-box rep-ok">
-            <div class="rep-title"><CheckCircle2 :size="15" /> Looks good — ready to import</div>
+            <div class="rep-title"><CheckCircle2 :size="15" /> {{ t('inventory.import_export.looks_good_title') }}</div>
             <div class="rep-stats">
-              <span><strong>{{ report.summary.products }}</strong> products</span>
-              <span><strong>{{ report.summary.category_paths }}</strong> category branches</span>
-              <span><strong>{{ report.summary.attributes }}</strong> attributes</span>
+              <span><strong>{{ report.summary.products }}</strong> {{ t('inventory.import_export.stat_products') }}</span>
+              <span><strong>{{ report.summary.category_paths }}</strong> {{ t('inventory.import_export.stat_category_branches') }}</span>
+              <span><strong>{{ report.summary.attributes }}</strong> {{ t('inventory.import_export.stat_attributes') }}</span>
             </div>
           </div>
 
           <div v-if="report.warnings && report.warnings.length" class="rep-box rep-warn">
-            <div class="rep-title"><AlertTriangle :size="15" /> {{ report.warnings.length }} warning{{ report.warnings.length === 1 ? '' : 's' }} (import still allowed)</div>
+            <div class="rep-title"><AlertTriangle :size="15" /> {{ t('inventory.import_export.warnings_title', { n: report.warnings.length }) }}</div>
             <ul><li v-for="(w, i) in report.warnings" :key="i">{{ w }}</li></ul>
           </div>
         </div>
 
         <div v-if="done" class="rep-box rep-ok">
-          <div class="rep-title"><CheckCircle2 :size="15" /> Imported {{ done }} products successfully.</div>
+          <div class="rep-title"><CheckCircle2 :size="15" /> {{ t('inventory.import_export.imported_success', { n: done }) }}</div>
         </div>
       </div>
     </div>
 
     <!-- FORMAT HELP -->
     <div class="card">
-      <div class="card-head"><BookOpen :size="16" /> <span>CSV format</span></div>
+      <div class="card-head"><BookOpen :size="16" /> <span>{{ t('inventory.import_export.format_card_title') }}</span></div>
       <div class="card-body help">
-        <p>CSV only. <strong>SKU is generated for you</strong> — never include it. The header row defines everything:</p>
+        <p>{{ t('inventory.import_export.format_intro') }}</p>
         <table class="help-table">
-          <tr><th>Column</th><th>Meaning</th></tr>
-          <tr><td><code>A_SUPP</code> <span class="req">required</span></td><td>Existing supplier name (the file can’t create suppliers)</td></tr>
-          <tr><td><code>M_BRANCH</code></td><td>Branch for the stock (defaults to <code>Main</code>)</td></tr>
-          <tr><td><code>M_CAT</code> <span class="req">required</span></td><td>Main category</td></tr>
-          <tr><td><code>S1_CAT</code> · <code>S2_CAT</code> · <code>S3_CAT</code></td><td>Sub-categories (max 4 tiers total)</td></tr>
-          <tr><td><code>…_DD</code> · <code>…_FT</code> · <code>…_NO</code></td><td>Attributes: Dropdown · Free-text · Number (e.g. <code>BRAND_DD</code>)</td></tr>
-          <tr><td><code>Q_QTY</code></td><td>Opening stock quantity (defaults to 0)</td></tr>
-          <tr><td><code>W_PRICE</code> · <code>R_PRICE</code> <span class="req">required</span></td><td>Wholesale (cost) · Retail (sell)</td></tr>
-          <tr><td><code>P_NAME</code></td><td>Optional — otherwise name = Brand + Model</td></tr>
+          <tr><th>{{ t('inventory.import_export.format_col_header') }}</th><th>{{ t('inventory.import_export.format_meaning_header') }}</th></tr>
+          <tr><td><code>A_SUPP</code> <span class="req">{{ t('inventory.import_export.required_badge') }}</span></td><td>{{ t('inventory.import_export.row_supp') }}</td></tr>
+          <tr><td><code>M_BRANCH</code></td><td>{{ t('inventory.import_export.row_branch', { main: 'Main' }) }}</td></tr>
+          <tr><td><code>M_CAT</code> <span class="req">{{ t('inventory.import_export.required_badge') }}</span></td><td>{{ t('inventory.import_export.row_cat') }}</td></tr>
+          <tr><td><code>S1_CAT</code> · <code>S2_CAT</code> · <code>S3_CAT</code></td><td>{{ t('inventory.import_export.row_subcats') }}</td></tr>
+          <tr><td><code>…_DD</code> · <code>…_FT</code> · <code>…_NO</code></td><td>{{ t('inventory.import_export.row_attrs', { example: 'BRAND_DD' }) }}</td></tr>
+          <tr><td><code>Q_QTY</code></td><td>{{ t('inventory.import_export.row_qty') }}</td></tr>
+          <tr><td><code>W_PRICE</code> · <code>R_PRICE</code> <span class="req">{{ t('inventory.import_export.required_badge') }}</span></td><td>{{ t('inventory.import_export.row_prices') }}</td></tr>
+          <tr><td><code>P_NAME</code></td><td>{{ t('inventory.import_export.row_name') }}</td></tr>
         </table>
-        <p class="help-note">Validation is all-or-nothing: a single bad row rejects the whole file with a clear message.</p>
+        <p class="help-note">{{ t('inventory.import_export.format_note') }}</p>
       </div>
     </div>
   </div>
@@ -87,8 +87,11 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Upload, Download, FileText, XCircle, CheckCircle2, AlertTriangle, BookOpen } from 'lucide-vue-next'
 import api from '@/api/axios'
+
+const { t } = useI18n()
 
 const file       = ref(null)
 const report     = ref(null)

@@ -2,10 +2,10 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Categories</h1>
-        <p class="page-sub">Organize your products into a tree — up to {{ MAX_DEPTH }} levels deep</p>
+        <h1 class="page-title">{{ t('inventory.categories.title') }}</h1>
+        <p class="page-sub">{{ t('inventory.categories.sub', { max: MAX_DEPTH }) }}</p>
       </div>
-      <button class="btn-primary" @click="openNew()"><Plus :size="15" /> Add Category</button>
+      <button class="btn-primary" @click="openNew()"><Plus :size="15" /> {{ t('inventory.categories.add_category') }}</button>
     </div>
 
     <div class="table-wrap" style="margin-top:20px;">
@@ -15,9 +15,9 @@
 
       <div v-else-if="!categories.length" class="tree-empty">
         <FolderTree :size="34" style="opacity:.3;margin-bottom:10px;" />
-        <div class="tree-empty-title">No categories yet</div>
-        <div class="tree-empty-sub">Create your first one to start organizing products.</div>
-        <button class="btn-primary" style="margin-top:14px;" @click="openNew()"><Plus :size="15" /> Add Category</button>
+        <div class="tree-empty-title">{{ t('inventory.categories.empty_title') }}</div>
+        <div class="tree-empty-sub">{{ t('inventory.categories.empty_sub') }}</div>
+        <button class="btn-primary" style="margin-top:14px;" @click="openNew()"><Plus :size="15" /> {{ t('inventory.categories.add_category') }}</button>
       </div>
 
       <div v-else class="tree">
@@ -38,73 +38,72 @@
 
           <Tag :size="14" class="tree-icon" />
           <span class="tree-name">{{ row.name }}</span>
-          <span class="tree-tier">{{ fmtStore.categoryLevels[row.depth] || ('tier ' + (row.depth + 1)) }}</span>
+          <span class="tree-tier">{{ fmtStore.categoryLevels[row.depth] || t('inventory.categories.tier_fallback', { n: row.depth + 1 }) }}</span>
 
           <div class="tree-actions">
             <button
               v-if="row.depth + 1 < MAX_DEPTH"
               class="row-action"
-              title="Add sub-category"
+              :title="t('inventory.categories.add_sub')"
               @click="openNew(row)"
             ><CornerDownRight :size="13" /></button>
-            <button class="row-action" title="Edit" @click="openEdit(row)"><Pencil :size="13" /></button>
-            <button class="row-action danger" title="Delete" @click="del(row)"><Trash2 :size="13" /></button>
+            <button class="row-action" :title="t('common.edit')" @click="openEdit(row)"><Pencil :size="13" /></button>
+            <button class="row-action danger" :title="t('common.delete')" @click="del(row)"><Trash2 :size="13" /></button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Add / Edit -->
-    <AppModal :open="modal.open" :title="modal.id ? 'Edit Category' : 'New Category'" @close="closeModal">
+    <AppModal :open="modal.open" :title="modal.id ? t('inventory.categories.modal_edit_title') : t('inventory.categories.modal_new_title')" @close="closeModal">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label class="form-label">Name</label>
+          <label class="form-label">{{ t('inventory.categories.name_label') }}</label>
           <input
             v-model="modal.name"
             class="form-input"
-            placeholder="e.g. Laptops"
+            :placeholder="t('inventory.categories.name_placeholder')"
             @keyup.enter="save"
           />
         </div>
         <div>
-          <label class="form-label">Parent category</label>
+          <label class="form-label">{{ t('inventory.categories.parent_label') }}</label>
           <select v-model="modal.parent" class="form-input">
-            <option :value="null">— None (top level) —</option>
+            <option :value="null">{{ t('inventory.categories.parent_none') }}</option>
             <option v-for="opt in parentOptions" :key="opt.id" :value="opt.id">
               {{ opt.path }}
             </option>
           </select>
-          <p class="field-hint">Leave as “None” for a main category. Max {{ MAX_DEPTH }} levels deep.</p>
+          <p class="field-hint">{{ t('inventory.categories.parent_hint', { max: MAX_DEPTH }) }}</p>
         </div>
         <p v-if="error" class="form-error">{{ error }}</p>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="closeModal">Cancel</button>
+        <button class="btn-ghost" @click="closeModal">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="!modal.name.trim() || saving" @click="save">
-          {{ saving ? 'Saving…' : (modal.id ? 'Save Changes' : 'Add Category') }}
+          {{ saving ? t('common.saving') : (modal.id ? t('inventory.categories.save_changes') : t('inventory.categories.add_category_btn')) }}
         </button>
       </template>
     </AppModal>
 
     <!-- Delete a non-empty category: move up vs purge -->
-    <AppModal :open="resolve.open" :title="`Delete “${resolve.name}”`" width="470px" @close="closeResolve">
+    <AppModal :open="resolve.open" :title="t('inventory.categories.resolve_title', { name: resolve.name })" width="470px" @close="closeResolve">
       <div v-if="resolve.step === 'choose'" style="display:flex;flex-direction:column;gap:12px;">
         <p class="resolve-summary">
-          <strong>{{ resolve.name }}</strong> isn’t empty — it holds
-          <strong>{{ resolve.productCount }}</strong> product{{ resolve.productCount === 1 ? '' : 's' }}<template v-if="resolve.subcatCount"> and <strong>{{ resolve.subcatCount }}</strong> sub-categor{{ resolve.subcatCount === 1 ? 'y' : 'ies' }}</template>. What should happen to them?
+          {{ t('inventory.categories.not_empty_summary', { name: resolve.name, contents: resolveContents }) }}
         </p>
         <button class="resolve-opt" :disabled="busy" @click="doMove">
           <CornerUpLeft :size="17" />
           <span class="resolve-opt-text">
-            <span class="resolve-opt-title">Move contents up to {{ resolve.parent ? resolve.parent.name : 'Uncategorized' }}</span>
-            <span class="resolve-opt-sub">Keeps everything — just re-tags one level up. No stock change.</span>
+            <span class="resolve-opt-title">{{ t('inventory.categories.move_up_title', { parent: resolve.parent ? resolve.parent.name : t('inventory.categories.uncategorized') }) }}</span>
+            <span class="resolve-opt-sub">{{ t('inventory.categories.move_up_sub') }}</span>
           </span>
         </button>
         <button class="resolve-opt danger" :disabled="busy" @click="resolve.step = 'purge'">
           <Trash2 :size="17" />
           <span class="resolve-opt-text">
-            <span class="resolve-opt-title">Delete it and everything inside</span>
-            <span class="resolve-opt-sub">Removes the products too — a stock write-off, so a reason is required.</span>
+            <span class="resolve-opt-title">{{ t('inventory.categories.delete_all_title') }}</span>
+            <span class="resolve-opt-sub">{{ t('inventory.categories.delete_all_sub') }}</span>
           </span>
         </button>
         <p v-if="error" class="form-error">{{ error }}</p>
@@ -112,32 +111,32 @@
 
       <div v-else style="display:flex;flex-direction:column;gap:13px;">
         <p class="resolve-summary">
-          About to delete <strong>{{ resolve.productCount }}</strong> product{{ resolve.productCount === 1 ? '' : 's' }}<template v-if="resolve.subcatCount"> and <strong>{{ resolve.subcatCount }}</strong> sub-categor{{ resolve.subcatCount === 1 ? 'y' : 'ies' }}</template>. They move to Trash and stay restorable.
+          {{ t('inventory.categories.purge_summary', { contents: resolveContents }) }}
         </p>
         <div>
-          <label class="form-label">Reason</label>
+          <label class="form-label">{{ t('inventory.categories.reason_label') }}</label>
           <select v-model="resolve.reason" class="form-input">
-            <option value="DISCONTINUED">Discontinued</option>
-            <option value="DUPLICATE">Duplicate</option>
-            <option value="MISTAKE">Created by mistake</option>
-            <option value="OTHER">Other</option>
+            <option value="DISCONTINUED">{{ t('inventory.categories.reason_discontinued') }}</option>
+            <option value="DUPLICATE">{{ t('inventory.categories.reason_duplicate') }}</option>
+            <option value="MISTAKE">{{ t('inventory.categories.reason_mistake') }}</option>
+            <option value="OTHER">{{ t('inventory.categories.reason_other') }}</option>
           </select>
         </div>
         <div>
-          <label class="form-label">Note (optional)</label>
-          <input v-model="resolve.note" class="form-input" placeholder="Add context…" />
+          <label class="form-label">{{ t('inventory.categories.note_label') }}</label>
+          <input v-model="resolve.note" class="form-input" :placeholder="t('inventory.categories.note_placeholder')" />
         </div>
         <p v-if="error" class="form-error">{{ error }}</p>
       </div>
 
       <template #footer>
         <template v-if="resolve.step === 'choose'">
-          <button class="btn-ghost" @click="closeResolve">Cancel</button>
+          <button class="btn-ghost" @click="closeResolve">{{ t('common.cancel') }}</button>
         </template>
         <template v-else>
-          <button class="btn-ghost" @click="resolve.step = 'choose'; resolve.confirming = false">Back</button>
+          <button class="btn-ghost" @click="resolve.step = 'choose'; resolve.confirming = false">{{ t('common.back') }}</button>
           <button class="btn-danger" :disabled="busy" @click="doPurge">
-            {{ busy ? 'Deleting…' : (resolve.confirming ? 'Tap again to confirm delete' : 'Delete with items') }}
+            {{ busy ? t('inventory.categories.deleting') : (resolve.confirming ? t('inventory.categories.confirm_delete') : t('inventory.categories.delete_with_items')) }}
           </button>
         </template>
       </template>
@@ -147,11 +146,13 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Plus, Pencil, Trash2, Tag, FolderTree, ChevronRight, ChevronDown, CornerDownRight, CornerUpLeft } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
 import { useFormatStore } from '@/stores/format'
 
+const { t } = useI18n()
 const fmtStore = useFormatStore()
 const MAX_DEPTH = 4
 
@@ -269,7 +270,7 @@ async function save() {
     await load()
   } catch (e) {
     const d = e.response?.data
-    error.value = d?.parent?.[0] || d?.detail || (d ? JSON.stringify(d) : 'Could not save category.')
+    error.value = d?.parent?.[0] || d?.detail || (d ? JSON.stringify(d) : t('inventory.categories.err_save'))
   } finally {
     saving.value = false
   }
@@ -284,17 +285,24 @@ const resolve = reactive({
 })
 function closeResolve() { resolve.open = false }
 
+// "{n} products and {m} sub-categories" — built so both locales interpolate cleanly.
+const resolveContents = computed(() => {
+  let s = t('inventory.categories.product_count', { count: resolve.productCount }, resolve.productCount)
+  if (resolve.subcatCount) s += t('inventory.categories.subcat_frag', { count: resolve.subcatCount }, resolve.subcatCount)
+  return s
+})
+
 async function del(row) {
   error.value = ''
   let contents
   try {
     contents = (await api.get(`/api/inventory/categories/${row.id}/contents/`)).data
-  } catch { alert('Could not check what this category contains.'); return }
+  } catch { alert(t('inventory.categories.err_check_contents')); return }
 
   if (contents.product_count === 0 && contents.subcategory_count === 0) {
-    if (!confirm(`Delete “${row.name}”?`)) return
+    if (!confirm(t('inventory.categories.confirm_delete_simple', { name: row.name }))) return
     try { await api.delete(`/api/inventory/categories/${row.id}/`); await load() }
-    catch (e) { alert(e.response?.data?.detail || 'Could not delete category.') }
+    catch (e) { alert(e.response?.data?.detail || t('inventory.categories.err_delete')) }
     return
   }
   Object.assign(resolve, {
@@ -309,7 +317,7 @@ async function doMove() {
   try {
     await api.post(`/api/inventory/categories/${resolve.id}/resolve-delete/`, { mode: 'move' })
     closeResolve(); await load()
-  } catch (e) { error.value = e.response?.data?.detail || 'Could not move contents.' }
+  } catch (e) { error.value = e.response?.data?.detail || t('inventory.categories.err_move') }
   finally { busy.value = false }
 }
 
@@ -321,7 +329,7 @@ async function doPurge() {
       { mode: 'purge', reason: resolve.reason, note: resolve.note })
     closeResolve(); await load()
   } catch (e) {
-    error.value = e.response?.data?.reason?.[0] || e.response?.data?.detail || 'Could not delete.'
+    error.value = e.response?.data?.reason?.[0] || e.response?.data?.detail || t('inventory.categories.err_purge')
     resolve.confirming = false
   } finally { busy.value = false }
 }

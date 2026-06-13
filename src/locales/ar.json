@@ -301,7 +301,21 @@
       "note_placeholder": "أضف سياقاً…",
       "move_up_sub": "يحتفظ بكل شيء — يعيد تصنيفه بمستوى أعلى فقط. بدون تغيير في المخزون.",
       "delete_all_title": "حذف الفئة وكل ما بداخلها",
-      "delete_all_sub": "يحذف المنتجات أيضاً — يُعدّ شطباً للمخزون، لذلك يستلزم ذكر السبب."
+      "delete_all_sub": "يحذف المنتجات أيضاً — يُعدّ شطباً للمخزون، لذلك يستلزم ذكر السبب.",
+      "tier_fallback": "مستوى {n}",
+      "uncategorized": "غير مصنّف",
+      "product_count": "{count} منتج",
+      "subcat_frag": " و{count} فئة فرعية",
+      "resolve_title": "حذف «{name}»",
+      "not_empty_summary": "«{name}» ليست فارغة — تحتوي على {contents}. ماذا تريد أن يحدث لها؟",
+      "purge_summary": "على وشك حذف {contents}. ستُنقل إلى المحذوفات وتبقى قابلة للاستعادة.",
+      "move_up_title": "نقل المحتويات إلى {parent}",
+      "confirm_delete_simple": "حذف «{name}»؟",
+      "err_check_contents": "تعذّر فحص محتويات هذه الفئة.",
+      "err_delete": "تعذّر حذف الفئة.",
+      "err_save": "تعذّر حفظ الفئة.",
+      "err_move": "تعذّر نقل المحتويات.",
+      "err_purge": "تعذّر الحذف."
     },
     "attributes": {
       "title": "الخصائص",
@@ -365,7 +379,15 @@
       "label_picker_title": "طباعة الملصقات",
       "label_picker_no_presets": "لا توجد قوالب ملصقات. اذهب إلى الإعدادات ← قوالب الملصقات لإنشاء واحد.",
       "label_default_badge": "افتراضي",
-      "print_btn": "طباعة"
+      "print_btn": "طباعة",
+      "status_badge_draft": "مسودة",
+      "status_badge_received": "مستلم",
+      "loading": "جاري التحميل…",
+      "label_picker_hint": "اختر حجم الملصق، ثم اطبع {n} ملصق (ملصق لكل وحدة مستلمة).",
+      "confirm_receive": "استلام المخزون لفاتورة الشراء هذه من {supplier}؟",
+      "confirm_delete_draft": "حذف فاتورة الشراء المسودة هذه؟",
+      "err_save": "تعذّر الحفظ.",
+      "err_label_data": "تعذّر تحميل بيانات الملصق."
     },
     "adjustments": {
       "title": "تسويات المخزون",
@@ -390,6 +412,7 @@
       "reason_label": "السبب",
       "select_reason": "اختر السبب…",
       "notes_label": "الملاحظات",
+      "notes_placeholder": "أي تفاصيل إضافية…",
       "save_adjustment": "حفظ التسوية",
       "reason_theft": "سرقة / فقدان",
       "reason_damage": "تلف",
@@ -417,7 +440,19 @@
       "format_intro": "CSV فقط. الرمز يُولَّد تلقائياً — لا تُدرجه. صف الرأس يحدد كل شيء:",
       "format_col_header": "العمود",
       "format_meaning_header": "المعنى",
-      "format_note": "التحقق كلي أو لا شيء: صف واحد خاطئ يرفض الملف بأكمله مع رسالة واضحة."
+      "format_note": "التحقق كلي أو لا شيء: صف واحد خاطئ يرفض الملف بأكمله مع رسالة واضحة.",
+      "stat_products": "منتج",
+      "stat_category_branches": "فرع فئة",
+      "stat_attributes": "خاصية",
+      "required_badge": "مطلوب",
+      "row_supp": "اسم مورّد موجود (لا يمكن للملف إنشاء موردين)",
+      "row_branch": "فرع المخزون (الافتراضي {main})",
+      "row_cat": "الفئة الرئيسية",
+      "row_subcats": "الفئات الفرعية (حتى 4 مستويات إجمالاً)",
+      "row_attrs": "الخصائص: قائمة منسدلة · نص حر · رقم (مثال {example})",
+      "row_qty": "كمية المخزون الافتتاحي (الافتراضي 0)",
+      "row_prices": "الجملة (التكلفة) · التجزئة (البيع)",
+      "row_name": "اختياري — وإلا الاسم = العلامة + الموديل"
     },
     "reports": {
       "title": "تقارير المخزون",

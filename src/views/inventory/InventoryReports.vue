@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Inventory Reports</h1>
-        <p class="page-sub">Stock valuation and product summaries</p>
+        <h1 class="page-title">{{ t('inventory.reports.title') }}</h1>
+        <p class="page-sub">{{ t('inventory.reports.sub') }}</p>
       </div>
       <button class="btn-refresh" @click="load" :class="{ spinning: loading }">
         <RefreshCw :size="15" />
@@ -18,28 +18,28 @@
       <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--accent-soft);color:var(--accent);"><Package :size="20" /></div>
         <div class="kpi-body">
-          <div class="kpi-label">Total Products</div>
+          <div class="kpi-label">{{ t('inventory.reports.kpi_total_products') }}</div>
           <div class="kpi-value">{{ summary.totalProducts }}</div>
         </div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon" style="background:#f3e8ff;color:#7c3aed;"><Layers :size="20" /></div>
         <div class="kpi-body">
-          <div class="kpi-label">Total Variants</div>
+          <div class="kpi-label">{{ t('inventory.reports.kpi_total_variants') }}</div>
           <div class="kpi-value">{{ summary.totalVariants }}</div>
         </div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--success-soft);color:var(--success);"><BarChart2 :size="20" /></div>
         <div class="kpi-body">
-          <div class="kpi-label">Total Stock Units</div>
+          <div class="kpi-label">{{ t('inventory.reports.kpi_total_stock') }}</div>
           <div class="kpi-value">{{ formatQty(summary.totalUnits) }}</div>
         </div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon" style="background:#fef3c7;color:#d97706;"><DollarSign :size="20" /></div>
         <div class="kpi-body">
-          <div class="kpi-label">Stock Value (Cost)</div>
+          <div class="kpi-label">{{ t('inventory.reports.kpi_stock_value') }}</div>
           <div class="kpi-value"><Money :value="summary.totalValue" /></div>
         </div>
       </div>
@@ -48,26 +48,26 @@
     <!-- Stock Valuation Table -->
     <div v-if="!loading" style="margin-top:24px;">
       <div class="section-header">
-        <span class="section-title">Stock Valuation by Product</span>
-        <input v-model="search" class="search-input" placeholder="Search product…" />
+        <span class="section-title">{{ t('inventory.reports.valuation_title') }}</span>
+        <input v-model="search" class="search-input" :placeholder="t('inventory.reports.search_placeholder')" />
       </div>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Product</th>
-              <th>SKU</th>
-              <th>Branch</th>
-              <th>Qty</th>
-              <th>Cost Price</th>
-              <th>Stock Value</th>
-              <th>Sell Price</th>
-              <th>Potential Revenue</th>
+              <th>{{ t('inventory.reports.table_product') }}</th>
+              <th>{{ t('inventory.reports.table_sku') }}</th>
+              <th>{{ t('inventory.reports.table_branch') }}</th>
+              <th>{{ t('inventory.reports.table_qty') }}</th>
+              <th>{{ t('inventory.reports.table_cost_price') }}</th>
+              <th>{{ t('inventory.reports.table_stock_value') }}</th>
+              <th>{{ t('inventory.reports.table_sell_price') }}</th>
+              <th>{{ t('inventory.reports.table_potential_revenue') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="filteredRows.length === 0">
-              <td colspan="8" class="table-empty">No stock data found</td>
+              <td colspan="8" class="table-empty">{{ t('inventory.reports.empty') }}</td>
             </tr>
             <tr v-for="(row, i) in filteredRows" :key="i" class="table-row">
               <td class="col-name">{{ row.productName }}</td>
@@ -88,11 +88,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Package, Layers, BarChart2, DollarSign, RefreshCw } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { formatNumber, formatQty } from '@/utils/format'
 
+const { t }   = useI18n()
 const auth    = useAuthStore()
 const loading = ref(false)
 const search  = ref('')
