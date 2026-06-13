@@ -118,7 +118,8 @@
         "reset": "Reset",
         "done": "Done",
         "save_preset": "Save preset",
-        "hint": "Drag to reorder · uncheck to hide · SKU and Product are locked."
+        "hint": "Drag to reorder · uncheck to hide · SKU and Product are locked.",
+        "role_na": "role"
       },
       "bulk_bar": {
         "n_selected": "{count} selected",
@@ -140,13 +141,15 @@
       "categories_tab": {
         "name_col": "Name",
         "parent_col": "Parent",
-        "empty": "No categories yet"
+        "empty": "No categories yet",
+        "confirm_delete": "Delete this category?"
       },
       "suppliers_tab": {
         "name_col": "Name",
         "code_col": "Code",
         "contact_col": "Contact",
-        "empty": "No suppliers yet"
+        "empty": "No suppliers yet",
+        "confirm_delete": "Delete this supplier?"
       },
       "reports_tab": {
         "title": "Inventory Reports",
@@ -174,7 +177,9 @@
       "assign_modal": {
         "title": "Assign layouts to staff",
         "no_staff": "No staff yet.",
-        "default_option": "— Default —"
+        "default_option": "— Default —",
+        "conflict_cant_see": "can't see",
+        "conflict_suffix": "— those columns will be hidden automatically by their role."
       },
       "category_modal": {
         "new_title": "New Category",
@@ -207,18 +212,30 @@
         "initial_stock_label": "Initial Stock",
         "default_toggle": "Default",
         "attributes_label": "Attributes",
-        "alt_s_hint": "Alt+S to save"
+        "alt_s_hint": "Alt+S to save",
+        "default_hint": "Pre-fill this value next time",
+        "supplier_locked": "Supplier is locked — the SKU is built from it",
+        "reorder_hint": "Low-stock alert threshold (0 = no alarm)",
+        "initial_stock_hint": "Starting stock quantity (0 = no initial stock)",
+        "add_option_hint": "Add new option",
+        "err_save": "Save failed. Make sure the supplier prefix is confirmed (locked).",
+        "err_load": "Failed to load product details.",
+        "toast_saved": "✓ Product saved"
       },
       "add_option_modal": {
         "new_option_label": "New option value",
-        "placeholder": "e.g. 256GB"
+        "placeholder": "e.g. 256GB",
+        "title": "Add option — {name}",
+        "err_add": "Failed to add option."
       },
       "bulk_edit_modal": {
         "title": "Bulk edit products",
         "retail_price": "Retail price",
         "unchanged": "Unchanged",
         "apply": "Apply",
-        "confirm_apply": "Click again to apply to all"
+        "confirm_apply": "Click again to apply to all",
+        "intro": "Applies to all {count} selected product(s). Leave a field blank to keep it unchanged.",
+        "category_label": "Category"
       },
       "bulk_delete_modal": {
         "title": "Delete products",
@@ -226,7 +243,8 @@
         "select_reason": "Select a reason…",
         "note_label": "Note",
         "note_placeholder": "Briefly, why?",
-        "confirm_delete": "Click again to delete"
+        "confirm_delete": "Click again to delete",
+        "intro": "Soft-deleting {count} product(s). They move to Trash and can be restored by an admin."
       },
       "delete_reasons": {
         "discontinued": "Discontinued",
@@ -271,7 +289,10 @@
       "category_none": "None",
       "supplier_locked": "Supplier is locked after creation",
       "reorder_level": "Reorder level",
-      "alt_s_hint": "Alt+S to save"
+      "alt_s_hint": "Alt+S to save",
+      "product_fallback": "Product",
+      "err_save": "Save failed.",
+      "toast_saved": "✓ Product saved"
     },
     "categories": {
       "title": "Categories",

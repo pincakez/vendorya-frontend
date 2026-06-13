@@ -4,7 +4,7 @@
     <div class="page-header">
       <div class="header-left">
         <button class="back-btn" @click="$router.back()">
-          <ChevronLeft :size="16" /> Back
+          <ChevronLeft :size="16" /> {{ t('common.back') }}
         </button>
         <div v-if="product">
           <h1 class="page-title">{{ product.name }}</h1>
@@ -13,20 +13,20 @@
             {{ product.product_type }}
           </p>
         </div>
-        <div v-else class="page-title">Product</div>
+        <div v-else class="page-title">{{ t('inventory.product_detail.product_fallback') }}</div>
       </div>
       <div v-if="product" style="display:flex;gap:8px;align-items:center;">
         <!-- Edit Product button -->
-        <button class="edit-prod-btn" @click="openEditModal" title="Edit product">
-          <Pencil :size="14" /> Edit Product
+        <button class="edit-prod-btn" @click="openEditModal" :title="t('inventory.product_detail.edit_product_btn')">
+          <Pencil :size="14" /> {{ t('inventory.product_detail.edit_product_btn') }}
         </button>
         <!-- Secret S button — reveals cost/supplier panel -->
-        <button class="s-btn" :class="{ active: showSecret }" @click="showSecret = !showSecret" title="Show cost & supplier info">S</button>
+        <button class="s-btn" :class="{ active: showSecret }" @click="showSecret = !showSecret" :title="t('inventory.product_detail.show_cost_title')">S</button>
       </div>
     </div>
 
     <div v-if="loading" class="skeleton-block" />
-    <div v-else-if="!product" class="empty-state">Product not found.</div>
+    <div v-else-if="!product" class="empty-state">{{ t('inventory.product_detail.product_not_found') }}</div>
     <div v-else class="showcase-layout">
 
       <!-- ══ LEFT: IMAGE PANEL ══ -->
@@ -35,29 +35,29 @@
           <img v-if="product.image_url" :src="product.image_url" class="product-img" alt="Product image" />
           <div v-else class="image-placeholder">
             <ImageIcon :size="40" />
-            <span>Tap to add photo</span>
+            <span>{{ t('inventory.product_detail.tap_to_add_photo') }}</span>
           </div>
           <div class="image-overlay">
-            <Camera :size="18" /> Change photo
+            <Camera :size="18" /> {{ t('inventory.product_detail.change_photo') }}
           </div>
         </div>
         <input ref="imgInput" type="file" accept="image/*" style="display:none" @change="uploadImage" />
         <button v-if="product.image_url" class="img-remove-btn" @click.stop="removeImage">
-          <X :size="12" /> Remove photo
+          <X :size="12" /> {{ t('inventory.product_detail.remove_photo') }}
         </button>
 
         <!-- Quick stats under image -->
         <div class="quick-stats">
           <div class="quick-stat">
-            <div class="qs-label">Total Stock</div>
+            <div class="qs-label">{{ t('inventory.product_detail.total_stock') }}</div>
             <div class="qs-val">{{ totalStock }}</div>
           </div>
           <div class="quick-stat">
-            <div class="qs-label">Variants</div>
+            <div class="qs-label">{{ t('inventory.product_detail.variants_label') }}</div>
             <div class="qs-val">{{ product.variants.length }}</div>
           </div>
           <div class="quick-stat">
-            <div class="qs-label">Unit</div>
+            <div class="qs-label">{{ t('inventory.product_detail.unit') }}</div>
             <div class="qs-val">{{ product.unit || '—' }}</div>
           </div>
         </div>
@@ -72,16 +72,16 @@
 
           <div class="info-grid">
             <div class="info-item" v-if="product.category_name">
-              <div class="info-label">Category</div>
+              <div class="info-label">{{ t('inventory.product_detail.category') }}</div>
               <div class="info-value">{{ product.category_name }}</div>
             </div>
             <div class="info-item">
-              <div class="info-label">Type</div>
+              <div class="info-label">{{ t('inventory.product_detail.type') }}</div>
               <div class="info-value">{{ product.product_type }}</div>
             </div>
             <!-- Retail price always visible -->
             <div v-if="primaryVariant" class="info-item">
-              <div class="info-label">Retail Price</div>
+              <div class="info-label">{{ t('inventory.product_detail.retail_price') }}</div>
               <div class="info-value retail-price-val"><Money :value="primaryVariant.sell_price" /></div>
             </div>
           </div>
@@ -89,7 +89,7 @@
 
         <!-- Attributes -->
         <div v-if="attributeSummary.length" class="info-section attrs-section">
-          <div class="section-mini-title">Attributes</div>
+          <div class="section-mini-title">{{ t('inventory.product_detail.attributes') }}</div>
           <div class="attrs-grid">
             <div v-for="a in attributeSummary" :key="a.name" class="attr-item">
               <span class="attr-name">{{ a.name }}</span>
@@ -101,22 +101,22 @@
         <!-- Secret panel: cost + supplier + base price (NOT retail — it's always shown above) -->
         <Transition name="secret-slide">
           <div v-if="showSecret" class="secret-panel">
-            <div class="secret-title"><Eye :size="13" /> Cost & Supplier</div>
+            <div class="secret-title"><Eye :size="13" /> {{ t('inventory.product_detail.cost_supplier') }}</div>
             <div class="secret-grid">
               <div class="secret-item">
-                <div class="info-label">Base Price</div>
+                <div class="info-label">{{ t('inventory.product_detail.base_price') }}</div>
                 <div class="info-value"><Money :value="product.base_price" /></div>
               </div>
               <div v-if="primaryVariant" class="secret-item">
-                <div class="info-label">Cost Price</div>
+                <div class="info-label">{{ t('inventory.product_detail.cost_price') }}</div>
                 <div class="info-value cost-val"><Money :value="primaryVariant.cost_price" /></div>
               </div>
               <div v-if="product.supplier_name" class="secret-item">
-                <div class="info-label">Supplier</div>
+                <div class="info-label">{{ t('inventory.product_detail.supplier') }}</div>
                 <div class="info-value">{{ product.supplier_name }}</div>
               </div>
               <div v-if="product.supplier_contact" class="secret-item" style="grid-column:1/-1;">
-                <div class="info-label">Contact</div>
+                <div class="info-label">{{ t('inventory.product_detail.contact') }}</div>
                 <div class="info-value">{{ product.supplier_contact }}</div>
               </div>
             </div>
@@ -129,25 +129,25 @@
     <!-- ══ VARIANTS TABLE (full width) ══ -->
     <div v-if="product" class="variants-card">
       <div class="section-header">
-        <h2 class="section-title">Variants</h2>
+        <h2 class="section-title">{{ t('inventory.product_detail.variants_section') }}</h2>
         <span class="count-badge">{{ product.variants.length }}</span>
       </div>
       <div class="dt-xscroll">
         <table class="dt">
           <thead>
             <tr>
-              <th class="dt-th">SKU</th>
-              <th class="dt-th">Attributes</th>
-              <th class="dt-th">Cost</th>
-              <th class="dt-th">Sell Price</th>
-              <th class="dt-th">Reorder</th>
-              <th class="dt-th">Stock</th>
-              <th class="dt-th">Per Branch</th>
+              <th class="dt-th">{{ t('inventory.product_detail.sku_col') }}</th>
+              <th class="dt-th">{{ t('inventory.product_detail.attrs_col') }}</th>
+              <th class="dt-th">{{ t('inventory.product_detail.cost_col') }}</th>
+              <th class="dt-th">{{ t('inventory.product_detail.sell_price_col') }}</th>
+              <th class="dt-th">{{ t('inventory.product_detail.reorder_col') }}</th>
+              <th class="dt-th">{{ t('inventory.product_detail.stock_col') }}</th>
+              <th class="dt-th">{{ t('inventory.product_detail.per_branch_col') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="product.variants.length === 0">
-              <td colspan="7" class="dt-empty">No variants.</td>
+              <td colspan="7" class="dt-empty">{{ t('inventory.product_detail.no_variants') }}</td>
             </tr>
             <tr v-for="v in product.variants" :key="v.id" class="dt-row">
               <td class="mono">{{ v.sku }}</td>
@@ -174,46 +174,46 @@
     </div>
 
     <!-- ══ EDIT PRODUCT MODAL ══ -->
-    <AppModal v-if="product" :open="editModal.open" title="Edit Product" width="900px" :noBackdropClose="true" @close="editModal.open = false">
+    <AppModal v-if="product" :open="editModal.open" :title="t('inventory.product_detail.edit_product_btn')" width="900px" :noBackdropClose="true" @close="editModal.open = false">
       <div class="prod-modal-grid">
         <!-- LEFT COLUMN -->
         <div class="prod-modal-col">
           <div>
-            <label class="form-label">Product Name</label>
-            <input v-model="editModal.name" class="form-input" placeholder="Product name" />
+            <label class="form-label">{{ t('inventory.product_detail.product_name_label') }}</label>
+            <input v-model="editModal.name" class="form-input" :placeholder="t('inventory.product_detail.product_name_placeholder')" />
           </div>
           <div>
-            <label class="form-label">Description</label>
-            <textarea v-model="editModal.description" class="form-input" rows="3" placeholder="Optional" />
+            <label class="form-label">{{ t('common.description') }}</label>
+            <textarea v-model="editModal.description" class="form-input" rows="3" :placeholder="t('common.optional')" />
           </div>
           <div class="prod-prices-row">
-            <div><label class="form-label">Base price</label><input v-model.number="editModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
-            <div><label class="form-label">Cost price</label><input v-model.number="editModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
-            <div><label class="form-label">Sell price</label><input v-model.number="editModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">{{ t('inventory.product_detail.base_price_label') }}</label><input v-model.number="editModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">{{ t('inventory.product_detail.cost_price_label') }}</label><input v-model.number="editModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">{{ t('inventory.product_detail.sell_price_label') }}</label><input v-model.number="editModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
           </div>
         </div>
         <!-- RIGHT COLUMN -->
         <div class="prod-modal-col">
           <div>
-            <label class="form-label">Category</label>
+            <label class="form-label">{{ t('inventory.product_detail.category') }}</label>
             <select v-model="editModal.category" class="form-input">
-              <option value="">None</option>
+              <option value="">{{ t('inventory.product_detail.category_none') }}</option>
               <option v-for="c in editCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div>
             <label class="form-label" style="display:flex;align-items:center;gap:5px;">
-              Supplier <Lock :size="11" />
+              {{ t('inventory.product_detail.supplier') }} <Lock :size="11" />
             </label>
-            <input class="form-input" :value="editModal.supplierName" disabled title="Supplier is locked after creation" />
+            <input class="form-input" :value="editModal.supplierName" disabled :title="t('inventory.product_detail.supplier_locked')" />
           </div>
           <div>
-            <label class="form-label">Reorder level</label>
+            <label class="form-label">{{ t('inventory.product_detail.reorder_level') }}</label>
             <input v-model.number="editModal.reorder_level" class="form-input" type="number" min="0" step="1" />
           </div>
           <!-- Attributes -->
           <div v-if="editAttributes.length" class="prod-attrs-section">
-            <div class="form-label" style="margin-bottom:8px;">Attributes</div>
+            <div class="form-label" style="margin-bottom:8px;">{{ t('inventory.product_detail.attributes') }}</div>
             <div class="prod-attrs-grid">
               <div v-for="def in editAttributes" :key="def.id">
                 <label class="form-label">{{ def.name }}</label>
@@ -229,10 +229,10 @@
       </div>
       <p v-if="editModal.error" class="form-label" style="color:var(--danger,#dc2626);margin-top:4px;">{{ editModal.error }}</p>
       <template #footer>
-        <span style="font-size:11.5px;color:var(--text-muted);margin-right:auto;">Alt+S to save</span>
-        <button class="btn-ghost" @click="editModal.open = false">Cancel</button>
+        <span style="font-size:11.5px;color:var(--text-muted);margin-right:auto;">{{ t('inventory.product_detail.alt_s_hint') }}</span>
+        <button class="btn-ghost" @click="editModal.open = false">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="!editModal.name.trim() || editModal.saving" @click="saveEdit">
-          {{ editModal.saving ? 'Saving…' : 'Save' }}
+          {{ editModal.saving ? t('common.saving') : t('common.save') }}
         </button>
       </template>
     </AppModal>
@@ -242,12 +242,14 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ChevronLeft, Eye, X, Camera, Image as ImageIcon, Pencil, Lock } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { showSuccessToast } from '@/utils/toast'
 
+const { t } = useI18n()
 const props = defineProps({ id: String })
 
 const product = ref(null)
@@ -376,11 +378,11 @@ async function saveEdit() {
   }
   try {
     await api.patch(`/api/inventory/products/${props.id}/`, payload)
-    showSuccessToast('✓ Product saved')
+    showSuccessToast(t('inventory.product_detail.toast_saved'))
     editModal.open = false
     await fetchProduct()
   } catch (e) {
-    editModal.error = e.response?.data?.detail || 'Save failed.'
+    editModal.error = e.response?.data?.detail || t('inventory.product_detail.err_save')
   } finally { editModal.saving = false }
 }
 

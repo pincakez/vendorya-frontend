@@ -118,7 +118,8 @@
         "reset": "إعادة تعيين",
         "done": "تم",
         "save_preset": "حفظ القالب",
-        "hint": "اسحب لإعادة الترتيب · أزل التحديد للإخفاء · الرمز والمنتج مقفلان."
+        "hint": "اسحب لإعادة الترتيب · أزل التحديد للإخفاء · الرمز والمنتج مقفلان.",
+        "role_na": "صلاحية"
       },
       "bulk_bar": {
         "n_selected": "{count} محدد",
@@ -140,13 +141,15 @@
       "categories_tab": {
         "name_col": "الاسم",
         "parent_col": "الفئة الأم",
-        "empty": "لا توجد فئات بعد"
+        "empty": "لا توجد فئات بعد",
+        "confirm_delete": "حذف هذه الفئة؟"
       },
       "suppliers_tab": {
         "name_col": "الاسم",
         "code_col": "الرمز",
         "contact_col": "جهة الاتصال",
-        "empty": "لا يوجد موردون بعد"
+        "empty": "لا يوجد موردون بعد",
+        "confirm_delete": "حذف هذا المورّد؟"
       },
       "reports_tab": {
         "title": "تقارير المخزون",
@@ -174,7 +177,9 @@
       "assign_modal": {
         "title": "تعيين تخطيطات للموظفين",
         "no_staff": "لا يوجد موظفون بعد.",
-        "default_option": "— الافتراضي —"
+        "default_option": "— الافتراضي —",
+        "conflict_cant_see": "لا يمكنه رؤية",
+        "conflict_suffix": "— ستُخفى هذه الأعمدة تلقائيًا حسب صلاحيته."
       },
       "category_modal": {
         "new_title": "فئة جديدة",
@@ -207,18 +212,30 @@
         "initial_stock_label": "المخزون الأولي",
         "default_toggle": "افتراضي",
         "attributes_label": "الخصائص",
-        "alt_s_hint": "Alt+S للحفظ"
+        "alt_s_hint": "Alt+S للحفظ",
+        "default_hint": "تعبئة هذه القيمة تلقائيًا في المرة القادمة",
+        "supplier_locked": "المورّد مقفل — يُبنى رمز SKU منه",
+        "reorder_hint": "حد تنبيه انخفاض المخزون (0 = بدون تنبيه)",
+        "initial_stock_hint": "كمية المخزون الابتدائية (0 = بدون مخزون ابتدائي)",
+        "add_option_hint": "إضافة خيار جديد",
+        "err_save": "فشل الحفظ. تأكد من تأكيد بادئة المورّد (مقفلة).",
+        "err_load": "تعذّر تحميل تفاصيل المنتج.",
+        "toast_saved": "✓ تم حفظ المنتج"
       },
       "add_option_modal": {
         "new_option_label": "قيمة الخيار الجديد",
-        "placeholder": "مثال: 256GB"
+        "placeholder": "مثال: 256GB",
+        "title": "إضافة خيار — {name}",
+        "err_add": "تعذّرت إضافة الخيار."
       },
       "bulk_edit_modal": {
         "title": "تعديل جماعي للمنتجات",
         "retail_price": "سعر البيع",
         "unchanged": "بدون تغيير",
         "apply": "تطبيق",
-        "confirm_apply": "انقر مرة أخرى للتطبيق على الكل"
+        "confirm_apply": "انقر مرة أخرى للتطبيق على الكل",
+        "intro": "يُطبَّق على كل المنتجات المحددة ({count}). اترك أي حقل فارغًا للإبقاء عليه دون تغيير.",
+        "category_label": "الفئة"
       },
       "bulk_delete_modal": {
         "title": "حذف المنتجات",
@@ -226,7 +243,8 @@
         "select_reason": "اختر سبباً…",
         "note_label": "ملاحظة",
         "note_placeholder": "لماذا؟ باختصار",
-        "confirm_delete": "انقر مرة أخرى للحذف"
+        "confirm_delete": "انقر مرة أخرى للحذف",
+        "intro": "حذف مبدئي لـ {count} من المنتجات. تنتقل إلى المهملات ويمكن لمسؤول استعادتها."
       },
       "delete_reasons": {
         "discontinued": "متوقف",
@@ -271,7 +289,10 @@
       "category_none": "بدون",
       "supplier_locked": "المورّد مقفل بعد الإنشاء",
       "reorder_level": "حد إعادة الطلب",
-      "alt_s_hint": "Alt+S للحفظ"
+      "alt_s_hint": "Alt+S للحفظ",
+      "product_fallback": "منتج",
+      "err_save": "فشل الحفظ.",
+      "toast_saved": "✓ تم حفظ المنتج"
     },
     "categories": {
       "title": "الفئات",

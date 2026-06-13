@@ -7,8 +7,8 @@
   <div class="inv">
     <!-- ── NON-STICKY: title + tabs (scroll away) ── -->
     <div class="inv-head">
-      <h1 class="inv-title">Inventory</h1>
-      <p class="inv-sub">Manage products, stock, categories, and suppliers</p>
+      <h1 class="inv-title">{{ t('inventory.products.title') }}</h1>
+      <p class="inv-sub">{{ t('inventory.products.sub') }}</p>
     </div>
 
     <div class="tab-bar">
@@ -23,7 +23,7 @@
       <div class="dt-toolbar">
         <div class="dt-search">
           <Search :size="15" class="dt-search-icon" />
-          <input v-model="search" class="dt-search-input" placeholder="Search by name, SKU…" @input="debouncedFetch" />
+          <input v-model="search" class="dt-search-input" :placeholder="t('inventory.products.toolbar.search_placeholder')" @input="debouncedFetch" />
           <button v-show="search" class="dt-x" @click="clearSearch"><X :size="13" /></button>
         </div>
 
@@ -39,23 +39,23 @@
           <button v-if="cats.length > catWindow" class="cat-nav" :disabled="catStart >= catMax" @click="catScroll(1)"><ChevronRight :size="18" /></button>
         </div>
 
-        <button v-if="hasAdhoc && !editing" class="dt-filter" title="Reset to assigned layout" @click="resetLayout">
+        <button v-if="hasAdhoc && !editing" class="dt-filter" :title="t('inventory.products.toolbar.reset_layout')" @click="resetLayout">
           <RotateCcw :size="14" />
         </button>
         <button class="dt-filter" :class="{ on: showFilters }" @click="showFilters = !showFilters">
-          <Filter :size="14" /> Filter
+          <Filter :size="14" /> {{ t('inventory.products.toolbar.filter') }}
         </button>
         <button v-if="canEdit && !editing" class="dt-filter" @click="enterEdit">
-          <Columns3 :size="14" /> Customize
+          <Columns3 :size="14" /> {{ t('inventory.products.toolbar.customize') }}
         </button>
         <button v-if="canEdit && !editing" class="dt-filter" :class="{ on: bulkMode }" @click="toggleBulk">
-          <CheckSquare :size="14" /> Bulk
+          <CheckSquare :size="14" /> {{ t('inventory.products.toolbar.bulk') }}
         </button>
-        <button v-if="canEdit && !editing" class="dt-filter" title="Assign layouts to staff" @click="openAssign">
+        <button v-if="canEdit && !editing" class="dt-filter" :title="t('inventory.products.toolbar.assign_layouts')" @click="openAssign">
           <UserCog :size="14" />
         </button>
         <button v-if="!editing" class="dt-add" @click="openAddProduct">
-          <Plus :size="15" /> Add Product
+          <Plus :size="15" /> {{ t('inventory.products.toolbar.add_product') }}
         </button>
       </div>
 
@@ -63,19 +63,19 @@
       <Transition name="edit-slide">
       <div v-if="editing" class="edit-panel">
         <div class="edit-head">
-          <span class="edit-title"><Columns3 :size="15" /> Customize columns</span>
+          <span class="edit-title"><Columns3 :size="15" /> {{ t('inventory.products.customize.title') }}</span>
           <div class="edit-actions">
             <select v-if="presets.length" class="edit-select" @change="(e) => { const p = presets.find(x => x.id === e.target.value); if (p) loadPreset(p); e.target.value = '' }">
-              <option value="">Load preset…</option>
+              <option value="">{{ t('inventory.products.customize.load_preset') }}</option>
               <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
-            <button class="btn-ghost" @click="resetWorking">Reset</button>
-            <button class="btn-ghost" @click="cancelEdit">Cancel</button>
-            <button class="btn-ghost" @click="saveModal.open = true">Save preset</button>
-            <button class="btn-primary" @click="doneEdit">Done</button>
+            <button class="btn-ghost" @click="resetWorking">{{ t('inventory.products.customize.reset') }}</button>
+            <button class="btn-ghost" @click="cancelEdit">{{ t('common.cancel') }}</button>
+            <button class="btn-ghost" @click="saveModal.open = true">{{ t('inventory.products.customize.save_preset') }}</button>
+            <button class="btn-primary" @click="doneEdit">{{ t('inventory.products.customize.done') }}</button>
           </div>
         </div>
-        <p class="edit-hint">Drag to reorder · uncheck to hide · SKU and Product are locked.</p>
+        <p class="edit-hint">{{ t('inventory.products.customize.hint') }}</p>
         <div class="chooser">
           <div
             v-for="key in working.order" :key="key" class="chooser-row"
@@ -91,7 +91,7 @@
             />
             <span class="chooser-label">{{ headerLabel(key, colByKey[key]?.label ?? key) }}</span>
             <Lock v-if="LOCKED.includes(key)" :size="11" class="chooser-tag" />
-            <span v-else-if="!permittedKeys.includes(key)" class="chooser-na">role</span>
+            <span v-else-if="!permittedKeys.includes(key)" class="chooser-na">{{ t('inventory.products.customize.role_na') }}</span>
           </div>
         </div>
       </div>
@@ -103,20 +103,20 @@
           <option value="">{{ attr.name }}</option>
           <option v-for="opt in attr.options" :key="opt" :value="opt">{{ opt }}</option>
         </select>
-        <button class="btn-ghost" @click="clearFilters"><X :size="13" /> Clear</button>
+        <button class="btn-ghost" @click="clearFilters"><X :size="13" /> {{ t('common.clear') }}</button>
       </div>
 
       <!-- BULK ACTION BAR -->
       <Transition name="edit-slide">
         <div v-if="bulkMode" class="bulk-bar">
-          <span class="bulk-count">{{ selectedCount }} selected</span>
+          <span class="bulk-count">{{ t('inventory.products.bulk_bar.n_selected', { count: selectedCount }) }}</span>
           <div class="bulk-actions">
-            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="doBulkGhost(true)"><EyeOff :size="14" /> Ghost</button>
-            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="doBulkGhost(false)"><Eye :size="14" /> Un-ghost</button>
-            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="openBulkEdit"><Pencil :size="14" /> Edit</button>
-            <button class="btn-ghost danger" :disabled="!selectedCount || bulkBusy" @click="openBulkDelete"><Trash2 :size="14" /> Delete</button>
+            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="doBulkGhost(true)"><EyeOff :size="14" /> {{ t('inventory.products.bulk_bar.ghost') }}</button>
+            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="doBulkGhost(false)"><Eye :size="14" /> {{ t('inventory.products.bulk_bar.unghost') }}</button>
+            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="openBulkEdit"><Pencil :size="14" /> {{ t('common.edit') }}</button>
+            <button class="btn-ghost danger" :disabled="!selectedCount || bulkBusy" @click="openBulkDelete"><Trash2 :size="14" /> {{ t('common.delete') }}</button>
           </div>
-          <button class="bulk-exit" title="Exit bulk mode" @click="toggleBulk"><X :size="15" /></button>
+          <button class="bulk-exit" :title="t('inventory.products.bulk_bar.exit_hint')" @click="toggleBulk"><X :size="15" /></button>
         </div>
       </Transition>
 
@@ -152,7 +152,7 @@
                   </span>
                   <span class="dt-resize" @mousedown.stop.prevent="startResize(col.key, $event)" @click.stop></span>
                 </th>
-                <th class="dt-th ta-right dt-actcol">Actions</th>
+                <th class="dt-th ta-right dt-actcol">{{ t('inventory.products.table.actions') }}</th>
               </tr>
             </thead>
 
@@ -166,21 +166,21 @@
                     <span v-if="col.badge" class="stock-badge">{{ formatQty(p.total_stock) }}</span>
                     <template v-else-if="col.money && p[col.field] !== undefined && p[col.field] !== null && p[col.field] !== ''"><span v-if="col.plus">+</span><Money :value="p[col.field]" /></template>
                     <template v-else>
-                      <span v-if="col.key === 'product' && p.hide_from_pos" class="ghost-tag" title="Hidden from POS"><EyeOff :size="11" /></span>{{ cellText(col, p) }}
+                      <span v-if="col.key === 'product' && p.hide_from_pos" class="ghost-tag" :title="t('inventory.products.table.ghost_hint')"><EyeOff :size="11" /></span>{{ cellText(col, p) }}
                     </template>
                   </td>
                   <td class="ta-right dt-actcol">
-                    <button class="row-action" :title="p.hide_from_pos ? 'Un-ghost (show in POS)' : 'Ghost (hide from POS)'" @click.stop="toggleGhost(p)">
+                    <button class="row-action" :title="p.hide_from_pos ? t('inventory.products.table.unghost_hint') : t('inventory.products.table.ghost_action')" @click.stop="toggleGhost(p)">
                       <component :is="p.hide_from_pos ? EyeOff : Eye" :size="14" />
                     </button>
-                    <button class="row-action" title="Edit product" @click.stop="openEditProduct(p)"><Pencil :size="14" /></button>
+                    <button class="row-action" :title="t('inventory.products.table.edit_hint')" @click.stop="openEditProduct(p)"><Pencil :size="14" /></button>
                   </td>
                 </tr>
                 <tr v-if="!loading && !products.length">
                   <td :colspan="displayColumns.length + (bulkMode ? 2 : 1)" class="dt-empty">
                     <Package :size="40" class="dt-empty-icon" />
-                    <div class="dt-empty-title">No products found</div>
-                    <div class="dt-empty-sub">Adjust your search or filter.</div>
+                    <div class="dt-empty-title">{{ t('inventory.products.table.empty_title') }}</div>
+                    <div class="dt-empty-sub">{{ t('inventory.products.table.empty_sub') }}</div>
                   </td>
                 </tr>
               </tbody>
@@ -191,12 +191,12 @@
         <!-- pagination -->
         <div class="dt-foot">
           <div class="dt-perpage">
-            <span>PER PAGE</span>
+            <span>{{ t('inventory.products.table.per_page') }}</span>
             <select v-model.number="pageSize" @change="fetchProducts(1); saveAdhoc()">
               <option :value="50">50</option><option :value="75">75</option><option :value="100">100</option>
             </select>
           </div>
-          <div class="dt-showing">SHOWING {{ total === 0 ? 0 : from }}-{{ to }} OF {{ total }}</div>
+          <div class="dt-showing">{{ t('inventory.products.table.showing', { from: total === 0 ? 0 : from, to, total }) }}</div>
           <div class="dt-pages">
             <button class="dt-pg" :disabled="page === 1" @click="goPage(page - 1)"><ChevronLeft :size="18" /></button>
             <span class="dt-pgnum">{{ page }} / {{ totalPages }}</span>
@@ -211,9 +211,9 @@
       <div class="dt-card simple">
         <div class="dt-xscroll">
         <table class="dt">
-          <thead><tr><th class="dt-th">Name</th><th class="dt-th">Parent</th><th class="dt-th ta-right">Actions</th></tr></thead>
+          <thead><tr><th class="dt-th">{{ t('inventory.products.categories_tab.name_col') }}</th><th class="dt-th">{{ t('inventory.products.categories_tab.parent_col') }}</th><th class="dt-th ta-right">{{ t('inventory.products.table.actions') }}</th></tr></thead>
           <tbody>
-            <tr v-if="!categories.length"><td colspan="3" class="dt-empty"><div class="dt-empty-title">No categories yet</div></td></tr>
+            <tr v-if="!categories.length"><td colspan="3" class="dt-empty"><div class="dt-empty-title">{{ t('inventory.products.categories_tab.empty') }}</div></td></tr>
             <tr v-for="cat in categories" :key="cat.id" class="dt-row">
               <td class="c-name">{{ cat.name }}</td>
               <td class="c-sup">{{ categories.find(c => c.id === cat.parent)?.name || '—' }}</td>
@@ -233,9 +233,9 @@
       <div class="dt-card simple">
         <div class="dt-xscroll">
         <table class="dt">
-          <thead><tr><th class="dt-th">Name</th><th class="dt-th">Code</th><th class="dt-th">Contact</th><th class="dt-th ta-right">Actions</th></tr></thead>
+          <thead><tr><th class="dt-th">{{ t('inventory.products.suppliers_tab.name_col') }}</th><th class="dt-th">{{ t('inventory.products.suppliers_tab.code_col') }}</th><th class="dt-th">{{ t('inventory.products.suppliers_tab.contact_col') }}</th><th class="dt-th ta-right">{{ t('inventory.products.table.actions') }}</th></tr></thead>
           <tbody>
-            <tr v-if="!suppliers.length"><td colspan="4" class="dt-empty"><div class="dt-empty-title">No suppliers yet</div></td></tr>
+            <tr v-if="!suppliers.length"><td colspan="4" class="dt-empty"><div class="dt-empty-title">{{ t('inventory.products.suppliers_tab.empty') }}</div></td></tr>
             <tr v-for="s in suppliers" :key="s.id" class="dt-row">
               <td class="c-name">{{ s.name }}</td>
               <td><span class="code-chip">{{ s.code_prefix }}</span></td>
@@ -254,29 +254,29 @@
     <!-- ═══════════ REPORTS TAB ═══════════ -->
     <div v-if="activeTab === 'reports'" class="dt-empty" style="margin-top:48px;">
       <BarChart3 :size="36" class="dt-empty-icon" />
-      <div class="dt-empty-title">Inventory Reports</div>
-      <div class="dt-empty-sub">Coming soon</div>
+      <div class="dt-empty-title">{{ t('inventory.products.reports_tab.title') }}</div>
+      <div class="dt-empty-sub">{{ t('inventory.products.reports_tab.coming_soon') }}</div>
     </div>
 
     <!-- MODALS -->
-    <AppModal :open="saveModal.open" title="Save preset" @close="saveModal.open = false">
+    <AppModal :open="saveModal.open" :title="t('inventory.products.save_preset_modal.title')" @close="saveModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label class="form-label">Preset name</label>
-          <input v-model="saveModal.name" class="form-input" placeholder="e.g. Cashier view" />
+          <label class="form-label">{{ t('inventory.products.save_preset_modal.name_label') }}</label>
+          <input v-model="saveModal.name" class="form-input" :placeholder="t('inventory.products.save_preset_modal.name_placeholder')" />
         </div>
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer;">
           <input type="checkbox" v-model="saveModal.is_default" />
-          Make this the store default (for staff without an assigned preset)
+          {{ t('inventory.products.save_preset_modal.is_default_label') }}
         </label>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="saveModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!saveModal.name.trim()" @click="savePreset">Save</button>
+        <button class="btn-ghost" @click="saveModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!saveModal.name.trim()" @click="savePreset">{{ t('common.save') }}</button>
       </template>
     </AppModal>
 
-    <AppModal :open="assignModal.open" title="Assign layouts to staff" @close="assignModal.open = false; assignConflict = null">
+    <AppModal :open="assignModal.open" :title="t('inventory.products.assign_modal.title')" @close="assignModal.open = false; assignConflict = null">
       <div class="assign-list">
         <div v-for="row in assignModal.rows" :key="row.user_id" class="assign-row">
           <div class="assign-user">
@@ -284,74 +284,74 @@
             <span class="assign-role">{{ row.role }}</span>
           </div>
           <select v-model="row.preset_id" class="form-input assign-sel" @change="assignTo(row)">
-            <option :value="null">— Default —</option>
+            <option :value="null">{{ t('inventory.products.assign_modal.default_option') }}</option>
             <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
         </div>
-        <div v-if="!assignModal.rows.length" style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">No staff yet.</div>
+        <div v-if="!assignModal.rows.length" style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">{{ t('inventory.products.assign_modal.no_staff') }}</div>
       </div>
       <div v-if="assignConflict" class="assign-conflict-banner">
         <span style="font-size:13px;">⚠</span>
-        <span><strong>{{ assignConflict.user }}</strong> ({{ assignConflict.role }}) can't see
-          <em>{{ assignConflict.cols }}</em> — those columns will be hidden automatically by their role.</span>
+        <span><strong>{{ assignConflict.user }}</strong> ({{ assignConflict.role }}) {{ t('inventory.products.assign_modal.conflict_cant_see') }}
+          <em>{{ assignConflict.cols }}</em> {{ t('inventory.products.assign_modal.conflict_suffix') }}</span>
         <button style="background:none;border:none;cursor:pointer;color:inherit;font-size:14px;line-height:1;padding:0 2px;" @click="assignConflict = null">✕</button>
       </div>
     </AppModal>
 
-    <AppModal :open="catModal.open" :title="catModal.id ? 'Edit Category' : 'New Category'" @close="catModal.open = false">
+    <AppModal :open="catModal.open" :title="catModal.id ? t('inventory.products.category_modal.edit_title') : t('inventory.products.category_modal.new_title')" @close="catModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">Name</label><input v-model="catModal.name" class="form-input" placeholder="Category name" /></div>
-        <div><label class="form-label">Parent (optional)</label>
+        <div><label class="form-label">{{ t('common.name') }}</label><input v-model="catModal.name" class="form-input" :placeholder="t('inventory.products.category_modal.name_placeholder')" /></div>
+        <div><label class="form-label">{{ t('inventory.products.category_modal.parent_label') }}</label>
           <select v-model="catModal.parent" class="form-input">
-            <option value="">None</option>
+            <option value="">{{ t('inventory.products.category_modal.parent_none') }}</option>
             <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="catModal.open = false">Cancel</button>
-        <button class="btn-primary" @click="saveCategory" :disabled="!catModal.name.trim()">Save</button>
+        <button class="btn-ghost" @click="catModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" @click="saveCategory" :disabled="!catModal.name.trim()">{{ t('common.save') }}</button>
       </template>
     </AppModal>
 
-    <AppModal :open="supModal.open" :title="supModal.id ? 'Edit Supplier' : 'New Supplier'" @close="supModal.open = false">
+    <AppModal :open="supModal.open" :title="supModal.id ? t('inventory.products.supplier_modal.edit_title') : t('inventory.products.supplier_modal.new_title')" @close="supModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">Name</label><input v-model="supModal.name" class="form-input" placeholder="Supplier name" /></div>
-        <div><label class="form-label">3-digit code prefix</label><input v-model="supModal.code_prefix" class="form-input" placeholder="e.g. 130" maxlength="3" /></div>
-        <div><label class="form-label">Contact info (optional)</label><textarea v-model="supModal.contact_info" class="form-input" rows="2" placeholder="Phone, email…" /></div>
+        <div><label class="form-label">{{ t('common.name') }}</label><input v-model="supModal.name" class="form-input" :placeholder="t('inventory.products.supplier_modal.name_placeholder')" /></div>
+        <div><label class="form-label">{{ t('inventory.products.supplier_modal.code_prefix_label') }}</label><input v-model="supModal.code_prefix" class="form-input" :placeholder="t('inventory.products.supplier_modal.code_prefix_placeholder')" maxlength="3" /></div>
+        <div><label class="form-label">{{ t('inventory.products.supplier_modal.contact_label') }}</label><textarea v-model="supModal.contact_info" class="form-input" rows="2" :placeholder="t('inventory.products.supplier_modal.contact_placeholder')" /></div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="supModal.open = false">Cancel</button>
-        <button class="btn-primary" @click="saveSupplier" :disabled="!supModal.name.trim() || supModal.code_prefix.length !== 3">Save</button>
+        <button class="btn-ghost" @click="supModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" @click="saveSupplier" :disabled="!supModal.name.trim() || supModal.code_prefix.length !== 3">{{ t('common.save') }}</button>
       </template>
     </AppModal>
 
     <!-- ═══════════ PRODUCT ADD / EDIT ═══════════ -->
-    <AppModal :open="prodModal.open" :title="prodModal.id ? 'Edit Product' : 'New Product'" width="900px" :noBackdropClose="true" @close="prodModal.open = false">
+    <AppModal :open="prodModal.open" :title="prodModal.id ? t('inventory.products.product_modal.edit_title') : t('inventory.products.product_modal.new_title')" width="900px" :noBackdropClose="true" @close="prodModal.open = false">
       <div class="prod-modal-grid">
         <!-- LEFT COLUMN: Name + Description -->
         <div class="prod-modal-col">
           <div>
             <div class="prod-modal-field-head">
               <label class="form-label">{{ fmtStore.itemLabel }}</label>
-              <label class="prod-default-cb" title="Pre-fill this value next time">
+              <label class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
                 <input type="checkbox" v-model="prodDefaults.name_enabled" @change="saveDefaults" />
-                <span>Default</span>
+                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
               </label>
             </div>
             <input v-model="prodModal.name" class="form-input" :placeholder="`${fmtStore.itemLabel} name`" />
           </div>
 
           <div>
-            <label class="form-label">Description</label>
-            <textarea v-model="prodModal.description" class="form-input" rows="3" placeholder="Optional" />
+            <label class="form-label">{{ t('common.description') }}</label>
+            <textarea v-model="prodModal.description" class="form-input" rows="3" :placeholder="t('inventory.products.product_modal.description_placeholder')" />
           </div>
 
           <!-- Prices row -->
           <div class="prod-prices-row">
-            <div><label class="form-label">Base price</label><input v-model.number="prodModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
-            <div><label class="form-label">Cost price</label><input v-model.number="prodModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
-            <div><label class="form-label">Sell price</label><input v-model.number="prodModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">{{ t('inventory.products.product_modal.base_price') }}</label><input v-model.number="prodModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">{{ t('inventory.products.product_modal.cost_price') }}</label><input v-model.number="prodModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">{{ t('inventory.products.product_modal.sell_price') }}</label><input v-model.number="prodModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
           </div>
         </div>
 
@@ -359,14 +359,14 @@
         <div class="prod-modal-col">
           <div>
             <div class="prod-modal-field-head">
-              <label class="form-label">Category</label>
-              <label class="prod-default-cb" title="Pre-fill this value next time">
+              <label class="form-label">{{ t('inventory.products.product_modal.category_label') }}</label>
+              <label class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
                 <input type="checkbox" v-model="prodDefaults.category_enabled" @change="saveDefaults" />
-                <span>Default</span>
+                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
               </label>
             </div>
             <select v-model="prodModal.category" class="form-input" @change="prodDefaults.category_enabled && saveDefaults()">
-              <option value="">None</option>
+              <option value="">{{ t('inventory.products.product_modal.category_none') }}</option>
               <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
@@ -374,45 +374,45 @@
           <div>
             <div class="prod-modal-field-head">
               <label class="form-label" style="display:flex;align-items:center;gap:5px;">
-                Supplier <Lock v-if="prodModal.id" :size="11" />
+                {{ t('inventory.products.product_modal.supplier_label') }} <Lock v-if="prodModal.id" :size="11" />
               </label>
-              <label v-if="!prodModal.id" class="prod-default-cb" title="Pre-fill this value next time">
+              <label v-if="!prodModal.id" class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
                 <input type="checkbox" v-model="prodDefaults.supplier_enabled" @change="saveDefaults" />
-                <span>Default</span>
+                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
               </label>
             </div>
             <select v-if="!prodModal.id" v-model="prodModal.supplier" class="form-input" @change="prodDefaults.supplier_enabled && saveDefaults()">
-              <option value="">Select supplier…</option>
+              <option value="">{{ t('inventory.products.product_modal.select_supplier') }}</option>
               <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }} ({{ s.code_prefix }})</option>
             </select>
-            <input v-else class="form-input" :value="prodModal.supplierName" disabled title="Supplier is locked — the SKU is built from it" />
+            <input v-else class="form-input" :value="prodModal.supplierName" disabled :title="t('inventory.products.product_modal.supplier_locked')" />
           </div>
 
           <div>
             <div class="prod-modal-field-head">
-              <label class="form-label">Reorder level</label>
-              <label class="prod-default-cb" title="Pre-fill this value next time">
+              <label class="form-label">{{ t('inventory.products.product_modal.reorder_label') }}</label>
+              <label class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
                 <input type="checkbox" v-model="prodDefaults.reorder_enabled" @change="saveDefaults" />
-                <span>Default</span>
+                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
               </label>
             </div>
-            <input v-model.number="prodModal.reorder_level" class="form-input" type="number" min="0" step="1" title="Low-stock alert threshold (0 = no alarm)" />
+            <input v-model.number="prodModal.reorder_level" class="form-input" type="number" min="0" step="1" :title="t('inventory.products.product_modal.reorder_hint')" />
           </div>
 
           <div v-if="!prodModal.id">
             <div class="prod-modal-field-head">
-              <label class="form-label">Initial Stock</label>
-              <label class="prod-default-cb" title="Pre-fill this value next time">
+              <label class="form-label">{{ t('inventory.products.product_modal.initial_stock_label') }}</label>
+              <label class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
                 <input type="checkbox" v-model="prodDefaults.stock_enabled" @change="saveDefaults" />
-                <span>Default</span>
+                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
               </label>
             </div>
-            <input v-model.number="prodModal.initial_stock" class="form-input" type="number" min="0" step="1" title="Starting stock quantity (0 = no initial stock)" />
+            <input v-model.number="prodModal.initial_stock" class="form-input" type="number" min="0" step="1" :title="t('inventory.products.product_modal.initial_stock_hint')" />
           </div>
 
           <!-- Attributes -->
           <div v-if="attributes.length" class="prod-attrs-section">
-            <div class="form-label" style="margin-bottom:8px;">Attributes</div>
+            <div class="form-label" style="margin-bottom:8px;">{{ t('inventory.products.product_modal.attributes_label') }}</div>
             <div class="prod-attrs-grid">
               <div v-for="def in attributes" :key="def.id">
                 <label class="form-label">{{ def.name }}</label>
@@ -421,7 +421,7 @@
                     <option value="">—</option>
                     <option v-for="(o, i) in def.options" :key="i" :value="optText(o)">{{ optText(o) }}</option>
                   </select>
-                  <button class="prod-attr-add-btn" title="Add new option" @click.stop="openAddOption(def)"><Plus :size="13" /></button>
+                  <button class="prod-attr-add-btn" :title="t('inventory.products.product_modal.add_option_hint')" @click.stop="openAddOption(def)"><Plus :size="13" /></button>
                 </div>
                 <input v-else v-model="prodModal.attrs[def.id]" class="form-input" :placeholder="def.name" />
               </div>
@@ -431,84 +431,84 @@
       </div>
       <p v-if="prodModal.error" class="form-label" style="color:var(--danger,#dc2626);margin-top:4px;">{{ prodModal.error }}</p>
       <template #footer>
-        <span style="font-size:11.5px;color:var(--text-muted);margin-right:auto;">Alt+S to save</span>
-        <button class="btn-ghost" @click="prodModal.open = false">Cancel</button>
+        <span style="font-size:11.5px;color:var(--text-muted);margin-right:auto;">{{ t('inventory.products.product_modal.alt_s_hint') }}</span>
+        <button class="btn-ghost" @click="prodModal.open = false">{{ t('common.cancel') }}</button>
         <button
           class="btn-primary"
           :disabled="!prodModal.name.trim() || (!prodModal.id && !prodModal.supplier) || prodModal.saving"
           @click="saveProduct"
-        >{{ prodModal.saving ? 'Saving…' : 'Save' }}</button>
+        >{{ prodModal.saving ? t('common.saving') : t('common.save') }}</button>
       </template>
     </AppModal>
 
     <!-- Add new attribute option mini-modal -->
-    <AppModal :open="addOptModal.open" :title="`Add option — ${addOptModal.defName}`" width="380px" @close="addOptModal.open = false">
+    <AppModal :open="addOptModal.open" :title="t('inventory.products.add_option_modal.title', { name: addOptModal.defName })" width="380px" @close="addOptModal.open = false">
       <div>
-        <label class="form-label">New option value</label>
-        <input ref="addOptInput" v-model="addOptModal.value" class="form-input" placeholder="e.g. 256GB" @keyup.enter="confirmAddOption" />
+        <label class="form-label">{{ t('inventory.products.add_option_modal.new_option_label') }}</label>
+        <input ref="addOptInput" v-model="addOptModal.value" class="form-input" :placeholder="t('inventory.products.add_option_modal.placeholder')" @keyup.enter="confirmAddOption" />
         <p v-if="addOptModal.error" class="form-label" style="color:var(--danger,#dc2626);margin-top:6px;">{{ addOptModal.error }}</p>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="addOptModal.open = false">Cancel</button>
+        <button class="btn-ghost" @click="addOptModal.open = false">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="!addOptModal.value.trim() || addOptModal.saving" @click="confirmAddOption">
-          {{ addOptModal.saving ? 'Saving…' : 'Add' }}
+          {{ addOptModal.saving ? t('common.saving') : t('common.add') }}
         </button>
       </template>
     </AppModal>
 
     <!-- ═══════════ BULK EDIT ═══════════ -->
-    <AppModal :open="bulkEditModal.open" title="Bulk edit products" @close="bulkEditModal.open = false">
+    <AppModal :open="bulkEditModal.open" :title="t('inventory.products.bulk_edit_modal.title')" @close="bulkEditModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <p style="font-size:13px;color:var(--text-muted);margin:0;">
-          Applies to <strong>all {{ selectedCount }}</strong> selected product(s). Leave a field blank to keep it unchanged.
+          {{ t('inventory.products.bulk_edit_modal.intro', { count: selectedCount }) }}
         </p>
         <div>
-          <label class="form-label">Retail price</label>
-          <input v-model="bulkEditModal.retail_price" class="form-input" type="number" min="0" step="0.01" placeholder="Unchanged" />
+          <label class="form-label">{{ t('inventory.products.bulk_edit_modal.retail_price') }}</label>
+          <input v-model="bulkEditModal.retail_price" class="form-input" type="number" min="0" step="0.01" :placeholder="t('inventory.products.bulk_edit_modal.unchanged')" />
         </div>
         <div>
-          <label class="form-label">Category</label>
+          <label class="form-label">{{ t('inventory.products.bulk_edit_modal.category_label') }}</label>
           <select v-model="bulkEditModal.category" class="form-input">
-            <option value="">Unchanged</option>
+            <option value="">{{ t('inventory.products.bulk_edit_modal.unchanged') }}</option>
             <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="bulkEditModal.open = false">Cancel</button>
+        <button class="btn-ghost" @click="bulkEditModal.open = false">{{ t('common.cancel') }}</button>
         <button
           class="btn-primary"
           :disabled="bulkBusy || (bulkEditModal.retail_price === '' && !bulkEditModal.category)"
           @click="confirmBulkEdit"
-        >{{ bulkEditModal.confirming ? 'Click again to apply to all' : 'Apply' }}</button>
+        >{{ bulkEditModal.confirming ? t('inventory.products.bulk_edit_modal.confirm_apply') : t('inventory.products.bulk_edit_modal.apply') }}</button>
       </template>
     </AppModal>
 
     <!-- ═══════════ BULK DELETE ═══════════ -->
-    <AppModal :open="bulkDeleteModal.open" title="Delete products" @close="bulkDeleteModal.open = false">
+    <AppModal :open="bulkDeleteModal.open" :title="t('inventory.products.bulk_delete_modal.title')" @close="bulkDeleteModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <p style="font-size:13px;color:var(--text-muted);margin:0;">
-          Soft-deleting <strong>{{ selectedCount }}</strong> product(s). They move to Trash and can be restored by an admin.
+          {{ t('inventory.products.bulk_delete_modal.intro', { count: selectedCount }) }}
         </p>
         <div>
-          <label class="form-label">Reason</label>
+          <label class="form-label">{{ t('inventory.products.bulk_delete_modal.reason_label') }}</label>
           <select v-model="bulkDeleteModal.reason" class="form-input">
-            <option value="">Select a reason…</option>
+            <option value="">{{ t('inventory.products.bulk_delete_modal.select_reason') }}</option>
             <option v-for="r in DELETE_REASONS" :key="r.value" :value="r.value">{{ r.label }}</option>
           </select>
         </div>
         <div v-if="bulkDeleteModal.reason === 'OTHER'">
-          <label class="form-label">Note</label>
-          <input v-model="bulkDeleteModal.note" class="form-input" placeholder="Briefly, why?" maxlength="255" />
+          <label class="form-label">{{ t('inventory.products.bulk_delete_modal.note_label') }}</label>
+          <input v-model="bulkDeleteModal.note" class="form-input" :placeholder="t('inventory.products.bulk_delete_modal.note_placeholder')" maxlength="255" />
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="bulkDeleteModal.open = false">Cancel</button>
+        <button class="btn-ghost" @click="bulkDeleteModal.open = false">{{ t('common.cancel') }}</button>
         <button
           class="btn-danger"
           :disabled="bulkBusy || !bulkDeleteModal.reason"
           @click="confirmBulkDelete"
-        >{{ bulkDeleteModal.confirming ? 'Click again to delete' : 'Delete' }}</button>
+        >{{ bulkDeleteModal.confirming ? t('inventory.products.bulk_delete_modal.confirm_delete') : t('common.delete') }}</button>
       </template>
     </AppModal>
   </div>
@@ -516,6 +516,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import {
   Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck, Plus,
@@ -531,6 +532,7 @@ import { showSuccessToast } from '@/utils/toast'
 import { useFormDirty } from '@/composables/useFormDirty'
 import AppModal from '@/components/ui/AppModal.vue'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const fmtStore = useFormatStore()
 const router = useRouter()
@@ -548,18 +550,26 @@ onUnmounted(() => document.removeEventListener('keydown', handleGlobalKey))
 
 // Column header label: product noun + per-store category tier names are dynamic.
 const _CAT_IDX = { cat1: 0, cat2: 1, cat3: 2, cat4: 3 }
+const _COL_KEY_MAP = { inStock: 'in_stock' }   // template key → i18n key
 function headerLabel(key, fallback) {
   if (key === 'product') return fmtStore.itemLabelUpper
-  if (key in _CAT_IDX) return (fmtStore.categoryLevels[_CAT_IDX[key]] || fallback).toUpperCase()
-  return fallback
+  if (key in _CAT_IDX) {
+    const lvl = fmtStore.categoryLevels[_CAT_IDX[key]]
+    return (lvl || t('inventory.products.columns.' + key)).toUpperCase()
+  }
+  // Attribute columns have no i18n key — use the dynamic attribute label.
+  if (key.startsWith('attr_')) return fallback
+  const tk = 'inventory.products.columns.' + (_COL_KEY_MAP[key] || key)
+  const translated = t(tk)
+  return translated === tk ? fallback : translated
 }
 
-const tabs = [
-  { id: 'products', label: 'Products', icon: Package },
+const tabs = computed(() => [
+  { id: 'products', label: t('inventory.products.tabs.products'), icon: Package },
   // Categories now live on their own tree page (/inventory/categories).
-  { id: 'suppliers', label: 'Suppliers', icon: Truck },
-  { id: 'reports', label: 'Reports', icon: BarChart3 },
-]
+  { id: 'suppliers', label: t('inventory.products.tabs.suppliers'), icon: Truck },
+  { id: 'reports', label: t('inventory.products.tabs.reports'), icon: BarChart3 },
+])
 const activeTab = ref('products')
 
 /* ── columns ── */
@@ -952,7 +962,7 @@ async function saveCategory() {
   catModal.id ? await api.patch(`/api/inventory/categories/${catModal.id}/`, payload) : await api.post('/api/inventory/categories/', payload)
   catModal.open = false; fetchCategories()
 }
-async function deleteCategory(id) { if (!confirm('Delete this category?')) return; await api.delete(`/api/inventory/categories/${id}/`); fetchCategories() }
+async function deleteCategory(id) { if (!confirm(t('inventory.products.categories_tab.confirm_delete'))) return; await api.delete(`/api/inventory/categories/${id}/`); fetchCategories() }
 
 function openEditSupplier(s) { Object.assign(supModal, { open: true, id: s.id, name: s.name, code_prefix: s.code_prefix, contact_info: s.contact_info || '' }) }
 async function saveSupplier() {
@@ -960,7 +970,7 @@ async function saveSupplier() {
   supModal.id ? await api.patch(`/api/inventory/suppliers/${supModal.id}/`, payload) : await api.post('/api/inventory/suppliers/', payload)
   supModal.open = false; fetchSuppliers()
 }
-async function deleteSupplier(id) { if (!confirm('Delete this supplier?')) return; await api.delete(`/api/inventory/suppliers/${id}/`); fetchSuppliers() }
+async function deleteSupplier(id) { if (!confirm(t('inventory.products.suppliers_tab.confirm_delete'))) return; await api.delete(`/api/inventory/suppliers/${id}/`); fetchSuppliers() }
 
 /* ── product defaults (persisted in localStorage) ── */
 const PROD_DEFAULTS_KEY = 'prod_field_defaults'
@@ -1028,7 +1038,7 @@ async function confirmAddOption() {
     prodModal.attrs[addOptModal.defId] = addOptModal.value.trim()
     addOptModal.open = false
   } catch (e) {
-    addOptModal.error = e.response?.data?.detail || 'Failed to add option.'
+    addOptModal.error = e.response?.data?.detail || t('inventory.products.add_option_modal.err_add')
   } finally { addOptModal.saving = false }
 }
 
@@ -1049,7 +1059,7 @@ async function openEditProduct(p) {
     prodModal.sell_price  = v ? Number(v.sell_price || 0) : 0
     prodModal.reorder_level = v ? Number(v.reorder_level ?? 0) : 0
     if (v && v.attributes) for (const a of v.attributes) prodModal.attrs[a.definition] = a.value
-  } catch { prodModal.error = 'Failed to load product details.' }
+  } catch { prodModal.error = t('inventory.products.product_modal.err_load') }
 }
 
 async function saveProduct() {
@@ -1094,14 +1104,14 @@ async function saveProduct() {
         } catch { /* stock adjustment failed silently — product still created */ }
       }
     }
-    showSuccessToast('✓ Product saved')
+    showSuccessToast(t('inventory.products.product_modal.toast_saved'))
     setDirty(false)
     prodModal.open = false
     fetchProducts(prodModal.id ? page.value : 1)
   } catch (e) {
     prodModal.error = e.response?.data?.detail
       || e.response?.data?.supplier?.[0]
-      || 'Save failed. Make sure the supplier prefix is confirmed (locked).'
+      || t('inventory.products.product_modal.err_save')
   } finally { prodModal.saving = false }
 }
 
@@ -1124,12 +1134,12 @@ watch([
 /* ── ghost (hide from POS) + bulk ops ── */
 const bulkMode = ref(false)
 const selected = ref(new Set())
-const DELETE_REASONS = [
-  { value: 'DISCONTINUED', label: 'Discontinued' },
-  { value: 'DUPLICATE',    label: 'Duplicate' },
-  { value: 'MISTAKE',      label: 'Created by mistake' },
-  { value: 'OTHER',        label: 'Other' },
-]
+const DELETE_REASONS = computed(() => [
+  { value: 'DISCONTINUED', label: t('inventory.products.delete_reasons.discontinued') },
+  { value: 'DUPLICATE',    label: t('inventory.products.delete_reasons.duplicate') },
+  { value: 'MISTAKE',      label: t('inventory.products.delete_reasons.mistake') },
+  { value: 'OTHER',        label: t('inventory.products.delete_reasons.other') },
+])
 const bulkBusy = ref(false)
 const bulkDeleteModal = reactive({ open: false, reason: '', note: '', confirming: false })
 const bulkEditModal = reactive({ open: false, retail_price: '', category: '', confirming: false })
