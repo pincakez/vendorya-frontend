@@ -1,0 +1,677 @@
+{
+  "/home/ubuntu/vendorya/vendorya-frontend/vite.config.js": {
+    "mtime": 1780750833.899991,
+    "ast_hash": "afdfc2e642555e6082988ebb009eb038",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/package.json": {
+    "mtime": 1780969859.7877498,
+    "ast_hash": "ce99c0bb846a0683d880cb6973eb0b3d",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/main.js": {
+    "mtime": 1780970195.836939,
+    "ast_hash": "d2116187fb9812a14785692dadd827c7",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/App.vue": {
+    "mtime": 1780849953.9637954,
+    "ast_hash": "c0da35929118cc693d9099a28c16a910",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/admin/AdminChatPanel.vue": {
+    "mtime": 1781149821.5203068,
+    "ast_hash": "dd9d71a1fb7e72673ea1e056449364d3",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/layout/AppHeader.vue": {
+    "mtime": 1781149821.5203068,
+    "ast_hash": "75f43be981d4b6794b40c110e9028a28",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/layout/AppSidebar.vue": {
+    "mtime": 1781149821.5303068,
+    "ast_hash": "78d6360bb9707cc4b1bb4a3b8a3745c3",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/layout/AppFooter.vue": {
+    "mtime": 1780930784.5618837,
+    "ast_hash": "5160fa665188f7b564a9f7cc5169832a",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/ui/ExportMenu.vue": {
+    "mtime": 1781149821.5303068,
+    "ast_hash": "5990675c0de62419bbb609f640a11cb2",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/ui/Money.vue": {
+    "mtime": 1780320710.9004002,
+    "ast_hash": "c3de9d0fcafe2ccc80cb50fa889ca3df",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/ui/ReportTable.vue": {
+    "mtime": 1781149821.5303068,
+    "ast_hash": "655dd985c3a5685157f5cc3d0d6457c7",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/ui/AppPagination.vue": {
+    "mtime": 1780067659.0506334,
+    "ast_hash": "67a3467b067c7794bcc4baa6ddbb3380",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/ui/ReportFilters.vue": {
+    "mtime": 1780067659.0506334,
+    "ast_hash": "460f08f691ad9dc56e30ad97e0d9cc12",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/ui/PhysicalButton.vue": {
+    "mtime": 1780803728.3993008,
+    "ast_hash": "9306e64811984e409423125904e514a0",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/ui/AppModal.vue": {
+    "mtime": 1781141433.6506991,
+    "ast_hash": "e208fda4a64422f6371f5cf8c37b129c",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/ui/QAB.vue": {
+    "mtime": 1781149821.5303068,
+    "ast_hash": "186e2652fe1572a7273085db8ff07845",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/settings/TwoFactorPanel.vue": {
+    "mtime": 1781353223.8584292,
+    "ast_hash": "190adc06e1d1a639d890576cef1a09e0",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/pos/BranchPickerModal.vue": {
+    "mtime": 1780716226.649745,
+    "ast_hash": "bb196cccb24633b0035f270455df86f5",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/pos/PaymentModal.vue": {
+    "mtime": 1781149821.5303068,
+    "ast_hash": "6aa18e5383e6fbcea5fed016122b9c6f",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/pos/DiscountModal.vue": {
+    "mtime": 1780716249.0012016,
+    "ast_hash": "64275d645e8d35f5897755c2d1e06d53",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/components/shared/CustomerFormModal.vue": {
+    "mtime": 1781149821.5303068,
+    "ast_hash": "b2a5c9b74a55e5b0ce37ce3fd69218bc",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/layouts/POSLayout.vue": {
+    "mtime": 1774083752.186894,
+    "ast_hash": "6ba5494a2d21ce5c444a2af40b27ffc8",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/layouts/LayoutSwitch.vue": {
+    "mtime": 1780043763.8820853,
+    "ast_hash": "8c4e169c823468f16267f63a0d29fece",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/layouts/DefaultLayout.vue": {
+    "mtime": 1780949978.8609767,
+    "ast_hash": "1304430d686a1481235f107688dfa558",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/layouts/AdminLayout.vue": {
+    "mtime": 1780343041.3611891,
+    "ast_hash": "e9eb7af7a830df86ebf8ccd78232eb24",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/Dashboard.vue": {
+    "mtime": 1781353146.6740668,
+    "ast_hash": "4ce85cdf62d7db0f09776cf7ab4a39e0",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/POS.vue": {
+    "mtime": 1781353027.5070505,
+    "ast_hash": "d00a29bfe8db8c930d6a3cc852d0b13f",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/ActivityLog.vue": {
+    "mtime": 1781149821.5303068,
+    "ast_hash": "168e5874f1b4d422951cf8bb44bb2792",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/ChangePassword.vue": {
+    "mtime": 1781149821.5303068,
+    "ast_hash": "5bb5c1a7999d4c232dcb28ebc0138da9",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/Inbox.vue": {
+    "mtime": 1781149821.5303068,
+    "ast_hash": "09bc7e104091b836cad03d8a7a097670",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/Login.vue": {
+    "mtime": 1780466124.769336,
+    "ast_hash": "c1ab06bd853b8ce01b14bcf17534062d",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/sales/SalesInvoices.vue": {
+    "mtime": 1781353432.9281611,
+    "ast_hash": "42ec9168ac72b1d5538a0ec8e2e6c6ff",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/sales/InvoicePrint.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "af0254a05f89ff1d9f33920a23b51280",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/sales/InvoiceDetail.vue": {
+    "mtime": 1781353373.075323,
+    "ast_hash": "ce7ca961db0bebb1408a9f774eaed099",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/sales/Returns.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "81fc906dd3fe6bcc9f18a32eff28e844",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminStores.vue": {
+    "mtime": 1781353228.7981825,
+    "ast_hash": "f47dff6ea91bb421c8c10332c937df41",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminPlans.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "3d5867a600e15d03cfb81973c1aef51b",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/ComponentGallery.vue": {
+    "mtime": 1781150046.0602946,
+    "ast_hash": "cb66ecfffc133101048964d081a1d5c1",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminTrash.vue": {
+    "mtime": 1781149787.8503082,
+    "ast_hash": "b7b627e43ee01bb6dc8124a639463342",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminUsage.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "28c94120f8ac86d4e423f2736bca6d9c",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminBillingSettings.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "8dc36eaa524dc0ada459381af3dcb543",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminDashboard.vue": {
+    "mtime": 1781353243.4304721,
+    "ast_hash": "d9d78fa91f0dedaec5b695ef595aa353",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/WidgetGallery.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "b1161e0ba318482f5c89d301bf1e73ac",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminAlerts.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "ce909e45d5fabc14e158d7db0e943e95",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminAuthSettings.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "ee34a4e6d6d605bdb10243a3e9a4fba2",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminAIProfiles.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "7c52034d95b9ad74fc9e163228f1bf92",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminSubscriptions.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "81db8594695b3d285e6f1a686b5790a4",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminMisc.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "9605b58da86c10884284ed5542c43856",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminUsers.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "5b36fb7eebbffd7c7225cecad6b10d45",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminBranches.vue": {
+    "mtime": 1781149787.8603084,
+    "ast_hash": "64fba207816d38ed2ea34c167ee06b7b",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminIsolation.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "37dc4de7222d73254c61cdbde2b087e3",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminActivityLog.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "0634694fa91754136bd47c16cc4959df",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/people/Staff.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "25de2d2c3e954eb1e0c80d7216d30453",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/people/SupplierDetail.vue": {
+    "mtime": 1781149821.5403068,
+    "ast_hash": "858761917f78d8b42e8840115e2a7189",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/people/Suppliers.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "28e0e183a7c9fca2e256872cdc84981b",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/people/CustomerDetail.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "df13d371364e8952bf8f9519f6f162d9",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/people/Customers.vue": {
+    "mtime": 1781347121.5761201,
+    "ast_hash": "3724c15a284ef24db232508ca0d74e34",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/NotificationPrefs.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "cb0488bee145b3e951620057cbfbe382",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/PaymentMethods.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "f060b002bc5bf92ad6fb1d40cf9252ec",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/PosUX.vue": {
+    "mtime": 1781149787.8803084,
+    "ast_hash": "07805b92ddb8b6780e6b5ed38455cb5a",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/Profile.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "8aa60de5ac66043409dfe97bf6bcd5a3",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/StoreSettings.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "4f8b77ed87f72e1897a13ea9f497082d",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/Policies.vue": {
+    "mtime": 1781353242.0271406,
+    "ast_hash": "523d740afa60da08748806b638ceaa2e",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/Taxes.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "c4b7f099bd0bb7f562d5292bd5b23b32",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/POSFavorites.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "2bc5e2cceaac4fceeeba91fc2a94e012",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/Security.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "cbf0c7bcb0a0e8182a6cb444bdc27e6a",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/Billing.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "8332997a8d082346f8d92eca1318e3f8",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/POSTopSelling.vue": {
+    "mtime": 1781149787.9003084,
+    "ast_hash": "1ed8de857a272e9f292bd3526301df37",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/reports/ReceivablesAging.vue": {
+    "mtime": 1781149787.9003084,
+    "ast_hash": "3e088541a8cccc2bd897ebd37be39718",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/reports/ExpenseBreakdown.vue": {
+    "mtime": 1781149787.9003084,
+    "ast_hash": "8f0b1b9dcf4d7fea619c2f33e9da519f",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/reports/TaxReport.vue": {
+    "mtime": 1781149787.9003084,
+    "ast_hash": "2bd87312c425a831890adc158063e5d4",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/reports/ProfitMargin.vue": {
+    "mtime": 1781149787.9003084,
+    "ast_hash": "92419204f2bba3ca7c9888468f3de485",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/reports/CashierPerformance.vue": {
+    "mtime": 1781149787.9003084,
+    "ast_hash": "2185a708c551d09b82a3cb68ca6c25e6",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/reports/SalesReport.vue": {
+    "mtime": 1781149787.9003084,
+    "ast_hash": "f61bb3fd9feb20f4938f67b7cc0127ef",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/reports/StockLedger.vue": {
+    "mtime": 1781149787.9003084,
+    "ast_hash": "282c8f3acfafa7730bddc9a37c7aad60",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/reports/PayablesAging.vue": {
+    "mtime": 1781149787.9003084,
+    "ast_hash": "1dd3c62772eb1d7519daa827b4d08c6b",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/reports/ProfitLoss.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "22506460ec83c82968dc1a1bfe76a955",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/print/LabelPrint.vue": {
+    "mtime": 1780873967.9982238,
+    "ast_hash": "8a104d733c81b0356572928ede0e6d3a",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/services/ServiceFormModal.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "629ceea1e26b02237d2b955a583d1e36",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/services/Services.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "d7d3d7ba2f5a188a87df36fd4783cc7d",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/finance/Shifts.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "bb3976376a473c2f7fb21ebb103a7c9e",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/finance/Expenses.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "540855b00a7ed181a531c0cda8df110a",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/finance/CashDrawer.vue": {
+    "mtime": 1781353233.3319757,
+    "ast_hash": "a976db6b884d8501e74f19b8f51fbb1e",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/finance/ShiftDetail.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "e959f243c6175d706444c4a288b3b1ba",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/Products.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "51ade09b88a9a56b9c771966fd968eea",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/Categories.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "03c59de30306ca4353443f625c270b7e",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/InventoryReports.vue": {
+    "mtime": 1781353244.9387789,
+    "ast_hash": "4d64cfb3ce9a4e58853cd56d794cbb85",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/Purchases.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "f5f3c8962f31d981ca241ebb72219647",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/StockTransfers.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "14cc3bde1b0c7944c51c3d701c10a7c6",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/StockAdjustments.vue": {
+    "mtime": 1781149821.5503068,
+    "ast_hash": "71b59dbea452b568199dc5aba340e8cc",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/ImportExport.vue": {
+    "mtime": 1781149821.5603068,
+    "ast_hash": "e6bff26ffe4e9f4626ac08ee0feca2c1",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/ProductDetail.vue": {
+    "mtime": 1781149821.5603068,
+    "ast_hash": "443c07528e887bfad8298482600b5bd6",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/Attributes.vue": {
+    "mtime": 1781149821.5603068,
+    "ast_hash": "8d5c2d08c00d4b2bd122080f50cd3458",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/stores/cart.js": {
+    "mtime": 1780849833.2315807,
+    "ast_hash": "a47380a28ec06663611e9f0d2f810a4d",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/stores/auth.js": {
+    "mtime": 1780925156.3186932,
+    "ast_hash": "2ea70d0501d2de781090ecce88fe3ff6",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/stores/qab.js": {
+    "mtime": 1774083577.5986118,
+    "ast_hash": "8d8bad620075315fbe4b152ae2143e39",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/stores/labels.js": {
+    "mtime": 1780778376.0066915,
+    "ast_hash": "b75947ac63dfdeead3b7847c98f7bb2d",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/stores/pos.js": {
+    "mtime": 1780716189.0966504,
+    "ast_hash": "a42de64acc2b775325ffa25dc593991a",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/stores/theme.js": {
+    "mtime": 1779886729.9889028,
+    "ast_hash": "39c5d45999897d86f1b985c201be5063",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/stores/format.js": {
+    "mtime": 1780752802.1974986,
+    "ast_hash": "00b425ddb394166b36a7292195e4ea0d",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/stores/ui.js": {
+    "mtime": 1780716124.4673357,
+    "ast_hash": "3052292a26a28902d08264f4a22006e1",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/utils/toast.js": {
+    "mtime": 1780931152.0874867,
+    "ast_hash": "736f1fb77813db15e05d955a7f1ed009",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/utils/sound.js": {
+    "mtime": 1780041930.497136,
+    "ast_hash": "1425bc7e1d6f942bd2605d20285c52a7",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/utils/format.js": {
+    "mtime": 1779916611.4132628,
+    "ast_hash": "3ed678b96fd144b7e82b09a6e85628fe",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/utils/date.js": {
+    "mtime": 1780803673.5693,
+    "ast_hash": "44a8e88d3c3e280c63716d552417c780",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/composables/applyUiPrefs.js": {
+    "mtime": 1780925977.0887926,
+    "ast_hash": "9b9dde536a28d18ff7dc1b29dcc192ab",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/composables/useIdleTimeout.js": {
+    "mtime": 1780064030.3274844,
+    "ast_hash": "3c1c85ea5d460e594d5eb69b2b554bac",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/composables/useNotifications.js": {
+    "mtime": 1780042399.9028988,
+    "ast_hash": "74ff825fca0497cb7c52fa408478ac4c",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/composables/useDataTable.js": {
+    "mtime": 1781094226.176569,
+    "ast_hash": "9bbabaa5517524209e3b8fb0611294b9",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/composables/useFormDirty.js": {
+    "mtime": 1780936473.646445,
+    "ast_hash": "1e243e7adf4c6ee9a3a31cad67b37f33",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/composables/useQZTray.js": {
+    "mtime": 1781134383.0194492,
+    "ast_hash": "32c33005887e43fc2b07790d478d729c",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/composables/useExport.js": {
+    "mtime": 1780035280.6931713,
+    "ast_hash": "55ef4d2e8c2d6d3ed67f836de02f801a",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/router/index.js": {
+    "mtime": 1781353388.6148083,
+    "ast_hash": "ce8d9ec4c2b68d1f2ca49be56b3950ba",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/src/api/axios.js": {
+    "mtime": 1780930774.077403,
+    "ast_hash": "38333b822107f0b94ee779be4fcd2262",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/scripts/generate-pwa-icons.mjs": {
+    "mtime": 1780321311.5529556,
+    "ast_hash": "a996ec90f91acf4797ecc879ad39a8c6",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/README.md": {
+    "mtime": 1780812493.399301,
+    "ast_hash": "042a2ce35c1f46a8a01ebdfd7698a4f5",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/index.html": {
+    "mtime": 1780803707.8893006,
+    "ast_hash": "cecdde56af652a24b2030a26ad42e97e",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/login-preview.html": {
+    "mtime": 1780461346.8039184,
+    "ast_hash": "94b9f3f2144d2a2e205630c7e22eb3b3",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/login-v3.html": {
+    "mtime": 1780461910.976069,
+    "ast_hash": "1c37a20c2a1d166f6b2bb46fc6600b65",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/login-v5.html": {
+    "mtime": 1780465787.4110217,
+    "ast_hash": "1bccf66c2512618fb1200f1e5231a3e5",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/login-v4.html": {
+    "mtime": 1780465422.594542,
+    "ast_hash": "1073669f1d139059c3f57aedc42a4de6",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/login-v2.html": {
+    "mtime": 1780461489.6938217,
+    "ast_hash": "94b9f3f2144d2a2e205630c7e22eb3b3",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/logo-text.png": {
+    "mtime": 1780036658.1931884,
+    "ast_hash": "e058e6227a64b0e32fdb5a6456fb53fb",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/apple-touch-icon.png": {
+    "mtime": 1780717314.6751664,
+    "ast_hash": "2577ce94becc3e9b50e2b877eab46737",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/pwa-maskable-512x512.png": {
+    "mtime": 1780717314.6558976,
+    "ast_hash": "fde76ed38707f1c4f2be37c540149289",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/pwa-512x512.png": {
+    "mtime": 1780717314.5980914,
+    "ast_hash": "fde76ed38707f1c4f2be37c540149289",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/pwa-192x192.png": {
+    "mtime": 1780717314.61736,
+    "ast_hash": "b7184596d4e2c1c5a8edb2f94c732696",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/favicon-48x48.png": {
+    "mtime": 1780717314.6848006,
+    "ast_hash": "eb13294402ff8a99a1c6e4bcb612ad54",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/favicon.svg": {
+    "mtime": 1774083275.920677,
+    "ast_hash": "7e840862161341271697daa99a40d76b",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/logo-text-dark-mode.png": {
+    "mtime": 1780148471.9978464,
+    "ast_hash": "442f361eda05c82bb77ca8eb7706145d",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/icons.svg": {
+    "mtime": 1774083275.920677,
+    "ast_hash": "3b4fcfcf393eca4d264dca4a4663bc37",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/logo-text-light-mode.png": {
+    "mtime": 1780148471.9978464,
+    "ast_hash": "706f53ec0284febbec3c981b260acaf7",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/favicon-16x16.png": {
+    "mtime": 1780717314.7233381,
+    "ast_hash": "7ba13ae6810a51c08638bbdc189430d2",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/favicon-32x32.png": {
+    "mtime": 1780717314.7040694,
+    "ast_hash": "f83f26534fe8e45ac30e956be27500e4",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/favicon.png": {
+    "mtime": 1781166512.808664,
+    "ast_hash": "5bdf4daac86002455d3dc465dfff48b1",
+    "semantic_hash": ""
+  }
+}

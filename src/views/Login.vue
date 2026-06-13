@@ -42,6 +42,19 @@
             <img :src="logoSrc" alt="Vendorya" class="logo-img" />
           </div>
 
+          <!-- Language toggle (pre-login, client-side only) -->
+          <div class="lang-toggle">
+            <button
+              class="lang-btn" :class="{ active: locale === 'en' }"
+              @click="toggleLocale" :disabled="locale === 'en'"
+            >EN</button>
+            <span class="lang-sep">|</span>
+            <button
+              class="lang-btn" :class="{ active: locale === 'ar' }"
+              @click="toggleLocale" :disabled="locale === 'ar'"
+            >AR</button>
+          </div>
+
           <!-- Security notice -->
           <div class="security-notice">
             <ShieldCheck :size="14" class="notice-icon" />
@@ -173,6 +186,15 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Mail, Lock, Eye, EyeOff, Key, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from 'vue-i18n'
+
+const { locale } = useI18n()
+
+function toggleLocale() {
+  const next = locale.value === 'en' ? 'ar' : 'en'
+  locale.value = next
+  localStorage.setItem('vendorya_locale', next)
+}
 
 const router = useRouter()
 const route  = useRoute()
@@ -428,6 +450,30 @@ async function handleOtp() {
   max-width: 240px;
   object-fit: contain;
 }
+
+/* ── language toggle ────────────────────────────────────── */
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.lang-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-family: ui-monospace, monospace;
+  color: #71717a;
+  padding: 2px 0;
+  transition: color 120ms;
+}
+.lang-btn:hover:not(:disabled) { color: #f78f1e; }
+.lang-btn.active { color: #f78f1e; cursor: default; }
+.lang-sep { font-size: 11px; color: #3f3f46; }
 
 /* ── security notice ────────────────────────────────────── */
 .security-notice {

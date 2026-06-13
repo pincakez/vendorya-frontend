@@ -4,6 +4,7 @@ import { setAccessToken } from '@/api/token'
 import { useThemeStore } from './theme'
 import { useFormatStore } from './format'
 import { applyUiPrefs } from '@/composables/applyUiPrefs'
+import i18n from '@/i18n'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -98,6 +99,10 @@ export const useAuthStore = defineStore('auth', {
       this.user = user
       localStorage.setItem('vendorya_user', JSON.stringify(user))
       applyUiPrefs(user?.ui_prefs)   // per-user display scale/font
+      if (user?.language) {
+        i18n.global.locale.value = user.language
+        localStorage.setItem('vendorya_locale', user.language)
+      }
     },
     // Sudo picks a store from the admin topbar
     setActiveStore(store) {

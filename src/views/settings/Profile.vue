@@ -53,7 +53,21 @@
         </div>
 
         <div class="section-label" style="margin-top:20px;">Display Preferences</div>
-        <label class="form-label">Currency symbol color</label>
+
+        <label class="form-label">Interface Language</label>
+        <p class="pref-hint">Switches all UI labels. Saved to your profile and takes effect immediately.</p>
+        <div class="lang-pills">
+          <button
+            class="lang-pill" :class="{ active: locale === 'en' }"
+            @click="setLanguage('en')"
+          >English</button>
+          <button
+            class="lang-pill" :class="{ active: locale === 'ar' }"
+            @click="setLanguage('ar')"
+          >عربي</button>
+        </div>
+
+        <label class="form-label" style="margin-top:16px;">Currency symbol color</label>
         <p class="pref-hint">
           Tints the currency symbol next to amounts — e.g. <Money :value="1234.5" />.
           Saved on this device and applied instantly (no need to press Save).
@@ -125,6 +139,18 @@ import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
 import { applyUiPrefs, UI_DEFAULTS } from '@/composables/applyUiPrefs'
 import Money from '@/components/ui/Money.vue'
+import { useI18n } from 'vue-i18n'
+
+const { locale } = useI18n()
+
+async function setLanguage(lang) {
+  locale.value = lang
+  localStorage.setItem('vendorya_locale', lang)
+  try {
+    const res = await api.patch('/api/auth/me/', { language: lang })
+    auth.setUser({ ...auth.user, ...res.data })
+  } catch { /* locale already switched; backend will sync on next login */ }
+}
 
 const auth = useAuthStore()
 const fmt  = useFormatStore()
@@ -242,6 +268,10 @@ onMounted(() => loadProfile())
 .security-link:hover { border-color:var(--accent); background:var(--bg-card); }
 
 .pref-hint { font-size:12.5px; color:var(--text-muted); margin:0 0 12px; line-height:1.5; }
+.lang-pills { display:flex; gap:8px; margin-bottom:4px; }
+.lang-pill { padding:6px 18px; border-radius:20px; font-size:13px; font-weight:600; border:1px solid var(--border); background:var(--bg-app); color:var(--text-secondary); cursor:pointer; transition:all 120ms; }
+.lang-pill:hover { border-color:var(--accent); color:var(--accent); }
+.lang-pill.active { background:var(--accent); border-color:var(--accent); color:#fff; cursor:default; }
 .ui-pref select.form-input { cursor:pointer; }
 .ui-pref .pref-hint { margin:5px 0 0; font-size:11.5px; }
 .swatch-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }

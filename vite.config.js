@@ -8,6 +8,7 @@ export default defineConfig({
     host: true,
     port: 5173,
     strictPort: true,
+    allowedHosts: 'all',
   },
   build: {
     // Bundle ALL component CSS into one file loaded upfront, instead of a
