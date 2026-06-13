@@ -844,9 +844,12 @@ function fmtNum(n) {
 .pos-quick-btn {
   display: flex; align-items: center; justify-content: space-between;
   padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
-  background: var(--bg-app); cursor: pointer; transition: all 120ms; text-align: left;
+  background: var(--bg-app); cursor: pointer; text-align: left;
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out),
+              transform var(--press-back) var(--ease-spring);
 }
 .pos-quick-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+.pos-quick-btn:active { transform: scale(0.97); transition-duration: var(--press-down); }
 .pos-quick-btn--fav { background: rgba(247,143,30,0.06); border-color: rgba(247,143,30,0.3); }
 .pqb-name  { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
 .pqb-price { font-size: 11.5px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
@@ -931,17 +934,23 @@ function fmtNum(n) {
   width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border);
   background: var(--bg-card); cursor: pointer; font-size: 14px; font-weight: 700;
   color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
-  transition: background 120ms; line-height: 1;
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out),
+              color 120ms var(--ease-out), transform var(--press-back) var(--ease-spring);
+  line-height: 1;
 }
 .pcr-qty-btn:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.pcr-qty-btn:active { transform: scale(0.88); transition-duration: var(--press-down); }
 .pcr-qty-val { font-size: 13px; font-weight: 800; min-width: 20px; text-align: center; }
 .pcr-price { font-size: 13.5px; font-weight: 800; color: var(--text-primary); text-align: center; }
 .pcr-del {
   width: 28px; height: 28px; border-radius: 7px; border: none; background: none;
   cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
-  transition: background 120ms, color 120ms; justify-self: center;
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out),
+              transform var(--press-back) var(--ease-spring);
+  justify-self: center;
 }
-.pcr-del:hover { background: #fef2f2; color: var(--danger); }
+.pcr-del:hover { background: var(--danger-soft); color: var(--danger); }
+.pcr-del:active { transform: scale(0.88); transition-duration: var(--press-down); }
 .pos-cart-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 12px; padding: 48px 24px; color: var(--text-muted); font-size: 13.5px;
@@ -966,10 +975,13 @@ function fmtNum(n) {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 3px; padding: 11px 6px; border-radius: 12px;
   border: 1.5px solid var(--border); background: var(--bg-app);
-  cursor: pointer; transition: all 140ms; position: relative;
+  cursor: pointer; position: relative;
   font-size: 12px; font-weight: 700; color: var(--text-secondary);
+  transition: background 140ms var(--ease-out), border-color 140ms var(--ease-out),
+              color 140ms var(--ease-out), transform var(--press-back) var(--ease-spring);
 }
 .pac:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.pac:active:not(:disabled) { transform: scale(var(--press-scale)); transition-duration: var(--press-down); }
 .pac--held { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .pac--disabled { opacity: 0.35; cursor: not-allowed; }
 .pac kbd {
@@ -996,11 +1008,12 @@ function fmtNum(n) {
   width: 100%; padding: 16px 12px; border-radius: 14px; border: none;
   background: var(--success); color: #fff; cursor: pointer;
   display: flex; align-items: center; justify-content: space-between;
-  font-size: 18px; font-weight: 900; letter-spacing: 0.08em;
-  transition: opacity 150ms; margin-top: auto;
+  font-size: 18px; font-weight: 900; letter-spacing: 0.08em; margin-top: auto;
+  transition: opacity 150ms var(--ease-out), transform var(--press-back) var(--ease-spring);
 }
 .pos-pay-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .pos-pay-btn:not(:disabled):hover { opacity: 0.9; }
+.pos-pay-btn:not(:disabled):active { transform: scale(0.97); transition-duration: var(--press-down); }
 .pos-pay-amount { font-size: 14px; font-weight: 700; opacity: 0.9; }
 
 /* ── Scan flash ───────────────────────────────────────────── */
@@ -1030,14 +1043,18 @@ function fmtNum(n) {
   display: flex; align-items: center; gap: 8px;
   padding: 12px 20px; border-radius: 12px; border: 2px solid var(--border);
   background: none; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--text-secondary);
+  transition: background 140ms var(--ease-out), transform var(--press-back) var(--ease-spring);
 }
 .psc-print:hover { background: var(--bg-app); }
+.psc-print:active { transform: scale(var(--press-scale)); transition-duration: var(--press-down); }
 .psc-new {
   padding: 12px 28px; border-radius: 12px; border: none;
   background: var(--accent); color: #fff; cursor: pointer;
-  font-size: 14px; font-weight: 800; transition: opacity 150ms;
+  font-size: 14px; font-weight: 800;
+  transition: opacity 150ms var(--ease-out), transform var(--press-back) var(--ease-spring);
 }
 .psc-new:hover { opacity: 0.9; }
+.psc-new:active { transform: scale(var(--press-scale)); transition-duration: var(--press-down); }
 .success-pop-enter-active { transition: all 280ms cubic-bezier(0.34,1.56,0.64,1); }
 .success-pop-leave-active { transition: all 200ms ease; }
 .success-pop-enter-from, .success-pop-leave-to { opacity: 0; transform: scale(0.85); }
