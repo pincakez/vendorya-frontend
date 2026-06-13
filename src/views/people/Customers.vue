@@ -214,7 +214,7 @@ const BASE_COLUMNS = [
   { key: 'name',         label: 'NAME',         sort: 'name',         align: 'left',  field: 'name',         cls: 'c-name' },
   { key: 'phone_number', label: 'PHONE',         sort: 'phone_number', align: 'left',  field: 'phone_number', cls: 'c-phone' },
   { key: 'notes',        label: 'NOTES',         sort: null,           align: 'left',  field: 'notes',        cls: 'c-notes' },
-  { key: 'balance',      label: 'BALANCE',       sort: 'balance',      align: 'right', field: 'balance',      cls: 'c-mono' },
+  { key: 'balance',      label: 'BALANCE',       sort: null,           align: 'right', field: 'balance',      cls: 'c-mono' },
   { key: 'store_credit', label: 'STORE CREDIT',  sort: 'store_credit', align: 'right', field: 'store_credit', cls: 'c-mono' },
 ]
 
