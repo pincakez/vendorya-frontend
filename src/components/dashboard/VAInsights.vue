@@ -69,7 +69,7 @@ import {
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 
-const loading  = ref(false)
+const loading  = ref(true)
 const insights = ref([])
 const error    = ref(null)
 
