@@ -2,12 +2,12 @@
   <div class="pm-overlay" @click.self="$emit('close')">
     <div class="pm-card">
       <div class="pm-header">
-        <span class="pm-title">Payment</span>
+        <span class="pm-title">{{ t('pos.payment.title') }}</span>
         <button class="pm-close" @click="$emit('close')"><X :size="20" /></button>
       </div>
 
       <div class="pm-total">
-        <span class="pm-total-label">Total Due</span>
+        <span class="pm-total-label">{{ t('pos.payment.total_due') }}</span>
         <span class="pm-total-amount">{{ currSymbol }} {{ fmtNum(cart.grandTotal) }}</span>
       </div>
 
@@ -19,13 +19,13 @@
           @click="selectedMethod = m; cashReceived = ''"
         >
           {{ m.name }}
-          <span v-if="m.is_agel" class="pm-agel-badge">Credit</span>
+          <span v-if="m.is_agel" class="pm-agel-badge">{{ t('pos.payment.credit') }}</span>
         </button>
       </div>
 
       <!-- Cash: received amount + change -->
       <div v-if="selectedMethod?.is_cash" class="pm-cash-section">
-        <label class="pm-cash-label">Cash Received</label>
+        <label class="pm-cash-label">{{ t('pos.payment.cash_received') }}</label>
         <div class="pm-cash-wrap">
           <span class="pm-cash-prefix">{{ currSymbol }}</span>
           <input
@@ -39,25 +39,25 @@
           />
         </div>
         <div v-if="change >= 0" class="pm-change">
-          Change: <strong>{{ currSymbol }} {{ fmtNum(change) }}</strong>
+          {{ t('pos.payment.change') }}: <strong>{{ currSymbol }} {{ fmtNum(change) }}</strong>
         </div>
       </div>
 
       <!-- Agel credit warning -->
       <div v-if="selectedMethod?.is_agel" class="pm-agel-warn">
         <AlertTriangle :size="16" />
-        <span>This sale will be recorded as credit for {{ cart.customerObj?.name || 'the customer' }}. The customer's outstanding balance will increase.</span>
+        <span>{{ t('pos.payment.agel_warn', { name: cart.customerObj?.name || t('pos.payment.the_customer') }) }}</span>
       </div>
 
       <!-- Print options -->
       <div class="pm-print-opts">
         <label class="pm-print-cb">
           <input type="checkbox" v-model="printReceipt" />
-          <span>Print the receipt</span>
+          <span>{{ t('pos.payment.print_receipt') }}</span>
         </label>
         <label class="pm-print-cb" :class="{ disabled: !printReceipt }">
           <input type="checkbox" v-model="doublePrint" :disabled="!printReceipt" />
-          <span>2× printing</span>
+          <span>{{ t('pos.payment.double_print') }}</span>
         </label>
       </div>
 
@@ -65,8 +65,8 @@
       <div v-if="error" class="pm-error">{{ error }}</div>
 
       <button class="pm-confirm" :disabled="loading || !canConfirm" @click="confirm">
-        <span v-if="loading">Processing…</span>
-        <span v-else>Confirm Payment</span>
+        <span v-if="loading">{{ t('pos.payment.processing') }}</span>
+        <span v-else>{{ t('pos.payment.confirm') }}</span>
       </button>
     </div>
   </div>
@@ -74,12 +74,14 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { X, AlertTriangle } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useCartStore } from '@/stores/cart'
 import { usePosStore } from '@/stores/pos'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const emit = defineEmits(['close', 'success'])
 
 const cart = useCartStore()
@@ -160,9 +162,9 @@ async function confirm() {
     if (typeof detail === 'string') error.value = detail
     else if (e?.response?.data?.shortages) {
       const s = e.response.data.shortages
-      error.value = `Insufficient stock: ${s.map(x => `${x.name} (have ${x.available}, need ${x.requested})`).join(', ')}`
+      error.value = t('pos.payment.err_stock') + s.map(x => t('pos.payment.err_stock_item', { name: x.name, have: x.available, need: x.requested })).join(', ')
     } else {
-      error.value = 'Payment failed. Please try again.'
+      error.value = t('pos.payment.err_failed')
     }
   } finally {
     loading.value = false

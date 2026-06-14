@@ -4,7 +4,7 @@
     <!-- ─── Top bar ─────────────────────────────────────────── -->
     <div class="pos-topbar">
       <div class="pos-topbar-left">
-        <span class="pos-brand">POS</span>
+        <span class="pos-brand">{{ t('pos.brand') }}</span>
         <span class="pos-divider">|</span>
         <span class="pos-store">{{ auth.storeName }}</span>
       </div>
@@ -18,7 +18,7 @@
           @keydown="onSearchKeydown"
           @focus="searchFocused = true"
           @blur="onSearchBlur"
-          placeholder="Search products or scan barcode… (F1)"
+          :placeholder="t('pos.search_placeholder')"
           class="pos-search"
         />
         <kbd class="pos-search-kbd">F1</kbd>
@@ -50,7 +50,7 @@
       <!-- LEFT — Top Selling + Favorites -->
       <div class="pos-left">
         <div class="pos-panel-section">
-          <div class="pos-panel-title">Top Selling</div>
+          <div class="pos-panel-title">{{ t('pos.top_selling') }}</div>
           <div v-if="pos.topSelling.length" class="pos-quick-grid">
             <button
               v-for="p in pos.topSelling" :key="p.id"
@@ -61,11 +61,11 @@
               <span class="pqb-price">{{ fmtNum(p.default_variant_price) }}</span>
             </button>
           </div>
-          <div v-else class="pos-panel-empty">No data yet</div>
+          <div v-else class="pos-panel-empty">{{ t('pos.no_data') }}</div>
         </div>
 
         <div class="pos-panel-section pos-panel-section--fav">
-          <div class="pos-panel-title">Favorites</div>
+          <div class="pos-panel-title">{{ t('pos.favorites') }}</div>
           <div v-if="pos.favorites.length" class="pos-quick-grid">
             <button
               v-for="p in pos.favorites" :key="p.id"
@@ -76,7 +76,7 @@
               <span class="pqb-price">{{ fmtNum(p.product_price) }}</span>
             </button>
           </div>
-          <div v-else class="pos-panel-empty">No favorites yet</div>
+          <div v-else class="pos-panel-empty">{{ t('pos.no_favorites') }}</div>
         </div>
       </div>
 
@@ -84,7 +84,7 @@
       <div class="pos-center">
         <div class="pos-invoice-bar">
           <div class="pib-meta">
-            <span class="pib-num">{{ pos.currentInvoiceId ? '#DRAFT' : '—' }}</span>
+            <span class="pib-num">{{ pos.currentInvoiceId ? t('pos.draft') : '—' }}</span>
             <span class="pib-branch">{{ pos.branchName }}</span>
           </div>
 
@@ -103,7 +103,7 @@
               @keydown="onCustomerKeydown"
               @focus="customerFocused = true"
               @blur="onCustomerBlur"
-              placeholder="Walk-in"
+              :placeholder="t('pos.walk_in')"
               class="pos-customer-input"
             />
             <div v-if="customerFocused && customerQuery.length >= 2" class="pos-customer-dropdown">
@@ -122,7 +122,7 @@
                 class="pos-customer-item pci-add"
                 @mousedown.prevent="showAddCustomer = true"
               >
-                <span>No customer found — press Enter or click to add</span>
+                <span>{{ t('pos.no_customer_found') }}</span>
               </div>
             </div>
           </div>
@@ -134,9 +134,9 @@
         </div>
 
         <div class="pos-cart-header">
-          <span class="pch-item">ITEM</span>
-          <span class="pch-qty">QTY</span>
-          <span class="pch-price">PRICE</span>
+          <span class="pch-item">{{ t('pos.col.item') }}</span>
+          <span class="pch-qty">{{ t('pos.col.qty') }}</span>
+          <span class="pch-price">{{ t('pos.col.price') }}</span>
           <span></span>
         </div>
 
@@ -159,7 +159,7 @@
           </TransitionGroup>
           <div v-if="cart.isEmpty" class="pos-cart-empty">
             <ShoppingCart :size="32" class="pce-icon" />
-            <span>Start scanning or search for products</span>
+            <span>{{ t('pos.cart_empty') }}</span>
           </div>
         </div>
       </div>
@@ -169,49 +169,49 @@
         <div class="pos-actions-grid">
           <button class="pac" :class="{ 'pac--held': cart.heldCarts.length }" @click="holdOrResume">
             <Pause :size="16" />
-            <span>Hold<span v-if="cart.heldCarts.length" class="pac-badge">{{ cart.heldCarts.length }}</span></span>
+            <span>{{ t('pos.actions.hold') }}<span v-if="cart.heldCarts.length" class="pac-badge">{{ cart.heldCarts.length }}</span></span>
             <kbd>F4</kbd>
           </button>
           <button class="pac" @click="showDiscount = true">
             <Percent :size="16" />
-            <span>Discount</span>
+            <span>{{ t('pos.actions.discount') }}</span>
             <kbd>F8</kbd>
           </button>
           <button class="pac" @click="$router.push('/finance/returns')">
             <CornerDownLeft :size="16" />
-            <span>Returns</span>
+            <span>{{ t('pos.actions.returns') }}</span>
           </button>
           <button class="pac" @click="focusCustomer">
             <UserIcon :size="16" />
-            <span>Customer</span>
+            <span>{{ t('pos.actions.customer') }}</span>
           </button>
           <button class="pac" @click="reprint" :disabled="!pos.lastPostedInvoiceId">
             <Printer :size="16" />
-            <span>Reprint</span>
+            <span>{{ t('pos.actions.reprint') }}</span>
             <kbd>F2</kbd>
           </button>
           <button class="pac pac--disabled" disabled>
             <FileText :size="16" />
-            <span>Note</span>
+            <span>{{ t('pos.actions.note') }}</span>
           </button>
         </div>
 
         <div class="pos-summary">
           <div class="psum-row">
-            <span>Subtotal</span><span>{{ fmtNum(cart.subtotal) }}</span>
+            <span>{{ t('pos.summary.subtotal') }}</span><span>{{ fmtNum(cart.subtotal) }}</span>
           </div>
           <div v-if="cart.discount > 0" class="psum-row psum-discount">
-            <span>Discount</span><span>− {{ fmtNum(cart.discount) }}</span>
+            <span>{{ t('pos.summary.discount') }}</span><span>− {{ fmtNum(cart.discount) }}</span>
           </div>
           <div class="psum-divider" />
           <div class="psum-row psum-total">
-            <span>TOTAL</span><span>{{ fmtNum(cart.grandTotal) }}</span>
+            <span>{{ t('pos.summary.total') }}</span><span>{{ fmtNum(cart.grandTotal) }}</span>
           </div>
-          <div class="psum-items">{{ cart.itemCount }} item{{ cart.itemCount !== 1 ? 's' : '' }}</div>
+          <div class="psum-items">{{ t('pos.items_count', { n: cart.itemCount }, cart.itemCount) }}</div>
         </div>
 
         <button class="pos-pay-btn" :disabled="cart.isEmpty" @click="openPayment">
-          <span>PAY</span>
+          <span>{{ t('pos.pay') }}</span>
           <span class="pos-pay-amount">{{ auth.currencySymbol }} {{ fmtNum(cart.grandTotal) }}</span>
         </button>
       </div>
@@ -239,14 +239,14 @@
       <div v-if="successInvoice" class="pos-success-overlay">
         <div class="pos-success-card">
           <CheckCircle2 :size="52" class="psc-icon" />
-          <div class="psc-label">Sale Complete</div>
-          <div class="psc-num">Invoice #{{ successInvoice.invoice_number }}</div>
+          <div class="psc-label">{{ t('pos.success.title') }}</div>
+          <div class="psc-num">{{ t('pos.success.invoice', { num: successInvoice.invoice_number }) }}</div>
           <div class="psc-amount">{{ auth.currencySymbol }} {{ fmtNum(successInvoice.grand_total) }}</div>
           <div class="psc-actions">
             <button class="psc-print" @click="printInvoice(successInvoice.id)">
-              <Printer :size="16" /> Print
+              <Printer :size="16" /> {{ t('pos.success.print') }}
             </button>
-            <button class="psc-new" @click="newSale">New Sale</button>
+            <button class="psc-new" @click="newSale">{{ t('pos.success.new_sale') }}</button>
           </div>
         </div>
       </div>
@@ -264,14 +264,14 @@
     <Transition name="held-slide">
       <div v-if="showHeldPanel" class="pos-held-panel">
         <div class="php-header">
-          <span>Held Carts ({{ cart.heldCarts.length }})</span>
+          <span>{{ t('pos.held.title', { n: cart.heldCarts.length }) }}</span>
           <button @click="showHeldPanel = false"><X :size="16" /></button>
         </div>
         <div v-for="(held, i) in cart.heldCarts" :key="i" class="php-item" @click="resumeHeld(i)">
-          <span class="php-items-label">{{ held.items.length }} item{{ held.items.length !== 1 ? 's' : '' }}</span>
+          <span class="php-items-label">{{ t('pos.items_count', { n: held.items.length }, held.items.length) }}</span>
           <span class="php-total">{{ auth.currencySymbol }} {{ fmtNum(held.items.reduce((s, it) => s + it.price * it.qty, 0)) }}</span>
         </div>
-        <div v-if="!cart.heldCarts.length" class="php-empty">No held carts</div>
+        <div v-if="!cart.heldCarts.length" class="php-empty">{{ t('pos.held.empty') }}</div>
       </div>
     </Transition>
   </div>
@@ -280,6 +280,7 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import {
   Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
   Printer, FileText, ShoppingCart, CheckCircle2,
@@ -296,6 +297,7 @@ import CustomerFormModal   from '@/components/shared/CustomerFormModal.vue'
 import ServiceFormModal    from '@/views/services/ServiceFormModal.vue'
 
 const router = useRouter()
+const { t } = useI18n()
 const auth   = useAuthStore()
 const cart   = useCartStore()
 const pos    = usePosStore()
@@ -437,7 +439,7 @@ async function addToCart(product) {
   // Guard: a product with no sellable variant would poison the draft invoice
   // (backend rejects the bad pk, the error gets swallowed, and Pay silently dies).
   if (!product.default_variant_id) {
-    alert(`"${product.name || 'This product'}" has no sellable variant and can't be added.`)
+    alert(t('pos.alert_no_variant', { name: product.name || t('pos.alert_no_variant_fallback') }))
     return
   }
   cart.addItem({
@@ -634,7 +636,7 @@ async function openPayment() {
     showPayment.value = true
   } else {
     // Draft never saved (e.g. a bad cart line). Don't die silently.
-    alert('Could not start the sale — please remove and re-add the items, then try again.')
+    alert(t('pos.alert_no_sale'))
   }
 }
 

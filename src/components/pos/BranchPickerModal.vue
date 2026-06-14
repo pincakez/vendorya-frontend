@@ -1,10 +1,10 @@
 <template>
   <div class="bpm-overlay">
     <div class="bpm-card">
-      <div class="bpm-title">Select Branch</div>
-      <div class="bpm-subtitle">Choose the branch for this POS session</div>
+      <div class="bpm-title">{{ t('pos.branch_picker.title') }}</div>
+      <div class="bpm-subtitle">{{ t('pos.branch_picker.subtitle') }}</div>
 
-      <div v-if="loading" class="bpm-loading">Loading branches…</div>
+      <div v-if="loading" class="bpm-loading">{{ t('pos.branch_picker.loading') }}</div>
       <div v-else class="bpm-list">
         <button
           v-for="b in branches" :key="b.id"
@@ -18,11 +18,11 @@
 
       <label v-if="selected" class="bpm-default-label">
         <input type="checkbox" v-model="setDefault" />
-        <span>Set as my default branch (skip picker next time)</span>
+        <span>{{ t('pos.branch_picker.set_default') }}</span>
       </label>
 
       <button class="bpm-confirm" :disabled="!selected" @click="confirm">
-        Open POS
+        {{ t('pos.branch_picker.open') }}
       </button>
     </div>
   </div>
@@ -30,9 +30,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Building2 } from 'lucide-vue-next'
 import api from '@/api/axios'
 
+const { t } = useI18n()
 const emit = defineEmits(['selected'])
 
 const branches   = ref([])

@@ -737,5 +737,79 @@
       "err_not_found": "Invoice not found.",
       "err_load": "Could not load this invoice."
     }
+  },
+  "pos": {
+    "brand": "POS",
+    "search_placeholder": "Search products or scan barcode… (F1)",
+    "top_selling": "Top Selling",
+    "no_data": "No data yet",
+    "favorites": "Favorites",
+    "no_favorites": "No favorites yet",
+    "walk_in": "Walk-in",
+    "no_customer_found": "No customer found — press Enter or click to add",
+    "draft": "#DRAFT",
+    "col": {
+      "item": "Item",
+      "qty": "Qty",
+      "price": "Price"
+    },
+    "cart_empty": "Start scanning or search for products",
+    "actions": {
+      "hold": "Hold",
+      "discount": "Discount",
+      "returns": "Returns",
+      "customer": "Customer",
+      "reprint": "Reprint",
+      "note": "Note"
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "total": "TOTAL"
+    },
+    "items_count": "{n} item | {n} items",
+    "pay": "PAY",
+    "success": {
+      "title": "Sale Complete",
+      "invoice": "Invoice #{num}",
+      "print": "Print",
+      "new_sale": "New Sale"
+    },
+    "held": {
+      "title": "Held Carts ({n})",
+      "empty": "No held carts"
+    },
+    "alert_no_variant": "\"{name}\" has no sellable variant and can't be added.",
+    "alert_no_variant_fallback": "This product",
+    "alert_no_sale": "Could not start the sale — please remove and re-add the items, then try again.",
+    "branch_picker": {
+      "title": "Select Branch",
+      "subtitle": "Choose the branch for this POS session",
+      "loading": "Loading branches…",
+      "set_default": "Set as my default branch (skip picker next time)",
+      "open": "Open POS"
+    },
+    "discount_modal": {
+      "title": "Apply Discount",
+      "tab_fixed": "Fixed",
+      "preview": "Discount: {sym} {amount}",
+      "apply": "Apply"
+    },
+    "payment": {
+      "title": "Payment",
+      "total_due": "Total Due",
+      "credit": "Credit",
+      "cash_received": "Cash Received",
+      "change": "Change",
+      "agel_warn": "This sale will be recorded as credit for {name}. The customer's outstanding balance will increase.",
+      "the_customer": "the customer",
+      "print_receipt": "Print the receipt",
+      "double_print": "2× printing",
+      "processing": "Processing…",
+      "confirm": "Confirm Payment",
+      "err_stock": "Insufficient stock: ",
+      "err_stock_item": "{name} (have {have}, need {need})",
+      "err_failed": "Payment failed. Please try again."
+    }
   }
 }

@@ -2,13 +2,13 @@
   <div class="dm-overlay" @click.self="$emit('close')">
     <div class="dm-card">
       <div class="dm-header">
-        <span class="dm-title">Apply Discount</span>
+        <span class="dm-title">{{ t('pos.discount_modal.title') }}</span>
         <button class="dm-close" @click="$emit('close')"><X :size="18" /></button>
       </div>
 
       <div class="dm-tabs">
         <button :class="['dm-tab', { active: mode === 'percent' }]" @click="mode = 'percent'; amount = ''">%</button>
-        <button :class="['dm-tab', { active: mode === 'fixed'   }]" @click="mode = 'fixed';   amount = ''">Fixed</button>
+        <button :class="['dm-tab', { active: mode === 'fixed'   }]" @click="mode = 'fixed';   amount = ''">{{ t('pos.discount_modal.tab_fixed') }}</button>
       </div>
 
       <div class="dm-input-wrap">
@@ -26,12 +26,12 @@
       </div>
 
       <div v-if="preview !== null" class="dm-preview">
-        Discount: {{ currSymbol }} {{ preview.toFixed(2) }}
+        {{ t('pos.discount_modal.preview', { sym: currSymbol, amount: preview.toFixed(2) }) }}
       </div>
 
       <div class="dm-actions">
-        <button class="dm-cancel" @click="$emit('close')">Cancel</button>
-        <button class="dm-apply" @click="apply">Apply</button>
+        <button class="dm-cancel" @click="$emit('close')">{{ t('common.cancel') }}</button>
+        <button class="dm-apply" @click="apply">{{ t('pos.discount_modal.apply') }}</button>
       </div>
     </div>
   </div>
@@ -39,10 +39,12 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { X } from 'lucide-vue-next'
 import { useCartStore } from '@/stores/cart'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const emit = defineEmits(['close'])
 
 const cart = useCartStore()
