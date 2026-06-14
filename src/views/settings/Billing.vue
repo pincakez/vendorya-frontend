@@ -82,7 +82,7 @@
           <tr v-for="inv in invoices" :key="inv.id" class="table-row" @click="openInvoice(inv)">
             <td style="font-family:ui-monospace,monospace;font-size:12px;">{{ inv.invoice_number || '—' }}</td>
             <td style="color:var(--text-secondary);font-size:12.5px;">{{ inv.line_description || '—' }}</td>
-            <td style="font-variant-numeric:tabular-nums;font-weight:600;">{{ inv.amount }} {{ inv.currency }}</td>
+            <td style="font-variant-numeric:tabular-nums;font-weight:600;">{{ formatNumber(inv.amount) }} {{ inv.currency }}</td>
             <td><span class="status-pill" :class="'inv-' + inv.status.toLowerCase()">{{ inv.status }}</span></td>
             <td style="font-size:12px;color:var(--text-secondary);">{{ inv.issued_at ? formatDate(inv.issued_at) : '—' }}</td>
             <td style="font-size:12px;color:var(--text-secondary);">{{ inv.due_at || '—' }}</td>
@@ -134,11 +134,11 @@
           <tbody>
             <tr>
               <td>{{ detailModal.invoice.line_description || (detailModal.invoice.subscription?.display_label + ' subscription') }}</td>
-              <td style="text-align:right;font-variant-numeric:tabular-nums;">{{ detailModal.invoice.amount }} {{ detailModal.invoice.currency }}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;">{{ formatNumber(detailModal.invoice.amount) }} {{ detailModal.invoice.currency }}</td>
             </tr>
           </tbody>
           <tfoot>
-            <tr><td><strong>Total</strong></td><td style="text-align:right;font-weight:700;font-size:15px;">{{ detailModal.invoice.amount }} {{ detailModal.invoice.currency }}</td></tr>
+            <tr><td><strong>Total</strong></td><td style="text-align:right;font-weight:700;font-size:15px;">{{ formatNumber(detailModal.invoice.amount) }} {{ detailModal.invoice.currency }}</td></tr>
           </tfoot>
         </table>
 
@@ -163,6 +163,7 @@ import { useRoute } from 'vue-router'
 import { Eye, Printer } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
+import { formatNumber } from '@/utils/format'
 
 const route = useRoute()
 const subscription = ref(null)

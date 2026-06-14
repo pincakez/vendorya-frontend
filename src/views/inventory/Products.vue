@@ -485,32 +485,17 @@
     </AppModal>
 
     <!-- ═══════════ BULK DELETE ═══════════ -->
-    <AppModal :open="bulkDeleteModal.open" :title="t('inventory.products.bulk_delete_modal.title')" @close="bulkDeleteModal.open = false">
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <p style="font-size:13px;color:var(--text-muted);margin:0;">
-          {{ t('inventory.products.bulk_delete_modal.intro', { count: selectedCount }) }}
-        </p>
-        <div>
-          <label class="form-label">{{ t('inventory.products.bulk_delete_modal.reason_label') }}</label>
-          <select v-model="bulkDeleteModal.reason" class="form-input">
-            <option value="">{{ t('inventory.products.bulk_delete_modal.select_reason') }}</option>
-            <option v-for="r in DELETE_REASONS" :key="r.value" :value="r.value">{{ r.label }}</option>
-          </select>
-        </div>
-        <div v-if="bulkDeleteModal.reason === 'OTHER'">
-          <label class="form-label">{{ t('inventory.products.bulk_delete_modal.note_label') }}</label>
-          <input v-model="bulkDeleteModal.note" class="form-input" :placeholder="t('inventory.products.bulk_delete_modal.note_placeholder')" maxlength="255" />
-        </div>
-      </div>
-      <template #footer>
-        <button class="btn-ghost" @click="bulkDeleteModal.open = false">{{ t('common.cancel') }}</button>
-        <button
-          class="btn-danger"
-          :disabled="bulkBusy || !bulkDeleteModal.reason"
-          @click="confirmBulkDelete"
-        >{{ bulkDeleteModal.confirming ? t('inventory.products.bulk_delete_modal.confirm_delete') : t('common.delete') }}</button>
-      </template>
-    </AppModal>
+    <ReasonModal
+      :key="rmIdx"
+      :open="rmOpen"
+      :item-name="rmQueue[rmIdx]?.name || ''"
+      :reasons="DELETE_REASONS"
+      mistake-value="MISTAKE"
+      :current="rmIdx + 1"
+      :total="rmQueue.length"
+      @confirm="onRMConfirm"
+      @cancel="onRMCancel"
+    />
   </div>
 </template>
 
@@ -531,6 +516,7 @@ import { formatQty } from '@/utils/format'
 import { showSuccessToast } from '@/utils/toast'
 import { useFormDirty } from '@/composables/useFormDirty'
 import AppModal from '@/components/ui/AppModal.vue'
+import ReasonModal from '@/components/ui/ReasonModal.vue'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -1141,7 +1127,10 @@ const DELETE_REASONS = computed(() => [
   { value: 'OTHER',        label: t('inventory.products.delete_reasons.other') },
 ])
 const bulkBusy = ref(false)
-const bulkDeleteModal = reactive({ open: false, reason: '', note: '', confirming: false })
+const rmQueue   = ref([])   // [{id, name}] — items pending a reason
+const rmIdx     = ref(0)    // which item is on screen
+const rmOpen    = ref(false)
+const rmResults = ref([])   // [{id, reason}] collected so far
 const bulkEditModal = reactive({ open: false, retail_price: '', category: '', confirming: false })
 
 const selectedCount = computed(() => selected.value.size)
@@ -1209,20 +1198,54 @@ async function confirmBulkEdit() {
 
 function openBulkDelete() {
   if (!selectedCount.value) return
-  Object.assign(bulkDeleteModal, { open: true, reason: '', note: '', confirming: false })
+  rmQueue.value = selectedIds().map(id => {
+    const p = products.value.find(x => x.id === id)
+    return { id, name: p?.name || id }
+  })
+  rmIdx.value    = 0
+  rmResults.value = []
+  rmOpen.value   = true
 }
-async function confirmBulkDelete() {
-  if (!bulkDeleteModal.reason) return
-  if (!bulkDeleteModal.confirming) { bulkDeleteModal.confirming = true; return }
+
+function onRMConfirm(reason, applyToAll, cancelAll) {
+  if (cancelAll) { rmOpen.value = false; return }
+
+  const item = rmQueue.value[rmIdx.value]
+  if (reason !== 'MISTAKE') rmResults.value.push({ id: item.id, reason })
+
+  if (applyToAll) {
+    // Apply same reason to every remaining item (skip MISTAKE scenario handled above)
+    for (let i = rmIdx.value + 1; i < rmQueue.value.length; i++) {
+      rmResults.value.push({ id: rmQueue.value[i].id, reason })
+    }
+    executeBulkDelete(); return
+  }
+
+  rmIdx.value++
+  if (rmIdx.value >= rmQueue.value.length) { executeBulkDelete(); return }
+  // else — stay open, watch(:key) on rmIdx resets component state
+}
+
+function onRMCancel() { rmOpen.value = false }
+
+async function executeBulkDelete() {
+  rmOpen.value = false
+  if (!rmResults.value.length) return   // all were skipped (MISTAKE)
+
+  // Group by reason so we make one API call per reason
+  const byReason = {}
+  for (const { id, reason } of rmResults.value) {
+    ;(byReason[reason] ??= []).push(id)
+  }
+
   bulkBusy.value = true
   try {
-    await api.post('/api/inventory/products/bulk_delete/', {
-      ids: selectedIds(), reason: bulkDeleteModal.reason, note: bulkDeleteModal.note,
-    })
-    bulkDeleteModal.open = false
+    for (const [reason, ids] of Object.entries(byReason)) {
+      await api.post('/api/inventory/products/bulk_delete/', { ids, reason })
+    }
     selected.value = new Set()
     await fetchProducts(1)
-  } catch { bulkDeleteModal.confirming = false } finally { bulkBusy.value = false }
+  } finally { bulkBusy.value = false }
 }
 
 onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppliers(); loadDefaults() })

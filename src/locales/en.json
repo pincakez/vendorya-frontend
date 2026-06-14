@@ -250,8 +250,8 @@
       "delete_reasons": {
         "discontinued": "Discontinued",
         "duplicate": "Duplicate",
-        "mistake": "Created by mistake",
-        "other": "Other"
+        "mistake": "I deleted by mistake",
+        "other": "Wrong Entry"
       }
     },
     "product_detail": {

@@ -250,8 +250,8 @@
       "delete_reasons": {
         "discontinued": "متوقف",
         "duplicate": "مكرر",
-        "mistake": "أُدرج بالخطأ",
-        "other": "أخرى"
+        "mistake": "حذفت بالخطأ",
+        "other": "إدخال خاطئ"
       }
     },
     "product_detail": {

@@ -104,7 +104,7 @@
             <td style="font-family:ui-monospace,monospace;font-size:12px;">{{ inv.invoice_number || '(draft)' }}</td>
             <td>{{ inv.store_name }}</td>
             <td>{{ inv.subscription?.display_label || inv.subscription?.plan_name }}</td>
-            <td style="font-variant-numeric:tabular-nums;">{{ inv.amount }} {{ inv.currency }}</td>
+            <td style="font-variant-numeric:tabular-nums;">{{ formatNumber(inv.amount) }} {{ inv.currency }}</td>
             <td><span class="status-pill" :class="'inv-' + inv.status.toLowerCase()">{{ inv.status }}</span></td>
             <td style="font-size:12px;color:var(--text-secondary);">{{ inv.issued_at ? formatDate(inv.issued_at) : '—' }}</td>
             <td style="font-size:12px;color:var(--text-secondary);">{{ inv.due_at || '—' }}</td>
@@ -221,6 +221,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { Search, Pencil, FilePlus, CheckCircle, XCircle } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
+import { formatNumber } from '@/utils/format'
 
 const tab = ref('clients')
 

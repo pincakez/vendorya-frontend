@@ -38,8 +38,8 @@
                 <span style="font-size:11.5px;color:var(--text-muted);">{{ p.description || '—' }}</span>
               </div>
             </td>
-            <td style="font-variant-numeric:tabular-nums;">{{ p.monthly_price }} {{ p.currency }}</td>
-            <td style="font-variant-numeric:tabular-nums;">{{ p.annual_price }} {{ p.currency }}</td>
+            <td style="font-variant-numeric:tabular-nums;">{{ formatNumber(p.monthly_price) }} {{ p.currency }}</td>
+            <td style="font-variant-numeric:tabular-nums;">{{ formatNumber(p.annual_price) }} {{ p.currency }}</td>
             <td style="font-size:12px;color:var(--text-secondary);">
               <span v-if="p.max_users == null && p.max_branches == null && p.max_products == null && p.max_invoices_per_month == null">Unlimited</span>
               <span v-else>
@@ -132,6 +132,7 @@ import { Pencil, PackageOpen } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
 import { useQABStore } from '@/stores/qab'
+import { formatNumber } from '@/utils/format'
 
 const qab = useQABStore()
 const plans = ref([])
