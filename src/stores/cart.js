@@ -43,6 +43,8 @@ export const useCartStore = defineStore('cart', {
           price: parseFloat(variant.price) || 0,
           qty: 1,
           stock: variant.stock,
+          attributes: variant.attributes || null,  // { key: [values] } from attributes_summary
+          category: variant.category || '',
           _flash: true,
         })
         const item = this.items[this.items.length - 1]

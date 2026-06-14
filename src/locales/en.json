@@ -58,6 +58,7 @@
    "pos_favorites": "POS Favorites",
    "pos_top_selling": "POS Top Selling",
    "ux_settings": "UX Settings",
+   "pos_settings": "POS Settings",
    "profile": "Profile",
    "security": "Security",
    "stores": "Stores",
@@ -825,6 +826,10 @@
  },
  "pos": {
   "brand": "POS",
+  "numpad": {
+   "title": "Keypad",
+   "num_lock": "Num Lock"
+  },
   "search_placeholder": "Search products or scan barcode… (F1)",
   "top_selling": "Top Selling",
   "no_data": "No data yet",
@@ -1423,6 +1428,28 @@
    "err_invalid": "Invalid code.",
    "err_disable": "Could not disable 2FA.",
    "err_regen": "Could not regenerate codes."
+  },
+  "pos": {
+   "title": "POS Settings",
+   "sub": "Everything that shapes your point-of-sale screen",
+   "tabs": {
+    "top_selling": "Top Selling",
+    "favorites": "Favorites",
+    "cart_display": "Cart Display",
+    "keyboard": "Keyboard"
+   }
+  },
+  "cart_display": {
+   "title": "Cart Display",
+   "sub": "Choose which item details appear under each line in the POS cart",
+   "heading": "Fields shown under each cart line",
+   "hint": "Pick up to 4 in total — any mix of attributes and category. They appear as small tags beneath the item name.",
+   "category": "Category",
+   "kind_category": "Category",
+   "kind_attribute": "Attribute",
+   "no_fields": "No attributes defined yet. Add product attributes first.",
+   "preview": "Preview",
+   "sample_name": "Sample Product"
   },
   "top_selling": {
    "title": "Top Selling Config",

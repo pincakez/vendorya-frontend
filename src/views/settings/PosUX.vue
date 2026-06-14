@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="page-header">
+    <div v-if="!embedded" class="page-header">
       <div>
         <h1 class="page-title">{{ t('settings.ux.title') }}</h1>
         <p class="page-sub">{{ t('settings.ux.sub') }}</p>
@@ -9,6 +9,10 @@
         <button class="btn-secondary" @click="restoreDefaults">{{ t('settings.ux.restore_defaults') }}</button>
         <button class="btn-primary" :disabled="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</button>
       </div>
+    </div>
+    <div v-else style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:16px;">
+      <button class="btn-secondary" @click="restoreDefaults">{{ t('settings.ux.restore_defaults') }}</button>
+      <button class="btn-primary" :disabled="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</button>
     </div>
 
     <!-- Tabs -->
@@ -142,6 +146,8 @@ import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import AppModal from '@/components/ui/AppModal.vue'
+
+defineProps({ embedded: { type: Boolean, default: false } })
 
 const { t } = useI18n()
 const auth   = useAuthStore()

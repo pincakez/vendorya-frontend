@@ -63,9 +63,11 @@ const router = createRouter({
         { path: 'settings/billing',     component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
         { path: 'settings/billing/invoices/:id',   component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
         { path: 'settings/notifications',         component: () => import('@/views/settings/NotificationPrefs.vue'), meta: { store: true } },
-        { path: 'settings/pos/favorites',          component: () => import('@/views/settings/POSFavorites.vue'),      meta: { store: true } },
-        { path: 'settings/pos/top-selling',        component: () => import('@/views/settings/POSTopSelling.vue'),     meta: { store: true } },
-        { path: 'settings/pos/ux',                 component: () => import('@/views/settings/PosUX.vue'),             meta: { store: true } },
+        { path: 'settings/pos',                    component: () => import('@/views/settings/PosSettings.vue'),       meta: { store: true } },
+        // Legacy deep-links → redirect into the merged POS Settings page
+        { path: 'settings/pos/favorites',          redirect: '/settings/pos' },
+        { path: 'settings/pos/top-selling',        redirect: '/settings/pos' },
+        { path: 'settings/pos/ux',                 redirect: '/settings/pos' },
 
         // POS — uses DefaultLayout with sidebar auto-collapsed
         { path: 'pos',                  component: () => import('@/views/POS.vue'),                       meta: { store: true } },

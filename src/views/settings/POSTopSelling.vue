@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="page-header">
+    <div v-if="!embedded" class="page-header">
       <div>
         <h1 class="page-title">{{ t('settings.top_selling.title') }}</h1>
         <p class="page-sub">{{ t('settings.top_selling.sub') }}</p>
@@ -8,7 +8,7 @@
       <button class="btn-primary" :disabled="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</button>
     </div>
 
-    <div class="settings-card" style="margin-top:24px; max-width:560px;">
+    <div class="settings-card" :style="{ marginTop: embedded ? '0' : '24px', maxWidth: '560px' }">
       <div class="field">
         <label>{{ t('settings.top_selling.period') }}</label>
         <div class="period-tabs">
@@ -37,6 +37,10 @@
           <option :value="10">10</option>
         </select>
       </div>
+
+      <div v-if="embedded" class="embedded-save">
+        <button class="btn-primary" :disabled="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</button>
+      </div>
     </div>
   </div>
 </template>
@@ -45,6 +49,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
+
+defineProps({ embedded: { type: Boolean, default: false } })
 
 const { t } = useI18n()
 
@@ -93,4 +99,5 @@ async function save() {
   color: var(--text-secondary); transition: all 150ms;
 }
 .period-tab.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.embedded-save { display: flex; justify-content: flex-end; margin-top: 4px; }
 </style>

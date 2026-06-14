@@ -141,13 +141,18 @@
         </div>
 
         <div class="pos-cart-body">
-          <TransitionGroup name="cart-row" tag="div">
+          <TransitionGroup name="cart-row" tag="div" class="pcr-list">
             <div
               v-for="(item, idx) in cart.items" :key="item.variant_id"
               :class="['pos-cart-row', { 'pcr-selected': idx === selectedRow, 'pcr-flash': item._flash }]"
               @click="selectedRow = idx"
             >
-              <span class="pcr-name">{{ item.name }}</span>
+              <div class="pcr-main">
+                <span class="pcr-name">{{ item.name }}</span>
+                <div v-if="lineTags(item).length" class="pcr-tags">
+                  <span v-for="(tg, ti) in lineTags(item)" :key="ti" class="pcr-tag">{{ tg }}</span>
+                </div>
+              </div>
               <div class="pcr-qty-ctrl">
                 <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.variant_id, item.qty - 1)">−</button>
                 <span class="pcr-qty-val">{{ item.qty }}</span>
@@ -209,6 +214,8 @@
           </div>
           <div class="psum-items">{{ t('pos.items_count', { n: cart.itemCount }, cart.itemCount) }}</div>
         </div>
+
+        <PosNumpad class="pos-numpad" />
 
         <button class="pos-pay-btn" :disabled="cart.isEmpty" @click="openPayment">
           <span>{{ t('pos.pay') }}</span>
@@ -293,6 +300,7 @@ import { useUIStore }    from '@/stores/ui'
 import BranchPickerModal   from '@/components/pos/BranchPickerModal.vue'
 import PaymentModal        from '@/components/pos/PaymentModal.vue'
 import DiscountModal       from '@/components/pos/DiscountModal.vue'
+import PosNumpad           from '@/components/pos/PosNumpad.vue'
 import CustomerFormModal   from '@/components/shared/CustomerFormModal.vue'
 import ServiceFormModal    from '@/views/services/ServiceFormModal.vue'
 
@@ -346,7 +354,10 @@ async function init() {
   Promise.all([
     api.get('/api/pos/top-selling/').then(r => { pos.topSelling = r.data.results || r.data }).catch(() => {}),
     api.get('/api/pos/favorites/').then(r => { pos.favorites = r.data.results || r.data }).catch(() => {}),
-    api.get('/api/core/settings/').then(r => { posServiceTypes.value = r.data.service_types ?? [] }).catch(() => {}),
+    api.get('/api/core/settings/').then(r => {
+      posServiceTypes.value  = r.data.service_types ?? []
+      cartDisplayFields.value = Array.isArray(r.data.pos_cart_display_fields) ? r.data.pos_cart_display_fields : []
+    }).catch(() => {}),
   ])
 
   // Branch selection
@@ -434,6 +445,22 @@ function onSearchBlur() {
 // ── Add to cart ──────────────────────────────────────────────
 const selectedRow = ref(-1)
 
+// Fields the cashier chose (in POS Settings → Cart Display) to show under each
+// cart line. Tokens: 'category' or 'attr:<attribute_key>'.
+const cartDisplayFields = ref([])
+function lineTags(item) {
+  const out = []
+  for (const tok of cartDisplayFields.value) {
+    if (tok === 'category') {
+      if (item.category) out.push(item.category)
+    } else if (tok.startsWith('attr:')) {
+      const v = item.attributes?.[tok.slice(5)]
+      if (v) out.push(Array.isArray(v) ? v.join(' / ') : v)
+    }
+  }
+  return out
+}
+
 async function addToCart(product) {
   if (!pos.branchId) return
   // Guard: a product with no sellable variant would poison the draft invoice
@@ -447,6 +474,8 @@ async function addToCart(product) {
     name:  product.name,
     price: product.default_variant_price,
     stock: product.default_variant_stock,
+    attributes: product.attributes_summary || null,
+    category:   product.category_name || '',
   })
   searchQuery.value = ''
   searchResults.value = []
@@ -777,7 +806,7 @@ function fmtNum(n) {
 <style scoped>
 .pos-view {
   display: flex; flex-direction: column; height: 100%;
-  background: var(--bg-app); outline: none;
+  background: var(--bg-app); outline: none; position: relative; overflow: hidden;
 }
 
 /* ── Top bar ──────────────────────────────────────────────── */
@@ -829,15 +858,16 @@ function fmtNum(n) {
 .pos-branch-chip { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); }
 .pos-clock       { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text-muted); }
 
-/* ── Body ─────────────────────────────────────────────────── */
-.pos-body { flex: 1; display: flex; overflow: hidden; }
+/* ── Body — three floating rounded cards with an inset gap ── */
+.pos-body { flex: 1; display: flex; gap: 10px; padding: 10px; overflow: hidden; align-items: stretch; }
 
 /* ── Left panel ───────────────────────────────────────────── */
 .pos-left {
   width: 220px; min-width: 220px;
-  border-right: 1px solid var(--border);
   display: flex; flex-direction: column; overflow-y: auto;
   background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: var(--shadow-card);
 }
 .pos-panel-section { padding: 12px 10px; display: flex; flex-direction: column; gap: 8px; }
 .pos-panel-section--fav { border-top: 1px solid var(--border); flex: 1; }
@@ -846,24 +876,31 @@ function fmtNum(n) {
 .pos-quick-btn {
   display: flex; align-items: center; justify-content: space-between;
   padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
-  background: var(--bg-app); cursor: pointer; text-align: left;
+  background: var(--bg-card); cursor: pointer; text-align: left;
+  box-shadow: var(--shadow-card);
   transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out),
-              transform var(--press-back) var(--ease-spring);
+              box-shadow 120ms var(--ease-out), transform var(--press-back) var(--ease-spring);
 }
 .pos-quick-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
-.pos-quick-btn:active { transform: scale(0.97); transition-duration: var(--press-down); }
+.pos-quick-btn:active { transform: scale(0.97); box-shadow: none; transition-duration: var(--press-down); }
 .pos-quick-btn--fav { background: rgba(247,143,30,0.06); border-color: rgba(247,143,30,0.3); }
 .pqb-name  { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
 .pqb-price { font-size: 11.5px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
 .pos-panel-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 14px 0; }
 
 /* ── Center ───────────────────────────────────────────────── */
-.pos-center { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.pos-center {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
 
 .pos-invoice-bar {
   display: flex; align-items: center; gap: 12px;
   padding: 0 14px; background: var(--bg-card);
   border-bottom: 1px solid var(--border); height: 46px; flex-shrink: 0;
+  border-radius: 16px 16px 0 0;
 }
 .pib-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .pib-num    { font-size: 11px; font-family: monospace; color: var(--text-muted); }
@@ -916,21 +953,32 @@ function fmtNum(n) {
 }
 .pch-qty, .pch-price { text-align: center; }
 
-.pos-cart-body { flex: 1; overflow-y: auto; }
+.pos-cart-body { flex: 1; overflow-y: auto; background: var(--bg-app); padding: 5px 0; }
+.pcr-list { position: relative; }
 .pos-cart-row {
   display: grid; grid-template-columns: 1fr 96px 90px 36px;
-  align-items: center; padding: 9px 14px;
-  border-bottom: 1px solid var(--border); cursor: pointer;
-  transition: background 120ms;
+  align-items: center; padding: 9px 12px; cursor: pointer;
+  margin: 5px 8px; border-radius: 12px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out),
+              box-shadow 120ms var(--ease-out);
 }
-.pos-cart-row:hover    { background: var(--bg-app); }
-.pos-cart-row.pcr-selected { background: var(--accent-soft); }
-.pos-cart-row.pcr-flash { animation: pos-flash 0.5s ease; }
+.pos-cart-row:hover    { border-color: var(--accent); }
+.pos-cart-row.pcr-selected { background: var(--accent-soft); border-color: var(--accent); }
+.pos-cart-row.pcr-flash { animation: pos-flash 0.5s var(--ease-out); }
 @keyframes pos-flash {
-  0%   { background: rgba(247,143,30,0.28); }
-  100% { background: transparent; }
+  0%   { background: var(--accent-soft); }
+  100% { background: var(--bg-card); }
 }
+.pcr-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .pcr-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcr-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.pcr-tag {
+  font-size: 10px; font-weight: 700; color: var(--text-secondary);
+  background: var(--bg-app); border: 1px solid var(--border);
+  padding: 0 6px; border-radius: 5px; line-height: 16px; white-space: nowrap;
+}
 .pcr-qty-ctrl { display: flex; align-items: center; justify-content: center; gap: 5px; }
 .pcr-qty-btn {
   width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border);
@@ -959,31 +1007,37 @@ function fmtNum(n) {
 }
 .pce-icon { opacity: 0.3; }
 
-.cart-row-enter-active { transition: all 200ms ease; }
-.cart-row-leave-active { transition: all 180ms ease; }
-.cart-row-enter-from { opacity: 0; transform: translateX(-20px); }
-.cart-row-leave-to  { opacity: 0; transform: translateX(20px); }
+/* Add → drops down from under the search bar; Delete → drops down and fades.
+   Ease-in-out throughout. Leaving rows go absolute so siblings glide up. */
+.cart-row-enter-active { transition: transform 260ms var(--ease-in-out), opacity 260ms var(--ease-in-out); }
+.cart-row-leave-active { transition: transform 240ms var(--ease-in-out), opacity 240ms var(--ease-in-out); position: absolute; left: 0; right: 0; }
+.cart-row-enter-from { opacity: 0; transform: translateY(-18px); }
+.cart-row-leave-to   { opacity: 0; transform: translateY(18px); }
+.cart-row-move       { transition: transform 260ms var(--ease-in-out); }
 
 /* ── Right panel ──────────────────────────────────────────── */
 .pos-right {
-  width: 268px; min-width: 268px;
-  border-left: 1px solid var(--border);
+  width: 268px; min-width: 268px; height: 100%;
   display: flex; flex-direction: column; gap: 10px;
   padding: 10px; background: var(--bg-card); overflow-y: auto;
+  border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: var(--shadow-card);
 }
 
 .pos-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .pac {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 3px; padding: 11px 6px; border-radius: 12px;
-  border: 1.5px solid var(--border); background: var(--bg-app);
+  border: 1.5px solid var(--border); background: var(--bg-card);
   cursor: pointer; position: relative;
   font-size: 12px; font-weight: 700; color: var(--text-secondary);
+  box-shadow: var(--shadow-card);
   transition: background 140ms var(--ease-out), border-color 140ms var(--ease-out),
-              color 140ms var(--ease-out), transform var(--press-back) var(--ease-spring);
+              color 140ms var(--ease-out), box-shadow 140ms var(--ease-out),
+              transform var(--press-back) var(--ease-spring);
 }
 .pac:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-.pac:active:not(:disabled) { transform: scale(var(--press-scale)); transition-duration: var(--press-down); }
+.pac:active:not(:disabled) { transform: scale(var(--press-scale)); box-shadow: none; transition-duration: var(--press-down); }
 .pac--held { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .pac--disabled { opacity: 0.35; cursor: not-allowed; }
 .pac kbd {
@@ -1006,25 +1060,33 @@ function fmtNum(n) {
 .psum-total    { font-size: 17px; font-weight: 900; color: var(--text-primary); }
 .psum-items    { font-size: 11px; color: var(--text-muted); text-align: right; }
 
+/* Keypad anchors itself + Pay to the bottom of the panel; summary stays up top. */
+.pos-numpad { margin-top: auto; }
+
 .pos-pay-btn {
   width: 100%; padding: 16px 12px; border-radius: 14px; border: none;
   background: var(--success); color: #fff; cursor: pointer;
   display: flex; align-items: center; justify-content: space-between;
-  font-size: 18px; font-weight: 900; letter-spacing: 0.08em; margin-top: auto;
-  transition: opacity 150ms var(--ease-out), transform var(--press-back) var(--ease-spring);
+  font-size: 18px; font-weight: 900; letter-spacing: 0.08em;
+  box-shadow: 0 4px 14px rgba(34,197,94,0.28);
+  transition: opacity 150ms var(--ease-out), box-shadow 150ms var(--ease-out),
+              transform var(--press-back) var(--ease-spring);
 }
 .pos-pay-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .pos-pay-btn:not(:disabled):hover { opacity: 0.9; }
 .pos-pay-btn:not(:disabled):active { transform: scale(0.97); transition-duration: var(--press-down); }
 .pos-pay-amount { font-size: 14px; font-weight: 700; opacity: 0.9; }
 
-/* ── Scan flash ───────────────────────────────────────────── */
+/* ── Scan flash — a white band that drops from the top, fast ── */
 .pos-scan-flash {
-  position: fixed; inset: 0; background: rgba(247,143,30,0.1);
+  position: absolute; top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0));
   pointer-events: none; z-index: 500;
 }
-.scan-flash-enter-active, .scan-flash-leave-active { transition: opacity 250ms; }
-.scan-flash-enter-from, .scan-flash-leave-to { opacity: 0; }
+.scan-flash-enter-active { transition: transform 250ms var(--ease-in-out), opacity 250ms var(--ease-in-out); }
+.scan-flash-leave-active { transition: opacity 200ms var(--ease-in-out); }
+.scan-flash-enter-from { transform: translateY(-100%); opacity: 0; }
+.scan-flash-leave-to   { opacity: 0; }
 
 /* ── Success overlay ──────────────────────────────────────── */
 .pos-success-overlay {

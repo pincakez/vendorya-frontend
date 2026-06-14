@@ -1,13 +1,13 @@
 <template>
   <div>
-    <div class="page-header">
+    <div v-if="!embedded" class="page-header">
       <div>
         <h1 class="page-title">{{ t('settings.favorites.title') }}</h1>
         <p class="page-sub">{{ t('settings.favorites.sub') }}</p>
       </div>
     </div>
 
-    <div style="display:flex; gap:24px; margin-top:24px; align-items:flex-start;">
+    <div class="fav-layout" :style="{ marginTop: embedded ? '0' : '24px' }">
       <!-- Current favorites -->
       <div class="table-wrap" style="flex:1;">
         <div class="fav-header">
@@ -47,6 +47,8 @@ import { useI18n } from 'vue-i18n'
 import { Search, X, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 
+defineProps({ embedded: { type: Boolean, default: false } })
+
 const { t } = useI18n()
 
 const favorites = ref([])
@@ -85,6 +87,7 @@ async function remove(f) {
 </script>
 
 <style scoped>
+.fav-layout { display: flex; gap: 24px; align-items: flex-start; }
 .fav-header { padding: 14px 16px; font-size: 13px; font-weight: 800; color: var(--text-primary); border-bottom: 1px solid var(--border); }
 .fav-empty { padding: 24px; text-align: center; color: var(--text-muted); font-size: 13px; }
 .fav-row {
