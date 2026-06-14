@@ -17,33 +17,20 @@
       </div>
     </div>
 
-    <div class="dt-card">
-      <div v-if="loading" class="table-skeleton">
-        <div v-for="i in 5" :key="i" class="skeleton-row" />
-      </div>
-      <div v-else class="dt-xscroll">
-        <table class="dt">
-        <thead>
-          <tr>
-            <th class="dt-th">Store</th>
-            <th class="dt-th">Code</th>
-            <th class="dt-th">Owner</th>
-            <th class="dt-th">Plan</th>
-            <th class="dt-th">Currency</th>
-            <th class="dt-th">Branches</th>
-            <th class="dt-th">Staff</th>
-            <th class="dt-th">Status</th>
-            <th class="dt-th" style="width:90px;"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="!stores.length">
-            <td colspan="9" class="dt-empty">
-              <Store :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No stores yet</div>
-            </td>
-          </tr>
-          <tr v-for="s in stores" :key="s.id" class="dt-row" :class="{ inactive: !s.is_active }">
+    <AppTable :loading="loading" :empty="!stores.length" empty-text="No stores yet" :cols="9">
+      <template #head>
+        <th class="dt-th">Store</th>
+        <th class="dt-th">Code</th>
+        <th class="dt-th">Owner</th>
+        <th class="dt-th">Plan</th>
+        <th class="dt-th">Currency</th>
+        <th class="dt-th">Branches</th>
+        <th class="dt-th">Staff</th>
+        <th class="dt-th">Status</th>
+        <th class="dt-th" style="width:90px;"></th>
+      </template>
+      <template #empty-icon><Store :size="32" class="dt-empty-icon" /></template>
+      <tr v-for="s in stores" :key="s.id" class="dt-row" :class="{ inactive: !s.is_active }">
             <td>
               <div style="display:flex;align-items:center;gap:10px;">
                 <div class="store-mini-avatar">{{ s.name.charAt(0).toUpperCase() }}</div>
@@ -72,10 +59,7 @@
               </button>
             </td>
           </tr>
-        </tbody>
-      </table>
-      </div><!-- dt-xscroll -->
-    </div><!-- /dt-card -->
+    </AppTable>
 
 
     <!-- Edit modal (single store) -->
@@ -370,6 +354,7 @@ import { Search, Store, Pencil, LogIn, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import AppModal from '@/components/ui/AppModal.vue'
+import AppTable from '@/components/ui/AppTable.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -619,9 +604,6 @@ onMounted(() => {
 
 .data-table tbody tr.table-row.inactive { opacity:.55; }
 .table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
-.table-skeleton { padding:8px 0; }
-.skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
-@keyframes shimmer { to { background-position:-200% 0; } }
 
 .store-mini-avatar { width:28px; height:28px; border-radius:7px; background:var(--admin-accent-soft); color:var(--admin-accent); font-weight:700; display:flex; align-items:center; justify-content:center; font-size:12px; }
 

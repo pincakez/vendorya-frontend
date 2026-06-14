@@ -13,29 +13,16 @@
       </div>
     </div>
 
-    <div class="dt-card">
-      <div v-if="loading" class="table-skeleton">
-        <div v-for="i in 4" :key="i" class="skeleton-row" />
-      </div>
-      <div v-else class="dt-xscroll">
-        <table class="dt">
-        <thead>
-          <tr>
-            <th class="dt-th">Name</th>
-            <th class="dt-th">Username</th>
-            <th class="dt-th">Email</th>
-            <th class="dt-th">Status</th>
-            <th class="dt-th" style="width:60px;"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="!users.length">
-            <td colspan="5" class="dt-empty">
-              <Shield :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No super admins yet</div>
-            </td>
-          </tr>
-          <tr v-for="u in users" :key="u.id" class="dt-row" :class="{ inactive: !u.is_active }">
+    <AppTable :loading="loading" :empty="!users.length" empty-text="No super admins yet" :cols="5" :skeleton-rows="4">
+      <template #head>
+        <th class="dt-th">Name</th>
+        <th class="dt-th">Username</th>
+        <th class="dt-th">Email</th>
+        <th class="dt-th">Status</th>
+        <th class="dt-th" style="width:60px;"></th>
+      </template>
+      <template #empty-icon><Shield :size="32" class="dt-empty-icon" /></template>
+      <tr v-for="u in users" :key="u.id" class="dt-row" :class="{ inactive: !u.is_active }">
             <td>
               <div style="display:flex;align-items:center;gap:10px;">
                 <div class="user-avatar">{{ initials(u) }}</div>
@@ -54,10 +41,7 @@
               </button>
             </td>
           </tr>
-        </tbody>
-      </table>
-      </div><!-- dt-xscroll -->
-    </div><!-- /dt-card -->
+    </AppTable>
 
 
     <AppModal :open="modal.open" :title="modal.id ? 'Edit Super Admin' : 'New Super Admin'" @close="closeModal">
@@ -107,6 +91,7 @@ import { Search, Shield, Pencil } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
+import AppTable from '@/components/ui/AppTable.vue'
 
 const qab = useQABStore()
 
@@ -186,9 +171,6 @@ onUnmounted(() => qab.clearActions())
 
 .data-table tbody tr.table-row.inactive { opacity:.55; }
 .table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
-.table-skeleton { padding:8px 0; }
-.skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
-@keyframes shimmer { to { background-position:-200% 0; } }
 
 .user-avatar { width:30px; height:30px; border-radius:50%; background:var(--admin-accent-soft); color:var(--admin-accent); font-weight:700; display:flex; align-items:center; justify-content:center; font-size:11px; }
 

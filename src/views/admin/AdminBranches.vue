@@ -18,30 +18,17 @@
       </div>
     </div>
 
-    <div class="dt-card">
-      <div v-if="loading" class="table-skeleton">
-        <div v-for="i in 5" :key="i" class="skeleton-row" />
-      </div>
-      <div v-else class="dt-xscroll">
-        <table class="dt">
-        <thead>
-          <tr>
-            <th class="dt-th">Branch</th>
-            <th class="dt-th">Store</th>
-            <th class="dt-th">City</th>
-            <th class="dt-th">Country</th>
-            <th class="dt-th">Main</th>
-            <th class="dt-th" style="width:60px;"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="!filtered.length">
-            <td colspan="6" class="dt-empty">
-              <Building :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No branches found</div>
-            </td>
-          </tr>
-          <tr v-for="b in filtered" :key="b.id" class="dt-row">
+    <AppTable :loading="loading" :empty="!filtered.length" empty-text="No branches found" :cols="6">
+      <template #head>
+        <th class="dt-th">Branch</th>
+        <th class="dt-th">Store</th>
+        <th class="dt-th">City</th>
+        <th class="dt-th">Country</th>
+        <th class="dt-th">Main</th>
+        <th class="dt-th" style="width:60px;"></th>
+      </template>
+      <template #empty-icon><Building :size="32" class="dt-empty-icon" /></template>
+      <tr v-for="b in filtered" :key="b.id" class="dt-row">
             <td><span style="font-weight:600;">{{ b.name }}</span></td>
             <td style="color:var(--text-secondary);">{{ b.store_name }}</td>
             <td>{{ b.city || '—' }}</td>
@@ -56,10 +43,7 @@
               </button>
             </td>
           </tr>
-        </tbody>
-      </table>
-      </div><!-- dt-xscroll -->
-    </div><!-- /dt-card -->
+    </AppTable>
 
 
     <AppModal :open="modal.open" :title="modal.id ? 'Edit Branch' : 'New Branch'" @close="closeModal">
@@ -101,6 +85,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { Search, Building, Pencil, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
+import AppTable from '@/components/ui/AppTable.vue'
 
 const branches = ref([])
 const stores = ref([])
@@ -196,9 +181,6 @@ onMounted(() => {
 .search-input:focus { border-color:var(--admin-accent); }
 
 .table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
-.table-skeleton { padding:8px 0; }
-.skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
-@keyframes shimmer { to { background-position:-200% 0; } }
 
 .main-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.04em; background:rgba(239,68,68,0.15); color:var(--admin-accent); }
 

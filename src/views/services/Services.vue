@@ -37,34 +37,24 @@
     </div>
 
     <!-- Table -->
-    <div class="dt-card">
-      <div v-if="loading" class="svc-skeleton">
-        <div v-for="i in 6" :key="i" class="skeleton-row" />
-      </div>
-      <div v-else class="dt-xscroll">
-      <table class="dt">
-        <thead>
-          <tr>
-            <th class="dt-th" style="width:100px;">SRV #</th>
-            <th class="dt-th">Client</th>
-            <th class="dt-th">Type</th>
-            <th class="dt-th" style="width:110px;">Received</th>
-            <th class="dt-th" style="width:110px;">ETA</th>
-            <th class="dt-th" style="width:90px;">Cost</th>
-            <th class="dt-th" style="width:44px;text-align:center;">🔔</th>
-            <th class="dt-th" style="width:120px;"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="items.length === 0">
-            <td colspan="8" class="dt-empty">
-              <div class="dt-empty-inner">
-                <Wrench :size="36" class="dt-empty-icon" />
-                <div class="dt-empty-title">No services{{ activeTab !== 'OPEN' ? ' in this status' : '' }}</div>
-              </div>
-            </td>
-          </tr>
-          <tr v-for="s in items" :key="s.id" class="dt-row clickable" @click.stop="openDetail(s)">
+    <AppTable :loading="loading" :empty="items.length === 0" :cols="8" :skeleton-rows="6">
+      <template #head>
+        <th class="dt-th" style="width:100px;">SRV #</th>
+        <th class="dt-th">Client</th>
+        <th class="dt-th">Type</th>
+        <th class="dt-th" style="width:110px;">Received</th>
+        <th class="dt-th" style="width:110px;">ETA</th>
+        <th class="dt-th" style="width:90px;">Cost</th>
+        <th class="dt-th" style="width:44px;text-align:center;">🔔</th>
+        <th class="dt-th" style="width:120px;"></th>
+      </template>
+      <template #empty>
+        <div class="dt-empty-inner">
+          <Wrench :size="36" class="dt-empty-icon" />
+          <div class="dt-empty-title">No services{{ activeTab !== 'OPEN' ? ' in this status' : '' }}</div>
+        </div>
+      </template>
+      <tr v-for="s in items" :key="s.id" class="dt-row clickable" @click.stop="openDetail(s)">
             <td class="col-serial">
               <span class="serial-chip">{{ s.serial_number }}</span>
             </td>
@@ -116,10 +106,7 @@
               ><FileText :size="13" /></a>
             </td>
           </tr>
-        </tbody>
-      </table>
-      </div><!-- dt-xscroll -->
-    </div><!-- dt-card -->
+    </AppTable>
 
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="goPage" />
 
@@ -255,6 +242,7 @@ import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import Money from '@/components/ui/Money.vue'
 import ServiceFormModal from './ServiceFormModal.vue'
+import AppTable from '@/components/ui/AppTable.vue'
 
 const router = useRouter()
 
@@ -623,9 +611,4 @@ onMounted(() => {
 .btn-success:hover   { opacity: .88; }
 .btn-success:disabled { opacity: .5; cursor: not-allowed; }
 
-.svc-skeleton { padding: 8px 0; }
-.skeleton-row { height: 44px; margin: 4px 16px; border-radius: 6px;
-  background: linear-gradient(90deg, var(--border) 25%, var(--bg-app) 50%, var(--border) 75%);
-  background-size: 200% 100%; animation: shimmer 1.4s infinite; }
-@keyframes shimmer { to { background-position: -200% 0; } }
 </style>
