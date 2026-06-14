@@ -12,7 +12,13 @@
         <div class="page-wrap">
           <RouterView v-slot="{ Component, route }">
             <Transition :name="transitionName" mode="out-in">
-              <component :is="Component" :key="route.path" />
+              <!-- Single-element wrapper: guarantees the Transition always has one
+                   element root to animate. Without it, any view whose root is a
+                   fragment/comment node stalls the out-in leave callback, leaving
+                   the next page permanently blank (and every nav after it). -->
+              <div :key="route.path" class="route-view">
+                <component :is="Component" />
+              </div>
             </Transition>
           </RouterView>
         </div>

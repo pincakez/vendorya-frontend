@@ -18,7 +18,11 @@
         <div class="page-wrap">
           <RouterView v-slot="{ Component, route }">
             <Transition :name="transitionName" mode="out-in">
-              <component :is="Component" :key="route.path" />
+              <!-- Single-element wrapper so the out-in Transition always has one
+                   element root to animate (see DefaultLayout for the full why). -->
+              <div :key="route.path" class="route-view">
+                <component :is="Component" />
+              </div>
             </Transition>
           </RouterView>
         </div>
