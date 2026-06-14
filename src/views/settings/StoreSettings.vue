@@ -469,6 +469,39 @@
             <p v-else-if="printerTestResult.receipt" class="field-error" style="margin-top:4px;">{{ printerTestResult.receipt }}</p>
           </div>
 
+          <!-- Receipt Output Controls -->
+          <div class="section-divider">Receipt Output Controls</div>
+          <p class="form-hint" style="margin-bottom:16px;">
+            Controls sent to the receipt printer via QZ Tray on every print job.
+            Test Print uses these values so you can dial them in before going live.
+          </p>
+          <div class="print-ctrl-grid">
+            <div class="print-ctrl-row">
+              <label class="form-label" style="margin-bottom:0;min-width:130px;">Copies per job</label>
+              <select v-model.number="settingsForm.receipt_copies" class="form-input" style="width:100px;">
+                <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
+              </select>
+              <span class="form-hint" style="margin:0;">Number of receipt copies printed each time.</span>
+            </div>
+            <div class="print-ctrl-row">
+              <label class="form-label" style="margin-bottom:0;min-width:130px;">Auto-cut</label>
+              <button
+                class="toggle-btn" :class="{ on: settingsForm.receipt_auto_cut }"
+                @click="settingsForm.receipt_auto_cut = !settingsForm.receipt_auto_cut"
+              ><span class="toggle-knob" /></button>
+              <span class="form-hint" style="margin:0;">Send the ESC/POS cut command after printing (requires a cutter-equipped printer, e.g. XPrinter *C models).</span>
+            </div>
+            <div class="print-ctrl-row">
+              <label class="form-label" style="margin-bottom:0;min-width:130px;">Cut feed (mm)</label>
+              <input
+                v-model.number="settingsForm.receipt_cut_feed"
+                type="number" min="0" max="20" step="1"
+                class="form-input" style="width:100px;"
+              />
+              <span class="form-hint" style="margin:0;">Extra paper to advance before cutting (0–20 mm). Increase if the cut lands too high on the receipt.</span>
+            </div>
+          </div>
+
           <div class="section-divider">Receipt &amp; Label Printing Defaults</div>
           <p class="form-hint" style="margin-bottom:16px;">
             Pre-tick the print boxes that appear when finishing a sale or a service, so the cashier
@@ -941,6 +974,7 @@ const settingsForm = reactive({
   label_printer_name: '', receipt_printer_name: '',
   pos_print_default: true, pos_double_print_default: false,
   srv_print_default: true, srv_double_print_default: true,
+  receipt_copies: 1, receipt_auto_cut: true, receipt_cut_feed: 0,
 })
 const taxes      = ref([])
 const currencies = ref([])
@@ -1163,7 +1197,10 @@ async function testPrinter(type) {
   printerTesting[type]    = true
   printerTestResult[type] = null
   try {
-    await qzTestPrinter(name, type)
+    const opts = type === 'receipt'
+      ? { copies: settingsForm.receipt_copies, autoCut: settingsForm.receipt_auto_cut, cutFeedMm: settingsForm.receipt_cut_feed }
+      : {}
+    await qzTestPrinter(name, type, opts)
     printerTestResult[type] = 'ok'
   } catch (e) {
     printerTestResult[type] = e.message || 'Error'
@@ -1185,6 +1222,9 @@ async function savePrinters() {
       pos_double_print_default: settingsForm.pos_double_print_default,
       srv_print_default:        settingsForm.srv_print_default,
       srv_double_print_default: settingsForm.srv_double_print_default,
+      receipt_copies:   settingsForm.receipt_copies,
+      receipt_auto_cut: settingsForm.receipt_auto_cut,
+      receipt_cut_feed: settingsForm.receipt_cut_feed,
     })
     serviceSuccess.value = true
     setTimeout(() => (serviceSuccess.value = false), 2500)
@@ -1293,6 +1333,10 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .print-defaults-head { font-size:12.5px; font-weight:700; color:var(--text-primary); }
 .print-default-cb { display:flex; align-items:center; gap:9px; font-size:13px; color:var(--text-secondary); cursor:pointer; user-select:none; }
 .print-default-cb input { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+
+.print-ctrl-grid { display:flex; flex-direction:column; gap:14px; max-width:640px; margin-bottom:4px; }
+.print-ctrl-row  { display:flex; align-items:center; gap:16px; }
+.print-ctrl-row .form-hint { flex:1; }
 
 .table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .data-table { width:100%; border-collapse:collapse; font-size:13px; }

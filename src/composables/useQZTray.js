@@ -80,11 +80,20 @@ function _testReceipt() {
     '       Thank you for shopping with us!\n',
     '         No returns after 7 days.\n',
     '\n\n',
-    // ESC/POS: feed to the cutting position (clears the printhead->cutter gap so
-    // the tail isn't left inside the printer) + full cut. XPrinter *C models have
-    // an auto-cutter. GS V 65 0  =  1D 56 41 00.
-    '\x1D\x56\x41\x00',
   ].join('')
+}
+
+// Build ESC/POS print footer: optional extra feed + optional auto-cut.
+// cutFeedMm: extra paper to advance before cutting (0 = no extra feed).
+// ESC J n feeds n × (1/360 inch) ≈ n/14.2 mm; clamped to 255 dots (~18 mm).
+export function buildPrintFooter(autoCut = true, cutFeedMm = 0) {
+  let footer = ''
+  if (cutFeedMm > 0) {
+    const dots = Math.min(255, Math.round(cutFeedMm * 14.2))
+    footer += '\x1B\x4A' + String.fromCharCode(dots)
+  }
+  if (autoCut) footer += '\x1D\x56\x41\x00'  // GS V A 0 = partial cut
+  return footer
 }
 
 function _testLabel() {
@@ -122,14 +131,17 @@ export function useQZTray() {
     await qz.print(config, [{ type: 'raw', format: 'plain', data }])
   }
 
-  async function testPrinter(printerName, type) {
+  async function testPrinter(printerName, type, { copies = 1, autoCut = true, cutFeedMm = 0 } = {}) {
     if (!printerName) throw new Error('Enter a printer name first.')
     await _connect()
     const config = qz.configs.create(printerName)
-    const one = type === 'label' ? _testLabel() : _testReceipt()
-    // Receipt test prints 2 copies (each auto-cut) so the cutter is easy to verify.
-    // TODO: make copy count a Settings option.
-    const data = type === 'receipt' ? one + one : one
+    let one
+    if (type === 'label') {
+      one = _testLabel()
+    } else {
+      one = _testReceipt() + buildPrintFooter(autoCut, cutFeedMm)
+    }
+    const data = Array(Math.max(1, copies)).fill(one).join('')
     await qz.print(config, [{ type: 'raw', format: 'plain', data }])
   }
 
