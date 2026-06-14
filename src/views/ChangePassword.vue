@@ -6,21 +6,21 @@
           <KeyRound :size="18" color="#fff" />
         </div>
         <div>
-          <div style="font-weight:700;font-size:17px;color:var(--text-primary);">Set a new password</div>
-          <div style="font-size:11px;color:var(--text-muted);">Required before you continue</div>
+          <div style="font-weight:700;font-size:17px;color:var(--text-primary);">{{ t('core.cpw.title') }}</div>
+          <div style="font-size:11px;color:var(--text-muted);">{{ t('core.cpw.subtitle') }}</div>
         </div>
       </div>
 
-      <p class="hint">Your administrator issued a temporary password. Choose a new one to finish signing in.</p>
+      <p class="hint">{{ t('core.cpw.hint') }}</p>
 
       <form @submit.prevent="submit">
         <div style="margin-bottom:14px;">
-          <label class="lbl">New password</label>
-          <input v-model="newPw" type="password" class="form-input" placeholder="At least 10 characters" autocomplete="new-password" :disabled="loading" />
+          <label class="lbl">{{ t('settings.security.new') }}</label>
+          <input v-model="newPw" type="password" class="form-input" :placeholder="t('settings.security.new_ph')" autocomplete="new-password" :disabled="loading" />
         </div>
         <div style="margin-bottom:18px;">
-          <label class="lbl">Confirm new password</label>
-          <input v-model="confirmPw" type="password" class="form-input" placeholder="Repeat new password" autocomplete="new-password" :disabled="loading" />
+          <label class="lbl">{{ t('settings.security.confirm') }}</label>
+          <input v-model="confirmPw" type="password" class="form-input" :placeholder="t('settings.security.confirm_ph')" autocomplete="new-password" :disabled="loading" />
         </div>
 
         <div v-if="error" class="err"><AlertCircle :size="15" style="flex-shrink:0;margin-top:1px;" /><span>{{ error }}</span></div>
@@ -28,7 +28,7 @@
         <button type="submit" :disabled="loading || !newPw || !confirmPw" class="submit" :style="{ opacity:(loading||!newPw||!confirmPw)?'0.6':'1' }">
           <Loader2 v-if="loading" :size="16" style="animation:spin .8s linear infinite;" />
           <KeyRound v-else :size="16" />
-          {{ loading ? 'Saving…' : 'Set password & continue' }}
+          {{ loading ? t('common.saving') : t('core.cpw.submit') }}
         </button>
       </form>
     </div>
@@ -37,11 +37,13 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { KeyRound, AlertCircle, Loader2 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 const newPw = ref('')
@@ -51,7 +53,7 @@ const error = ref('')
 
 async function submit() {
   error.value = ''
-  if (newPw.value !== confirmPw.value) { error.value = 'Passwords do not match.'; return }
+  if (newPw.value !== confirmPw.value) { error.value = t('core.cpw.err_mismatch'); return }
   loading.value = true
   try {
     await api.post('/api/auth/change-password/', { new_password: newPw.value })
@@ -59,7 +61,7 @@ async function submit() {
     router.push(auth.isSuperadmin ? '/admin/dashboard' : '/dashboard')
   } catch (e) {
     const d = e.response?.data
-    error.value = d?.new_password?.[0] || d?.detail || 'Could not set password.'
+    error.value = d?.new_password?.[0] || d?.detail || t('core.cpw.err_generic')
   } finally {
     loading.value = false
   }

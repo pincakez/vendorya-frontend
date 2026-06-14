@@ -73,7 +73,7 @@
           ref="searchInput"
           v-model="q"
           class="nhdr-search-input"
-          placeholder="Search pages — Products, Invoices, Customers…"
+          :placeholder="t('core.header.search_ph')"
           @focus="searchOpen = true"
           @keydown.down.prevent="move(1)"
           @keydown.up.prevent="move(-1)"
@@ -106,7 +106,7 @@
       </div>
 
       <!-- Role badge -->
-      <span v-if="auth.userRole" class="header-role-badge">{{ auth.userRole }}</span>
+      <span v-if="auth.userRole" class="header-role-badge">{{ t('people.staff.roles.' + auth.userRole.toLowerCase()) }}</span>
 
       <!-- Notification bell -->
       <div class="bell-wrap" ref="bellRef">
@@ -118,10 +118,10 @@
         <Transition name="dropdown">
           <div v-if="dropdownOpen" class="notif-dropdown">
             <div class="nd-header">
-              <span class="nd-title">Notifications</span>
-              <button v-if="unreadCount > 0" class="nd-mark-all" @click="doMarkAll">Mark all read</button>
+              <span class="nd-title">{{ t('core.header.notifications') }}</span>
+              <button v-if="unreadCount > 0" class="nd-mark-all" @click="doMarkAll">{{ t('core.inbox.mark_all') }}</button>
             </div>
-            <div v-if="recent.length === 0" class="nd-empty">You're all caught up</div>
+            <div v-if="recent.length === 0" class="nd-empty">{{ t('core.header.caught_up') }}</div>
             <button v-for="n in recent" :key="n.id" class="nd-item" @click="openNotif(n)">
               <span class="nd-dot" :class="`dot-${n.priority.toLowerCase()}`"></span>
               <div class="nd-body">
@@ -130,7 +130,7 @@
                 <div class="nd-item-time">{{ timeAgo(n.created_at) }}</div>
               </div>
             </button>
-            <button class="nd-view-all" @click="goInbox">View all notifications →</button>
+            <button class="nd-view-all" @click="goInbox">{{ t('core.header.view_all') }}</button>
           </div>
         </Transition>
       </div>
@@ -170,7 +170,7 @@ defineEmits(['toggleSidebar', 'toggleChat'])
 const auth   = useAuthStore()
 const theme  = useThemeStore()
 const router = useRouter()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 function toggleLocale() {
   const next = locale.value === 'ar' ? 'en' : 'ar'
@@ -214,33 +214,33 @@ function enterPreview() { auth.enterPreview(); router.push('/dashboard') }
 function selectGeneral() { auth.clearActiveStore(); pickerOpen.value = false; router.push('/admin/dashboard') }
 
 /* ── Global search (store) ──────────────────── */
-const PAGES = [
-  { label: 'Dashboard', path: '/dashboard', group: 'General', icon: LayoutDashboard },
-  { label: 'Products', path: '/inventory/products', group: 'Inventory', icon: Package },
-  { label: 'Purchases', path: '/inventory/purchases', group: 'Inventory', icon: ShoppingCart },
-  { label: 'Stock Adjustments', path: '/inventory/adjustments', group: 'Inventory', icon: SlidersHorizontal },
-  { label: 'Categories', path: '/inventory/categories', group: 'Inventory', icon: Tag },
-  { label: 'Attributes', path: '/inventory/attributes', group: 'Inventory', icon: List },
-  { label: 'Inventory Reports', path: '/inventory/reports', group: 'Inventory', icon: FileBarChart },
-  { label: 'Sales Invoices', path: '/finance/invoices', group: 'Finance', icon: FileText },
-  { label: 'Returns', path: '/finance/returns', group: 'Finance', icon: CornerDownLeft },
-  { label: 'Expenses', path: '/finance/expenses', group: 'Finance', icon: Receipt },
-  { label: 'Shifts', path: '/finance/shifts', group: 'Finance', icon: Clock },
-  { label: 'Cash Drawer', path: '/finance/cash-drawer', group: 'Finance', icon: Wallet },
-  { label: 'Customers', path: '/people/customers', group: 'People', icon: Users },
-  { label: 'Suppliers', path: '/people/suppliers', group: 'People', icon: Truck },
-  { label: 'Staff', path: '/people/staff', group: 'People', icon: Briefcase },
-  { label: 'Sales Report', path: '/reports/sales', group: 'Reports', icon: LineChart },
-  { label: 'Profit Margin', path: '/reports/profit', group: 'Reports', icon: TrendingUp },
-  { label: 'Profit & Loss', path: '/reports/pnl', group: 'Reports', icon: DollarSign },
-  { label: 'Tax Report', path: '/reports/tax', group: 'Reports', icon: Percent },
-  { label: 'Activity Log', path: '/activity-log', group: 'General', icon: Activity },
-  { label: 'Inbox', path: '/inbox', group: 'General', icon: InboxIcon },
-  { label: 'Settings', path: '/settings', group: 'Settings', icon: Settings },
-  { label: 'Taxes', path: '/settings/taxes', group: 'Settings', icon: Percent },
-  { label: 'Security', path: '/settings/security', group: 'Settings', icon: Lock },
-  { label: 'Point of Sale', path: '/pos', group: 'General', icon: Calculator },
-]
+const PAGES = computed(() => [
+  { label: t('nav.dashboard'), path: '/dashboard', group: t('nav.groups.general'), icon: LayoutDashboard },
+  { label: t('nav.items.products'), path: '/inventory/products', group: t('nav.groups.inventory'), icon: Package },
+  { label: t('nav.items.purchases'), path: '/inventory/purchases', group: t('nav.groups.inventory'), icon: ShoppingCart },
+  { label: t('nav.items.stock_adjustments'), path: '/inventory/adjustments', group: t('nav.groups.inventory'), icon: SlidersHorizontal },
+  { label: t('nav.items.categories'), path: '/inventory/categories', group: t('nav.groups.inventory'), icon: Tag },
+  { label: t('nav.items.attributes'), path: '/inventory/attributes', group: t('nav.groups.inventory'), icon: List },
+  { label: t('nav.items.inventory_reports'), path: '/inventory/reports', group: t('nav.groups.inventory'), icon: FileBarChart },
+  { label: t('nav.items.sales_invoices'), path: '/finance/invoices', group: t('nav.groups.finance'), icon: FileText },
+  { label: t('nav.items.returns'), path: '/finance/returns', group: t('nav.groups.finance'), icon: CornerDownLeft },
+  { label: t('nav.items.expenses'), path: '/finance/expenses', group: t('nav.groups.finance'), icon: Receipt },
+  { label: t('nav.items.shifts'), path: '/finance/shifts', group: t('nav.groups.finance'), icon: Clock },
+  { label: t('nav.items.cash_drawer'), path: '/finance/cash-drawer', group: t('nav.groups.finance'), icon: Wallet },
+  { label: t('nav.items.customers'), path: '/people/customers', group: t('nav.groups.people'), icon: Users },
+  { label: t('nav.items.suppliers'), path: '/people/suppliers', group: t('nav.groups.people'), icon: Truck },
+  { label: t('nav.items.staff'), path: '/people/staff', group: t('nav.groups.people'), icon: Briefcase },
+  { label: t('nav.items.sales'), path: '/reports/sales', group: t('nav.groups.reports'), icon: LineChart },
+  { label: t('nav.items.profit_margin'), path: '/reports/profit', group: t('nav.groups.reports'), icon: TrendingUp },
+  { label: t('nav.items.pnl'), path: '/reports/pnl', group: t('nav.groups.reports'), icon: DollarSign },
+  { label: t('nav.items.tax'), path: '/reports/tax', group: t('nav.groups.reports'), icon: Percent },
+  { label: t('nav.items.activity_log'), path: '/activity-log', group: t('nav.groups.general'), icon: Activity },
+  { label: t('nav.items.inbox'), path: '/inbox', group: t('nav.groups.general'), icon: InboxIcon },
+  { label: t('nav.items.store_settings'), path: '/settings', group: t('nav.groups.settings'), icon: Settings },
+  { label: t('nav.items.taxes'), path: '/settings/taxes', group: t('nav.groups.settings'), icon: Percent },
+  { label: t('nav.items.security'), path: '/settings/security', group: t('nav.groups.settings'), icon: Lock },
+  { label: t('core.header.pos'), path: '/pos', group: t('nav.groups.general'), icon: Calculator },
+])
 
 const q = ref('')
 const searchOpen = ref(false)
@@ -251,7 +251,7 @@ const searchInput = ref(null)
 const results = computed(() => {
   const term = q.value.trim().toLowerCase()
   if (!term) return []
-  return PAGES.filter(p => p.label.toLowerCase().includes(term) || p.group.toLowerCase().includes(term)).slice(0, 7)
+  return PAGES.value.filter(p => p.label.toLowerCase().includes(term) || p.group.toLowerCase().includes(term)).slice(0, 7)
 })
 watch(results, () => { idx.value = 0 })
 
@@ -297,9 +297,9 @@ function goInbox() { dropdownOpen.value = false; router.push('/inbox') }
 
 function timeAgo(iso) {
   const diff = Math.max(0, Date.now() - new Date(iso).getTime()) / 1000
-  if (diff < 60)    return 'just now'
-  if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  if (diff < 60)    return t('core.inbox.just_now')
+  if (diff < 3600)  return t('core.inbox.min_ago', { n: Math.floor(diff / 60) })
+  if (diff < 86400) return t('core.inbox.hr_ago', { n: Math.floor(diff / 3600) })
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 

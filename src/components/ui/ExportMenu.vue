@@ -2,7 +2,7 @@
   <div class="export-wrap" ref="root">
     <button class="export-btn" :disabled="!rows.length" @click="open = !open">
       <Download :size="14" />
-      <span>Export</span>
+      <span>{{ t('common.export') }}</span>
       <ChevronDown :size="13" :class="{ flip: open }" />
     </button>
     <Transition name="export-pop">
@@ -17,8 +17,11 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Download, ChevronDown, FileText, Sheet, FileType } from 'lucide-vue-next'
 import { exportCSV, exportExcel, exportPDF } from '@/composables/useExport'
+
+const { t } = useI18n()
 
 const props = defineProps({
   rows:     { type: Array,  default: () => [] },

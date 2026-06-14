@@ -3,12 +3,12 @@
     <!-- Page header -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">Services</h1>
-        <p class="page-sub">Track repair & service jobs</p>
+        <h1 class="page-title">{{ t('core.services.title') }}</h1>
+        <p class="page-sub">{{ t('core.services.sub') }}</p>
       </div>
       <div class="header-actions">
         <button class="btn-primary" @click="openNew">
-          <Plus :size="15" /> New Service
+          <Plus :size="15" /> {{ t('core.services.new_service') }}
         </button>
       </div>
     </div>
@@ -30,7 +30,7 @@
         <input
           v-model="search"
           class="svc-search"
-          placeholder="Search by SRV#, client, type…"
+          :placeholder="t('core.services.search_ph')"
           @input="debouncedFetch"
         />
       </div>
@@ -39,19 +39,19 @@
     <!-- Table -->
     <AppTable :loading="loading" :empty="items.length === 0" :cols="8" :skeleton-rows="6">
       <template #head>
-        <th class="dt-th" style="width:100px;">SRV #</th>
-        <th class="dt-th">Client</th>
-        <th class="dt-th">Type</th>
-        <th class="dt-th" style="width:110px;">Received</th>
-        <th class="dt-th" style="width:110px;">ETA</th>
-        <th class="dt-th" style="width:90px;">Cost</th>
+        <th class="dt-th" style="width:100px;">{{ t('core.services.col_srv') }}</th>
+        <th class="dt-th">{{ t('core.services.col_client') }}</th>
+        <th class="dt-th">{{ t('core.services.col_type') }}</th>
+        <th class="dt-th" style="width:110px;">{{ t('core.services.col_received') }}</th>
+        <th class="dt-th" style="width:110px;">{{ t('core.services.col_eta') }}</th>
+        <th class="dt-th" style="width:90px;">{{ t('core.services.col_cost') }}</th>
         <th class="dt-th" style="width:44px;text-align:center;">🔔</th>
         <th class="dt-th" style="width:120px;"></th>
       </template>
       <template #empty>
         <div class="dt-empty-inner">
           <Wrench :size="36" class="dt-empty-icon" />
-          <div class="dt-empty-title">No services{{ activeTab !== 'OPEN' ? ' in this status' : '' }}</div>
+          <div class="dt-empty-title">{{ activeTab !== 'OPEN' ? t('core.services.no_services_status') : t('core.services.no_services') }}</div>
         </div>
       </template>
       <tr v-for="s in items" :key="s.id" class="dt-row clickable" @click.stop="openDetail(s)">
@@ -69,7 +69,7 @@
             <td>
               <span v-if="s.no_eta || !s.eta_label" class="eta-none">—</span>
               <span v-else :class="['eta-badge', s.eta_label === 'overdue' ? 'overdue' : 'ok']">
-                {{ s.eta_label === 'overdue' ? 'Overdue' : s.eta_label }}
+                {{ s.eta_label === 'overdue' ? t('core.services.overdue') : s.eta_label }}
               </span>
             </td>
             <td><Money :value="s.cost" /></td>
@@ -78,7 +78,7 @@
                 class="bell-btn"
                 :class="{ active: s.notify_bell }"
                 @click="toggleBell(s)"
-                title="Toggle notification reminder"
+                :title="t('core.services.toggle_bell')"
               >
                 <Bell :size="13" />
               </button>
@@ -86,22 +86,22 @@
             <td class="col-actions" @click.stop>
               <!-- OPEN actions -->
               <template v-if="s.status === 'OPEN'">
-                <button class="row-action" title="Edit" @click="openEdit(s)"><Pencil :size="13" /></button>
-                <button class="row-action success" title="Mark Done" @click="confirmDone(s)"><CheckCircle :size="13" /></button>
-                <button class="row-action danger" title="Cancel" @click="confirmCancel(s)"><XCircle :size="13" /></button>
+                <button class="row-action" :title="t('common.edit')" @click="openEdit(s)"><Pencil :size="13" /></button>
+                <button class="row-action success" :title="t('core.services.mark_done')" @click="confirmDone(s)"><CheckCircle :size="13" /></button>
+                <button class="row-action danger" :title="t('common.cancel')" @click="confirmCancel(s)"><XCircle :size="13" /></button>
               </template>
               <!-- DONE / CANCELLED actions -->
               <template v-else-if="s.status === 'DONE' || s.status === 'CANCELLED'">
-                <button class="row-action" title="Archive" @click="confirmArchive(s)"><Archive :size="13" /></button>
+                <button class="row-action" :title="t('core.services.archive')" @click="confirmArchive(s)"><Archive :size="13" /></button>
               </template>
               <!-- Return button for DONE -->
               <template v-if="s.status === 'DONE'">
-                <button class="row-action" title="Return service" @click="confirmReturn(s)"><RotateCcw :size="13" /></button>
+                <button class="row-action" :title="t('core.services.return_svc')" @click="confirmReturn(s)"><RotateCcw :size="13" /></button>
               </template>
               <!-- Invoice link for DONE -->
               <a
                 v-if="s.status === 'DONE' && s.invoice"
-                class="row-action" title="View Invoice"
+                class="row-action" :title="t('core.services.view_invoice')"
                 href="#" @click.prevent="viewInvoice(s)"
               ><FileText :size="13" /></a>
             </td>
@@ -121,85 +121,85 @@
     />
 
     <!-- Confirm: Mark Done -->
-    <AppModal :open="confirm.done" title="Mark as Done?" @close="confirm.done = false">
+    <AppModal :open="confirm.done" :title="t('core.services.done_title')" @close="confirm.done = false">
       <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
-        This will create a Sales Invoice for <strong><Money :value="confirm.target?.cost" /></strong> and link it to <strong>{{ confirm.target?.serial_number }}</strong>.
+        {{ t('core.services.done_body_a') }} <strong><Money :value="confirm.target?.cost" /></strong> {{ t('core.services.done_body_b') }} <strong>{{ confirm.target?.serial_number }}</strong>.
       </p>
       <template #footer>
-        <button class="btn-ghost" @click="confirm.done = false">Cancel</button>
+        <button class="btn-ghost" @click="confirm.done = false">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="confirm.busy" @click="executeDone">
-          {{ confirm.busy ? 'Processing…' : 'Mark Done & Create Invoice' }}
+          {{ confirm.busy ? t('core.services.processing') : t('core.services.done_confirm') }}
         </button>
       </template>
     </AppModal>
 
     <!-- Confirm: Cancel -->
-    <AppModal :open="confirm.cancel" title="Cancel Service?" @close="confirm.cancel = false">
+    <AppModal :open="confirm.cancel" :title="t('core.services.cancel_title')" @close="confirm.cancel = false">
       <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
-        Cancel <strong>{{ confirm.target?.serial_number }}</strong>? This cannot be undone.
+        {{ t('core.services.cancel_body_a') }} <strong>{{ confirm.target?.serial_number }}</strong>{{ t('core.services.cancel_body_b') }}
       </p>
       <template #footer>
-        <button class="btn-ghost" @click="confirm.cancel = false">Keep it</button>
+        <button class="btn-ghost" @click="confirm.cancel = false">{{ t('core.services.keep_it') }}</button>
         <button class="btn-danger" :disabled="confirm.busy" @click="executeCancel">
-          {{ confirm.busy ? 'Cancelling…' : 'Cancel Service' }}
+          {{ confirm.busy ? t('core.services.cancelling') : t('core.services.cancel_btn') }}
         </button>
       </template>
     </AppModal>
 
     <!-- Confirm: Archive -->
-    <AppModal :open="confirm.archive" title="Archive Service?" @close="confirm.archive = false">
+    <AppModal :open="confirm.archive" :title="t('core.services.archive_title')" @close="confirm.archive = false">
       <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
-        Move <strong>{{ confirm.target?.serial_number }}</strong> to Archives?
+        {{ t('core.services.archive_body_a') }} <strong>{{ confirm.target?.serial_number }}</strong>{{ t('core.services.archive_body_b') }}
       </p>
       <template #footer>
-        <button class="btn-ghost" @click="confirm.archive = false">Cancel</button>
+        <button class="btn-ghost" @click="confirm.archive = false">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="confirm.busy" @click="executeArchive">
-          {{ confirm.busy ? 'Archiving…' : 'Archive' }}
+          {{ confirm.busy ? t('core.services.archiving') : t('core.services.archive') }}
         </button>
       </template>
     </AppModal>
 
     <!-- Confirm: Return -->
-    <AppModal :open="confirm.return" title="Return Service?" @close="confirm.return = false">
+    <AppModal :open="confirm.return" :title="t('core.services.return_title')" @close="confirm.return = false">
       <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
-        Mark <strong>{{ confirm.target?.serial_number }}</strong> as returned? The invoice stays — this is a record-only action with no financial impact.
+        {{ t('core.services.return_body_a') }} <strong>{{ confirm.target?.serial_number }}</strong>{{ t('core.services.return_body_b') }}
       </p>
       <template #footer>
-        <button class="btn-ghost" @click="confirm.return = false">Cancel</button>
+        <button class="btn-ghost" @click="confirm.return = false">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="confirm.busy" @click="executeReturn">
-          {{ confirm.busy ? 'Processing…' : 'Confirm Return' }}
+          {{ confirm.busy ? t('core.services.processing') : t('core.services.return_confirm') }}
         </button>
       </template>
     </AppModal>
 
     <!-- Detail modal: click a row -->
-    <AppModal :open="detail.open" :title="detail.service?.serial_number || 'Service'" @close="detail.open = false" width="520px">
+    <AppModal :open="detail.open" :title="detail.service?.serial_number || t('core.services.service')" @close="detail.open = false" width="520px">
       <div v-if="detail.service" class="det-body">
         <!-- Status badge -->
         <div class="det-status-row">
           <span :class="['det-badge', `det-badge-${detail.service.status?.toLowerCase()}`]">
-            {{ detail.service.status }}
+            {{ t('core.services.status.' + (detail.service.status || '').toLowerCase()) }}
           </span>
           <span class="det-serial">{{ detail.service.serial_number }}</span>
         </div>
 
         <div class="det-grid">
-          <div class="det-field"><span class="det-lbl">Client</span><span class="det-val">{{ detail.service.client_display_name || '—' }}</span></div>
-          <div class="det-field"><span class="det-lbl">Phone</span><span class="det-val">{{ detail.service.client_display_phone || '—' }}</span></div>
-          <div class="det-field"><span class="det-lbl">Service Type</span><span class="det-val">{{ detail.service.service_type || '—' }}</span></div>
-          <div class="det-field"><span class="det-lbl">Received</span><span class="det-val">{{ fmtDate(detail.service.receive_date) }}</span></div>
-          <div class="det-field"><span class="det-lbl">ETA</span>
+          <div class="det-field"><span class="det-lbl">{{ t('core.services.col_client') }}</span><span class="det-val">{{ detail.service.client_display_name || '—' }}</span></div>
+          <div class="det-field"><span class="det-lbl">{{ t('settings.store.phone') }}</span><span class="det-val">{{ detail.service.client_display_phone || '—' }}</span></div>
+          <div class="det-field"><span class="det-lbl">{{ t('core.services.col_type') }}</span><span class="det-val">{{ detail.service.service_type || '—' }}</span></div>
+          <div class="det-field"><span class="det-lbl">{{ t('core.services.col_received') }}</span><span class="det-val">{{ fmtDate(detail.service.receive_date) }}</span></div>
+          <div class="det-field"><span class="det-lbl">{{ t('core.services.col_eta') }}</span>
             <span class="det-val">
-              <span v-if="detail.service.no_eta || !detail.service.eta_label" class="eta-none">No ETA</span>
+              <span v-if="detail.service.no_eta || !detail.service.eta_label" class="eta-none">{{ t('core.services.no_eta') }}</span>
               <span v-else :class="['eta-badge', detail.service.eta_label === 'overdue' ? 'overdue' : 'ok']">
-                {{ detail.service.eta_label === 'overdue' ? 'Overdue' : detail.service.eta_label }}
+                {{ detail.service.eta_label === 'overdue' ? t('core.services.overdue') : detail.service.eta_label }}
               </span>
             </span>
           </div>
-          <div class="det-field det-full"><span class="det-lbl">Description</span><span class="det-val">{{ detail.service.info || '—' }}</span></div>
-          <div class="det-field det-full"><span class="det-lbl">Items Kept</span><span class="det-val">{{ detail.service.keeping || '—' }}</span></div>
+          <div class="det-field det-full"><span class="det-lbl">{{ t('common.description') }}</span><span class="det-val">{{ detail.service.info || '—' }}</span></div>
+          <div class="det-field det-full"><span class="det-lbl">{{ t('core.services.items_kept') }}</span><span class="det-val">{{ detail.service.keeping || '—' }}</span></div>
           <div class="det-field">
-            <span class="det-lbl">Cost</span>
+            <span class="det-lbl">{{ t('core.services.col_cost') }}</span>
             <input
               v-model.number="detail.editCost"
               type="number" min="0" step="0.01"
@@ -212,18 +212,18 @@
 
       <template #footer>
         <template v-if="detail.service?.status === 'OPEN'">
-          <button class="btn-ghost" @click="detail.open = false">Not Yet</button>
+          <button class="btn-ghost" @click="detail.open = false">{{ t('core.services.not_yet') }}</button>
           <button class="btn-success" :disabled="detail.busy" @click="detailMarkDone">
-            {{ detail.busy ? 'Processing…' : '✓ Done' }}
+            {{ detail.busy ? t('core.services.processing') : t('core.services.done_short') }}
           </button>
         </template>
         <template v-else>
-          <button class="btn-ghost" @click="detail.open = false">Close</button>
+          <button class="btn-ghost" @click="detail.open = false">{{ t('common.close') }}</button>
           <button
             v-if="detail_costChanged"
             class="btn-primary" :disabled="detail.busy"
             @click="saveCost"
-          >{{ detail.busy ? 'Saving…' : 'Save Cost' }}</button>
+          >{{ detail.busy ? t('common.saving') : t('core.services.save_cost') }}</button>
         </template>
       </template>
     </AppModal>
@@ -232,6 +232,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import {
   Plus, Search, Wrench, Bell, Pencil, CheckCircle,
@@ -244,16 +245,20 @@ import Money from '@/components/ui/Money.vue'
 import ServiceFormModal from './ServiceFormModal.vue'
 import AppTable from '@/components/ui/AppTable.vue'
 
+const { t } = useI18n()
 const router = useRouter()
 
 /* ── status tabs ─────────────────────────────────────────────────── */
 const statusTabs = reactive([
-  { id: 'OPEN',      label: 'Open',      count: null },
-  { id: 'DONE',      label: 'Done',      count: null },
-  { id: 'CANCELLED', label: 'Cancelled', count: null },
-  { id: 'ARCHIVED',  label: 'Archived',  count: null },
-  { id: 'RETURNED',  label: 'Returned',  count: null },
+  { id: 'OPEN',      label: '', count: null },
+  { id: 'DONE',      label: '', count: null },
+  { id: 'CANCELLED', label: '', count: null },
+  { id: 'ARCHIVED',  label: '', count: null },
+  { id: 'RETURNED',  label: '', count: null },
 ])
+watch(() => t('core.services.status.open'), () => {
+  statusTabs.forEach(tb => { tb.label = t('core.services.status.' + tb.id.toLowerCase()) })
+}, { immediate: true })
 const activeTab = ref('OPEN')
 
 /* ── state ───────────────────────────────────────────────────────── */
@@ -380,7 +385,7 @@ async function executeDone() {
     confirm.done = false
     fetchItems(); fetchCounts()
   } catch (e) {
-    alert(e?.response?.data?.detail ?? 'Failed to mark as done.')
+    alert(e?.response?.data?.detail ?? t('core.services.err_done'))
   } finally { confirm.busy = false }
 }
 
@@ -396,7 +401,7 @@ async function executeCancel() {
     confirm.cancel = false
     fetchItems(); fetchCounts()
   } catch (e) {
-    alert(e?.response?.data?.detail ?? 'Failed to cancel.')
+    alert(e?.response?.data?.detail ?? t('core.services.err_cancel'))
   } finally { confirm.busy = false }
 }
 
@@ -412,7 +417,7 @@ async function executeArchive() {
     confirm.archive = false
     fetchItems(); fetchCounts()
   } catch (e) {
-    alert(e?.response?.data?.detail ?? 'Failed to archive.')
+    alert(e?.response?.data?.detail ?? t('core.services.err_archive'))
   } finally { confirm.busy = false }
 }
 
@@ -433,7 +438,7 @@ async function executeReturn() {
     confirm.return = false
     fetchItems(); fetchCounts()
   } catch (e) {
-    alert(e?.response?.data?.detail ?? 'Failed to return service.')
+    alert(e?.response?.data?.detail ?? t('core.services.err_return'))
   } finally { confirm.busy = false }
 }
 
@@ -452,7 +457,7 @@ async function detailMarkDone() {
     detail.open = false
     fetchItems(); fetchCounts()
   } catch (e) {
-    alert(e?.response?.data?.detail ?? 'Failed to mark as done.')
+    alert(e?.response?.data?.detail ?? t('core.services.err_done'))
   } finally { detail.busy = false }
 }
 
@@ -464,7 +469,7 @@ async function saveCost() {
     detail.open = false
     fetchItems()
   } catch (e) {
-    alert(e?.response?.data?.detail ?? 'Failed to save cost.')
+    alert(e?.response?.data?.detail ?? t('core.services.err_cost'))
   } finally { detail.busy = false }
 }
 

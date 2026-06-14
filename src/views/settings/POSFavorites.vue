@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">POS Favorite Items</h1>
-        <p class="page-sub">Curate up to 10 quick-access products for the POS left panel</p>
+        <h1 class="page-title">{{ t('settings.favorites.title') }}</h1>
+        <p class="page-sub">{{ t('settings.favorites.sub') }}</p>
       </div>
     </div>
 
@@ -11,9 +11,9 @@
       <!-- Current favorites -->
       <div class="table-wrap" style="flex:1;">
         <div class="fav-header">
-          <span>Favorites ({{ favorites.length }}/10)</span>
+          <span>{{ t('settings.favorites.heading', { n: favorites.length }) }}</span>
         </div>
-        <div v-if="!favorites.length" class="fav-empty">No favorites yet. Search products to add.</div>
+        <div v-if="!favorites.length" class="fav-empty">{{ t('settings.favorites.empty') }}</div>
         <div v-for="(f, i) in favorites" :key="f.id" class="fav-row">
           <span class="fav-order">{{ i + 1 }}</span>
           <span class="fav-name">{{ f.product_name }}</span>
@@ -25,17 +25,17 @@
 
       <!-- Search + add -->
       <div class="fav-search-card">
-        <div class="fav-search-title">Add Product</div>
+        <div class="fav-search-title">{{ t('settings.favorites.add_product') }}</div>
         <div class="fav-search-wrap">
           <Search :size="14" />
-          <input v-model="q" @input="onSearch" class="fav-search-input" placeholder="Search products…" />
+          <input v-model="q" @input="onSearch" class="fav-search-input" :placeholder="t('settings.favorites.search_ph')" />
         </div>
         <div v-for="p in results" :key="p.id" class="fav-result" @click="add(p)">
           <span class="fr-name">{{ p.name }}</span>
           <span class="fr-sku">{{ p.sku_display }}</span>
           <Plus :size="14" class="fr-add" />
         </div>
-        <div v-if="!results.length && q.length >= 2" class="fav-empty">No products found</div>
+        <div v-if="!results.length && q.length >= 2" class="fav-empty">{{ t('settings.favorites.no_products') }}</div>
       </div>
     </div>
   </div>
@@ -43,8 +43,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Search, X, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
+
+const { t } = useI18n()
 
 const favorites = ref([])
 const results   = ref([])
@@ -67,9 +70,9 @@ function onSearch() {
 }
 
 async function add(product) {
-  if (favorites.value.length >= 10) { alert('Maximum 10 favorites reached.'); return }
+  if (favorites.value.length >= 10) { alert(t('settings.favorites.max_reached')); return }
   await api.post('/api/pos/favorites/', { product: product.id, order: favorites.value.length }).catch(e => {
-    alert(e?.response?.data?.non_field_errors?.[0] || 'Failed to add')
+    alert(e?.response?.data?.non_field_errors?.[0] || t('settings.favorites.err_add'))
   })
   q.value = ''; results.value = []
   load()

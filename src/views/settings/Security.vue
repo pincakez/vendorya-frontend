@@ -2,35 +2,35 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Security</h1>
-        <p class="page-sub">Manage your password and two-factor authentication</p>
+        <h1 class="page-title">{{ t('settings.security.title') }}</h1>
+        <p class="page-sub">{{ t('settings.security.sub') }}</p>
       </div>
-      <RouterLink to="/settings/profile" class="back-link">← Back to Profile</RouterLink>
+      <RouterLink to="/settings/profile" class="back-link">← {{ t('settings.security.back_profile') }}</RouterLink>
     </div>
 
     <div class="sec-layout">
       <!-- Change password -->
       <div class="settings-card">
-        <div class="section-label">Change Password</div>
+        <div class="section-label">{{ t('settings.security.change_password') }}</div>
         <div class="form-col">
           <div>
-            <label class="form-label">Current password</label>
-            <input v-model="pw.current" type="password" class="form-input" placeholder="Enter current password" autocomplete="current-password" />
+            <label class="form-label">{{ t('settings.security.current') }}</label>
+            <input v-model="pw.current" type="password" class="form-input" :placeholder="t('settings.security.current_ph')" autocomplete="current-password" />
           </div>
           <div>
-            <label class="form-label">New password</label>
-            <input v-model="pw.next" type="password" class="form-input" placeholder="At least 10 characters" autocomplete="new-password" />
+            <label class="form-label">{{ t('settings.security.new') }}</label>
+            <input v-model="pw.next" type="password" class="form-input" :placeholder="t('settings.security.new_ph')" autocomplete="new-password" />
           </div>
           <div>
-            <label class="form-label">Confirm new password</label>
-            <input v-model="pw.confirm" type="password" class="form-input" placeholder="Repeat new password" autocomplete="new-password" />
+            <label class="form-label">{{ t('settings.security.confirm') }}</label>
+            <input v-model="pw.confirm" type="password" class="form-input" :placeholder="t('settings.security.confirm_ph')" autocomplete="new-password" />
           </div>
         </div>
         <p v-if="pwError" class="error-text">{{ pwError }}</p>
         <div class="form-footer">
-          <span v-if="pwSaved" class="saved-msg">Password changed</span>
+          <span v-if="pwSaved" class="saved-msg">{{ t('settings.security.changed') }}</span>
           <button class="btn-primary" :disabled="pwBusy || !canChange" @click="changePassword">
-            {{ pwBusy ? 'Saving…' : 'Update Password' }}
+            {{ pwBusy ? t('common.saving') : t('settings.security.update_btn') }}
           </button>
         </div>
       </div>
@@ -43,9 +43,12 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import api from '@/api/axios'
 import TwoFactorPanel from '@/components/settings/TwoFactorPanel.vue'
+
+const { t } = useI18n()
 
 const pw = reactive({ current: '', next: '', confirm: '' })
 const pwBusy = ref(false)
@@ -57,7 +60,7 @@ const canChange = computed(() => pw.current && pw.next && pw.confirm)
 async function changePassword() {
   pwError.value = ''
   pwSaved.value = false
-  if (pw.next !== pw.confirm) { pwError.value = 'New passwords do not match.'; return }
+  if (pw.next !== pw.confirm) { pwError.value = t('settings.security.err_mismatch'); return }
   pwBusy.value = true
   try {
     await api.post('/api/auth/change-password/', {
@@ -69,7 +72,7 @@ async function changePassword() {
     setTimeout(() => { pwSaved.value = false }, 2500)
   } catch (e) {
     const d = e.response?.data
-    pwError.value = d?.new_password?.[0] || d?.detail || 'Could not change password.'
+    pwError.value = d?.new_password?.[0] || d?.detail || t('settings.security.err_generic')
   } finally { pwBusy.value = false }
 }
 </script>

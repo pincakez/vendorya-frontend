@@ -2,21 +2,21 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Notifications</h1>
-        <p class="page-sub">Control which alerts you see and which sounds they play</p>
+        <h1 class="page-title">{{ t('settings.notif_prefs.title') }}</h1>
+        <p class="page-sub">{{ t('settings.notif_prefs.sub') }}</p>
       </div>
     </div>
 
     <div class="settings-card">
-      <div v-if="loading" class="loading-msg">Loading preferences...</div>
+      <div v-if="loading" class="loading-msg">{{ t('settings.notif_prefs.loading') }}</div>
       <template v-else>
 
         <div class="pref-table">
           <!-- Header -->
           <div class="pt-row pt-head">
-            <div class="pt-type">Alert type</div>
-            <div class="pt-enable">Enable</div>
-            <div class="pt-sound">Sound</div>
+            <div class="pt-type">{{ t('settings.notif_prefs.alert_type') }}</div>
+            <div class="pt-enable">{{ t('settings.notif_prefs.enable') }}</div>
+            <div class="pt-sound">{{ t('settings.notif_prefs.sound') }}</div>
           </div>
 
           <!-- INFO -->
@@ -24,8 +24,8 @@
             <div class="pt-type">
               <span class="pt-dot dot-info"></span>
               <div>
-                <div class="pt-label">Information</div>
-                <div class="pt-hint">Low-priority updates — payment received, general system messages</div>
+                <div class="pt-label">{{ t('settings.notif_prefs.info_label') }}</div>
+                <div class="pt-hint">{{ t('settings.notif_prefs.info_hint') }}</div>
               </div>
             </div>
             <div class="pt-enable">
@@ -46,8 +46,8 @@
             <div class="pt-type">
               <span class="pt-dot dot-warning"></span>
               <div>
-                <div class="pt-label">Warning</div>
-                <div class="pt-hint">Items needing attention — low stock, shift cash difference</div>
+                <div class="pt-label">{{ t('settings.notif_prefs.warning_label') }}</div>
+                <div class="pt-hint">{{ t('settings.notif_prefs.warning_hint') }}</div>
               </div>
             </div>
             <div class="pt-enable">
@@ -68,8 +68,8 @@
             <div class="pt-type">
               <span class="pt-dot dot-alert"></span>
               <div>
-                <div class="pt-label">Alert</div>
-                <div class="pt-hint">Action required — invoice voided, access denied</div>
+                <div class="pt-label">{{ t('settings.notif_prefs.alert_label') }}</div>
+                <div class="pt-hint">{{ t('settings.notif_prefs.alert_hint') }}</div>
               </div>
             </div>
             <div class="pt-enable">
@@ -90,12 +90,12 @@
             <div class="pt-type">
               <span class="pt-dot dot-admin"></span>
               <div>
-                <div class="pt-label">Admin Notes</div>
-                <div class="pt-hint">Messages sent directly from Vendorya admin — always shown</div>
+                <div class="pt-label">{{ t('settings.notif_prefs.admin_label') }}</div>
+                <div class="pt-hint">{{ t('settings.notif_prefs.admin_hint') }}</div>
               </div>
             </div>
             <div class="pt-enable">
-              <span class="always-on">Always on</span>
+              <span class="always-on">{{ t('settings.notif_prefs.always_on') }}</span>
             </div>
             <div class="pt-sound">
               <select v-model="prefs.admin_sound" class="sound-select">
@@ -107,9 +107,9 @@
 
         <div class="form-actions">
           <button class="btn-primary" :disabled="saving" @click="save">
-            {{ saving ? 'Saving...' : 'Save preferences' }}
+            {{ saving ? t('common.saving') : t('settings.notif_prefs.save_btn') }}
           </button>
-          <span v-if="saved" class="save-ok">Saved</span>
+          <span v-if="saved" class="save-ok">{{ t('settings.notif_prefs.saved') }}</span>
         </div>
 
       </template>
@@ -118,9 +118,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 
+const { t } = useI18n()
 const loading = ref(true)
 const saving  = ref(false)
 const saved   = ref(false)
@@ -135,13 +137,13 @@ const prefs = ref({
   admin_sound: 's01',
 })
 
-const soundOptions = [
-  { value: 'mute', label: 'Mute' },
+const soundOptions = computed(() => [
+  { value: 'mute', label: t('settings.notif_prefs.mute') },
   ...Array.from({ length: 10 }, (_, i) => ({
     value: `s${String(i + 1).padStart(2, '0')}`,
-    label: `Sound ${String(i + 1).padStart(2, '0')}`,
+    label: t('settings.notif_prefs.sound_n', { n: String(i + 1).padStart(2, '0') }),
   })),
-]
+])
 
 async function load() {
   try {

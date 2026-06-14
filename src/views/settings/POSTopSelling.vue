@@ -2,15 +2,15 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Top Selling Config</h1>
-        <p class="page-sub">Configure what appears in the POS Top Selling panel</p>
+        <h1 class="page-title">{{ t('settings.top_selling.title') }}</h1>
+        <p class="page-sub">{{ t('settings.top_selling.sub') }}</p>
       </div>
-      <button class="btn-primary" :disabled="saving" @click="save">{{ saving ? 'Saving…' : 'Save' }}</button>
+      <button class="btn-primary" :disabled="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</button>
     </div>
 
     <div class="settings-card" style="margin-top:24px; max-width:560px;">
       <div class="field">
-        <label>Period</label>
+        <label>{{ t('settings.top_selling.period') }}</label>
         <div class="period-tabs">
           <button
             v-for="p in periods" :key="p.value"
@@ -21,15 +21,15 @@
       </div>
 
       <div class="field">
-        <label>Category filter (optional)</label>
+        <label>{{ t('settings.top_selling.category') }}</label>
         <select v-model="form.pos_top_selling_category" class="form-input">
-          <option :value="null">All Categories</option>
+          <option :value="null">{{ t('settings.top_selling.all_categories') }}</option>
           <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
         </select>
       </div>
 
       <div class="field">
-        <label>Number of items shown</label>
+        <label>{{ t('settings.top_selling.count') }}</label>
         <select v-model="form.pos_top_selling_limit" class="form-input">
           <option :value="4">4</option>
           <option :value="6">6</option>
@@ -42,18 +42,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
+
+const { t } = useI18n()
 
 const form = ref({ pos_top_selling_period: 'month', pos_top_selling_category: null, pos_top_selling_limit: 8 })
 const categories = ref([])
 const saving = ref(false)
-const periods = [
-  { value: 'today', label: 'Today' },
-  { value: 'week',  label: 'This Week' },
-  { value: 'month', label: 'This Month' },
-  { value: 'all',   label: 'All Time' },
-]
+const periods = computed(() => [
+  { value: 'today', label: t('settings.top_selling.periods.today') },
+  { value: 'week',  label: t('settings.top_selling.periods.week') },
+  { value: 'month', label: t('settings.top_selling.periods.month') },
+  { value: 'all',   label: t('settings.top_selling.periods.all') },
+])
 
 onMounted(async () => {
   const [setRes, catRes] = await Promise.all([

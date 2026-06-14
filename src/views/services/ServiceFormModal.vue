@@ -1,7 +1,7 @@
 <template>
   <AppModal
     :open="open"
-    :title="serviceId ? `Edit ${form.serial_number || 'Service'}` : 'New Service'"
+    :title="serviceId ? t('core.svcform.edit_title', { n: form.serial_number || t('core.services.service') }) : t('core.services.new_service')"
     width="760px"
     no-backdrop-close
     @close="$emit('close')"
@@ -14,27 +14,27 @@
         <div class="sfm-full">
           <!-- Client: toggle registered vs free-text -->
           <div class="sfm-row">
-            <label class="form-label">Client</label>
+            <label class="form-label">{{ t('core.services.col_client') }}</label>
             <div class="sfm-toggle-row">
               <button
                 type="button" class="sfm-toggle-btn" :class="{ active: !form.freeText }"
                 @click="form.freeText = false"
-              >Registered</button>
+              >{{ t('core.svcform.registered') }}</button>
               <button
                 type="button" class="sfm-toggle-btn" :class="{ active: form.freeText }"
                 @click="form.freeText = true"
-              >Walk-in / Free text</button>
+              >{{ t('core.svcform.walkin') }}</button>
             </div>
           </div>
 
           <!-- Registered customer search -->
           <div v-if="!form.freeText" class="sfm-row">
-            <label class="form-label">Customer</label>
+            <label class="form-label">{{ t('core.svcform.customer') }}</label>
             <div class="sfm-customer-search">
               <input
                 v-model="customerQuery"
                 class="form-input"
-                placeholder="Search by name or phone…"
+                :placeholder="t('core.svcform.search_customer')"
                 @input="searchCustomers"
                 @focus="showDropdown = true"
               />
@@ -58,11 +58,11 @@
           <!-- Free-text client -->
           <div v-if="form.freeText" class="sfm-subrow">
             <div class="sfm-row">
-              <label class="form-label">Client Name <span class="sfm-opt">(optional)</span></label>
-              <input v-model="form.client_name" class="form-input" placeholder="e.g. Ahmed Hassan" />
+              <label class="form-label">{{ t('core.svcform.client_name') }} <span class="sfm-opt">({{ t('common.optional') }})</span></label>
+              <input v-model="form.client_name" class="form-input" :placeholder="t('core.svcform.client_name_ph')" />
             </div>
             <div class="sfm-row">
-              <label class="form-label">Client Phone <span class="sfm-opt">(optional)</span></label>
+              <label class="form-label">{{ t('core.svcform.client_phone') }} <span class="sfm-opt">({{ t('common.optional') }})</span></label>
               <input v-model="form.client_phone" class="form-input" placeholder="e.g. 01012345678" />
             </div>
           </div>
@@ -72,24 +72,24 @@
         <div class="sfm-col">
           <!-- Service type -->
           <div class="sfm-row">
-            <label class="form-label">Service Type</label>
+            <label class="form-label">{{ t('core.services.col_type') }}</label>
             <select v-model="form.service_type" class="form-input">
-              <option value="">— Select type —</option>
-              <option v-for="t in serviceTypes" :key="t" :value="t">{{ t }}</option>
-              <option value="__custom__">Other (custom)…</option>
+              <option value="">{{ t('core.svcform.select_type') }}</option>
+              <option v-for="st in serviceTypes" :key="st" :value="st">{{ st }}</option>
+              <option value="__custom__">{{ t('core.svcform.other_custom') }}</option>
             </select>
             <input
               v-if="form.service_type === '__custom__'"
               v-model="form.custom_type"
               class="form-input"
               style="margin-top:6px;"
-              placeholder="Enter custom type…"
+              :placeholder="t('core.svcform.custom_ph')"
             />
           </div>
 
           <!-- Receive Date -->
           <div class="sfm-row">
-            <label class="form-label">Receive Date</label>
+            <label class="form-label">{{ t('core.svcform.receive_date') }}</label>
             <input v-model="form.receive_date" type="date" class="form-input" />
           </div>
 
@@ -98,18 +98,18 @@
             <label class="form-label">ETA</label>
             <div class="sfm-checkbox-row">
               <input id="no_eta" type="checkbox" v-model="form.no_eta" />
-              <label for="no_eta" class="sfm-check-label">No ETA</label>
+              <label for="no_eta" class="sfm-check-label">{{ t('core.services.no_eta') }}</label>
             </div>
             <div v-if="!form.no_eta" class="sfm-eta-row">
               <div class="sfm-eta-field">
-                <label class="sfm-eta-label">Days</label>
+                <label class="sfm-eta-label">{{ t('core.svcform.days') }}</label>
                 <select v-model.number="form.eta_days" class="form-input">
                   <option :value="null">0</option>
                   <option v-for="d in 31" :key="d" :value="d">{{ d }}</option>
                 </select>
               </div>
               <div class="sfm-eta-field">
-                <label class="sfm-eta-label">Hours</label>
+                <label class="sfm-eta-label">{{ t('core.svcform.hours') }}</label>
                 <select v-model.number="form.eta_hours" class="form-input">
                   <option :value="null">0</option>
                   <option v-for="h in 24" :key="h" :value="h">{{ h }}</option>
@@ -123,36 +123,36 @@
         <div class="sfm-col">
           <!-- Info (problem description) -->
           <div class="sfm-row">
-            <label class="form-label">Problem / Description <span class="sfm-opt">(optional)</span></label>
+            <label class="form-label">{{ t('core.svcform.problem') }} <span class="sfm-opt">({{ t('common.optional') }})</span></label>
             <textarea
               v-model="form.info"
               class="form-input"
               rows="2"
-              placeholder="Describe the issue or service needed…"
+              :placeholder="t('core.svcform.problem_ph')"
             />
           </div>
 
           <!-- Keeping (items received) -->
           <div class="sfm-row">
-            <label class="form-label">Items Received <span class="sfm-opt">(optional)</span></label>
+            <label class="form-label">{{ t('core.svcform.items_received') }} <span class="sfm-opt">({{ t('common.optional') }})</span></label>
             <input
               v-model="form.keeping"
               class="form-input"
-              placeholder="e.g. Laptop + charger + bag"
+              :placeholder="t('core.svcform.items_ph')"
             />
-            <p class="sfm-hint">What the client left with you.</p>
+            <p class="sfm-hint">{{ t('core.svcform.items_hint') }}</p>
           </div>
 
           <!-- Cost -->
           <div class="sfm-row">
-            <label class="form-label">Cost</label>
+            <label class="form-label">{{ t('core.services.col_cost') }}</label>
             <input
               v-model.number="form.cost"
               type="number" min="0" step="0.01"
               class="form-input"
               placeholder="0.00"
             />
-            <p class="sfm-hint">Amount to invoice when marked Done.</p>
+            <p class="sfm-hint">{{ t('core.svcform.cost_hint') }}</p>
           </div>
         </div>
 
@@ -162,40 +162,42 @@
       <div class="sfm-print-opts">
         <label class="sfm-print-cb">
           <input type="checkbox" v-model="printReceipt" />
-          <span>Print the receipt</span>
+          <span>{{ t('core.svcform.print_receipt') }}</span>
         </label>
         <label class="sfm-print-cb" :class="{ disabled: !printReceipt }">
           <input type="checkbox" v-model="doublePrint" :disabled="!printReceipt" />
-          <span>2× printing</span>
+          <span>{{ t('core.svcform.double_print') }}</span>
         </label>
-        <span class="sfm-print-hint">Ctrl+S to save</span>
+        <span class="sfm-print-hint">{{ t('core.svcform.ctrl_s') }}</span>
       </div>
 
       <p v-if="errorMsg" class="sfm-error">{{ errorMsg }}</p>
     </div>
 
     <template #footer>
-      <button v-if="serviceId" class="btn-ghost sfm-print-btn" @click="doServicePrint(doublePrint ? 2 : 1)" title="Print receipt now">
-        🖨 Print
+      <button v-if="serviceId" class="btn-ghost sfm-print-btn" @click="doServicePrint(doublePrint ? 2 : 1)" :title="t('core.svcform.print_now')">
+        🖨 {{ t('settings.billing.print') }}
       </button>
       <div style="flex:1;" />
-      <button class="btn-ghost" @click="$emit('close')">Cancel</button>
+      <button class="btn-ghost" @click="$emit('close')">{{ t('common.cancel') }}</button>
       <button
         class="btn-primary"
         :disabled="!canSave || saving"
         @click="save"
-      >{{ saving ? 'Saving…' : (serviceId ? 'Save Changes' : 'Create Service') }}</button>
+      >{{ saving ? t('common.saving') : (serviceId ? t('settings.store.save_changes') : t('core.svcform.create')) }}</button>
     </template>
   </AppModal>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useQZTray } from '@/composables/useQZTray'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const { sendRaw, isAvailable } = useQZTray()
 
@@ -386,9 +388,9 @@ async function save() {
     const data = err?.response?.data
     if (data) {
       const msgs = Object.values(data).flat()
-      errorMsg.value = msgs[0] || 'Could not save service.'
+      errorMsg.value = msgs[0] || t('core.svcform.err_save')
     } else {
-      errorMsg.value = 'Could not save service.'
+      errorMsg.value = t('core.svcform.err_save')
     }
   } finally {
     saving.value = false

@@ -18,7 +18,7 @@
 
       <!-- B0: At a Glance ticker ─ full width, short strip -->
       <div class="dash-b0 b0-strip intersect:motion-preset-fade intersect-once">
-        <span class="b0-label">AT A GLANCE</span>
+        <span class="b0-label">{{ t('core.dash.at_glance') }}</span>
         <div class="b0-ticker-wrap">
           <Transition name="ticker">
             <p :key="tickerIdx" class="b0-text">{{ insights[tickerIdx] }}</p>
@@ -36,9 +36,9 @@
 
       <!-- B1: Today's Sales ─ 5 cols -->
       <div class="dash-b1 b-card intersect:motion-preset-slide-left intersect:motion-delay-[100ms] intersect:motion-ease-spring-bouncier intersect-once">
-        <div class="kpi-tag">Today's Sales</div>
+        <div class="kpi-tag">{{ t('core.dash.today_sales') }}</div>
         <div class="kpi-num"><Money :value="data.today_sales_total" /></div>
-        <div class="kpi-sub">{{ data.today_invoices_count }} invoice{{ data.today_invoices_count !== 1 ? 's' : '' }}</div>
+        <div class="kpi-sub">{{ t('core.dash.invoices', { n: data.today_invoices_count }, data.today_invoices_count) }}</div>
         <div class="kpi-progress">
           <div class="kpi-bar kpi-bar-green" />
         </div>
@@ -48,19 +48,19 @@
       <div class="dash-b2 b-card intersect:motion-preset-slide-left intersect:motion-delay-[200ms] intersect:motion-ease-spring-bouncier intersect-once">
         <div class="b2-split">
           <div class="b2-half">
-            <div class="kpi-tag">Items Sold</div>
+            <div class="kpi-tag">{{ t('core.dash.items_sold') }}</div>
             <div class="kpi-num kpi-num--md">{{ formatQty(data.today_items_sold) }}</div>
-            <div class="kpi-sub">units today</div>
+            <div class="kpi-sub">{{ t('core.dash.units_today') }}</div>
           </div>
           <div class="b2-rule" />
           <div class="b2-half">
-            <div class="kpi-tag">Shift</div>
+            <div class="kpi-tag">{{ t('core.dash.shift') }}</div>
             <div class="shift-badge" :class="data.open_shift ? 'shift-open' : 'shift-closed'">
               <span v-if="data.open_shift" class="shift-pulse" />
-              {{ data.open_shift ? 'Open' : 'Closed' }}
+              {{ data.open_shift ? t('core.dash.open') : t('core.dash.closed') }}
             </div>
-            <div class="kpi-sub" v-if="data.open_shift">since {{ fmtTime(data.open_shift.start_time) }}</div>
-            <div class="kpi-sub" v-else>no active shift</div>
+            <div class="kpi-sub" v-if="data.open_shift">{{ t('core.dash.since', { t: fmtTime(data.open_shift.start_time) }) }}</div>
+            <div class="kpi-sub" v-else>{{ t('core.dash.no_shift') }}</div>
           </div>
         </div>
       </div>
@@ -69,14 +69,14 @@
       <div class="dash-b3 b-card intersect:motion-preset-slide-left intersect:motion-delay-[300ms] intersect:motion-ease-spring-bouncier intersect-once"
            :class="data.low_stock_count > 0 ? 'b-card--warn' : 'b-card--ok'">
         <div class="b3-head">
-          <div class="kpi-tag">Stock Health</div>
-          <router-link to="/inventory/products" class="chip-link">View →</router-link>
+          <div class="kpi-tag">{{ t('core.dash.stock_health') }}</div>
+          <router-link to="/inventory/products" class="chip-link">{{ t('core.dash.view') }}</router-link>
         </div>
         <div v-if="data.low_stock_count === 0" class="b3-ok">
-          <CheckCircle :size="16" /> All stock healthy
+          <CheckCircle :size="16" /> {{ t('core.dash.all_healthy') }}
         </div>
         <div v-else>
-          <div class="b3-count">{{ data.low_stock_count }} <span class="b3-count-sub">items low</span></div>
+          <div class="b3-count">{{ data.low_stock_count }} <span class="b3-count-sub">{{ t('core.dash.items_low') }}</span></div>
           <div class="chip-row">
             <span v-for="item in data.low_stock_items.slice(0, 5)" :key="item.sku"
               class="chip" :class="Number(item.quantity) === 0 ? 'chip-red' : 'chip-amber'">
@@ -89,21 +89,21 @@
       <!-- B4: Recent Sales ─ full width -->
       <div class="dash-b4 b-card intersect:motion-preset-fade intersect:motion-delay-[200ms] intersect-once">
         <div class="b-head">
-          <span class="b-title">Recent Sales</span>
-          <router-link to="/finance/invoices" class="chip-link">View all →</router-link>
+          <span class="b-title">{{ t('core.dash.recent_sales') }}</span>
+          <router-link to="/finance/invoices" class="chip-link">{{ t('core.dash.view_all') }}</router-link>
         </div>
         <div class="b-table-wrap">
           <table class="b-table">
             <thead>
               <tr>
-                <th>#</th><th>Customer</th><th>Total</th><th>Time</th>
+                <th>#</th><th>{{ t('core.dash.col_customer') }}</th><th>{{ t('core.dash.col_total') }}</th><th>{{ t('core.dash.col_time') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="!data.recent_sales?.length">
                 <td colspan="4">
                   <div class="b-empty">
-                    <ShoppingBag :size="28" /><span>No sales today</span>
+                    <ShoppingBag :size="28" /><span>{{ t('core.dash.no_sales') }}</span>
                   </div>
                 </td>
               </tr>
@@ -121,11 +121,11 @@
       <!-- B5: Upcoming Services ─ 10 cols -->
       <div class="dash-b5 b-card intersect:motion-preset-slide-left intersect:motion-delay-[100ms] intersect:motion-ease-spring-bouncier intersect-once">
         <div class="b-head">
-          <span class="b-title">Upcoming Services</span>
-          <router-link v-if="data.upcoming_services?.length" to="/services" class="chip-link">View →</router-link>
+          <span class="b-title">{{ t('core.dash.upcoming_services') }}</span>
+          <router-link v-if="data.upcoming_services?.length" to="/services" class="chip-link">{{ t('core.dash.view') }}</router-link>
         </div>
         <div v-if="!data.upcoming_services?.length" class="b-empty">
-          <Briefcase :size="28" /><span>No upcoming services</span>
+          <Briefcase :size="28" /><span>{{ t('core.dash.no_services') }}</span>
         </div>
         <div v-else class="svc-list">
           <div v-for="svc in data.upcoming_services.slice(0, 5)" :key="svc.id" class="svc-row">
@@ -144,11 +144,11 @@
       <!-- B6: Low Stock Detail ─ 10 cols -->
       <div class="dash-b6 b-card intersect:motion-preset-slide-left intersect:motion-delay-[200ms] intersect:motion-ease-spring-bouncier intersect-once">
         <div class="b-head">
-          <span class="b-title">Low Stock Items</span>
-          <router-link to="/inventory/products" class="chip-link">View →</router-link>
+          <span class="b-title">{{ t('core.dash.low_stock_items') }}</span>
+          <router-link to="/inventory/products" class="chip-link">{{ t('core.dash.view') }}</router-link>
         </div>
         <div v-if="!data.low_stock_items?.length" class="b-empty">
-          <CheckCircle :size="28" /><span>All stock healthy</span>
+          <CheckCircle :size="28" /><span>{{ t('core.dash.all_healthy') }}</span>
         </div>
         <div v-else class="stock-list">
           <div v-for="(item, i) in data.low_stock_items.slice(0, 6)" :key="i" class="stock-row">
@@ -164,8 +164,8 @@
       <div class="dash-b7 b-card b-card--dim intersect:motion-preset-slide-left intersect:motion-delay-[300ms] intersect:motion-ease-spring-bouncier intersect-once">
         <div class="placeholder-wrap">
           <Zap :size="28" class="placeholder-icon" />
-          <p class="placeholder-title">AI Insights</p>
-          <p class="placeholder-sub">Smart recommendations coming soon</p>
+          <p class="placeholder-title">{{ t('core.dash.ai_insights') }}</p>
+          <p class="placeholder-sub">{{ t('core.dash.ai_sub') }}</p>
         </div>
       </div>
 
@@ -175,11 +175,13 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RefreshCw, ShoppingBag, CheckCircle, Briefcase, Zap } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { formatQty } from '@/utils/format'
 import Money from '@/components/ui/Money.vue'
 
+const { t } = useI18n()
 const loading = ref(false)
 
 const data = ref({
@@ -202,17 +204,17 @@ const insights = computed(() => {
   const list = []
   const amt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(d.today_sales_total)
   if (d.today_invoices_count > 0)
-    list.push(`Today — ${d.today_invoices_count} invoice${d.today_invoices_count !== 1 ? 's' : ''}, totaling ${amt}`)
+    list.push(t('core.dash.ins_today', { n: d.today_invoices_count, amt }))
   if (d.today_items_sold > 0)
-    list.push(`${d.today_items_sold} unit${d.today_items_sold !== 1 ? 's' : ''} sold today`)
+    list.push(t('core.dash.ins_units', { n: d.today_items_sold }))
   if (d.open_shift)
-    list.push(`Shift running since ${fmtTime(d.open_shift.start_time)} · ${d.open_shift.user}`)
+    list.push(t('core.dash.ins_shift', { t: fmtTime(d.open_shift.start_time), user: d.open_shift.user }))
   if (d.low_stock_count > 0)
-    list.push(`${d.low_stock_count} item${d.low_stock_count !== 1 ? 's' : ''} need restocking`)
+    list.push(t('core.dash.ins_restock', { n: d.low_stock_count }))
   if (d.upcoming_services?.length)
-    list.push(`${d.upcoming_services.length} service${d.upcoming_services.length !== 1 ? 's' : ''} scheduled`)
+    list.push(t('core.dash.ins_services', { n: d.upcoming_services.length }))
   if (list.length === 0)
-    list.push('Your store is all caught up — have a great day!')
+    list.push(t('core.dash.ins_caught_up'))
   return list
 })
 
@@ -245,8 +247,8 @@ function fmtETA(d) {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const etaDay = new Date(eta.getFullYear(), eta.getMonth(), eta.getDate())
   const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1)
-  if (etaDay.getTime() === today.getTime()) return 'Today'
-  if (etaDay.getTime() === tomorrow.getTime()) return 'Tomorrow'
+  if (etaDay.getTime() === today.getTime()) return t('core.dash.today')
+  if (etaDay.getTime() === tomorrow.getTime()) return t('core.dash.tomorrow')
   return eta.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 }
 

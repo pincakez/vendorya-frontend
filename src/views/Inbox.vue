@@ -2,15 +2,15 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Inbox</h1>
-        <p class="page-sub">{{ unreadCount }} unread</p>
+        <h1 class="page-title">{{ t('core.inbox.title') }}</h1>
+        <p class="page-sub">{{ t('core.inbox.unread', { n: unreadCount }) }}</p>
       </div>
       <div class="header-right">
         <button class="btn-ghost" :disabled="!unreadCount" @click="doMarkAll">
-          <CheckCheck :size="14" /> Mark all read
+          <CheckCheck :size="14" /> {{ t('core.inbox.mark_all') }}
         </button>
         <button class="btn-ghost" @click="load" :disabled="loading">
-          <RefreshCw :size="14" :class="{ spin: loading }" /> Refresh
+          <RefreshCw :size="14" :class="{ spin: loading }" /> {{ t('core.inbox.refresh') }}
         </button>
       </div>
     </div>
@@ -34,7 +34,7 @@
 
       <div v-else-if="!filtered.length" class="inbox-empty">
         <InboxIcon :size="40" style="opacity:.3;margin-bottom:8px;" />
-        <div>Nothing here.</div>
+        <div>{{ t('core.inbox.nothing') }}</div>
       </div>
 
       <button
@@ -52,12 +52,12 @@
           <div class="ii-title">
             {{ n.title }}
             <span v-if="n.is_unread" class="ii-dot" />
-            <span class="ii-priority-badge" :class="`badge-${n.priority.toLowerCase()}`">{{ n.priority }}</span>
+            <span class="ii-priority-badge" :class="`badge-${n.priority.toLowerCase()}`">{{ t('core.inbox.priority.' + n.priority.toLowerCase()) }}</span>
           </div>
           <div v-if="n.body" class="ii-text">{{ n.body }}</div>
           <div class="ii-meta">
             <span>{{ timeAgo(n.created_at) }}</span>
-            <span v-if="n.link" class="ii-link">Open →</span>
+            <span v-if="n.link" class="ii-link">{{ t('core.inbox.open') }}</span>
           </div>
         </div>
       </button>
@@ -67,6 +67,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import {
   Inbox as InboxIcon, CheckCheck, RefreshCw,
@@ -74,6 +75,7 @@ import {
 } from 'lucide-vue-next'
 import { useNotifications } from '@/composables/useNotifications'
 
+const { t } = useI18n()
 const router = useRouter()
 const { fetchAll, markRead, markAllRead } = useNotifications()
 
@@ -84,11 +86,11 @@ const activeTab  = ref('all')
 const unreadCount = computed(() => items.value.filter(n => n.is_unread).length)
 
 const tabs = computed(() => [
-  { id: 'all',     label: 'All',         count: items.value.length },
-  { id: 'info',    label: 'Information', count: items.value.filter(n => n.priority === 'INFO').length },
-  { id: 'warning', label: 'Warnings',    count: items.value.filter(n => n.priority === 'WARNING').length },
-  { id: 'alert',   label: 'Alerts',      count: items.value.filter(n => n.priority === 'ALERT').length },
-  { id: 'admin',   label: 'Admin Notes', count: items.value.filter(n => n.priority === 'ADMIN').length },
+  { id: 'all',     label: t('core.inbox.tabs.all'),     count: items.value.length },
+  { id: 'info',    label: t('core.inbox.tabs.info'),    count: items.value.filter(n => n.priority === 'INFO').length },
+  { id: 'warning', label: t('core.inbox.tabs.warning'), count: items.value.filter(n => n.priority === 'WARNING').length },
+  { id: 'alert',   label: t('core.inbox.tabs.alert'),   count: items.value.filter(n => n.priority === 'ALERT').length },
+  { id: 'admin',   label: t('core.inbox.tabs.admin'),   count: items.value.filter(n => n.priority === 'ADMIN').length },
 ])
 
 const filtered = computed(() => {
@@ -134,9 +136,9 @@ function priorityClass(p) {
 
 function timeAgo(iso) {
   const diff = Math.max(0, Date.now() - new Date(iso).getTime()) / 1000
-  if (diff < 60)    return 'just now'
-  if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  if (diff < 60)    return t('core.inbox.just_now')
+  if (diff < 3600)  return t('core.inbox.min_ago', { n: Math.floor(diff / 60) })
+  if (diff < 86400) return t('core.inbox.hr_ago', { n: Math.floor(diff / 3600) })
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 

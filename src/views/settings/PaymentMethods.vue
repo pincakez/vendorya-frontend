@@ -2,35 +2,35 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Payment Methods</h1>
-        <p class="page-sub">Manage how customers can pay at your POS</p>
+        <h1 class="page-title">{{ t('settings.payment_methods.title') }}</h1>
+        <p class="page-sub">{{ t('settings.payment_methods.sub') }}</p>
       </div>
-      <button class="btn-primary" @click="openAdd">+ Add Method</button>
+      <button class="btn-primary" @click="openAdd">{{ t('settings.payment_methods.add_btn') }}</button>
     </div>
 
     <div class="table-wrap" style="margin-top:24px">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Active</th>
+            <th>{{ t('common.name') }}</th>
+            <th>{{ t('settings.payment_methods.type') }}</th>
+            <th>{{ t('settings.payment_methods.active') }}</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          <tr v-if="loading"><td colspan="4" class="table-empty">Loading…</td></tr>
-          <tr v-else-if="!methods.length"><td colspan="4" class="table-empty">No payment methods yet</td></tr>
+          <tr v-if="loading"><td colspan="4" class="table-empty">{{ t('settings.payment_methods.loading') }}</td></tr>
+          <tr v-else-if="!methods.length"><td colspan="4" class="table-empty">{{ t('settings.payment_methods.empty') }}</td></tr>
           <tr v-for="m in methods" :key="m.id">
             <td style="font-weight:700;">{{ m.name }}</td>
             <td>
-              <span v-if="m.is_cash" class="badge badge-blue">Cash</span>
-              <span v-else-if="m.is_agel" class="badge badge-amber">Agel (Credit)</span>
-              <span v-else class="badge badge-gray">Standard</span>
+              <span v-if="m.is_cash" class="badge badge-blue">{{ t('settings.payment_methods.cash') }}</span>
+              <span v-else-if="m.is_agel" class="badge badge-amber">{{ t('settings.payment_methods.agel') }}</span>
+              <span v-else class="badge badge-gray">{{ t('settings.payment_methods.standard') }}</span>
             </td>
             <td>
               <span :class="['badge', m.is_deleted ? 'badge-red' : 'badge-green']">
-                {{ m.is_deleted ? 'Inactive' : 'Active' }}
+                {{ m.is_deleted ? t('settings.payment_methods.inactive') : t('settings.payment_methods.active') }}
               </span>
             </td>
             <td>
@@ -43,17 +43,17 @@
       </table>
     </div>
 
-    <AppModal v-if="showAdd" title="Add Payment Method" @close="showAdd = false" @submit="addMethod" submit-label="Add">
+    <AppModal v-if="showAdd" :title="t('settings.payment_methods.modal_title')" @close="showAdd = false" @submit="addMethod" :submit-label="t('common.add')">
       <div class="field">
-        <label>Name</label>
-        <input v-model="form.name" class="form-input" placeholder="e.g. Bank Transfer" />
+        <label>{{ t('common.name') }}</label>
+        <input v-model="form.name" class="form-input" :placeholder="t('settings.payment_methods.name_ph')" />
       </div>
       <div class="field">
         <label class="toggle-label">
-          <span>Mark as Agel (credit)</span>
+          <span>{{ t('settings.payment_methods.mark_agel') }}</span>
           <input type="checkbox" v-model="form.is_agel" />
         </label>
-        <p class="field-hint">Enables credit-limit enforcement for this payment method</p>
+        <p class="field-hint">{{ t('settings.payment_methods.agel_hint') }}</p>
       </div>
     </AppModal>
   </div>
@@ -61,9 +61,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Trash2 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
+
+const { t } = useI18n()
 
 const methods = ref([])
 const loading = ref(true)
@@ -91,7 +94,7 @@ async function addMethod() {
 }
 
 async function deleteMethod(m) {
-  if (!confirm(`Delete "${m.name}"?`)) return
+  if (!confirm(t('settings.payment_methods.confirm_delete', { name: m.name }))) return
   await api.delete(`/api/finance/payment-methods/${m.id}/`)
   load()
 }

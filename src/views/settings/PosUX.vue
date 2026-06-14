@@ -2,29 +2,29 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">UX Settings</h1>
-        <p class="page-sub">Keyboard shortcuts and behaviour for POS and app-wide navigation</p>
+        <h1 class="page-title">{{ t('settings.ux.title') }}</h1>
+        <p class="page-sub">{{ t('settings.ux.sub') }}</p>
       </div>
       <div style="display:flex;gap:10px;">
-        <button class="btn-secondary" @click="restoreDefaults">Restore Defaults</button>
-        <button class="btn-primary" :disabled="saving" @click="save">{{ saving ? 'Saving…' : 'Save' }}</button>
+        <button class="btn-secondary" @click="restoreDefaults">{{ t('settings.ux.restore_defaults') }}</button>
+        <button class="btn-primary" :disabled="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</button>
       </div>
     </div>
 
     <!-- Tabs -->
     <div class="tab-bar" style="margin-bottom:24px;">
-      <button class="tab-btn" :class="{ active: activeTab === 'pos' }" @click="activeTab = 'pos'">POS UX</button>
-      <button class="tab-btn" :class="{ active: activeTab === 'general' }" @click="activeTab = 'general'">General UX</button>
+      <button class="tab-btn" :class="{ active: activeTab === 'pos' }" @click="activeTab = 'pos'">{{ t('settings.ux.tab_pos') }}</button>
+      <button class="tab-btn" :class="{ active: activeTab === 'general' }" @click="activeTab = 'general'">{{ t('settings.ux.tab_general') }}</button>
     </div>
 
     <!-- ═══ POS UX TAB ═══ -->
     <div v-if="activeTab === 'pos'" style="display:flex; flex-direction:column; gap:24px; max-width:720px;">
       <!-- Keyboard shortcuts -->
       <div class="settings-card">
-        <div class="card-title">POS Keyboard Shortcuts</div>
-        <p class="card-sub">Pick any key for each POS action. Conflicts are flagged before applying.</p>
+        <div class="card-title">{{ t('settings.ux.pos_shortcuts') }}</div>
+        <p class="card-sub">{{ t('settings.ux.pos_shortcuts_sub') }}</p>
 
-        <template v-for="group in posShortcutGroups" :key="group.label">
+        <template v-for="group in posShortcutGroups" :key="group.key">
           <div class="sc-group-label">{{ group.label }}</div>
           <table class="shortcuts-table">
             <tbody>
@@ -37,8 +37,8 @@
                     @change="onKeyChange(row.key)"
                     class="shortcut-select"
                   >
-                    <option value="">— None —</option>
-                    <optgroup label="Function Keys">
+                    <option value="">{{ t('settings.ux.none') }}</option>
+                    <optgroup :label="t('settings.ux.function_keys')">
                       <option v-for="k in fKeys" :key="k" :value="k">{{ k }}</option>
                     </optgroup>
                     <optgroup label="Ctrl+">
@@ -57,14 +57,14 @@
 
       <!-- Behaviour toggles -->
       <div class="settings-card">
-        <div class="card-title">Behaviour</div>
-        <div v-for="t in toggleRows" :key="t.key" class="toggle-row">
+        <div class="card-title">{{ t('settings.ux.behaviour') }}</div>
+        <div v-for="tg in toggleRows" :key="tg.key" class="toggle-row">
           <div>
-            <div class="toggle-label">{{ t.label }}</div>
-            <div class="toggle-sub">{{ t.sub }}</div>
+            <div class="toggle-label">{{ tg.label }}</div>
+            <div class="toggle-sub">{{ tg.sub }}</div>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" v-model="form.ux[t.key]" />
+            <input type="checkbox" v-model="form.ux[tg.key]" />
             <span class="toggle-track"></span>
           </label>
         </div>
@@ -72,13 +72,13 @@
 
       <!-- Apply to all -->
       <div class="settings-card" v-if="isOwnerOrAdmin">
-        <div class="card-title">Share Settings</div>
+        <div class="card-title">{{ t('settings.ux.share_title') }}</div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
           <div>
-            <div class="toggle-label">Apply my settings to all cashiers</div>
-            <div class="toggle-sub">Copies your shortcuts and behaviour to every staff member in this store</div>
+            <div class="toggle-label">{{ t('settings.ux.apply_label') }}</div>
+            <div class="toggle-sub">{{ t('settings.ux.apply_sub') }}</div>
           </div>
-          <button class="btn-secondary" @click="applyToAll">Apply to All</button>
+          <button class="btn-secondary" @click="applyToAll">{{ t('settings.ux.apply_btn') }}</button>
         </div>
       </div>
     </div>
@@ -86,8 +86,8 @@
     <!-- ═══ GENERAL UX TAB ═══ -->
     <div v-if="activeTab === 'general'" style="display:flex; flex-direction:column; gap:24px; max-width:720px;">
       <div class="settings-card">
-        <div class="card-title">App-Wide Navigation Shortcuts</div>
-        <p class="card-sub">Launch POS or Services from anywhere in the app. These shortcuts work on every page.</p>
+        <div class="card-title">{{ t('settings.ux.appwide_title') }}</div>
+        <p class="card-sub">{{ t('settings.ux.appwide_sub') }}</p>
 
         <table class="shortcuts-table">
           <tbody>
@@ -99,8 +99,8 @@
                   @change="onKeyChange(row.key, $event)"
                   class="shortcut-select"
                 >
-                  <option value="">— None —</option>
-                  <optgroup label="Function Keys">
+                  <option value="">{{ t('settings.ux.none') }}</option>
+                  <optgroup :label="t('settings.ux.function_keys')">
                     <option v-for="k in fKeys" :key="k" :value="k">{{ k }}</option>
                   </optgroup>
                   <optgroup label="Ctrl+">
@@ -118,19 +118,19 @@
     </div>
 
     <!-- ═══ CONFLICT WARNING MODAL ═══ -->
-    <AppModal :open="conflictModal.open" title="Shortcut Conflict" width="400px" @close="cancelConflict">
+    <AppModal :open="conflictModal.open" :title="t('settings.ux.conflict_title')" width="400px" @close="cancelConflict">
       <div style="display:flex;flex-direction:column;gap:12px;">
         <p style="font-size:14px;color:var(--text-primary);margin:0;line-height:1.55;">
-          <strong>{{ conflictModal.key }}</strong> is already assigned to
+          {{ t('settings.ux.conflict_line1_a') }} <strong>{{ conflictModal.key }}</strong> {{ t('settings.ux.conflict_line1_b') }}
           <strong>"{{ conflictModal.takenBy }}"</strong>.
         </p>
         <p style="font-size:13px;color:var(--text-muted);margin:0;">
-          Do you want to reassign it? The previous action will be unset.
+          {{ t('settings.ux.conflict_line2') }}
         </p>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="cancelConflict">Cancel</button>
-        <button class="btn-primary" @click="confirmConflict">Assign</button>
+        <button class="btn-ghost" @click="cancelConflict">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" @click="confirmConflict">{{ t('settings.ux.assign') }}</button>
       </template>
     </AppModal>
   </div>
@@ -138,10 +138,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import AppModal from '@/components/ui/AppModal.vue'
 
+const { t } = useI18n()
 const auth   = useAuthStore()
 const saving = ref(false)
 const activeTab = ref('pos')
@@ -198,36 +200,36 @@ const altKeys  = [
 ]
 
 // ── POS shortcut rows, grouped ──────────────────────────────
-const posAllRows = [
-  { key: 'focus_search', label: 'Focus Search Bar',        group: 'Core POS' },
-  { key: 'pay',          label: 'Pay / Checkout',          group: 'Core POS' },
-  { key: 'discount',     label: 'Apply Discount',          group: 'Core POS' },
-  { key: 'hold',         label: 'Hold Cart',               group: 'Core POS' },
-  { key: 'reprint',      label: 'Reprint Last Receipt',    group: 'Core POS' },
-  { key: 'remove_last',  label: 'Remove Last Added Item',  group: 'Cart' },
-  { key: 'undo',         label: 'Undo',                    group: 'Cart' },
-  { key: 'redo',         label: 'Redo',                    group: 'Cart' },
-  { key: 'returns',      label: 'Open Returns',            group: 'Navigate' },
+const posAllRows = computed(() => [
+  { key: 'focus_search', label: t('settings.ux.sc.focus_search'), group: 'core' },
+  { key: 'pay',          label: t('settings.ux.sc.pay'),          group: 'core' },
+  { key: 'discount',     label: t('settings.ux.sc.discount'),     group: 'core' },
+  { key: 'hold',         label: t('settings.ux.sc.hold'),         group: 'core' },
+  { key: 'reprint',      label: t('settings.ux.sc.reprint'),      group: 'core' },
+  { key: 'remove_last',  label: t('settings.ux.sc.remove_last'),  group: 'cart' },
+  { key: 'undo',         label: t('settings.ux.sc.undo'),         group: 'cart' },
+  { key: 'redo',         label: t('settings.ux.sc.redo'),         group: 'cart' },
+  { key: 'returns',      label: t('settings.ux.sc.returns'),      group: 'navigate' },
   ...Array.from({ length: 10 }, (_, i) => ({
     key:   `fav_${i + 1}`,
-    label: `Favorite Item ${i + 1}`,
-    group: 'Favorites',
+    label: t('settings.ux.sc.favorite', { n: i + 1 }),
+    group: 'favorites',
   })),
-]
+])
 
 // ── General UX rows ─────────────────────────────────────────
-const generalRows = [
-  { key: 'open_pos', label: 'Launch POS (from anywhere)' },
-  { key: 'open_srv', label: 'Launch Services (from anywhere)' },
-]
+const generalRows = computed(() => [
+  { key: 'open_pos', label: t('settings.ux.sc.open_pos') },
+  { key: 'open_srv', label: t('settings.ux.sc.open_srv') },
+])
 
 // All rows combined (for conflict checking across both tabs)
-const allRows = [...posAllRows, ...generalRows]
+const allRows = computed(() => [...posAllRows.value, ...generalRows.value])
 
 const posShortcutGroups = computed(() => {
   const groups = {}
-  for (const row of posAllRows) {
-    if (!groups[row.group]) groups[row.group] = { label: row.group, rows: [] }
+  for (const row of posAllRows.value) {
+    if (!groups[row.group]) groups[row.group] = { key: row.group, label: t('settings.ux.groups.' + row.group), rows: [] }
     groups[row.group].rows.push(row)
   }
   return Object.values(groups)
@@ -247,7 +249,7 @@ function onKeyChange(changedKey) {
   const val = form.value.shortcuts[changedKey]
   if (!val) return
 
-  for (const row of allRows) {
+  for (const row of allRows.value) {
     if (row.key !== changedKey && form.value.shortcuts[row.key] === val) {
       // Conflict — revert and show warning modal
       const prev = selectPrev[changedKey] ?? ''
@@ -292,7 +294,7 @@ onMounted(async () => {
 })
 
 function restoreDefaults() {
-  if (!confirm('Restore all UX settings to defaults?')) return
+  if (!confirm(t('settings.ux.confirm_restore'))) return
   form.value = JSON.parse(JSON.stringify(DEFAULT_SETTINGS))
 }
 
@@ -307,20 +309,20 @@ async function save() {
   }
 }
 
-const toggleRows = [
-  { key: 'autofocus_after_add', label: 'Auto-focus search after adding item',   sub: 'Returns focus to the search bar after each product is added' },
-  { key: 'scan_beep',           label: 'Scan beep sound',                       sub: 'Play a short beep tone when a product is added' },
-  { key: 'scan_flash',          label: 'Scan flash animation',                  sub: 'Flash the screen briefly when a product is added' },
-  { key: 'auto_walkin',         label: 'Auto-select Walk-in on new sale',        sub: 'Automatically set the Walk-in customer at the start of each sale' },
-  { key: 'show_quick_panel',    label: 'Show quick-access panel',               sub: 'Display the Top Selling / Favorites left panel' },
-  { key: 'auto_print',          label: 'Auto-print receipt after payment',       sub: 'Automatically open the print dialog after a successful sale' },
-]
+const toggleRows = computed(() => [
+  { key: 'autofocus_after_add', label: t('settings.ux.tg.autofocus_label'),  sub: t('settings.ux.tg.autofocus_sub') },
+  { key: 'scan_beep',           label: t('settings.ux.tg.beep_label'),       sub: t('settings.ux.tg.beep_sub') },
+  { key: 'scan_flash',          label: t('settings.ux.tg.flash_label'),      sub: t('settings.ux.tg.flash_sub') },
+  { key: 'auto_walkin',         label: t('settings.ux.tg.walkin_label'),     sub: t('settings.ux.tg.walkin_sub') },
+  { key: 'show_quick_panel',    label: t('settings.ux.tg.quick_label'),      sub: t('settings.ux.tg.quick_sub') },
+  { key: 'auto_print',          label: t('settings.ux.tg.autoprint_label'),  sub: t('settings.ux.tg.autoprint_sub') },
+])
 
 async function applyToAll() {
-  if (!confirm('Copy your UX settings to all staff in this store?')) return
+  if (!confirm(t('settings.ux.confirm_apply'))) return
   await save()
   await api.post('/api/auth/apply-pos-settings/')
-  alert('Settings applied to all staff.')
+  alert(t('settings.ux.applied'))
 }
 </script>
 

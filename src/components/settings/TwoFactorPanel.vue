@@ -1,74 +1,74 @@
 <template>
   <div class="settings-card">
-    <div class="section-label">Two-Factor Authentication</div>
+    <div class="section-label">{{ t('settings.tfa.title') }}</div>
 
     <div class="tfa-row">
       <div>
         <div class="tfa-state">
           <ShieldCheck v-if="status.enrolled" :size="16" style="color:var(--success);" />
           <ShieldAlert v-else :size="16" style="color:var(--warning);" />
-          <span>{{ status.enrolled ? 'Enabled' : 'Not enabled' }}</span>
-          <span v-if="status.required && !status.enrolled" class="tfa-req">Required for your role</span>
+          <span>{{ status.enrolled ? t('settings.tfa.enabled') : t('settings.tfa.not_enabled') }}</span>
+          <span v-if="status.required && !status.enrolled" class="tfa-req">{{ t('settings.tfa.required') }}</span>
         </div>
-        <p class="tfa-hint">Protect your account with a time-based code from an authenticator app.</p>
+        <p class="tfa-hint">{{ t('settings.tfa.hint') }}</p>
       </div>
       <div class="tfa-actions">
-        <button v-if="!status.enrolled" class="btn-primary" @click="openSetup">Enable 2FA</button>
+        <button v-if="!status.enrolled" class="btn-primary" @click="openSetup">{{ t('settings.tfa.enable_btn') }}</button>
         <template v-else>
-          <button class="btn-ghost" @click="regenerate" :disabled="busy">Regenerate backup codes</button>
-          <button v-if="!status.required" class="btn-danger" @click="openDisable">Disable</button>
+          <button class="btn-ghost" @click="regenerate" :disabled="busy">{{ t('settings.tfa.regen_btn') }}</button>
+          <button v-if="!status.required" class="btn-danger" @click="openDisable">{{ t('settings.tfa.disable') }}</button>
         </template>
       </div>
     </div>
 
     <!-- Setup / enrollment modal -->
-    <AppModal :open="setupOpen" title="Set up two-factor authentication" @close="closeSetup">
+    <AppModal :open="setupOpen" :title="t('settings.tfa.setup_title')" @close="closeSetup">
       <div v-if="!codes">
-        <p class="modal-text">Scan this QR code with Google Authenticator, Authy, or a similar app, then enter the 6-digit code to confirm.</p>
+        <p class="modal-text">{{ t('settings.tfa.setup_text') }}</p>
         <div style="display:flex;justify-content:center;margin:14px 0;">
           <img v-if="qr" :src="qr" alt="2FA QR" style="width:170px;height:170px;border:1px solid var(--border);border-radius:10px;" />
           <Loader2 v-else :size="22" style="animation:spin .8s linear infinite;color:var(--text-muted);" />
         </div>
-        <label class="form-label">Verification code</label>
+        <label class="form-label">{{ t('settings.tfa.verify_code') }}</label>
         <input v-model="code" type="text" inputmode="numeric" class="form-input" placeholder="123456" style="letter-spacing:2px;" />
         <p v-if="err" class="error-text">{{ err }}</p>
       </div>
       <div v-else>
-        <p class="modal-text"><strong>2FA is now enabled.</strong> Save these one-time backup codes somewhere safe — they won't be shown again.</p>
+        <p class="modal-text"><strong>{{ t('settings.tfa.enabled_strong') }}</strong> {{ t('settings.tfa.enabled_rest') }}</p>
         <div class="backup-grid">
           <code v-for="c in codes" :key="c">{{ c }}</code>
         </div>
       </div>
       <template #footer>
-        <button v-if="!codes" class="btn-ghost" @click="closeSetup">Cancel</button>
+        <button v-if="!codes" class="btn-ghost" @click="closeSetup">{{ t('common.cancel') }}</button>
         <button v-if="!codes" class="btn-primary" :disabled="busy || !code || !qr" @click="confirmSetup">
-          {{ busy ? 'Confirming…' : 'Confirm & Enable' }}
+          {{ busy ? t('settings.tfa.confirming') : t('settings.tfa.confirm_enable') }}
         </button>
-        <button v-else class="btn-primary" @click="closeSetup">Done</button>
+        <button v-else class="btn-primary" @click="closeSetup">{{ t('common.dt.done') }}</button>
       </template>
     </AppModal>
 
     <!-- Disable modal -->
-    <AppModal :open="disableOpen" title="Disable two-factor authentication" @close="disableOpen = false">
-      <p class="modal-text">Enter your current password to confirm. Your authenticator and backup codes will be removed.</p>
-      <input v-model="password" type="password" class="form-input" placeholder="Current password" />
+    <AppModal :open="disableOpen" :title="t('settings.tfa.disable_title')" @close="disableOpen = false">
+      <p class="modal-text">{{ t('settings.tfa.disable_text') }}</p>
+      <input v-model="password" type="password" class="form-input" :placeholder="t('settings.tfa.current_password')" />
       <p v-if="err" class="error-text">{{ err }}</p>
       <template #footer>
-        <button class="btn-ghost" @click="disableOpen = false">Cancel</button>
+        <button class="btn-ghost" @click="disableOpen = false">{{ t('common.cancel') }}</button>
         <button class="btn-danger" :disabled="busy || !password" @click="confirmDisable">
-          {{ busy ? 'Disabling…' : 'Disable 2FA' }}
+          {{ busy ? t('settings.tfa.disabling') : t('settings.tfa.disable_btn') }}
         </button>
       </template>
     </AppModal>
 
     <!-- Regenerated codes modal -->
-    <AppModal :open="regenOpen" title="New backup codes" @close="regenOpen = false">
-      <p class="modal-text">Your old backup codes are now invalid. Save these new ones.</p>
+    <AppModal :open="regenOpen" :title="t('settings.tfa.regen_title')" @close="regenOpen = false">
+      <p class="modal-text">{{ t('settings.tfa.regen_text') }}</p>
       <div class="backup-grid">
         <code v-for="c in codes" :key="c">{{ c }}</code>
       </div>
       <template #footer>
-        <button class="btn-primary" @click="regenOpen = false">Done</button>
+        <button class="btn-primary" @click="regenOpen = false">{{ t('common.dt.done') }}</button>
       </template>
     </AppModal>
   </div>
@@ -76,9 +76,12 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ShieldCheck, ShieldAlert, Loader2 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
+
+const { t } = useI18n()
 
 const status = reactive({ enrolled: false, required: false })
 const setupOpen = ref(false)
@@ -106,7 +109,7 @@ async function openSetup() {
     const { data } = await api.post('/api/auth/2fa/setup/')
     qr.value = data.qr
   } catch (e) {
-    err.value = e.response?.data?.detail || 'Could not start setup.'
+    err.value = e.response?.data?.detail || t('settings.tfa.err_setup')
   }
 }
 function closeSetup() {
@@ -121,7 +124,7 @@ async function confirmSetup() {
     codes.value = data.backup_codes
     status.enrolled = true
   } catch (e) {
-    err.value = e.response?.data?.detail || 'Invalid code.'
+    err.value = e.response?.data?.detail || t('settings.tfa.err_invalid')
   } finally { busy.value = false }
 }
 
@@ -133,7 +136,7 @@ async function confirmDisable() {
     disableOpen.value = false
     await loadStatus()
   } catch (e) {
-    err.value = e.response?.data?.detail || 'Could not disable 2FA.'
+    err.value = e.response?.data?.detail || t('settings.tfa.err_disable')
   } finally { busy.value = false }
 }
 
@@ -144,7 +147,7 @@ async function regenerate() {
     codes.value = data.backup_codes
     regenOpen.value = true
   } catch (e) {
-    alert(e.response?.data?.detail || 'Could not regenerate codes.')
+    alert(e.response?.data?.detail || t('settings.tfa.err_regen'))
   } finally { busy.value = false }
 }
 

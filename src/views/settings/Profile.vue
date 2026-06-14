@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">My Profile</h1>
-        <p class="page-sub">Update your personal info, photo and password</p>
+        <h1 class="page-title">{{ t('settings.profile.title') }}</h1>
+        <p class="page-sub">{{ t('settings.profile.sub') }}</p>
       </div>
     </div>
 
@@ -15,10 +15,10 @@
           <span v-else class="avatar-initials">{{ auth.initials }}</span>
         </div>
         <label class="btn-photo-upload">
-          <Camera :size="13" /> Change Photo
+          <Camera :size="13" /> {{ t('settings.profile.change_photo') }}
           <input type="file" accept="image/*" style="display:none;" @change="onPhotoFile" />
         </label>
-        <button v-if="photoPreview" class="btn-photo-remove" @click="removePhoto">Remove</button>
+        <button v-if="photoPreview" class="btn-photo-remove" @click="removePhoto">{{ t('settings.profile.remove') }}</button>
         <div class="avatar-name">{{ auth.displayName }}</div>
         <div class="avatar-role">
           <span class="role-badge" :class="'role-' + (auth.userRole || '').toLowerCase()">{{ auth.userRole }}</span>
@@ -28,34 +28,34 @@
 
       <!-- Form card -->
       <div class="settings-card">
-        <div class="section-label">Personal Info</div>
+        <div class="section-label">{{ t('settings.profile.personal_info') }}</div>
         <div class="form-grid">
           <div>
-            <label class="form-label">First Name</label>
-            <input v-model="form.first_name" class="form-input" placeholder="First name" />
+            <label class="form-label">{{ t('settings.profile.first_name') }}</label>
+            <input v-model="form.first_name" class="form-input" :placeholder="t('settings.profile.first_name_ph')" />
           </div>
           <div>
-            <label class="form-label">Last Name</label>
-            <input v-model="form.last_name" class="form-input" placeholder="Last name" />
+            <label class="form-label">{{ t('settings.profile.last_name') }}</label>
+            <input v-model="form.last_name" class="form-input" :placeholder="t('settings.profile.last_name_ph')" />
           </div>
           <div style="grid-column:1/-1;">
-            <label class="form-label">Email</label>
+            <label class="form-label">{{ t('settings.profile.email') }}</label>
             <input v-model="form.email" type="email" class="form-input" placeholder="email@example.com" />
           </div>
           <div>
-            <label class="form-label">Phone Number</label>
+            <label class="form-label">{{ t('settings.profile.phone') }}</label>
             <input v-model="form.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
           </div>
           <div>
-            <label class="form-label">WhatsApp</label>
+            <label class="form-label">{{ t('settings.profile.whatsapp') }}</label>
             <input v-model="form.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
           </div>
         </div>
 
-        <div class="section-label" style="margin-top:20px;">Display Preferences</div>
+        <div class="section-label" style="margin-top:20px;">{{ t('settings.profile.display_prefs') }}</div>
 
-        <label class="form-label">Interface Language</label>
-        <p class="pref-hint">Switches all UI labels. Saved to your profile and takes effect immediately.</p>
+        <label class="form-label">{{ t('settings.profile.interface_lang') }}</label>
+        <p class="pref-hint">{{ t('settings.profile.lang_hint') }}</p>
         <div class="lang-pills">
           <button
             class="lang-pill" :class="{ active: locale === 'en' }"
@@ -67,10 +67,10 @@
           >عربي</button>
         </div>
 
-        <label class="form-label" style="margin-top:16px;">Currency symbol color</label>
+        <label class="form-label" style="margin-top:16px;">{{ t('settings.profile.symbol_color') }}</label>
         <p class="pref-hint">
-          Tints the currency symbol next to amounts — e.g. <Money :value="1234.5" />.
-          Saved on this device and applied instantly (no need to press Save).
+          {{ t('settings.profile.symbol_color_hint1') }} <Money :value="1234.5" />.
+          {{ t('settings.profile.symbol_color_hint2') }}
         </p>
         <div class="swatch-row">
           <button
@@ -78,51 +78,48 @@
             class="swatch" :class="{ active: (fmt.symbolColor || '').toLowerCase() === c }"
             :style="{ background: c }" :title="c" @click="pickColor(c)"
           ></button>
-          <label class="swatch custom" :style="{ background: fmt.symbolColor }" title="Custom color">
+          <label class="swatch custom" :style="{ background: fmt.symbolColor }" :title="t('settings.profile.custom_color')">
             <input type="color" :value="fmt.symbolColor" @input="pickColor($event.target.value)" />
             <Palette :size="13" color="#fff" />
           </label>
         </div>
 
-        <div class="section-label" style="margin-top:20px;">Display Size</div>
-        <p class="pref-hint">
-          Adjusts how big the app and its text appear — just for your account,
-          saved to your profile and applied instantly.
-        </p>
+        <div class="section-label" style="margin-top:20px;">{{ t('settings.profile.display_size') }}</div>
+        <p class="pref-hint">{{ t('settings.profile.display_size_hint') }}</p>
         <div class="form-grid">
           <div class="ui-pref">
-            <label class="form-label">UI Scale</label>
+            <label class="form-label">{{ t('settings.profile.ui_scale') }}</label>
             <select class="form-input" v-model.number="ui.ui_scale" @change="onUiChange">
               <option v-for="o in UI_SCALE_OPTS" :key="o.v" :value="o.v">{{ o.label }}</option>
             </select>
-            <p class="pref-hint">Zooms the whole window, like your browser's zoom.</p>
+            <p class="pref-hint">{{ t('settings.profile.ui_scale_hint') }}</p>
           </div>
           <div class="ui-pref">
-            <label class="form-label">Font size — pages</label>
+            <label class="form-label">{{ t('settings.profile.font_pages') }}</label>
             <select class="form-input" v-model.number="ui.ui_font" @change="onUiChange">
               <option v-for="v in UI_FONT_OPTS" :key="v" :value="v">{{ Math.round(v * 100) }}%</option>
             </select>
-            <p class="pref-hint">Text size on pages (excludes tables).</p>
+            <p class="pref-hint">{{ t('settings.profile.font_pages_hint') }}</p>
           </div>
           <div class="ui-pref">
-            <label class="form-label">Font size — tables</label>
+            <label class="form-label">{{ t('settings.profile.font_tables') }}</label>
             <select class="form-input" v-model.number="ui.table_font" @change="onUiChange">
               <option v-for="v in TABLE_FONT_OPTS" :key="v" :value="v">{{ Math.round(v * 100) }}%</option>
             </select>
-            <p class="pref-hint">Text size inside data tables.</p>
+            <p class="pref-hint">{{ t('settings.profile.font_tables_hint') }}</p>
           </div>
         </div>
 
-        <div class="section-label" style="margin-top:20px;">Password &amp; Security</div>
+        <div class="section-label" style="margin-top:20px;">{{ t('settings.profile.password_security') }}</div>
         <RouterLink to="/settings/security" class="security-link">
-          <span><ShieldCheck :size="15" /> Change password &amp; two-factor authentication</span>
+          <span><ShieldCheck :size="15" /> {{ t('settings.profile.change_pw_link') }}</span>
           <ChevronRight :size="16" />
         </RouterLink>
 
         <div class="form-footer">
-          <span v-if="saved" class="saved-msg">Saved!</span>
+          <span v-if="saved" class="saved-msg">{{ t('settings.profile.saved') }}</span>
           <button class="btn-primary" :disabled="saving" @click="save">
-            {{ saving ? 'Saving…' : 'Save Changes' }}
+            {{ saving ? t('common.saving') : t('settings.profile.save_changes') }}
           </button>
         </div>
       </div>
@@ -141,7 +138,7 @@ import { applyUiPrefs, UI_DEFAULTS } from '@/composables/applyUiPrefs'
 import Money from '@/components/ui/Money.vue'
 import { useI18n } from 'vue-i18n'
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 async function setLanguage(lang) {
   locale.value = lang
@@ -159,7 +156,7 @@ const CURRENCY_PRESETS = ['#16a34a', '#22c55e', '#0891b2', '#2563eb', '#f78f1e',
 function pickColor(c) { fmt.setSymbolColor(c) }
 
 // ── Per-user display size (UI scale / font sizes) ──────────────
-const UI_SCALE_OPTS   = [{ v: 1, label: 'Normal (100%)' }, { v: 1.25, label: '125%' }, { v: 1.5, label: '150%' }]
+const UI_SCALE_OPTS   = computed(() => [{ v: 1, label: t('settings.profile.scale_normal') }, { v: 1.25, label: '125%' }, { v: 1.5, label: '150%' }])
 const UI_FONT_OPTS    = [0.9, 0.95, 1.0, 1.05, 1.1, 1.2, 1.3]
 const TABLE_FONT_OPTS = [0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15]
 const ui = reactive({ ...UI_DEFAULTS, ...(auth.user?.ui_prefs || {}) })
@@ -225,7 +222,7 @@ async function save() {
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
-    alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving profile')
+    alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.profile.err_save'))
   } finally { saving.value = false }
 }
 

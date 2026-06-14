@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Taxes</h1>
-        <p class="page-sub">Define tax rates to apply on sales invoices</p>
+        <h1 class="page-title">{{ t('settings.taxes.title') }}</h1>
+        <p class="page-sub">{{ t('settings.taxes.sub') }}</p>
       </div>
     </div>
 
@@ -13,21 +13,21 @@
       </div>
       <table v-else class="data-table">
         <thead>
-          <tr><th>Name</th><th>Rate</th><th style="width:80px;"></th></tr>
+          <tr><th>{{ t('common.name') }}</th><th>{{ t('settings.taxes.rate') }}</th><th style="width:80px;"></th></tr>
         </thead>
         <tbody>
           <tr v-if="taxes.length === 0">
             <td colspan="3" class="table-empty">
               <Percent :size="28" style="opacity:.3;margin-bottom:8px;" />
-              <div>No taxes defined yet</div>
+              <div>{{ t('settings.taxes.empty') }}</div>
             </td>
           </tr>
-          <tr v-for="t in taxes" :key="t.id" class="table-row">
-            <td class="col-name">{{ t.name }}</td>
-            <td class="col-rate">{{ t.rate }}%</td>
+          <tr v-for="tx in taxes" :key="tx.id" class="table-row">
+            <td class="col-name">{{ tx.name }}</td>
+            <td class="col-rate">{{ tx.rate }}%</td>
             <td>
-              <button class="row-action" @click="openEdit(t)"><Pencil :size="13" /></button>
-              <button class="row-action danger" @click="deleteTax(t.id)"><Trash2 :size="13" /></button>
+              <button class="row-action" @click="openEdit(tx)"><Pencil :size="13" /></button>
+              <button class="row-action danger" @click="deleteTax(tx.id)"><Trash2 :size="13" /></button>
             </td>
           </tr>
         </tbody>
@@ -35,21 +35,21 @@
     </div>
 
     <!-- MODAL -->
-    <AppModal :open="modal.open" :title="modal.id ? 'Edit Tax' : 'New Tax'" @close="modal.open = false">
+    <AppModal :open="modal.open" :title="modal.id ? t('settings.taxes.edit_title') : t('settings.taxes.new_title')" @close="modal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label class="form-label">Tax Name</label>
-          <input v-model="modal.name" class="form-input" placeholder="e.g. VAT, Sales Tax" />
+          <label class="form-label">{{ t('settings.taxes.tax_name') }}</label>
+          <input v-model="modal.name" class="form-input" :placeholder="t('settings.taxes.name_ph')" />
         </div>
         <div>
-          <label class="form-label">Rate (%)</label>
-          <input v-model="modal.rate" type="number" min="0" max="100" step="0.01" class="form-input" placeholder="e.g. 14" style="width:120px;" />
+          <label class="form-label">{{ t('settings.taxes.rate_pct') }}</label>
+          <input v-model="modal.rate" type="number" min="0" max="100" step="0.01" class="form-input" :placeholder="t('settings.taxes.rate_ph')" style="width:120px;" />
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="modal.open = false">Cancel</button>
+        <button class="btn-ghost" @click="modal.open = false">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="!modal.name.trim() || modal.rate === '' || saving" @click="save">
-          {{ saving ? 'Saving…' : (modal.id ? 'Save Changes' : 'Add Tax') }}
+          {{ saving ? t('common.saving') : (modal.id ? t('settings.taxes.save_changes') : t('settings.taxes.add_tax')) }}
         </button>
       </template>
     </AppModal>
@@ -58,11 +58,13 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Percent, Pencil, Trash2 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
 
+const { t } = useI18n()
 const qab = useQABStore()
 
 const taxes   = ref([])
@@ -78,12 +80,12 @@ async function fetchTaxes() {
 }
 
 async function deleteTax(id) {
-  if (!confirm('Delete this tax?')) return
+  if (!confirm(t('settings.taxes.confirm_delete'))) return
   try {
     await api.delete(`/api/inventory/taxes/${id}/`)
     fetchTaxes()
   } catch (e) {
-    alert(e.response?.data?.detail || 'Cannot delete — tax may be in use.')
+    alert(e.response?.data?.detail || t('settings.taxes.err_delete'))
   }
 }
 
@@ -102,13 +104,13 @@ async function save() {
     modal.open = false
     fetchTaxes()
   } catch (e) {
-    alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving tax')
+    alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.taxes.err_save'))
   } finally { saving.value = false }
 }
 
 onMounted(() => {
   fetchTaxes()
-  qab.setActions([{ id: 'new-tax', label: 'New Tax', icon: 'plus', handler: openNew }])
+  qab.setActions([{ id: 'new-tax', label: t('settings.taxes.new_title'), icon: 'plus', handler: openNew }])
 })
 onUnmounted(() => qab.clearActions())
 </script>

@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Settings</h1>
-        <p class="page-sub">Manage your store info, branding, and business rules</p>
+        <h1 class="page-title">{{ t('settings.store.title') }}</h1>
+        <p class="page-sub">{{ t('settings.store.sub') }}</p>
       </div>
     </div>
 
@@ -18,86 +18,86 @@
     <div v-if="activeTab === 'store'">
       <div v-if="storeLoading" class="form-skeleton" />
       <div v-else class="settings-card">
-        <div class="section-divider">Basic</div>
+        <div class="section-divider">{{ t('settings.store.basic') }}</div>
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">Store Name</label>
+            <label class="form-label">{{ t('settings.store.store_name') }}</label>
             <input v-model="storeForm.name" class="form-input" placeholder="e.g. Trenda Fashion" />
           </div>
           <div class="form-group">
-            <label class="form-label">Currency</label>
+            <label class="form-label">{{ t('settings.store.currency') }}</label>
             <select v-model="storeForm.currency_id" class="form-input" style="width:220px;">
               <option v-for="c in currencies" :key="c.id" :value="c.id">
                 {{ c.symbol }} — {{ c.name }} ({{ c.code }})
               </option>
             </select>
-            <p class="form-hint">Sample: <strong>{{ sampleAmount }}</strong></p>
+            <p class="form-hint">{{ t('settings.store.sample') }} <strong>{{ sampleAmount }}</strong></p>
           </div>
           <div class="form-group">
-            <label class="form-label">Timezone</label>
+            <label class="form-label">{{ t('settings.store.timezone') }}</label>
             <select v-model="storeForm.timezone" class="form-input" style="width:220px;">
               <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Default Language</label>
+            <label class="form-label">{{ t('settings.store.default_language') }}</label>
             <select v-model="storeForm.default_language" class="form-input" style="width:160px;">
-              <option value="ar">Arabic</option>
-              <option value="en">English</option>
+              <option value="ar">{{ t('settings.store.lang_ar') }}</option>
+              <option value="en">{{ t('settings.store.lang_en') }}</option>
             </select>
           </div>
         </div>
 
-        <div class="section-divider">Contact</div>
+        <div class="section-divider">{{ t('settings.store.contact') }}</div>
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">Phone Number</label>
+            <label class="form-label">{{ t('settings.store.phone') }}</label>
             <input v-model="storeForm.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
           </div>
           <div class="form-group">
-            <label class="form-label">WhatsApp</label>
+            <label class="form-label">{{ t('settings.store.whatsapp') }}</label>
             <input v-model="storeForm.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
           </div>
           <div class="form-group">
-            <label class="form-label">Email Address</label>
+            <label class="form-label">{{ t('settings.store.email') }}</label>
             <input v-model="storeForm.email" class="form-input" placeholder="store@example.com" type="email" />
           </div>
           <div class="form-group">
-            <label class="form-label">Website</label>
+            <label class="form-label">{{ t('settings.store.website') }}</label>
             <input v-model="storeForm.website" class="form-input" placeholder="https://…" />
           </div>
           <div class="form-group">
-            <label class="form-label">City</label>
+            <label class="form-label">{{ t('settings.store.city') }}</label>
             <select v-model="storeForm.city" class="form-input">
-              <option value="">— Select city —</option>
+              <option value="">{{ t('settings.store.select_city') }}</option>
               <option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Country</label>
+            <label class="form-label">{{ t('settings.store.country') }}</label>
             <input value="Egypt" class="form-input" disabled style="opacity:.55;cursor:not-allowed;" />
           </div>
           <div class="form-group" style="grid-column:1/-1;">
-            <label class="form-label">Address</label>
-            <input v-model="storeForm.address_line" class="form-input" placeholder="Street address, building, floor…" />
+            <label class="form-label">{{ t('settings.store.address') }}</label>
+            <input v-model="storeForm.address_line" class="form-input" :placeholder="t('settings.store.address_ph')" />
           </div>
         </div>
 
-        <div class="section-divider">Social Media</div>
+        <div class="section-divider">{{ t('settings.store.social') }}</div>
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">Facebook Page</label>
+            <label class="form-label">{{ t('settings.store.facebook') }}</label>
             <input v-model="storeForm.fb_page" class="form-input" placeholder="https://facebook.com/…" />
           </div>
           <div class="form-group">
-            <label class="form-label">Instagram</label>
-            <input v-model="storeForm.instagram" class="form-input" placeholder="@yourhandle or URL" />
+            <label class="form-label">{{ t('settings.store.instagram') }}</label>
+            <input v-model="storeForm.instagram" class="form-input" :placeholder="t('settings.store.instagram_ph')" />
           </div>
         </div>
 
         <div class="form-footer">
           <button class="btn-primary" :disabled="storeSaving" @click="saveStore">
-            {{ storeSaving ? 'Saving…' : 'Save Store Info' }}
+            {{ storeSaving ? t('common.saving') : t('settings.store.save_store') }}
           </button>
         </div>
       </div>
@@ -107,15 +107,15 @@
     <div v-if="activeTab === 'branches'">
       <!-- Owners section -->
       <div class="section-heading-row">
-        <span class="section-group-title">Owners</span>
+        <span class="section-group-title">{{ t('settings.store.owners') }}</span>
       </div>
       <div class="table-wrap" style="margin-bottom:20px;">
         <div v-if="ownersLoading" class="table-skeleton"><div v-for="i in 2" :key="i" class="skeleton-row" /></div>
         <table v-else class="data-table">
-          <thead><tr><th>Name</th><th>Username</th><th>Phone</th><th>WhatsApp</th><th style="width:50px;"></th></tr></thead>
+          <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('settings.branch_detail.username') }}</th><th>{{ t('settings.store.phone') }}</th><th>{{ t('settings.store.whatsapp') }}</th><th style="width:50px;"></th></tr></thead>
           <tbody>
             <tr v-if="owners.length === 0">
-              <td colspan="5" class="table-empty"><UserCog :size="28" style="opacity:.3;margin-bottom:6px;" /><div>No owners yet</div></td>
+              <td colspan="5" class="table-empty"><UserCog :size="28" style="opacity:.3;margin-bottom:6px;" /><div>{{ t('settings.store.no_owners') }}</div></td>
             </tr>
             <tr v-for="o in owners" :key="o.id" class="table-row">
               <td class="col-name">{{ o.full_name }}</td>
@@ -130,26 +130,26 @@
 
       <!-- Branches section -->
       <div class="section-heading-row">
-        <span class="section-group-title">Branches</span>
-        <button class="btn-primary btn-sm" @click="openNewBranch"><Plus :size="14" /> New Branch</button>
+        <span class="section-group-title">{{ t('settings.store.branches') }}</span>
+        <button class="btn-primary btn-sm" @click="openNewBranch"><Plus :size="14" /> {{ t('settings.store.new_branch') }}</button>
       </div>
       <div class="table-wrap">
         <div v-if="branchLoading" class="table-skeleton"><div v-for="i in 3" :key="i" class="skeleton-row" /></div>
         <table v-else class="data-table">
-          <thead><tr><th>Name</th><th>City</th><th>Street</th><th>Main</th><th style="width:50px;"></th></tr></thead>
+          <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('settings.store.city') }}</th><th>{{ t('settings.store.street') }}</th><th>{{ t('settings.store.main') }}</th><th style="width:50px;"></th></tr></thead>
           <tbody>
             <tr v-if="branches.length === 0">
               <td colspan="5" class="table-empty">
                 <GitBranch :size="32" style="opacity:.2;margin-bottom:8px;" />
-                <div style="font-size:14px;font-weight:600;color:var(--text-primary);">No branches yet</div>
-                <div style="font-size:12.5px;">Add a branch to assign staff and manage stock per location.</div>
+                <div style="font-size:14px;font-weight:600;color:var(--text-primary);">{{ t('settings.store.no_branches') }}</div>
+                <div style="font-size:12.5px;">{{ t('settings.store.no_branches_sub') }}</div>
               </td>
             </tr>
             <tr v-for="b in branches" :key="b.id" class="table-row" @click="router.push('/settings/branches/' + b.id)" style="cursor:pointer;">
               <td class="col-name" style="color:var(--accent);font-weight:600;">{{ b.name }}</td>
               <td>{{ b.address_city }}</td>
               <td class="col-street">{{ b.address_street_1 }}</td>
-              <td><span v-if="b.is_main_branch" class="badge-main">Main</span></td>
+              <td><span v-if="b.is_main_branch" class="badge-main">{{ t('settings.store.main') }}</span></td>
               <td><button class="row-action" @click="openEditBranch(b)"><Pencil :size="13" /></button></td>
             </tr>
           </tbody>
@@ -161,36 +161,36 @@
     <div v-if="activeTab === 'branding'">
       <div class="settings-card">
         <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">
-          Upload your store logo. It appears in the top header bar so your staff always see your brand.<br>
-          Recommended size: <strong>480 × 112 px</strong> — PNG or SVG with a transparent background.
+          {{ t('settings.store.logo_intro') }}<br>
+          {{ t('settings.store.logo_size_a') }} <strong>480 × 112 px</strong> {{ t('settings.store.logo_size_b') }}
         </p>
         <div class="logo-upload-grid">
           <div class="logo-upload-card">
-            <div class="logo-upload-label"><span>Light Mode Logo</span><span class="logo-hint">Shown when theme is set to light</span></div>
+            <div class="logo-upload-label"><span>{{ t('settings.store.light_logo') }}</span><span class="logo-hint">{{ t('settings.store.light_logo_hint') }}</span></div>
             <div class="logo-preview-wrap light-bg">
               <img v-if="logoPreview.light" :src="logoPreview.light" class="logo-preview-img" alt="Light logo" />
-              <div v-else class="logo-placeholder"><ImageIcon :size="28" style="opacity:.3;" /><span>No logo uploaded</span></div>
+              <div v-else class="logo-placeholder"><ImageIcon :size="28" style="opacity:.3;" /><span>{{ t('settings.store.no_logo') }}</span></div>
             </div>
             <div class="logo-upload-actions">
-              <label class="btn-upload">Choose file<input type="file" accept="image/*" style="display:none;" @change="onLogoFile('light', $event)" /></label>
-              <button v-if="logoPreview.light" class="btn-logo-clear" @click="clearLogo('light')"><X :size="13" /> Remove</button>
+              <label class="btn-upload">{{ t('settings.store.choose_file') }}<input type="file" accept="image/*" style="display:none;" @change="onLogoFile('light', $event)" /></label>
+              <button v-if="logoPreview.light" class="btn-logo-clear" @click="clearLogo('light')"><X :size="13" /> {{ t('common.delete') }}</button>
             </div>
           </div>
           <div class="logo-upload-card">
-            <div class="logo-upload-label"><span>Dark Mode Logo</span><span class="logo-hint">Shown when theme is set to dark</span></div>
+            <div class="logo-upload-label"><span>{{ t('settings.store.dark_logo') }}</span><span class="logo-hint">{{ t('settings.store.dark_logo_hint') }}</span></div>
             <div class="logo-preview-wrap dark-bg">
               <img v-if="logoPreview.dark" :src="logoPreview.dark" class="logo-preview-img" alt="Dark logo" />
-              <div v-else class="logo-placeholder"><ImageIcon :size="28" style="opacity:.3;" /><span>No logo uploaded</span></div>
+              <div v-else class="logo-placeholder"><ImageIcon :size="28" style="opacity:.3;" /><span>{{ t('settings.store.no_logo') }}</span></div>
             </div>
             <div class="logo-upload-actions">
-              <label class="btn-upload">Choose file<input type="file" accept="image/*" style="display:none;" @change="onLogoFile('dark', $event)" /></label>
-              <button v-if="logoPreview.dark" class="btn-logo-clear" @click="clearLogo('dark')"><X :size="13" /> Remove</button>
+              <label class="btn-upload">{{ t('settings.store.choose_file') }}<input type="file" accept="image/*" style="display:none;" @change="onLogoFile('dark', $event)" /></label>
+              <button v-if="logoPreview.dark" class="btn-logo-clear" @click="clearLogo('dark')"><X :size="13" /> {{ t('common.delete') }}</button>
             </div>
           </div>
         </div>
-        <p class="form-hint" style="margin-top:12px;">Changes apply immediately after saving. The header logo updates for all staff on next page load.</p>
+        <p class="form-hint" style="margin-top:12px;">{{ t('settings.store.logo_apply_hint') }}</p>
         <div class="form-footer">
-          <button class="btn-primary" :disabled="logoSaving" @click="saveLogos">{{ logoSaving ? 'Uploading…' : 'Save Logos' }}</button>
+          <button class="btn-primary" :disabled="logoSaving" @click="saveLogos">{{ logoSaving ? t('settings.store.uploading') : t('settings.store.save_logos') }}</button>
         </div>
       </div>
     </div>
@@ -198,10 +198,10 @@
     <!-- ══ TAB: Business Rules ══ -->
     <div v-if="activeTab === 'rules'">
       <div class="settings-card">
-        <div class="section-divider">Display &amp; Formatting</div>
+        <div class="section-divider">{{ t('settings.store.display_fmt') }}</div>
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">Decimal places</label>
+            <label class="form-label">{{ t('settings.store.decimals') }}</label>
             <select v-model.number="settingsForm.decimals" class="form-input" style="width:120px;">
               <option :value="0">0 (e.g. 100)</option>
               <option :value="1">1 (e.g. 100.5)</option>
@@ -211,100 +211,100 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Thousand separator</label>
+            <label class="form-label">{{ t('settings.store.thousands') }}</label>
             <div style="display:flex;align-items:center;gap:10px;height:34px;">
               <button class="toggle-btn" :class="{ on: settingsForm.thousands_separator }" @click="settingsForm.thousands_separator = !settingsForm.thousands_separator"><span class="toggle-knob" /></button>
               <span style="font-size:12.5px;color:var(--text-muted);">{{ settingsForm.thousands_separator ? '1,234,567.89' : '1234567.89' }}</span>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Items are called</label>
+            <label class="form-label">{{ t('settings.store.item_noun') }}</label>
             <select v-model="settingsForm.item_noun" class="form-input" style="width:160px;">
-              <option value="NAME">Name</option>
-              <option value="PRODUCT">Product</option>
-              <option value="ITEM">Item</option>
-              <option value="MODEL">Model</option>
+              <option value="NAME">{{ t('settings.store.noun_name') }}</option>
+              <option value="PRODUCT">{{ t('settings.store.noun_product') }}</option>
+              <option value="ITEM">{{ t('settings.store.noun_item') }}</option>
+              <option value="MODEL">{{ t('settings.store.noun_model') }}</option>
             </select>
-            <p class="form-hint">Label used for a catalog item across the app (laptop shops prefer "Model").</p>
+            <p class="form-hint">{{ t('settings.store.item_noun_hint') }}</p>
           </div>
           <div class="form-group" style="grid-column:1/-1;">
-            <label class="form-label">Category level names</label>
+            <label class="form-label">{{ t('settings.store.cat_levels') }}</label>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <input v-for="(lvl, i) in settingsForm.category_level_names" :key="i" v-model="settingsForm.category_level_names[i]" class="form-input" style="width:150px;" :placeholder="`Tier ${i + 1}`" />
+              <input v-for="(lvl, i) in settingsForm.category_level_names" :key="i" v-model="settingsForm.category_level_names[i]" class="form-input" style="width:150px;" :placeholder="t('settings.store.tier', { n: i + 1 })" />
             </div>
-            <p class="form-hint">Names for the 4 category tiers — column headers and Categories page.</p>
+            <p class="form-hint">{{ t('settings.store.cat_levels_hint') }}</p>
           </div>
         </div>
 
-        <div class="section-divider">Tax &amp; Registration</div>
+        <div class="section-divider">{{ t('settings.store.tax_reg') }}</div>
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">Default Tax</label>
+            <label class="form-label">{{ t('settings.store.default_tax') }}</label>
             <select v-model="settingsForm.default_tax" class="form-input">
-              <option value="">None</option>
-              <option v-for="t in taxes" :key="t.id" :value="t.id">{{ t.name }} ({{ t.rate }}%)</option>
+              <option value="">{{ t('settings.store.none') }}</option>
+              <option v-for="tx in taxes" :key="tx.id" :value="tx.id">{{ tx.name }} ({{ tx.rate }}%)</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Tax ID / Betaka</label>
-            <input v-model="settingsForm.tax_id" class="form-input" placeholder="Optional" />
+            <label class="form-label">{{ t('settings.store.tax_id') }}</label>
+            <input v-model="settingsForm.tax_id" class="form-input" :placeholder="t('common.optional')" />
           </div>
           <div class="form-group">
-            <label class="form-label">Commercial Reg / Sogel</label>
-            <input v-model="settingsForm.commercial_reg" class="form-input" placeholder="Optional" />
+            <label class="form-label">{{ t('settings.store.commercial_reg') }}</label>
+            <input v-model="settingsForm.commercial_reg" class="form-input" :placeholder="t('common.optional')" />
           </div>
           <div class="form-group">
-            <label class="form-label">Product Numbering Mode</label>
+            <label class="form-label">{{ t('settings.policies.numbering_title') }}</label>
             <div style="display:flex;gap:8px;margin-top:4px;">
-              <button class="mode-btn" :class="{ active: settingsForm.product_numbering_mode === 'PROGRESSIVE' }" @click="settingsForm.product_numbering_mode = 'PROGRESSIVE'">Progressive</button>
-              <button class="mode-btn" :class="{ active: settingsForm.product_numbering_mode === 'RANDOM' }" @click="settingsForm.product_numbering_mode = 'RANDOM'">Random</button>
+              <button class="mode-btn" :class="{ active: settingsForm.product_numbering_mode === 'PROGRESSIVE' }" @click="settingsForm.product_numbering_mode = 'PROGRESSIVE'">{{ t('settings.policies.progressive') }}</button>
+              <button class="mode-btn" :class="{ active: settingsForm.product_numbering_mode === 'RANDOM' }" @click="settingsForm.product_numbering_mode = 'RANDOM'">{{ t('settings.policies.random') }}</button>
             </div>
-            <p class="form-hint">{{ settingsForm.product_numbering_mode === 'PROGRESSIVE' ? '0001, 0002, 0003…' : 'random 4-digit slot' }}</p>
+            <p class="form-hint">{{ settingsForm.product_numbering_mode === 'PROGRESSIVE' ? '0001, 0002, 0003…' : t('settings.policies.random_slot') }}</p>
           </div>
         </div>
 
-        <div class="section-divider">Stock &amp; Credit Policies</div>
+        <div class="section-divider">{{ t('settings.store.stock_credit') }}</div>
         <div class="toggle-row">
           <div class="toggle-item">
-            <div><div class="toggle-label">Allow Negative Stock</div><div class="toggle-desc">If off, POS blocks sales when stock is zero</div></div>
+            <div><div class="toggle-label">{{ t('settings.policies.neg_stock_title') }}</div><div class="toggle-desc">{{ t('settings.store.neg_stock_desc') }}</div></div>
             <button class="toggle-btn" :class="{ on: settingsForm.allow_negative_stock }" @click="settingsForm.allow_negative_stock = !settingsForm.allow_negative_stock"><span class="toggle-knob" /></button>
           </div>
           <div class="toggle-item">
-            <div><div class="toggle-label">Allow Credit Sales (Agel)</div><div class="toggle-desc">Let customers buy on credit and build a balance</div></div>
+            <div><div class="toggle-label">{{ t('settings.policies.agel_title') }}</div><div class="toggle-desc">{{ t('settings.store.agel_desc') }}</div></div>
             <button class="toggle-btn" :class="{ on: settingsForm.enable_agel_selling }" @click="settingsForm.enable_agel_selling = !settingsForm.enable_agel_selling"><span class="toggle-knob" /></button>
           </div>
         </div>
 
         <div class="form-grid" style="margin-top:16px;">
           <div class="form-group">
-            <label class="form-label">Credit Limit Policy</label>
+            <label class="form-label">{{ t('settings.policies.credit_limit_title') }}</label>
             <div style="display:flex;gap:8px;margin-top:4px;">
               <button v-for="opt in creditPolicyOptions" :key="opt.value" class="mode-btn" :class="{ active: settingsForm.credit_policy === opt.value }" @click="settingsForm.credit_policy = opt.value">{{ opt.label }}</button>
             </div>
-            <p class="form-hint">Allow / Warn / Block when a customer exceeds their credit limit.</p>
+            <p class="form-hint">{{ t('settings.store.credit_policy_hint') }}</p>
           </div>
           <div class="form-group" v-if="settingsForm.credit_policy !== 'ALLOW'">
-            <label class="form-label">Default credit limit per customer</label>
+            <label class="form-label">{{ t('settings.store.default_credit_limit') }}</label>
             <input v-model.number="settingsForm.default_credit_limit" type="number" min="0" step="100" class="form-input" style="width:130px;" placeholder="e.g. 5000" />
-            <p class="form-hint">Leave blank for no limit</p>
+            <p class="form-hint">{{ t('settings.store.no_limit_hint') }}</p>
           </div>
         </div>
 
         <div class="form-grid" style="margin-top:16px;">
           <div class="form-group">
-            <label class="form-label">Return window (days)</label>
+            <label class="form-label">{{ t('settings.store.return_window') }}</label>
             <input v-model.number="settingsForm.return_window_days" type="number" min="0" step="1" class="form-input" style="width:130px;" placeholder="0" />
-            <p class="form-hint">Reject returns older than this. 0 = no limit.</p>
+            <p class="form-hint">{{ t('settings.store.return_window_hint') }}</p>
           </div>
           <div class="form-group">
-            <label class="form-label">Restocking fee (%)</label>
+            <label class="form-label">{{ t('settings.store.restock_fee') }}</label>
             <input v-model.number="settingsForm.restocking_fee_percent" type="number" min="0" max="100" step="0.5" class="form-input" style="width:130px;" placeholder="0" />
-            <p class="form-hint">Deducted from each refund payout. 0 = none.</p>
+            <p class="form-hint">{{ t('settings.store.restock_fee_hint') }}</p>
           </div>
         </div>
 
         <div class="form-footer">
-          <button class="btn-primary" :disabled="storeSaving" @click="saveRules">{{ storeSaving ? 'Saving…' : 'Save Business Rules' }}</button>
+          <button class="btn-primary" :disabled="storeSaving" @click="saveRules">{{ storeSaving ? t('common.saving') : t('settings.store.save_rules') }}</button>
         </div>
       </div>
     </div>
@@ -313,36 +313,36 @@
     <div v-if="activeTab === 'printing'">
       <!-- Sub-tab bar -->
       <div class="sub-tab-bar">
-        <button class="sub-tab-btn" :class="{ active: printingTab === 'setup' }"    @click="printingTab = 'setup'"><Printer :size="14" /> Initial Setup</button>
-        <button class="sub-tab-btn" :class="{ active: printingTab === 'receipt' }"  @click="printingTab = 'receipt'"><Receipt :size="14" /> Receipt Settings</button>
-        <button class="sub-tab-btn" :class="{ active: printingTab === 'labels' }"   @click="printingTab = 'labels'"><Tag :size="14" /> Label Presets</button>
-        <button class="sub-tab-btn" :class="{ active: printingTab === 'designs' }"  @click="printingTab = 'designs'"><Palette :size="14" /> Print Designs</button>
+        <button class="sub-tab-btn" :class="{ active: printingTab === 'setup' }"    @click="printingTab = 'setup'"><Printer :size="14" /> {{ t('settings.store.print_tabs.setup') }}</button>
+        <button class="sub-tab-btn" :class="{ active: printingTab === 'receipt' }"  @click="printingTab = 'receipt'"><Receipt :size="14" /> {{ t('settings.store.print_tabs.receipt') }}</button>
+        <button class="sub-tab-btn" :class="{ active: printingTab === 'labels' }"   @click="printingTab = 'labels'"><Tag :size="14" /> {{ t('settings.store.print_tabs.labels') }}</button>
+        <button class="sub-tab-btn" :class="{ active: printingTab === 'designs' }"  @click="printingTab = 'designs'"><Palette :size="14" /> {{ t('settings.store.print_tabs.designs') }}</button>
       </div>
 
       <!-- Sub-tab: Receipt -->
       <div v-if="printingTab === 'receipt'">
         <div class="settings-card">
           <div class="form-group" style="margin-bottom:16px;">
-            <label class="form-label">Receipt Header</label>
-            <p class="form-hint">Shown at the top of every printed receipt</p>
+            <label class="form-label">{{ t('settings.store.receipt_header') }}</label>
+            <p class="form-hint">{{ t('settings.store.receipt_header_hint') }}</p>
             <textarea v-model="settingsForm.receipt_header" class="form-input" rows="4" placeholder="e.g. Welcome to Trenda Fashion&#10;Port-Said — Tel: 01234567890" />
           </div>
           <div class="form-group">
-            <label class="form-label">Receipt Footer</label>
-            <p class="form-hint">Return policy, thank-you message, etc.</p>
+            <label class="form-label">{{ t('settings.store.receipt_footer') }}</label>
+            <p class="form-hint">{{ t('settings.store.receipt_footer_hint') }}</p>
             <textarea v-model="settingsForm.receipt_footer" class="form-input" rows="4" placeholder="e.g. No returns after 7 days. Thank you!" />
           </div>
           <div class="toggle-row">
             <div class="toggle-item">
               <div>
-                <div class="toggle-label">Print Tax ID on invoices</div>
-                <div class="toggle-desc">When on, your Tax ID prints on every invoice. Turn off to omit it entirely.</div>
+                <div class="toggle-label">{{ t('settings.store.print_tax_id') }}</div>
+                <div class="toggle-desc">{{ t('settings.store.print_tax_id_hint') }}</div>
               </div>
               <button class="toggle-btn" :class="{ on: settingsForm.print_tax_id }" @click="settingsForm.print_tax_id = !settingsForm.print_tax_id"><span class="toggle-knob" /></button>
             </div>
           </div>
           <div class="form-footer">
-            <button class="btn-primary" :disabled="storeSaving" @click="saveReceipt">{{ storeSaving ? 'Saving…' : 'Save Receipt' }}</button>
+            <button class="btn-primary" :disabled="storeSaving" @click="saveReceipt">{{ storeSaving ? t('common.saving') : t('settings.store.save_receipt') }}</button>
           </div>
         </div>
       </div>
@@ -350,32 +350,32 @@
       <!-- Sub-tab: Label Presets -->
       <div v-if="printingTab === 'labels'">
         <div class="section-heading-row">
-          <span class="section-group-title">Label Presets</span>
-          <button class="btn-primary btn-sm" @click="openNewPreset"><Plus :size="14" /> New Preset</button>
+          <span class="section-group-title">{{ t('settings.store.label_presets') }}</span>
+          <button class="btn-primary btn-sm" @click="openNewPreset"><Plus :size="14" /> {{ t('settings.store.new_preset') }}</button>
         </div>
-        <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">Define label sizes for barcode/price stickers. You can print labels from any purchase invoice.</p>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">{{ t('settings.store.label_presets_intro') }}</p>
         <div class="table-wrap">
           <div v-if="presetsLoading" class="table-skeleton"><div v-for="i in 3" :key="i" class="skeleton-row" /></div>
           <table v-else class="data-table">
-            <thead><tr><th>Name</th><th>Size (mm)</th><th>Shows</th><th>Default</th><th style="width:70px;"></th></tr></thead>
+            <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('settings.store.size_mm') }}</th><th>{{ t('settings.store.shows') }}</th><th>{{ t('settings.store.default') }}</th><th style="width:70px;"></th></tr></thead>
             <tbody>
               <tr v-if="presets.length === 0">
-                <td colspan="5" class="table-empty"><Tag :size="28" style="opacity:.3;margin-bottom:8px;" /><div>No label presets yet</div></td>
+                <td colspan="5" class="table-empty"><Tag :size="28" style="opacity:.3;margin-bottom:8px;" /><div>{{ t('settings.store.no_presets') }}</div></td>
               </tr>
               <tr v-for="p in presets" :key="p.id" class="table-row">
                 <td class="col-name">{{ p.name }}</td>
                 <td style="font-variant-numeric:tabular-nums;">{{ p.width_mm }} × {{ p.height_mm }}</td>
                 <td style="font-size:12px;color:var(--text-muted);">
-                  <span v-if="p.show_store_name">Store</span>
-                  <span v-if="p.show_product_name"> · Name</span>
-                  <span v-if="p.show_sku"> · SKU</span>
-                  <span v-if="p.show_barcode"> · Barcode</span>
-                  <span v-if="p.show_price"> · Price</span>
+                  <span v-if="p.show_store_name">{{ t('settings.store.label_fields.store') }}</span>
+                  <span v-if="p.show_product_name"> · {{ t('settings.store.label_fields.name') }}</span>
+                  <span v-if="p.show_sku"> · {{ t('settings.store.label_fields.sku') }}</span>
+                  <span v-if="p.show_barcode"> · {{ t('settings.store.label_fields.barcode') }}</span>
+                  <span v-if="p.show_price"> · {{ t('settings.store.label_fields.price') }}</span>
                 </td>
-                <td><span v-if="p.is_default" class="badge-cash">Default</span><span v-else class="text-muted-sm">—</span></td>
+                <td><span v-if="p.is_default" class="badge-cash">{{ t('settings.store.default') }}</span><span v-else class="text-muted-sm">—</span></td>
                 <td>
-                  <button class="row-action" title="Edit" @click="openEditPreset(p)"><Pencil :size="13" /></button>
-                  <button class="row-action danger" title="Delete" @click="deletePreset(p.id)"><Trash2 :size="13" /></button>
+                  <button class="row-action" :title="t('common.edit')" @click="openEditPreset(p)"><Pencil :size="13" /></button>
+                  <button class="row-action danger" :title="t('common.delete')" @click="deletePreset(p.id)"><Trash2 :size="13" /></button>
                 </td>
               </tr>
             </tbody>
@@ -389,12 +389,11 @@
           <!-- QZ Tray status + actions row -->
           <div class="section-divider" style="display:flex;align-items:center;gap:10px;">
             QZ Tray
-            <span v-if="qzStatus === true"  class="qz-dot qz-ok">● Connected</span>
-            <span v-else-if="qzStatus === false" class="qz-dot qz-off">● Not running</span>
+            <span v-if="qzStatus === true"  class="qz-dot qz-ok">● {{ t('settings.store.qz_connected') }}</span>
+            <span v-else-if="qzStatus === false" class="qz-dot qz-off">● {{ t('settings.store.qz_not_running') }}</span>
           </div>
           <p class="form-hint" style="margin-bottom:14px;">
-            QZ Tray is a desktop app that lets Vendorya print directly to USB/network printers without a print dialog.
-            Install it on the computer connected to your printer, then enter the exact printer name below.
+            {{ t('settings.store.qz_intro') }}
           </p>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
             <a
@@ -403,7 +402,7 @@
               class="btn-primary btn-sm"
               style="text-decoration:none;"
             >
-              <Download :size="14" /> Download QZ Tray (v2.2.6)
+              <Download :size="14" /> {{ t('settings.store.qz_download') }}
             </a>
             <a
               href="/downloads/vendorya-qztray-setup.bat"
@@ -411,27 +410,25 @@
               class="btn-secondary btn-sm"
               style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;"
             >
-              <Settings2 :size="14" /> Download Setup Script
+              <Settings2 :size="14" /> {{ t('settings.store.qz_script') }}
             </a>
             <button class="btn-secondary btn-sm" :disabled="qzTesting" @click="testQZTray">
-              <span v-if="qzTesting">Testing…</span>
-              <span v-else>Test Connection</span>
+              <span v-if="qzTesting">{{ t('settings.store.testing') }}</span>
+              <span v-else>{{ t('settings.store.test_connection') }}</span>
             </button>
           </div>
           <p class="form-hint" style="margin-bottom:20px;">
-            Install QZ Tray first, then run the Setup Script — it configures everything automatically. No technical knowledge needed.
+            {{ t('settings.store.qz_steps') }}
           </p>
 
-          <div class="section-divider">Printers</div>
+          <div class="section-divider">{{ t('settings.store.printers') }}</div>
           <p class="form-hint" style="margin-bottom:16px;">
-            Enter the exact printer name as it appears in Windows
-            (<em>Control Panel → Devices and Printers</em>).
-            Leave blank to fall back to browser print.
+            {{ t('settings.store.printers_hint') }}
           </p>
 
           <!-- Label Printer -->
           <div style="margin-bottom:20px;">
-            <label class="form-label">Label Printer Name</label>
+            <label class="form-label">{{ t('settings.store.label_printer') }}</label>
             <div style="display:flex;gap:8px;align-items:flex-start;max-width:480px;">
               <input v-model="settingsForm.label_printer_name" class="form-input" placeholder="e.g. XPrinter XP-420B" style="flex:1;" />
               <button
@@ -440,18 +437,18 @@
                 :disabled="printerTesting.label || !settingsForm.label_printer_name"
                 @click="testPrinter('label')"
               >
-                <span v-if="printerTesting.label">Testing…</span>
-                <span v-else>Test Print</span>
+                <span v-if="printerTesting.label">{{ t('settings.store.testing') }}</span>
+                <span v-else>{{ t('settings.store.test_print') }}</span>
               </button>
             </div>
-            <p class="form-hint">50 mm × 25 mm TSPL labels.</p>
-            <p v-if="printerTestResult.label === 'ok'" class="save-ok" style="margin-top:4px;">Test page sent successfully.</p>
+            <p class="form-hint">{{ t('settings.store.label_printer_hint') }}</p>
+            <p v-if="printerTestResult.label === 'ok'" class="save-ok" style="margin-top:4px;">{{ t('settings.store.test_ok') }}</p>
             <p v-else-if="printerTestResult.label" class="field-error" style="margin-top:4px;">{{ printerTestResult.label }}</p>
           </div>
 
           <!-- Receipt Printer -->
           <div style="margin-bottom:20px;">
-            <label class="form-label">Receipt Printer Name</label>
+            <label class="form-label">{{ t('settings.store.receipt_printer') }}</label>
             <div style="display:flex;gap:8px;align-items:flex-start;max-width:480px;">
               <input v-model="settingsForm.receipt_printer_name" class="form-input" placeholder="e.g. XPrinter XP-58" style="flex:1;" />
               <button
@@ -460,84 +457,82 @@
                 :disabled="printerTesting.receipt || !settingsForm.receipt_printer_name"
                 @click="testPrinter('receipt')"
               >
-                <span v-if="printerTesting.receipt">Testing…</span>
-                <span v-else>Test Print</span>
+                <span v-if="printerTesting.receipt">{{ t('settings.store.testing') }}</span>
+                <span v-else>{{ t('settings.store.test_print') }}</span>
               </button>
             </div>
-            <p class="form-hint">80 mm thermal receipts (ESC/POS).</p>
-            <p v-if="printerTestResult.receipt === 'ok'" class="save-ok" style="margin-top:4px;">Test page sent successfully.</p>
+            <p class="form-hint">{{ t('settings.store.receipt_printer_hint') }}</p>
+            <p v-if="printerTestResult.receipt === 'ok'" class="save-ok" style="margin-top:4px;">{{ t('settings.store.test_ok') }}</p>
             <p v-else-if="printerTestResult.receipt" class="field-error" style="margin-top:4px;">{{ printerTestResult.receipt }}</p>
           </div>
 
           <!-- Receipt Output Controls -->
-          <div class="section-divider">Receipt Output Controls</div>
+          <div class="section-divider">{{ t('settings.store.output_controls') }}</div>
           <p class="form-hint" style="margin-bottom:16px;">
-            Controls sent to the receipt printer via QZ Tray on every print job.
-            Test Print uses these values so you can dial them in before going live.
+            {{ t('settings.store.output_controls_hint') }}
           </p>
           <div class="print-ctrl-grid">
             <div class="print-ctrl-row">
-              <label class="form-label" style="margin-bottom:0;min-width:130px;">Copies per job</label>
+              <label class="form-label" style="margin-bottom:0;min-width:130px;">{{ t('settings.store.copies') }}</label>
               <select v-model.number="settingsForm.receipt_copies" class="form-input" style="width:100px;">
                 <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
               </select>
-              <span class="form-hint" style="margin:0;">Number of receipt copies printed each time.</span>
+              <span class="form-hint" style="margin:0;">{{ t('settings.store.copies_hint') }}</span>
             </div>
             <div class="print-ctrl-row">
-              <label class="form-label" style="margin-bottom:0;min-width:130px;">Auto-cut</label>
+              <label class="form-label" style="margin-bottom:0;min-width:130px;">{{ t('settings.store.auto_cut') }}</label>
               <button
                 class="toggle-btn" :class="{ on: settingsForm.receipt_auto_cut }"
                 @click="settingsForm.receipt_auto_cut = !settingsForm.receipt_auto_cut"
               ><span class="toggle-knob" /></button>
-              <span class="form-hint" style="margin:0;">Send the ESC/POS cut command after printing (requires a cutter-equipped printer, e.g. XPrinter *C models).</span>
+              <span class="form-hint" style="margin:0;">{{ t('settings.store.auto_cut_hint') }}</span>
             </div>
             <div class="print-ctrl-row">
-              <label class="form-label" style="margin-bottom:0;min-width:130px;">Cut feed (mm)</label>
+              <label class="form-label" style="margin-bottom:0;min-width:130px;">{{ t('settings.store.cut_feed') }}</label>
               <input
                 v-model.number="settingsForm.receipt_cut_feed"
                 type="number" min="0" max="20" step="1"
                 class="form-input" style="width:100px;"
               />
-              <span class="form-hint" style="margin:0;">Extra paper to advance before cutting (0–20 mm). Increase if the cut lands too high on the receipt.</span>
+              <span class="form-hint" style="margin:0;">{{ t('settings.store.cut_feed_hint') }}</span>
             </div>
           </div>
 
-          <div class="section-divider">Receipt &amp; Label Printing Defaults</div>
+          <div class="section-divider">{{ t('settings.store.print_defaults') }}</div>
           <p class="form-hint" style="margin-bottom:16px;">
-            Pre-tick the print boxes that appear when finishing a sale or a service, so the cashier
-            never has to check them every time. They can still override per transaction.
+            {{ t('settings.store.print_defaults_hint') }}
           </p>
 
           <div class="print-defaults-grid">
             <div class="print-defaults-col">
-              <div class="print-defaults-head">Point of Sale (POS)</div>
+              <div class="print-defaults-head">{{ t('settings.store.pos_head') }}</div>
               <label class="print-default-cb">
                 <input type="checkbox" v-model="settingsForm.pos_print_default" />
-                <span>Print the receipt by default</span>
+                <span>{{ t('settings.store.print_default') }}</span>
               </label>
               <label class="print-default-cb">
                 <input type="checkbox" v-model="settingsForm.pos_double_print_default" />
-                <span>2× printing by default</span>
+                <span>{{ t('settings.store.double_default') }}</span>
               </label>
             </div>
             <div class="print-defaults-col">
-              <div class="print-defaults-head">Services (SRV)</div>
+              <div class="print-defaults-head">{{ t('settings.store.srv_head') }}</div>
               <label class="print-default-cb">
                 <input type="checkbox" v-model="settingsForm.srv_print_default" />
-                <span>Print the receipt by default</span>
+                <span>{{ t('settings.store.print_default') }}</span>
               </label>
               <label class="print-default-cb">
                 <input type="checkbox" v-model="settingsForm.srv_double_print_default" />
-                <span>2× printing by default</span>
+                <span>{{ t('settings.store.double_default') }}</span>
               </label>
             </div>
           </div>
 
           <div class="form-footer">
             <button class="btn-primary" :disabled="serviceSaving" @click="savePrinters">
-              {{ serviceSaving ? 'Saving…' : 'Save Printers' }}
+              {{ serviceSaving ? t('common.saving') : t('settings.store.save_printers') }}
             </button>
-            <span v-if="serviceSuccess" class="save-ok">Saved.</span>
+            <span v-if="serviceSuccess" class="save-ok">{{ t('settings.store.saved') }}</span>
             <span v-if="serviceError" class="field-error">{{ serviceError }}</span>
           </div>
         </div>
@@ -545,11 +540,11 @@
 
       <!-- Sub-tab: Print Designs -->
       <div v-if="printingTab === 'designs'">
-        <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">Choose a visual design template for your receipts and labels. The active design is used when printing from POS, purchases, and services.</p>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">{{ t('settings.store.designs_intro') }}</p>
 
         <!-- Receipt Designs -->
         <div class="section-heading-row" style="margin-bottom:14px;">
-          <span class="section-group-title">Receipt Designs</span>
+          <span class="section-group-title">{{ t('settings.store.receipt_designs') }}</span>
         </div>
         <div class="design-grid" style="margin-bottom:32px;">
           <div v-for="d in receiptDesigns" :key="d.id"
@@ -561,9 +556,9 @@
               <span class="design-desc">{{ d.desc }}</span>
             </div>
             <div class="design-actions">
-              <span v-if="activeReceiptDesign === d.id" class="design-active-badge">Active</span>
+              <span v-if="activeReceiptDesign === d.id" class="design-active-badge">{{ t('settings.store.active') }}</span>
               <button class="btn-secondary btn-sm" @click.stop="testDesign('receipt', d.id)">
-                <Printer :size="13" /> Test
+                <Printer :size="13" /> {{ t('settings.store.test') }}
               </button>
             </div>
           </div>
@@ -571,16 +566,16 @@
 
         <!-- Label Designs — driven by LabelPreset model records -->
         <div class="section-heading-row" style="margin-bottom:14px;">
-          <span class="section-group-title">Label Designs</span>
-          <button class="btn-ghost btn-sm" @click="printingTab = 'labels'">Manage presets →</button>
+          <span class="section-group-title">{{ t('settings.store.label_designs') }}</span>
+          <button class="btn-ghost btn-sm" @click="printingTab = 'labels'">{{ t('settings.store.manage_presets') }}</button>
         </div>
         <div v-if="presetsLoading" class="design-grid">
           <div v-for="i in 2" :key="i" class="design-card" style="min-height:160px;animation:shimmer 1.4s infinite;background:var(--border);" />
         </div>
         <div v-else-if="presets.length === 0" class="design-empty">
           <Tag :size="28" style="opacity:.3;margin-bottom:8px;" />
-          <span>No label presets yet.</span>
-          <button class="btn-ghost btn-sm" @click="printingTab = 'labels'">Add your first preset →</button>
+          <span>{{ t('settings.store.no_presets_dot') }}</span>
+          <button class="btn-ghost btn-sm" @click="printingTab = 'labels'">{{ t('settings.store.add_first_preset') }}</button>
         </div>
         <div v-else class="design-grid">
           <div v-for="p in presets" :key="p.id"
@@ -594,15 +589,15 @@
               <span class="design-desc">{{ labelPresetDesc(p) }}</span>
             </div>
             <div class="design-actions">
-              <span v-if="p.is_default" class="design-active-badge">Default</span>
-              <button v-else class="btn-ghost btn-sm" @click.stop="setDefaultPreset(p.id)">Set Default</button>
+              <span v-if="p.is_default" class="design-active-badge">{{ t('settings.store.default') }}</span>
+              <button v-else class="btn-ghost btn-sm" @click.stop="setDefaultPreset(p.id)">{{ t('settings.store.set_default') }}</button>
               <button
                 class="btn-secondary btn-sm"
                 :disabled="!settingsForm.label_printer_name || labelTestingId === p.id"
-                :title="!settingsForm.label_printer_name ? 'Set label printer name first (Initial Setup tab)' : ''"
+                :title="!settingsForm.label_printer_name ? t('settings.store.set_printer_first') : ''"
                 @click.stop="testLabelPreset(p)"
               >
-                <Printer :size="13" /> {{ labelTestingId === p.id ? '…' : 'Test' }}
+                <Printer :size="13" /> {{ labelTestingId === p.id ? '…' : t('settings.store.test') }}
               </button>
             </div>
           </div>
@@ -615,21 +610,21 @@
     <!-- ══ TAB: Payment Methods ══ -->
     <div v-if="activeTab === 'payments'">
       <div class="section-heading-row">
-        <span class="section-group-title">Payment Methods</span>
-        <button class="btn-primary btn-sm" @click="openNewPM"><Plus :size="14" /> New Method</button>
+        <span class="section-group-title">{{ t('settings.payment_methods.title') }}</span>
+        <button class="btn-primary btn-sm" @click="openNewPM"><Plus :size="14" /> {{ t('settings.store.new_method') }}</button>
       </div>
       <div class="table-wrap">
         <div v-if="pmLoading" class="table-skeleton"><div v-for="i in 3" :key="i" class="skeleton-row" /></div>
         <table v-else class="data-table">
-          <thead><tr><th>Name</th><th>Type</th><th>Agel</th><th style="width:70px;"></th></tr></thead>
+          <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('settings.payment_methods.type') }}</th><th>{{ t('settings.store.agel') }}</th><th style="width:70px;"></th></tr></thead>
           <tbody>
             <tr v-if="paymentMethods.length === 0">
-              <td colspan="4" class="table-empty"><CreditCard :size="28" style="opacity:.3;margin-bottom:8px;" /><div>No payment methods yet</div></td>
+              <td colspan="4" class="table-empty"><CreditCard :size="28" style="opacity:.3;margin-bottom:8px;" /><div>{{ t('settings.payment_methods.empty') }}</div></td>
             </tr>
             <tr v-for="pm in paymentMethods" :key="pm.id" class="table-row">
               <td class="col-name">{{ pm.name }}</td>
-              <td><span :class="pm.is_cash ? 'badge-cash' : 'badge-digital'">{{ pm.is_cash ? 'Cash' : 'Digital' }}</span></td>
-              <td><span v-if="pm.is_agel" class="badge-agel">Agel</span><span v-else class="text-muted-sm">—</span></td>
+              <td><span :class="pm.is_cash ? 'badge-cash' : 'badge-digital'">{{ pm.is_cash ? t('settings.payment_methods.cash') : t('settings.store.digital') }}</span></td>
+              <td><span v-if="pm.is_agel" class="badge-agel">{{ t('settings.store.agel') }}</span><span v-else class="text-muted-sm">—</span></td>
               <td>
                 <button class="row-action" @click="openEditPM(pm)"><Pencil :size="13" /></button>
                 <button class="row-action danger" @click="deletePM(pm.id)"><Trash2 :size="13" /></button>
@@ -643,18 +638,18 @@
     <!-- ══ TAB: Service Types ══ -->
     <div v-if="activeTab === 'services'">
       <div class="settings-card">
-        <div class="section-divider">Service Types</div>
-        <p class="form-hint">Define the types of services your store offers. These labels appear in service records.</p>
+        <div class="section-divider">{{ t('settings.store.service_types') }}</div>
+        <p class="form-hint">{{ t('settings.store.service_types_hint') }}</p>
 
         <div v-if="serviceLoading" class="skeleton-row" style="height:120px;border-radius:8px;max-width:480px;" />
         <template v-else>
           <div class="service-types-list">
             <div v-if="settingsForm.service_types.length === 0" class="empty-types">
-              <p>No service types defined yet.</p>
+              <p>{{ t('settings.store.no_service_types') }}</p>
             </div>
             <div v-for="(type, i) in settingsForm.service_types" :key="i" class="service-type-item">
               <span>{{ type }}</span>
-              <button class="btn-remove" @click="removeServiceType(i)" title="Remove"><Trash :size="13" /></button>
+              <button class="btn-remove" @click="removeServiceType(i)" :title="t('settings.store.remove')"><Trash :size="13" /></button>
             </div>
           </div>
 
@@ -662,20 +657,20 @@
             <input
               v-model="newServiceType"
               class="form-input"
-              placeholder="e.g. Hardware Repair"
+              :placeholder="t('settings.store.service_type_ph')"
               @keyup.enter="addServiceType"
               style="max-width:280px;"
             />
             <button class="btn-secondary btn-sm" @click="addServiceType" :disabled="!newServiceType.trim()">
-              <Plus :size="14" /> Add Type
+              <Plus :size="14" /> {{ t('settings.store.add_type') }}
             </button>
           </div>
         </template>
 
-        <div class="section-divider" style="margin-top:24px;">Notification Timing</div>
+        <div class="section-divider" style="margin-top:24px;">{{ t('settings.store.notif_timing') }}</div>
         <div style="display:flex;gap:12px;align-items:flex-end;max-width:400px;">
           <div style="flex:1;">
-            <label class="form-label">Notify before ETA (hours)</label>
+            <label class="form-label">{{ t('settings.store.notify_before') }}</label>
             <input
               v-model.number="settingsForm.service_notify_hours"
               type="number"
@@ -683,24 +678,24 @@
               max="168"
               class="form-input"
             />
-            <p class="form-hint">Fire notifications when a service's ETA is within this window. 0 = disabled.</p>
+            <p class="form-hint">{{ t('settings.store.notify_before_hint') }}</p>
           </div>
         </div>
 
         <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
           <button class="btn-secondary" :disabled="notifyRunning" @click="runNotifications">
-            <span v-if="notifyRunning">Running…</span>
-            <span v-else>Run notifications now</span>
+            <span v-if="notifyRunning">{{ t('settings.store.running') }}</span>
+            <span v-else>{{ t('settings.store.run_notif') }}</span>
           </button>
-          <span v-if="notifyOk" class="save-ok" style="margin-left:12px;">Notifications checked.</span>
+          <span v-if="notifyOk" class="save-ok" style="margin-left:12px;">{{ t('settings.store.notif_checked') }}</span>
         </div>
 
         <div class="form-footer">
           <button class="btn-primary" :disabled="serviceSaving" @click="saveServiceSettings">
-            {{ serviceSaving ? 'Saving…' : 'Save Service Settings' }}
+            {{ serviceSaving ? t('common.saving') : t('settings.store.save_service') }}
           </button>
           <span v-if="serviceError" class="field-error">{{ serviceError }}</span>
-          <span v-if="serviceSuccess" class="save-ok">Settings saved.</span>
+          <span v-if="serviceSuccess" class="save-ok">{{ t('settings.store.settings_saved') }}</span>
         </div>
       </div>
     </div>
@@ -709,20 +704,20 @@
     <div v-if="activeTab === 'security'">
       <div class="settings-card">
         <div class="form-group" style="margin-bottom:20px;">
-          <label class="form-label">Session Timeout</label>
-          <p class="form-hint">Auto sign out a user after this many minutes of inactivity. 0 = disabled. (Max 1440 = 24h.)</p>
+          <label class="form-label">{{ t('settings.policies.session_title') }}</label>
+          <p class="form-hint">{{ t('settings.store.session_hint') }}</p>
           <div style="display:flex;align-items:center;gap:10px;">
             <input v-model.number="settingsForm.session_timeout_minutes" type="number" min="0" max="1440" class="form-input" style="width:90px;" />
-            <span style="font-size:13px;color:var(--text-muted);">minutes</span>
+            <span style="font-size:13px;color:var(--text-muted);">{{ t('settings.policies.minutes') }}</span>
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Owner / Admin Login IP Allowlist</label>
-          <p class="form-hint">Restrict OWNER and ADMIN logins to specific IPs or CIDR ranges (one per line or comma-separated). Leave empty to allow from anywhere.</p>
+          <label class="form-label">{{ t('settings.policies.ip_title') }}</label>
+          <p class="form-hint">{{ t('settings.store.ip_hint') }}</p>
           <textarea v-model="settingsForm.login_ip_allowlist" class="form-input" rows="4" placeholder="e.g. 197.45.0.0/16&#10;102.40.21.7" />
         </div>
         <div class="form-footer">
-          <button class="btn-primary" :disabled="storeSaving" @click="saveSecurity">{{ storeSaving ? 'Saving…' : 'Save Security' }}</button>
+          <button class="btn-primary" :disabled="storeSaving" @click="saveSecurity">{{ storeSaving ? t('common.saving') : t('settings.store.save_security') }}</button>
         </div>
       </div>
     </div>
@@ -737,11 +732,11 @@
 
         <div class="fv-grid">
           <!-- Header row -->
-          <div class="fv-cell fv-head">Field</div>
+          <div class="fv-cell fv-head">{{ t('settings.store.fv.field') }}</div>
           <div class="fv-cell fv-head fv-center" v-for="role in CONFIGURABLE_ROLES" :key="role">
-            {{ role.charAt(0) + role.slice(1).toLowerCase() }}
+            {{ t('people.staff.roles.' + role.toLowerCase()) }}
           </div>
-          <div class="fv-cell fv-head fv-center fv-locked-head">Owner / Admin</div>
+          <div class="fv-cell fv-head fv-center fv-locked-head">{{ t('settings.store.fv.owner_admin') }}</div>
 
           <!-- Field rows -->
           <template v-for="f in table.fields" :key="f.key">
@@ -760,7 +755,7 @@
               </label>
             </div>
             <div class="fv-cell fv-center">
-              <span class="fv-lock-badge">Always visible</span>
+              <span class="fv-lock-badge">{{ t('settings.store.fv.always_visible') }}</span>
             </div>
           </template>
         </div>
@@ -768,9 +763,9 @@
 
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <button class="btn-primary" :disabled="visibilitySaving" @click="saveVisibility">
-          {{ visibilitySaving ? 'Saving…' : 'Save Field Access' }}
+          {{ visibilitySaving ? t('common.saving') : t('settings.store.fv.save_btn') }}
         </button>
-        <button class="btn-ghost" @click="resetVisibility">Reset to defaults</button>
+        <button class="btn-ghost" @click="resetVisibility">{{ t('settings.store.fv.reset') }}</button>
         <span v-if="visibilitySaveMsg" style="font-size:13px;color:var(--success);font-weight:600;">{{ visibilitySaveMsg }}</span>
       </div>
     </div>
@@ -778,95 +773,95 @@
     <!-- ══ MODALS ══ -->
 
     <!-- Owner edit modal -->
-    <AppModal :open="ownerModal.open" title="Edit Owner" no-backdrop-close @close="ownerModal.open = false">
+    <AppModal :open="ownerModal.open" :title="t('settings.store.edit_owner')" no-backdrop-close @close="ownerModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div><label class="form-label">First Name</label><input v-model="ownerModal.first_name" class="form-input" /></div>
-          <div><label class="form-label">Last Name</label><input v-model="ownerModal.last_name" class="form-input" /></div>
+          <div><label class="form-label">{{ t('settings.profile.first_name') }}</label><input v-model="ownerModal.first_name" class="form-input" /></div>
+          <div><label class="form-label">{{ t('settings.profile.last_name') }}</label><input v-model="ownerModal.last_name" class="form-input" /></div>
         </div>
-        <div><label class="form-label">Phone Number</label><input v-model="ownerModal.phone_number" class="form-input" type="tel" placeholder="e.g. 01012345678" /></div>
-        <div><label class="form-label">WhatsApp</label><input v-model="ownerModal.whatsapp_number" class="form-input" type="tel" placeholder="e.g. 01012345678" /></div>
+        <div><label class="form-label">{{ t('settings.store.phone') }}</label><input v-model="ownerModal.phone_number" class="form-input" type="tel" placeholder="e.g. 01012345678" /></div>
+        <div><label class="form-label">{{ t('settings.store.whatsapp') }}</label><input v-model="ownerModal.whatsapp_number" class="form-input" type="tel" placeholder="e.g. 01012345678" /></div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="ownerModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="ownerSaving" @click="saveOwner">{{ ownerSaving ? 'Saving…' : 'Save' }}</button>
+        <button class="btn-ghost" @click="ownerModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="ownerSaving" @click="saveOwner">{{ ownerSaving ? t('common.saving') : t('common.save') }}</button>
       </template>
     </AppModal>
 
     <!-- Branch modal -->
-    <AppModal :open="branchModal.open" :title="branchModal.id ? 'Edit Branch' : 'New Branch'" no-backdrop-close @close="branchModal.open = false">
+    <AppModal :open="branchModal.open" :title="branchModal.id ? t('settings.store.edit_branch') : t('settings.store.new_branch')" no-backdrop-close @close="branchModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">Branch Name</label><input v-model="branchModal.name" class="form-input" placeholder="e.g. Main Branch" /></div>
+        <div><label class="form-label">{{ t('settings.store.branch_name') }}</label><input v-model="branchModal.name" class="form-input" :placeholder="t('settings.store.branch_name_ph')" /></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div><label class="form-label">City <span class="req">*</span></label>
-            <select v-model="branchModal.city" class="form-input"><option value="">— Select city —</option><option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option></select></div>
-          <div><label class="form-label">Country</label><input value="Egypt" class="form-input" disabled style="opacity:.55;" /></div>
+          <div><label class="form-label">{{ t('settings.store.city') }} <span class="req">*</span></label>
+            <select v-model="branchModal.city" class="form-input"><option value="">{{ t('settings.store.select_city') }}</option><option v-for="c in egyptCities" :key="c" :value="c">{{ c }}</option></select></div>
+          <div><label class="form-label">{{ t('settings.store.country') }}</label><input value="Egypt" class="form-input" disabled style="opacity:.55;" /></div>
         </div>
-        <div><label class="form-label">Street Address</label><input v-model="branchModal.street_1" class="form-input" placeholder="Street address" /></div>
+        <div><label class="form-label">{{ t('settings.store.street_address') }}</label><input v-model="branchModal.street_1" class="form-input" :placeholder="t('settings.store.street_address')" /></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div><label class="form-label">Phone <span class="req">*</span></label><input v-model="branchModal.phone_number" class="form-input" type="tel" /></div>
-          <div><label class="form-label">Email <span class="req">*</span></label><input v-model="branchModal.email" class="form-input" type="email" /></div>
+          <div><label class="form-label">{{ t('settings.store.phone') }} <span class="req">*</span></label><input v-model="branchModal.phone_number" class="form-input" type="tel" /></div>
+          <div><label class="form-label">{{ t('settings.store.email') }} <span class="req">*</span></label><input v-model="branchModal.email" class="form-input" type="email" /></div>
         </div>
         <div class="toggle-row" style="padding:0;">
           <div class="toggle-item" style="padding:0;">
-            <div><div class="toggle-label">Main Branch</div></div>
+            <div><div class="toggle-label">{{ t('settings.store.main_branch') }}</div></div>
             <button class="toggle-btn" :class="{ on: branchModal.is_main_branch }" @click="branchModal.is_main_branch = !branchModal.is_main_branch"><span class="toggle-knob" /></button>
           </div>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="branchModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!branchModal.name.trim() || !branchModal.phone_number.trim() || !branchModal.email.trim() || branchSaving" @click="saveBranch">{{ branchSaving ? 'Saving…' : (branchModal.id ? 'Save Changes' : 'Add Branch') }}</button>
+        <button class="btn-ghost" @click="branchModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!branchModal.name.trim() || !branchModal.phone_number.trim() || !branchModal.email.trim() || branchSaving" @click="saveBranch">{{ branchSaving ? t('common.saving') : (branchModal.id ? t('settings.store.save_changes') : t('settings.store.add_branch')) }}</button>
       </template>
     </AppModal>
 
     <!-- Label Preset modal -->
-    <AppModal :open="presetModal.open" :title="presetModal.id ? 'Edit Label Preset' : 'New Label Preset'" no-backdrop-close @close="presetModal.open = false">
+    <AppModal :open="presetModal.open" :title="presetModal.id ? t('settings.store.edit_preset') : t('settings.store.new_preset')" no-backdrop-close @close="presetModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">Preset Name</label><input v-model="presetModal.name" class="form-input" placeholder="e.g. Small Tag 40×20" /></div>
+        <div><label class="form-label">{{ t('settings.store.preset_name') }}</label><input v-model="presetModal.name" class="form-input" :placeholder="t('settings.store.preset_name_ph')" /></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div><label class="form-label">Width (mm)</label><input v-model.number="presetModal.width_mm" type="number" min="10" max="300" class="form-input" /></div>
-          <div><label class="form-label">Height (mm)</label><input v-model.number="presetModal.height_mm" type="number" min="5" max="300" class="form-input" /></div>
+          <div><label class="form-label">{{ t('settings.store.width_mm') }}</label><input v-model.number="presetModal.width_mm" type="number" min="10" max="300" class="form-input" /></div>
+          <div><label class="form-label">{{ t('settings.store.height_mm') }}</label><input v-model.number="presetModal.height_mm" type="number" min="5" max="300" class="form-input" /></div>
         </div>
-        <div class="section-divider" style="margin:4px 0;">Show on label</div>
+        <div class="section-divider" style="margin:4px 0;">{{ t('settings.store.show_on_label') }}</div>
         <div class="toggle-row" style="padding:0;flex-direction:column;gap:8px;">
-          <label class="check-row"><input type="checkbox" v-model="presetModal.show_store_name" /> Store name</label>
-          <label class="check-row"><input type="checkbox" v-model="presetModal.show_product_name" /> Product name</label>
-          <label class="check-row"><input type="checkbox" v-model="presetModal.show_sku" /> SKU</label>
-          <label class="check-row"><input type="checkbox" v-model="presetModal.show_barcode" /> Barcode</label>
-          <label class="check-row"><input type="checkbox" v-model="presetModal.show_price" /> Price</label>
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_store_name" /> {{ t('settings.store.cb_store_name') }}</label>
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_product_name" /> {{ t('settings.store.cb_product_name') }}</label>
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_sku" /> {{ t('settings.store.cb_sku') }}</label>
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_barcode" /> {{ t('settings.store.cb_barcode') }}</label>
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_price" /> {{ t('settings.store.cb_price') }}</label>
         </div>
         <div class="toggle-row" style="padding:0;">
           <div class="toggle-item" style="padding:0;">
-            <div><div class="toggle-label">Set as default</div><div class="toggle-desc">Pre-selected when printing labels</div></div>
+            <div><div class="toggle-label">{{ t('settings.store.set_as_default') }}</div><div class="toggle-desc">{{ t('settings.store.set_as_default_hint') }}</div></div>
             <button class="toggle-btn" :class="{ on: presetModal.is_default }" @click="presetModal.is_default = !presetModal.is_default"><span class="toggle-knob" /></button>
           </div>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="presetModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!presetModal.name.trim() || presetSaving" @click="savePreset">{{ presetSaving ? 'Saving…' : (presetModal.id ? 'Save Changes' : 'Add Preset') }}</button>
+        <button class="btn-ghost" @click="presetModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!presetModal.name.trim() || presetSaving" @click="savePreset">{{ presetSaving ? t('common.saving') : (presetModal.id ? t('settings.store.save_changes') : t('settings.store.add_preset')) }}</button>
       </template>
     </AppModal>
 
     <!-- Payment Method modal -->
-    <AppModal :open="pmModal.open" :title="pmModal.id ? 'Edit Payment Method' : 'New Payment Method'" no-backdrop-close @close="pmModal.open = false">
+    <AppModal :open="pmModal.open" :title="pmModal.id ? t('settings.store.edit_pm') : t('settings.store.new_pm')" no-backdrop-close @close="pmModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">Name</label><input v-model="pmModal.name" class="form-input" placeholder="e.g. Visa, InstaPay, Cash" /></div>
+        <div><label class="form-label">{{ t('common.name') }}</label><input v-model="pmModal.name" class="form-input" :placeholder="t('settings.store.pm_name_ph')" /></div>
         <div class="toggle-row" style="padding:0;">
           <div class="toggle-item" style="padding:0;">
-            <div><div class="toggle-label">Is Cash</div><div class="toggle-desc">Used for Cash Drawer tracking</div></div>
+            <div><div class="toggle-label">{{ t('settings.store.is_cash') }}</div><div class="toggle-desc">{{ t('settings.store.is_cash_hint') }}</div></div>
             <button class="toggle-btn" :class="{ on: pmModal.is_cash }" @click="pmModal.is_cash = !pmModal.is_cash"><span class="toggle-knob" /></button>
           </div>
           <div class="toggle-item" style="padding:0;">
-            <div><div class="toggle-label">Is Agel (Credit)</div><div class="toggle-desc">Used for credit/agel sales</div></div>
+            <div><div class="toggle-label">{{ t('settings.store.is_agel') }}</div><div class="toggle-desc">{{ t('settings.store.is_agel_hint') }}</div></div>
             <button class="toggle-btn" :class="{ on: pmModal.is_agel }" @click="pmModal.is_agel = !pmModal.is_agel"><span class="toggle-knob" /></button>
           </div>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="pmModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!pmModal.name.trim() || pmSaving" @click="savePM">{{ pmSaving ? 'Saving…' : (pmModal.id ? 'Save Changes' : 'Add Method') }}</button>
+        <button class="btn-ghost" @click="pmModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!pmModal.name.trim() || pmSaving" @click="savePM">{{ pmSaving ? t('common.saving') : (pmModal.id ? t('settings.store.save_changes') : t('settings.store.new_method')) }}</button>
       </template>
     </AppModal>
   </div>
@@ -874,6 +869,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import {
   Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X,
@@ -886,21 +882,22 @@ import { formatCurrency } from '@/utils/format'
 import AppModal from '@/components/ui/AppModal.vue'
 import { useQZTray, buildLabelTSPL } from '@/composables/useQZTray'
 
+const { t } = useI18n()
 const router = useRouter()
 const fmt  = useFormatStore()
 const auth = useAuthStore()
 
-const tabs = [
-  { id: 'store',    label: 'Store Info',       icon: Store },
-  { id: 'branches', label: 'Branches & Owners', icon: GitBranch },
-  { id: 'branding', label: 'Branding',          icon: ImageIcon },
-  { id: 'rules',    label: 'Business Rules',    icon: Settings2 },
-  { id: 'printing', label: 'Printing Setup',    icon: Printer },
-  { id: 'payments', label: 'Payment Methods',   icon: CreditCard },
-  { id: 'services', label: 'Service Types',     icon: Briefcase },
-  { id: 'security',    label: 'Security',       icon: Shield },
-  { id: 'visibility',  label: 'Field Access',   icon: Eye },
-]
+const tabs = computed(() => [
+  { id: 'store',    label: t('settings.store.tabs.store'),     icon: Store },
+  { id: 'branches', label: t('settings.store.tabs.branches'),  icon: GitBranch },
+  { id: 'branding', label: t('settings.store.tabs.branding'),  icon: ImageIcon },
+  { id: 'rules',    label: t('settings.store.tabs.rules'),     icon: Settings2 },
+  { id: 'printing', label: t('settings.store.tabs.printing'),  icon: Printer },
+  { id: 'payments', label: t('settings.store.tabs.payments'),  icon: CreditCard },
+  { id: 'services', label: t('settings.store.tabs.services'),  icon: Briefcase },
+  { id: 'security', label: t('settings.store.tabs.security'),  icon: Shield },
+  { id: 'visibility', label: t('settings.store.tabs.visibility'), icon: Eye },
+])
 const activeTab   = ref('store')
 const printingTab = ref('setup')
 
@@ -908,26 +905,26 @@ const printingTab = ref('setup')
 const activeReceiptDesign = ref(localStorage.getItem('vya_receipt_design') || 'classic')
 const designSaveMsg       = ref('')
 
-const receiptDesigns = [
+const receiptDesigns = computed(() => [
   {
     id: 'classic',
-    name: 'Classic',
-    desc: 'Standard layout — store header, items table, totals, footer.',
+    name: t('settings.store.designs.classic_name'),
+    desc: t('settings.store.designs.classic_desc'),
     preview: `<div class="dp-receipt"><div class="dp-store">My Store</div><div class="dp-line"></div><div class="dp-row"><span>Item A</span><span>100.00</span></div><div class="dp-row"><span>Item B</span><span>50.00</span></div><div class="dp-line"></div><div class="dp-total">Total: 150.00</div><div class="dp-footer">Thank you!</div></div>`,
   },
   {
     id: 'compact',
-    name: 'Compact',
-    desc: 'Minimal whitespace — great for high-volume POS.',
+    name: t('settings.store.designs.compact_name'),
+    desc: t('settings.store.designs.compact_desc'),
     preview: `<div class="dp-receipt dp-compact"><div class="dp-store dp-sm">Store</div><div class="dp-row dp-sm"><span>Item A</span><span>100</span></div><div class="dp-row dp-sm"><span>Item B</span><span>50</span></div><div class="dp-total dp-sm">Total 150</div></div>`,
   },
   {
     id: 'modern',
-    name: 'Modern',
-    desc: 'Bold logo area + larger item names. Looks premium.',
+    name: t('settings.store.designs.modern_name'),
+    desc: t('settings.store.designs.modern_desc'),
     preview: `<div class="dp-receipt dp-modern"><div class="dp-store dp-lg">MY STORE</div><div class="dp-badge">★ RECEIPT ★</div><div class="dp-line"></div><div class="dp-row"><span>Item A</span><span>100.00</span></div><div class="dp-row"><span>Item B</span><span>50.00</span></div><div class="dp-line"></div><div class="dp-total dp-lg">150.00 EGP</div></div>`,
   },
-]
+])
 
 // Build an HTML preview string from a LabelPreset record.
 function buildLabelPreview(p) {
@@ -943,11 +940,11 @@ function buildLabelPreview(p) {
 
 function labelPresetDesc(p) {
   const fields = []
-  if (p.show_store_name)   fields.push('store')
-  if (p.show_product_name) fields.push('name')
-  if (p.show_barcode)      fields.push('barcode')
-  if (p.show_sku)          fields.push('SKU')
-  if (p.show_price)        fields.push('price')
+  if (p.show_store_name)   fields.push(t('settings.store.label_fields.store'))
+  if (p.show_product_name) fields.push(t('settings.store.label_fields.name'))
+  if (p.show_barcode)      fields.push(t('settings.store.label_fields.barcode'))
+  if (p.show_sku)          fields.push(t('settings.store.label_fields.sku'))
+  if (p.show_price)        fields.push(t('settings.store.label_fields.price'))
   return `${p.width_mm}×${p.height_mm} mm · ${fields.join(', ')}`
 }
 
@@ -966,7 +963,7 @@ async function testLabelPreset(p) {
   try {
     await qzSendRaw(settingsForm.label_printer_name, buildLabelTSPL(p))
   } catch (e) {
-    alert(e.message || 'Print failed — is QZ Tray running?')
+    alert(e.message || t('settings.store.err.print_failed'))
   } finally {
     labelTestingId.value = null
   }
@@ -974,21 +971,21 @@ async function testLabelPreset(p) {
 
 function saveDesignPref() {
   localStorage.setItem('vya_receipt_design', activeReceiptDesign.value)
-  designSaveMsg.value = 'Design preference saved.'
+  designSaveMsg.value = t('settings.store.design_saved')
   setTimeout(() => { designSaveMsg.value = '' }, 2000)
 }
 
 function testDesign(type, id) {
   if (type === 'receipt') {
     if (!settingsForm.receipt_printer_name) {
-      alert('Set a receipt printer name first (Initial Setup tab).')
+      alert(t('settings.store.err.set_receipt_printer'))
       return
     }
     qzTestPrinter(settingsForm.receipt_printer_name, 'receipt', {
       copies:     settingsForm.receipt_copies,
       autoCut:    settingsForm.receipt_auto_cut,
       cutFeedMm:  settingsForm.receipt_cut_feed,
-    }).catch(e => alert(e.message || 'Print failed — is QZ Tray running?'))
+    }).catch(e => alert(e.message || t('settings.store.err.print_failed')))
   }
 }
 
@@ -1008,11 +1005,11 @@ const timezones = [
   'America/New_York', 'America/Los_Angeles', 'UTC',
 ]
 
-const creditPolicyOptions = [
-  { value: 'ALLOW', label: 'Allow' },
-  { value: 'WARN',  label: 'Warn' },
-  { value: 'BLOCK', label: 'Block' },
-]
+const creditPolicyOptions = computed(() => [
+  { value: 'ALLOW', label: t('settings.policies.allow') },
+  { value: 'WARN',  label: t('settings.policies.warn') },
+  { value: 'BLOCK', label: t('settings.policies.block') },
+])
 
 // ── Branding ─────────────────────────────────────────────────────────────
 const logoSaving  = ref(false)
@@ -1039,7 +1036,7 @@ async function saveLogos() {
     const res = await api.patch('/api/core/store/logo/', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
     if (auth.user?.store) { auth.user.store.logo_light_url = res.data.logo_light_url; auth.user.store.logo_dark_url = res.data.logo_dark_url }
     logoFiles.light = null; logoFiles.dark = null; logoClear.light = false; logoClear.dark = false
-  } catch (e) { alert(e.response?.data?.detail || 'Error saving logos') } finally { logoSaving.value = false }
+  } catch (e) { alert(e.response?.data?.detail || t('settings.store.err.save_logos')) } finally { logoSaving.value = false }
 }
 function initLogoPreviews() {
   const store = auth.user?.store
@@ -1135,7 +1132,7 @@ async function saveStore() {
       item_noun: settingsRes.data.item_noun, category_level_names: settingsRes.data.category_level_names,
     })
     if (auth.user?.store) { auth.user.store = { ...auth.user.store, currency: cur, timezone: storeRes.data.timezone }; localStorage.setItem('vendorya_user', JSON.stringify(auth.user)) }
-  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving') } finally { storeSaving.value = false }
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.save')) } finally { storeSaving.value = false }
 }
 
 async function saveRules() {
@@ -1158,36 +1155,36 @@ async function saveRules() {
       category_level_names: settingsForm.category_level_names,
     })
     fmt.apply({ decimals: settingsForm.decimals, thousands_separator: settingsForm.thousands_separator, item_noun: settingsForm.item_noun, category_level_names: settingsForm.category_level_names })
-  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving') } finally { storeSaving.value = false }
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.save')) } finally { storeSaving.value = false }
 }
 
 async function saveReceipt() {
   storeSaving.value = true
   try { await api.patch('/api/core/settings/', { receipt_header: settingsForm.receipt_header, receipt_footer: settingsForm.receipt_footer, print_tax_id: settingsForm.print_tax_id }) }
-  catch (e) { alert('Error saving') } finally { storeSaving.value = false }
+  catch (e) { alert(t('settings.store.err.save')) } finally { storeSaving.value = false }
 }
 
 async function saveSecurity() {
   storeSaving.value = true
   try { await api.patch('/api/core/settings/', { session_timeout_minutes: settingsForm.session_timeout_minutes || 0, login_ip_allowlist: settingsForm.login_ip_allowlist || '' }) }
-  catch (e) { alert('Error saving') } finally { storeSaving.value = false }
+  catch (e) { alert(t('settings.store.err.save')) } finally { storeSaving.value = false }
 }
 
 // ── Field Visibility (Layer 1) ────────────────────────────────────────────
 const CONFIGURABLE_ROLES = ['CASHIER', 'MANAGER']
 
-const FIELD_CATALOG = {
+const FIELD_CATALOG = computed(() => ({
   inventory_products: {
-    label: 'Product Catalog',
-    desc:  'Choose which columns staff see in Inventory → Products. Owner and Admin always see everything.',
+    label: t('settings.store.fv.catalog_label'),
+    desc:  t('settings.store.fv.catalog_desc'),
     fields: [
-      { key: 'cost_display',   label: 'Cost Price',    hint: 'What the store paid per unit' },
-      { key: 'profit_display', label: 'Profit Margin', hint: 'Profit per sale (price − cost)' },
-      { key: 'supplier_name',  label: 'Supplier',      hint: 'The product\'s supplier name' },
-      { key: 'total_stock',    label: 'Stock Qty',     hint: 'Current inventory across branches' },
+      { key: 'cost_display',   label: t('settings.store.fv.cost_label'),    hint: t('settings.store.fv.cost_hint') },
+      { key: 'profit_display', label: t('settings.store.fv.profit_label'),  hint: t('settings.store.fv.profit_hint') },
+      { key: 'supplier_name',  label: t('settings.store.fv.supplier_label'), hint: t('settings.store.fv.supplier_hint') },
+      { key: 'total_stock',    label: t('settings.store.fv.stock_label'),   hint: t('settings.store.fv.stock_hint') },
     ],
   },
-}
+}))
 
 const visibilitySaving  = ref(false)
 const visibilitySaveMsg = ref('')
@@ -1214,10 +1211,10 @@ async function saveVisibility() {
   visibilitySaving.value = true
   try {
     await api.patch('/api/core/settings/', { field_visibility: settingsForm.field_visibility })
-    visibilitySaveMsg.value = 'Saved!'
+    visibilitySaveMsg.value = t('settings.store.saved_bang')
     setTimeout(() => { visibilitySaveMsg.value = '' }, 2500)
   } catch (e) {
-    alert(e.response?.data?.detail || 'Failed to save field access.')
+    alert(e.response?.data?.detail || t('settings.store.err.save_fv'))
   } finally {
     visibilitySaving.value = false
   }
@@ -1243,7 +1240,7 @@ async function saveOwner() {
   try {
     await api.patch(`/api/auth/staff/${ownerModal.id}/`, { first_name: ownerModal.first_name, last_name: ownerModal.last_name, phone_number: ownerModal.phone_number, whatsapp_number: ownerModal.whatsapp_number })
     ownerModal.open = false; fetchOwners()
-  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error') } finally { ownerSaving.value = false }
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.generic')) } finally { ownerSaving.value = false }
 }
 
 // ── Branches ──────────────────────────────────────────────────────────────
@@ -1264,7 +1261,7 @@ async function saveBranch() {
     const payload = { name: branchModal.name, city: branchModal.city, country: 'Egypt', street_1: branchModal.street_1, is_main_branch: branchModal.is_main_branch, phone_number: branchModal.phone_number, email: branchModal.email }
     branchModal.id ? await api.patch(`/api/core/branches/${branchModal.id}/`, payload) : await api.post('/api/core/branches/', payload)
     branchModal.open = false; fetchBranches()
-  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error') } finally { branchSaving.value = false }
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.generic')) } finally { branchSaving.value = false }
 }
 
 // ── Payment Methods ───────────────────────────────────────────────────────
@@ -1285,11 +1282,11 @@ async function savePM() {
     const payload = { name: pmModal.name, is_cash: pmModal.is_cash, is_agel: pmModal.is_agel }
     pmModal.id ? await api.patch(`/api/finance/payment-methods/${pmModal.id}/`, payload) : await api.post('/api/finance/payment-methods/', payload)
     pmModal.open = false; fetchPMs()
-  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error') } finally { pmSaving.value = false }
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.generic')) } finally { pmSaving.value = false }
 }
 async function deletePM(id) {
-  if (!confirm('Delete this payment method?')) return
-  try { await api.delete(`/api/finance/payment-methods/${id}/`); fetchPMs() } catch (e) { alert(e.response?.data?.detail || 'Cannot delete — may be in use.') }
+  if (!confirm(t('settings.store.confirm_delete_pm'))) return
+  try { await api.delete(`/api/finance/payment-methods/${id}/`); fetchPMs() } catch (e) { alert(e.response?.data?.detail || t('settings.store.err.delete_in_use')) }
 }
 
 // ── Label Presets ─────────────────────────────────────────────────────────
@@ -1310,11 +1307,11 @@ async function savePreset() {
     const payload = { name: presetModal.name, width_mm: presetModal.width_mm, height_mm: presetModal.height_mm, show_store_name: presetModal.show_store_name, show_product_name: presetModal.show_product_name, show_sku: presetModal.show_sku, show_barcode: presetModal.show_barcode, show_price: presetModal.show_price, is_default: presetModal.is_default }
     presetModal.id ? await api.patch(`/api/core/label-presets/${presetModal.id}/`, payload) : await api.post('/api/core/label-presets/', payload)
     presetModal.open = false; fetchPresets()
-  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error') } finally { presetSaving.value = false }
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.generic')) } finally { presetSaving.value = false }
 }
 async function deletePreset(id) {
-  if (!confirm('Delete this label preset?')) return
-  try { await api.delete(`/api/core/label-presets/${id}/`); fetchPresets() } catch { alert('Error deleting') }
+  if (!confirm(t('settings.store.confirm_delete_preset'))) return
+  try { await api.delete(`/api/core/label-presets/${id}/`); fetchPresets() } catch { alert(t('settings.store.err.deleting')) }
 }
 
 // ── Service Types ────────────────────────────────────────────────────────
@@ -1376,7 +1373,7 @@ async function savePrinters() {
     serviceSuccess.value = true
     setTimeout(() => (serviceSuccess.value = false), 2500)
   } catch (e) {
-    serviceError.value = e.response?.data?.detail || 'Failed to save printer settings.'
+    serviceError.value = e.response?.data?.detail || t('settings.store.err.save_printers')
   } finally {
     serviceSaving.value = false
   }
@@ -1405,7 +1402,7 @@ async function saveServiceSettings() {
     serviceSuccess.value = true
     setTimeout(() => (serviceSuccess.value = false), 2500)
   } catch (e) {
-    serviceError.value = e.response?.data?.detail || 'Failed to save service settings.'
+    serviceError.value = e.response?.data?.detail || t('settings.store.err.save_service')
   } finally {
     serviceSaving.value = false
   }
@@ -1419,7 +1416,7 @@ async function runNotifications() {
     notifyOk.value = true
     setTimeout(() => (notifyOk.value = false), 3000)
   } catch (e) {
-    serviceError.value = e.response?.data?.detail || 'Failed to run notifications.'
+    serviceError.value = e.response?.data?.detail || t('settings.store.err.run_notif')
   } finally {
     notifyRunning.value = false
   }

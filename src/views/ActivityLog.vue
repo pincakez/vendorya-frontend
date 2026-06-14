@@ -2,19 +2,19 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Activity Log</h1>
-        <p class="page-sub">Who did what, when {{ lastFetched ? '· updated ' + relativeFetched : '' }}</p>
+        <h1 class="page-title">{{ t('core.activity.title') }}</h1>
+        <p class="page-sub">{{ t('core.activity.sub') }} {{ lastFetched ? '· ' + t('core.activity.updated', { ago: relativeFetched }) : '' }}</p>
       </div>
       <div class="header-right">
         <select v-model="filters.user" class="filter-select" @change="reload">
-          <option value="">All users</option>
+          <option value="">{{ t('core.activity.all_users') }}</option>
           <option v-for="u in meta.users" :key="u.id" :value="u.id">{{ u.name }}</option>
         </select>
         <select v-model="filters.operation_type" class="filter-select" @change="reload">
-          <option value="">All operations</option>
+          <option value="">{{ t('core.activity.all_operations') }}</option>
           <option v-for="op in meta.operation_types" :key="op.value" :value="op.value">{{ op.label }}</option>
         </select>
-        <button class="refresh-btn" :class="{ loading }" @click="reload" title="Refresh now">
+        <button class="refresh-btn" :class="{ loading }" @click="reload" :title="t('core.activity.refresh')">
           <RefreshCw :size="14" />
         </button>
       </div>
@@ -27,18 +27,18 @@
       <table v-else class="data-table">
         <thead>
           <tr>
-            <th style="width:140px;">When</th>
-            <th style="width:160px;">User</th>
-            <th style="width:130px;">Type</th>
-            <th>Action</th>
-            <th style="width:120px;">IP</th>
+            <th style="width:140px;">{{ t('core.activity.when') }}</th>
+            <th style="width:160px;">{{ t('core.activity.user') }}</th>
+            <th style="width:130px;">{{ t('core.activity.type') }}</th>
+            <th>{{ t('core.activity.action') }}</th>
+            <th style="width:120px;">{{ t('core.activity.ip') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="!logs.length">
             <td colspan="5" class="table-empty">
               <Activity :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No activity yet</div>
+              <div>{{ t('core.activity.empty') }}</div>
             </td>
           </tr>
           <tr v-for="log in logs" :key="log.id" class="table-row">
@@ -46,7 +46,7 @@
             <td>
               <div class="user-cell">
                 <div class="user-dot" :style="{ background: userColor(log.username || '?') }"></div>
-                {{ log.full_name || log.username || 'system' }}
+                {{ log.full_name || log.username || t('core.activity.system') }}
               </div>
             </td>
             <td><span class="op-pill" :class="'op-' + log.operation_type.toLowerCase()">{{ opLabel(log.operation_type) }}</span></td>
@@ -64,9 +64,11 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Activity, RefreshCw } from 'lucide-vue-next'
 import api from '@/api/axios'
 
+const { t } = useI18n()
 defineProps({})
 
 const logs = ref([])
@@ -132,11 +134,11 @@ async function poll() {
 function relative(ts, label = '') {
   if (!ts) return ''
   const diff = Math.floor((now.value - new Date(ts).getTime()) / 1000)
-  if (diff < 5)   return label ? 'just now' : 'now'
-  if (diff < 60)  return `${diff}s ago`
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return `${Math.floor(diff / 86400)}d ago`
+  if (diff < 5)   return label ? t('core.activity.just_now') : t('core.activity.now')
+  if (diff < 60)  return t('core.activity.sec_ago', { n: diff })
+  if (diff < 3600) return t('core.activity.min_ago', { n: Math.floor(diff / 60) })
+  if (diff < 86400) return t('core.activity.hr_ago', { n: Math.floor(diff / 3600) })
+  return t('core.activity.day_ago', { n: Math.floor(diff / 86400) })
 }
 
 function absoluteTime(ts) {

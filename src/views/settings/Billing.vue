@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Billing</h1>
-        <p class="page-sub">Your current Vendorya subscription and invoices.</p>
+        <h1 class="page-title">{{ t('settings.billing.title') }}</h1>
+        <p class="page-sub">{{ t('settings.billing.sub') }}</p>
       </div>
     </div>
 
@@ -12,15 +12,15 @@
       <div class="plan-card-left">
         <div class="plan-badge">{{ subscription.display_label }}</div>
         <div class="plan-title">
-          You're on the <strong>{{ subscription.plan?.name }}</strong> plan
+          {{ t('settings.billing.youre_on_a') }} <strong>{{ subscription.plan?.name }}</strong> {{ t('settings.billing.youre_on_b') }}
         </div>
         <div v-if="subscription.plan?.description" class="plan-desc">
           {{ subscription.plan.description }}
         </div>
         <div class="plan-meta">
-          <span><strong>Status:</strong> <span :class="'status-pill status-' + subscription.status.toLowerCase()">{{ subscription.status }}</span></span>
-          <span v-if="subscription.period_end"><strong>Renews:</strong> {{ subscription.period_end }}</span>
-          <span v-if="subscription.trial_ends_at"><strong>Trial ends:</strong> {{ subscription.trial_ends_at }}</span>
+          <span><strong>{{ t('settings.billing.status') }}:</strong> <span :class="'status-pill status-' + subscription.status.toLowerCase()">{{ subStatusLabel(subscription.status) }}</span></span>
+          <span v-if="subscription.period_end"><strong>{{ t('settings.billing.renews') }}:</strong> {{ subscription.period_end }}</span>
+          <span v-if="subscription.trial_ends_at"><strong>{{ t('settings.billing.trial_ends') }}:</strong> {{ subscription.trial_ends_at }}</span>
         </div>
       </div>
       <div class="plan-card-right">
@@ -28,16 +28,16 @@
           <span class="price-amt">{{ subscription.plan?.monthly_price || '0.00' }}</span>
           <span class="price-cur">{{ subscription.plan?.currency || 'EGP' }}</span>
         </div>
-        <div class="price-sub">per month</div>
+        <div class="price-sub">{{ t('settings.billing.per_month') }}</div>
       </div>
     </div>
     <div v-else class="plan-card" style="justify-content:center;color:var(--text-muted);">
-      No subscription found. Contact support.
+      {{ t('settings.billing.no_sub') }}
     </div>
 
     <!-- Quota usage -->
     <div v-if="subscription && subscription.quota" class="section-block">
-      <h2 class="section-title" style="margin-top:0;">Plan Usage</h2>
+      <h2 class="section-title" style="margin-top:0;">{{ t('settings.billing.plan_usage') }}</h2>
       <div class="quota-grid">
         <div v-for="(item, key) in subscription.quota" :key="key" class="quota-item">
           <div class="quota-header">
@@ -58,7 +58,7 @@
     </div>
 
     <!-- Invoice list -->
-    <h2 class="section-title">Invoices</h2>
+    <h2 class="section-title">{{ t('settings.billing.invoices') }}</h2>
     <div class="table-wrap">
       <div v-if="invoicesLoading" class="table-skeleton">
         <div v-for="i in 3" :key="i" class="skeleton-row" />
@@ -66,28 +66,28 @@
       <table v-else class="data-table">
         <thead>
           <tr>
-            <th>Invoice</th>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Issued</th>
-            <th>Due</th>
+            <th>{{ t('settings.billing.col_invoice') }}</th>
+            <th>{{ t('common.description') }}</th>
+            <th>{{ t('settings.billing.col_amount') }}</th>
+            <th>{{ t('settings.billing.status') }}</th>
+            <th>{{ t('settings.billing.col_issued') }}</th>
+            <th>{{ t('settings.billing.col_due') }}</th>
             <th style="width:80px;"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="!invoices.length">
-            <td colspan="7" class="table-empty">No invoices yet.</td>
+            <td colspan="7" class="table-empty">{{ t('settings.billing.no_invoices') }}</td>
           </tr>
           <tr v-for="inv in invoices" :key="inv.id" class="table-row" @click="openInvoice(inv)">
             <td style="font-family:ui-monospace,monospace;font-size:12px;">{{ inv.invoice_number || '—' }}</td>
             <td style="color:var(--text-secondary);font-size:12.5px;">{{ inv.line_description || '—' }}</td>
             <td style="font-variant-numeric:tabular-nums;font-weight:600;">{{ formatNumber(inv.amount) }} {{ inv.currency }}</td>
-            <td><span class="status-pill" :class="'inv-' + inv.status.toLowerCase()">{{ inv.status }}</span></td>
+            <td><span class="status-pill" :class="'inv-' + inv.status.toLowerCase()">{{ invStatusLabel(inv.status) }}</span></td>
             <td style="font-size:12px;color:var(--text-secondary);">{{ inv.issued_at ? formatDate(inv.issued_at) : '—' }}</td>
             <td style="font-size:12px;color:var(--text-secondary);">{{ inv.due_at || '—' }}</td>
             <td>
-              <button class="row-action" title="View"><Eye :size="13" /></button>
+              <button class="row-action" :title="t('settings.billing.view')"><Eye :size="13" /></button>
             </td>
           </tr>
         </tbody>
@@ -95,62 +95,62 @@
     </div>
 
     <!-- Invoice detail modal -->
-    <AppModal :open="detailModal.open" :title="detailModal.invoice?.invoice_number || 'Invoice'" @close="closeDetail">
+    <AppModal :open="detailModal.open" :title="detailModal.invoice?.invoice_number || t('settings.billing.invoice')" @close="closeDetail">
       <div v-if="detailModal.invoice" class="invoice-printable">
         <div class="invoice-head">
           <div>
             <div class="brand-title">VENDORYA</div>
-            <div class="brand-sub">Bill from: Vendorya Ltd</div>
+            <div class="brand-sub">{{ t('settings.billing.bill_from') }}</div>
           </div>
           <div style="text-align:right;">
             <div class="inv-no">{{ detailModal.invoice.invoice_number }}</div>
-            <div class="inv-status" :class="'inv-' + detailModal.invoice.status.toLowerCase()">{{ detailModal.invoice.status }}</div>
+            <div class="inv-status" :class="'inv-' + detailModal.invoice.status.toLowerCase()">{{ invStatusLabel(detailModal.invoice.status) }}</div>
           </div>
         </div>
 
         <div class="invoice-meta">
           <div>
-            <div class="meta-label">Billed to</div>
+            <div class="meta-label">{{ t('settings.billing.billed_to') }}</div>
             <div class="meta-value">{{ detailModal.invoice.store_name }}</div>
           </div>
           <div>
-            <div class="meta-label">Issued</div>
+            <div class="meta-label">{{ t('settings.billing.col_issued') }}</div>
             <div class="meta-value">{{ detailModal.invoice.issued_at ? formatDate(detailModal.invoice.issued_at) : '—' }}</div>
           </div>
           <div>
-            <div class="meta-label">Due</div>
+            <div class="meta-label">{{ t('settings.billing.col_due') }}</div>
             <div class="meta-value">{{ detailModal.invoice.due_at || '—' }}</div>
           </div>
           <div>
-            <div class="meta-label">Period</div>
+            <div class="meta-label">{{ t('settings.billing.period') }}</div>
             <div class="meta-value">{{ detailModal.invoice.period_start || '—' }} → {{ detailModal.invoice.period_end || '—' }}</div>
           </div>
         </div>
 
         <table class="invoice-lines">
           <thead>
-            <tr><th>Description</th><th style="text-align:right;">Amount</th></tr>
+            <tr><th>{{ t('common.description') }}</th><th style="text-align:right;">{{ t('settings.billing.col_amount') }}</th></tr>
           </thead>
           <tbody>
             <tr>
-              <td>{{ detailModal.invoice.line_description || (detailModal.invoice.subscription?.display_label + ' subscription') }}</td>
+              <td>{{ detailModal.invoice.line_description || t('settings.billing.line_default', { plan: detailModal.invoice.subscription?.display_label }) }}</td>
               <td style="text-align:right;font-variant-numeric:tabular-nums;">{{ formatNumber(detailModal.invoice.amount) }} {{ detailModal.invoice.currency }}</td>
             </tr>
           </tbody>
           <tfoot>
-            <tr><td><strong>Total</strong></td><td style="text-align:right;font-weight:700;font-size:15px;">{{ formatNumber(detailModal.invoice.amount) }} {{ detailModal.invoice.currency }}</td></tr>
+            <tr><td><strong>{{ t('settings.billing.total') }}</strong></td><td style="text-align:right;font-weight:700;font-size:15px;">{{ formatNumber(detailModal.invoice.amount) }} {{ detailModal.invoice.currency }}</td></tr>
           </tfoot>
         </table>
 
         <div v-if="detailModal.invoice.status === 'PAID'" class="paid-note">
-          ✓ Paid on {{ formatDate(detailModal.invoice.paid_at) }}
-          <span v-if="detailModal.invoice.paid_reference"> · ref {{ detailModal.invoice.paid_reference }}</span>
+          {{ t('settings.billing.paid_on', { date: formatDate(detailModal.invoice.paid_at) }) }}
+          <span v-if="detailModal.invoice.paid_reference"> · {{ t('settings.billing.ref', { ref: detailModal.invoice.paid_reference }) }}</span>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="closeDetail">Close</button>
+        <button class="btn-ghost" @click="closeDetail">{{ t('common.close') }}</button>
         <button class="btn-primary" @click="printInvoice">
-          <Printer :size="14" /> Print
+          <Printer :size="14" /> {{ t('settings.billing.print') }}
         </button>
       </template>
     </AppModal>
@@ -159,12 +159,14 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { Eye, Printer } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
+const { t } = useI18n()
 const route = useRoute()
 const subscription = ref(null)
 const invoices = ref([])
@@ -199,13 +201,21 @@ function printInvoice() {
   window.print()
 }
 
-const QUOTA_LABELS = {
-  users: 'Staff Users',
-  branches: 'Branches',
-  products: 'Products',
-  invoices: 'Invoices This Month',
+function quotaLabel(key) {
+  const k = `settings.billing.quota.${key}`
+  const label = t(k)
+  return label === k ? key : label
 }
-function quotaLabel(key) { return QUOTA_LABELS[key] || key }
+function subStatusLabel(s) {
+  const k = `settings.billing.sub_status.${(s || '').toLowerCase()}`
+  const label = t(k)
+  return label === k ? s : label
+}
+function invStatusLabel(s) {
+  const k = `settings.billing.inv_status.${(s || '').toLowerCase()}`
+  const label = t(k)
+  return label === k ? s : label
+}
 function barWidth(item) {
   if (item.limit == null || item.limit === 0) return '0%'
   return Math.min(100, Math.round((item.used / item.limit) * 100)) + '%'

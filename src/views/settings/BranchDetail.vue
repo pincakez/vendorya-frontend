@@ -3,14 +3,14 @@
     <div class="page-header">
       <div style="display:flex;align-items:center;gap:12px;">
         <button class="btn-ghost btn-sm" @click="$router.push('/settings?tab=branches')">
-          <ChevronLeft :size="15" /> Branches
+          <ChevronLeft :size="15" /> {{ t('settings.branch_detail.branches') }}
         </button>
         <div>
           <h1 class="page-title">{{ branch?.name || '…' }}</h1>
-          <p class="page-sub">Branch overview — stock, staff, and today's performance.</p>
+          <p class="page-sub">{{ t('settings.branch_detail.sub') }}</p>
         </div>
       </div>
-      <span v-if="branch?.is_main_branch" class="badge-main">Main Branch</span>
+      <span v-if="branch?.is_main_branch" class="badge-main">{{ t('settings.branch_detail.main_branch') }}</span>
     </div>
 
     <div v-if="loading" class="table-skeleton">
@@ -21,24 +21,24 @@
       <!-- KPI row -->
       <div class="kpi-row">
         <div class="kpi-card">
-          <div class="kpi-label">Today's Sales</div>
+          <div class="kpi-label">{{ t('settings.branch_detail.today_sales') }}</div>
           <div class="kpi-value">{{ auth.currencySymbol }} {{ formatNumber(data.today_sales?.total || 0) }}</div>
-          <div class="kpi-sub">{{ data.today_sales?.count || 0 }} invoice{{ data.today_sales?.count !== 1 ? 's' : '' }}</div>
+          <div class="kpi-sub">{{ t('settings.branch_detail.invoices', { n: data.today_sales?.count || 0 }, data.today_sales?.count || 0) }}</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Staff at Branch</div>
+          <div class="kpi-label">{{ t('settings.branch_detail.staff_at_branch') }}</div>
           <div class="kpi-value">{{ data.staff?.length || 0 }}</div>
-          <div class="kpi-sub">assigned users</div>
+          <div class="kpi-sub">{{ t('settings.branch_detail.assigned_users') }}</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Variants in Stock</div>
+          <div class="kpi-label">{{ t('settings.branch_detail.variants_in_stock') }}</div>
           <div class="kpi-value">{{ data.stock_summary?.variants_in_stock ?? '—' }}</div>
-          <div class="kpi-sub">{{ formatNumber(data.stock_summary?.total_units || 0, { decimals: 0 }) }} total units</div>
+          <div class="kpi-sub">{{ t('settings.branch_detail.total_units', { n: formatNumber(data.stock_summary?.total_units || 0, { decimals: 0 }) }) }}</div>
         </div>
         <div class="kpi-card" :class="{ 'kpi-card--warn': (data.stock_summary?.low_stock_count || 0) > 0 }">
-          <div class="kpi-label">Low Stock</div>
+          <div class="kpi-label">{{ t('settings.branch_detail.low_stock') }}</div>
           <div class="kpi-value">{{ data.stock_summary?.low_stock_count ?? '—' }}</div>
-          <div class="kpi-sub">variants at or below reorder level</div>
+          <div class="kpi-sub">{{ t('settings.branch_detail.at_reorder') }}</div>
         </div>
       </div>
 
@@ -46,31 +46,31 @@
       <div class="detail-grid">
         <!-- Branch info -->
         <div class="dt-card">
-          <div class="card-section-title">Branch Info</div>
-          <div class="info-row"><span class="info-label">Name</span><span>{{ branch.name }}</span></div>
-          <div class="info-row" v-if="branch.address_city"><span class="info-label">City</span><span>{{ branch.address_city }}<span v-if="branch.address_country">, {{ branch.address_country }}</span></span></div>
-          <div class="info-row" v-if="branch.address_street_1"><span class="info-label">Street</span><span>{{ branch.address_street_1 }}</span></div>
-          <div class="info-row" v-if="branch.phone_number"><span class="info-label">Phone</span><span>{{ branch.phone_number }}</span></div>
-          <div class="info-row" v-if="branch.email"><span class="info-label">Email</span><span>{{ branch.email }}</span></div>
+          <div class="card-section-title">{{ t('settings.branch_detail.branch_info') }}</div>
+          <div class="info-row"><span class="info-label">{{ t('common.name') }}</span><span>{{ branch.name }}</span></div>
+          <div class="info-row" v-if="branch.address_city"><span class="info-label">{{ t('settings.branch_detail.city') }}</span><span>{{ branch.address_city }}<span v-if="branch.address_country">, {{ branch.address_country }}</span></span></div>
+          <div class="info-row" v-if="branch.address_street_1"><span class="info-label">{{ t('settings.branch_detail.street') }}</span><span>{{ branch.address_street_1 }}</span></div>
+          <div class="info-row" v-if="branch.phone_number"><span class="info-label">{{ t('settings.branch_detail.phone') }}</span><span>{{ branch.phone_number }}</span></div>
+          <div class="info-row" v-if="branch.email"><span class="info-label">{{ t('settings.branch_detail.email') }}</span><span>{{ branch.email }}</span></div>
         </div>
 
         <!-- Staff list -->
         <div class="dt-card">
-          <div class="card-section-title">Staff</div>
-          <div v-if="!data.staff?.length" style="color:var(--text-muted);font-size:13px;padding:8px 0;">No staff assigned to this branch.</div>
+          <div class="card-section-title">{{ t('settings.branch_detail.staff') }}</div>
+          <div v-if="!data.staff?.length" style="color:var(--text-muted);font-size:13px;padding:8px 0;">{{ t('settings.branch_detail.no_staff') }}</div>
           <table v-else class="dt" style="margin-top:4px;">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Role</th>
+                <th>{{ t('common.name') }}</th>
+                <th>{{ t('settings.branch_detail.username') }}</th>
+                <th>{{ t('settings.branch_detail.role') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="u in data.staff" :key="u.id" class="dt-row">
                 <td>{{ u.full_name }}</td>
                 <td style="color:var(--text-muted);font-size:12.5px;">{{ u.username }}</td>
-                <td><span class="role-pill" :class="'role-' + u.role.toLowerCase()">{{ u.role }}</span></td>
+                <td><span class="role-pill" :class="'role-' + u.role.toLowerCase()">{{ t('people.staff.roles.' + u.role.toLowerCase()) }}</span></td>
               </tr>
             </tbody>
           </table>
@@ -79,19 +79,21 @@
     </template>
 
     <div v-else-if="!loading" style="color:var(--text-muted);padding:32px;text-align:center;">
-      Branch not found.
+      {{ t('settings.branch_detail.not_found') }}
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { ChevronLeft } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { formatNumber } from '@/utils/format'
 
+const { t } = useI18n()
 const route  = useRoute()
 const auth   = useAuthStore()
 const loading = ref(true)

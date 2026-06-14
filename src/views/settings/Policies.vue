@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Business Policies</h1>
-        <p class="page-sub">Control how your store handles sales, stock, and credit</p>
+        <h1 class="page-title">{{ t('settings.policies.title') }}</h1>
+        <p class="page-sub">{{ t('settings.policies.sub') }}</p>
       </div>
     </div>
 
@@ -14,11 +14,11 @@
       <div class="policy-card">
         <div class="policy-icon" style="background:var(--accent-soft);color:var(--accent);"><Package :size="20" /></div>
         <div class="policy-body">
-          <div class="policy-title">Allow Negative Stock</div>
-          <div class="policy-desc">When enabled, the POS can sell items even if stock reaches zero. When disabled, the POS blocks the sale and forces a stock check first.</div>
+          <div class="policy-title">{{ t('settings.policies.neg_stock_title') }}</div>
+          <div class="policy-desc">{{ t('settings.policies.neg_stock_desc') }}</div>
           <div class="policy-footer">
             <span class="policy-status" :class="form.allow_negative_stock ? 'status-on' : 'status-off'">
-              {{ form.allow_negative_stock ? 'Enabled' : 'Disabled' }}
+              {{ form.allow_negative_stock ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
             </span>
             <button class="toggle-btn" :class="{ on: form.allow_negative_stock }" @click="toggle('allow_negative_stock')">
               <span class="toggle-knob" />
@@ -31,11 +31,11 @@
       <div class="policy-card">
         <div class="policy-icon" style="background:var(--success-soft);color:var(--success);"><CreditCard :size="20" /></div>
         <div class="policy-body">
-          <div class="policy-title">Allow Credit Sales (Agel)</div>
-          <div class="policy-desc">When enabled, customers can buy on credit — the outstanding amount is added to their balance. When disabled, all invoices must be paid in full at time of sale.</div>
+          <div class="policy-title">{{ t('settings.policies.agel_title') }}</div>
+          <div class="policy-desc">{{ t('settings.policies.agel_desc') }}</div>
           <div class="policy-footer">
             <span class="policy-status" :class="form.enable_agel_selling ? 'status-on' : 'status-off'">
-              {{ form.enable_agel_selling ? 'Enabled' : 'Disabled' }}
+              {{ form.enable_agel_selling ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
             </span>
             <button class="toggle-btn" :class="{ on: form.enable_agel_selling }" @click="toggle('enable_agel_selling')">
               <span class="toggle-knob" />
@@ -48,21 +48,17 @@
       <div class="policy-card">
         <div class="policy-icon" style="background:#ede9fe;color:#7c3aed;"><AlertCircle :size="20" /></div>
         <div class="policy-body">
-          <div class="policy-title">Credit Limit Policy</div>
-          <div class="policy-desc">
-            What happens when a customer's unpaid balance would exceed their credit limit.
-            <strong>Allow</strong> — no enforcement. <strong>Warn</strong> — sale goes through, store owner is notified.
-            <strong>Block</strong> — sale is rejected until balance is settled.
-          </div>
+          <div class="policy-title">{{ t('settings.policies.credit_limit_title') }}</div>
+          <div class="policy-desc">{{ t('settings.policies.credit_limit_desc') }}</div>
           <div class="policy-footer" style="gap:8px;flex-wrap:wrap;">
             <button v-for="opt in creditPolicyOptions" :key="opt.value"
               class="mode-btn" :class="{ active: form.credit_policy === opt.value }"
               @click="form.credit_policy = opt.value"
             >{{ opt.label }}</button>
             <template v-if="form.credit_policy !== 'ALLOW'">
-              <span style="margin-left:8px;font-size:13px;color:var(--text-muted);">Default limit:</span>
+              <span style="margin-left:8px;font-size:13px;color:var(--text-muted);">{{ t('settings.policies.default_limit') }}</span>
               <input v-model.number="form.default_credit_limit" type="number" min="0" step="100" class="num-input" placeholder="e.g. 5000" />
-              <span style="font-size:12px;color:var(--text-muted);">per customer (null = no limit)</span>
+              <span style="font-size:12px;color:var(--text-muted);">{{ t('settings.policies.per_customer') }}</span>
             </template>
           </div>
         </div>
@@ -72,12 +68,12 @@
       <div class="policy-card">
         <div class="policy-icon" style="background:var(--warning-soft);color:var(--warning);"><Percent :size="20" /></div>
         <div class="policy-body">
-          <div class="policy-title">Default Tax</div>
-          <div class="policy-desc">The tax applied automatically to new invoices if no tax is specified on the product. Set to "None" for tax-exempt stores.</div>
+          <div class="policy-title">{{ t('settings.policies.default_tax_title') }}</div>
+          <div class="policy-desc">{{ t('settings.policies.default_tax_desc') }}</div>
           <div class="policy-footer" style="gap:12px;">
             <select v-model="form.default_tax" class="tax-select">
-              <option value="">None (Tax Exempt)</option>
-              <option v-for="t in taxes" :key="t.id" :value="t.id">{{ t.name }} — {{ t.rate }}%</option>
+              <option value="">{{ t('settings.policies.none_exempt') }}</option>
+              <option v-for="tx in taxes" :key="tx.id" :value="tx.id">{{ tx.name }} — {{ tx.rate }}%</option>
             </select>
           </div>
         </div>
@@ -87,32 +83,32 @@
       <div class="policy-card">
         <div class="policy-icon" style="background:var(--success-soft);color:var(--success);"><Hash :size="20" /></div>
         <div class="policy-body">
-          <div class="policy-title">Product Numbering Mode</div>
-          <div class="policy-desc">Controls how the 4-digit product counter (last segment of every SKU) is assigned when a new variant is created.</div>
+          <div class="policy-title">{{ t('settings.policies.numbering_title') }}</div>
+          <div class="policy-desc">{{ t('settings.policies.numbering_desc') }}</div>
           <div class="policy-footer" style="gap:8px;">
             <button
               class="mode-btn"
               :class="{ active: form.product_numbering_mode === 'PROGRESSIVE' }"
               @click="form.product_numbering_mode = 'PROGRESSIVE'"
             >
-              Progressive
+              {{ t('settings.policies.progressive') }}
             </button>
             <button
               class="mode-btn"
               :class="{ active: form.product_numbering_mode === 'RANDOM' }"
               @click="form.product_numbering_mode = 'RANDOM'"
             >
-              Random
+              {{ t('settings.policies.random') }}
             </button>
             <span style="font-size:12px;color:var(--text-muted);margin-left:4px;">
-              {{ form.product_numbering_mode === 'PROGRESSIVE' ? '0001, 0002, 0003…' : 'random 4-digit slot' }}
+              {{ form.product_numbering_mode === 'PROGRESSIVE' ? '0001, 0002, 0003…' : t('settings.policies.random_slot') }}
             </span>
           </div>
         </div>
       </div>
 
       <!-- Section: Security -->
-      <div class="section-heading">Security</div>
+      <div class="section-heading">{{ t('settings.policies.security') }}</div>
 
       <!-- Note: 2FA is opt-in per user (Settings › Profile › Two-Factor Authentication). -->
 
@@ -120,11 +116,11 @@
       <div class="policy-card">
         <div class="policy-icon" style="background:#e0e7ff;color:#4f46e5;"><Clock :size="20" /></div>
         <div class="policy-body">
-          <div class="policy-title">Session Timeout</div>
-          <div class="policy-desc">Automatically sign out a user after this many minutes of inactivity. Set to 0 to disable. (Max 1440 = 24h.)</div>
+          <div class="policy-title">{{ t('settings.policies.session_title') }}</div>
+          <div class="policy-desc">{{ t('settings.policies.session_desc') }}</div>
           <div class="policy-footer" style="gap:12px;">
             <input v-model.number="form.session_timeout_minutes" type="number" min="0" max="1440" class="num-input" />
-            <span style="font-size:13px;color:var(--text-muted);">minutes</span>
+            <span style="font-size:13px;color:var(--text-muted);">{{ t('settings.policies.minutes') }}</span>
           </div>
         </div>
       </div>
@@ -133,8 +129,8 @@
       <div class="policy-card">
         <div class="policy-icon" style="background:var(--success-soft);color:var(--success);"><Globe :size="20" /></div>
         <div class="policy-body">
-          <div class="policy-title">Owner / Admin Login IP Allowlist</div>
-          <div class="policy-desc">Restrict OWNER and ADMIN logins to specific IP addresses or CIDR ranges (one per line or comma-separated). Leave empty to allow login from anywhere. Cashiers and Managers are not affected.</div>
+          <div class="policy-title">{{ t('settings.policies.ip_title') }}</div>
+          <div class="policy-desc">{{ t('settings.policies.ip_desc') }}</div>
           <textarea v-model="form.login_ip_allowlist" class="ip-area" rows="3"
             placeholder="e.g. 197.45.0.0/16&#10;102.40.21.7"></textarea>
         </div>
@@ -144,17 +140,20 @@
 
     <div class="save-bar">
       <button class="btn-primary" :disabled="saving" @click="save">
-        {{ saving ? 'Saving…' : 'Save Policies' }}
+        {{ saving ? t('common.saving') : t('settings.policies.save_btn') }}
       </button>
-      <span v-if="saved" class="save-confirm"><CheckCircle :size="14" /> Saved</span>
+      <span v-if="saved" class="save-confirm"><CheckCircle :size="14" /> {{ t('settings.policies.saved') }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Package, CreditCard, Percent, CheckCircle, Clock, Globe, Hash, AlertCircle } from 'lucide-vue-next'
 import api from '@/api/axios'
+
+const { t } = useI18n()
 
 const loading = ref(false)
 const saving  = ref(false)
@@ -167,11 +166,11 @@ const form    = reactive({
   force_2fa_managers: false, session_timeout_minutes: 0, login_ip_allowlist: '',
 })
 
-const creditPolicyOptions = [
-  { value: 'ALLOW', label: 'Allow' },
-  { value: 'WARN',  label: 'Warn' },
-  { value: 'BLOCK', label: 'Block' },
-]
+const creditPolicyOptions = computed(() => [
+  { value: 'ALLOW', label: t('settings.policies.allow') },
+  { value: 'WARN',  label: t('settings.policies.warn') },
+  { value: 'BLOCK', label: t('settings.policies.block') },
+])
 
 function toggle(field) { form[field] = !form[field] }
 
@@ -216,7 +215,7 @@ async function save() {
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
     const data = e.response?.data
-    alert(data ? (typeof data === 'string' ? data : JSON.stringify(data)) : 'Error saving policies')
+    alert(data ? (typeof data === 'string' ? data : JSON.stringify(data)) : t('settings.policies.err_save'))
   } finally { saving.value = false }
 }
 
