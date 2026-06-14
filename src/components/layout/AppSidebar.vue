@@ -201,6 +201,10 @@ const groups = computed(() => [
     { label: t('nav.items.stock_ledger'),  to: '/reports/stock-ledger', icon: BookOpen },
     { label: t('nav.items.cashier_perf'),  to: '/reports/cashiers',     icon: UserCheck },
     { label: t('nav.items.tax'),           to: '/reports/tax',          icon: Percent },
+    { label: t('nav.items.storage_aging'), to: '/reports/storage-aging', icon: Clock },
+    { label: t('nav.items.storage_value'), to: '/reports/storage-value', icon: Wallet },
+    { label: t('nav.items.storage_movements'), to: '/reports/storage-movements', icon: ArrowDownUp },
+    { label: t('nav.items.storage_recon'), to: '/reports/storage-reconciliation', icon: ShieldCheck },
   ] },
   { id: 'people', title: t('nav.groups.people'), icon: Users, items: [
     { label: t('nav.items.customers'), to: '/people/customers', icon: Users },

@@ -74,7 +74,11 @@
    "misc": "Misc",
    "gallery": "Widget Gallery",
    "component_gallery": "Design Lab",
-   "alerts_center": "Alerts Center"
+   "alerts_center": "Alerts Center",
+   "storage_aging": "Storage Aging",
+   "storage_value": "Storage Value",
+   "storage_movements": "Storage Movements",
+   "storage_recon": "Storage Reconciliation"
   }
  },
  "common": {
@@ -1288,6 +1292,90 @@
     "taxable_base": "Taxable Base",
     "collected": "Collected",
     "period": "Period"
+   }
+  },
+  "storage_aging": {
+   "title": "Storage Aging",
+   "subtitle": "Parked stock layers grouped by days in storage — 180+ days flagged as write-down candidates",
+   "table_title": "Storage Aging",
+   "location": "Location",
+   "all_locations": "All locations",
+   "as_of": "As of {date}",
+   "empty": "No stock currently in storage",
+   "write_down": "Write-down candidate",
+   "buckets": {
+    "b0_30": "0–30 days",
+    "b31_60": "31–60 days",
+    "b61_90": "61–90 days",
+    "b91_180": "91–180 days",
+    "b180_plus": "180+ days"
+   },
+   "cols": {
+    "bucket": "Age",
+    "items": "Layers",
+    "qty": "Quantity",
+    "value": "Cost Value",
+    "status": "Status"
+   }
+  },
+  "storage_value": {
+   "title": "Storage Value",
+   "subtitle": "Cost value of parked stock, grouped by storage location then category or supplier",
+   "table_title": "Storage Value",
+   "group_by": "Group by",
+   "by": {
+    "category": "Category",
+    "supplier": "Supplier"
+   },
+   "empty": "No stock currently in storage",
+   "cols": {
+    "location": "Location",
+    "category": "Category",
+    "supplier": "Supplier",
+    "qty": "Quantity",
+    "value": "Cost Value"
+   }
+  },
+  "storage_movements": {
+   "title": "Storage Movements",
+   "subtitle": "Audit log of moves to storage, retrievals and write-offs",
+   "table_title": "Storage Movement History",
+   "location": "Location",
+   "all_locations": "All locations",
+   "direction": "Direction",
+   "all_directions": "All directions",
+   "dir": {
+    "TO_STORAGE": "To Storage",
+    "FROM_STORAGE": "From Storage",
+    "WRITE_OFF": "Write-off"
+   },
+   "empty": "No storage movements in this period",
+   "cols": {
+    "date": "Date",
+    "direction": "Direction",
+    "sku": "SKU",
+    "product": "Product",
+    "location": "Location",
+    "qty": "Quantity",
+    "value": "Cost Value",
+    "branch": "Branch",
+    "user": "User"
+   }
+  },
+  "storage_recon": {
+   "title": "Storage Reconciliation",
+   "subtitle": "Integrity check — storage on-hand must equal the net of signed storage movements",
+   "table_title": "Reconciliation Failures",
+   "all_ok": "All storage pools reconcile",
+   "failures_found": "{n} variant(s) failed reconciliation",
+   "checked": "{n} variants checked",
+   "empty": "No reconciliation failures",
+   "cols": {
+    "sku": "SKU",
+    "product": "Product",
+    "on_hand": "On Hand",
+    "expected": "Expected",
+    "difference": "Difference"
    }
   }
  },
