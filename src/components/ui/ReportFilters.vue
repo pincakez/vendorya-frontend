@@ -8,26 +8,26 @@
     </div>
     <div class="filter-row">
       <label class="filter-field">
-        <span>From</span>
+        <span>{{ t('reports.filters.from') }}</span>
         <input type="date" v-model="dateFrom" class="filter-input" @change="onManual" />
       </label>
       <label class="filter-field">
-        <span>To</span>
+        <span>{{ t('reports.filters.to') }}</span>
         <input type="date" v-model="dateTo" class="filter-input" @change="onManual" />
       </label>
       <label v-if="showBranch" class="filter-field">
-        <span>Branch</span>
+        <span>{{ t('reports.filters.branch') }}</span>
         <select v-model="branch" class="filter-input" @change="emitChange">
-          <option value="">All branches</option>
+          <option value="">{{ t('reports.filters.all_branches') }}</option>
           <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
         </select>
       </label>
       <label v-if="showGranularity" class="filter-field">
-        <span>Group by</span>
+        <span>{{ t('reports.filters.group_by') }}</span>
         <select v-model="granularity" class="filter-input" @change="emitChange">
-          <option value="day">Daily</option>
-          <option value="week">Weekly</option>
-          <option value="month">Monthly</option>
+          <option value="day">{{ t('reports.filters.daily') }}</option>
+          <option value="week">{{ t('reports.filters.weekly') }}</option>
+          <option value="month">{{ t('reports.filters.monthly') }}</option>
         </select>
       </label>
     </div>
@@ -35,8 +35,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
+
+const { t } = useI18n()
 
 const props = defineProps({
   showBranch:      { type: Boolean, default: true },
@@ -56,13 +59,13 @@ const granularity = ref(props.defaultGranularity)
 const branches = ref([])
 const activePreset = ref('month')
 
-const presets = [
-  { id: 'today', label: 'Today', from: () => today, to: () => today },
-  { id: 'week',  label: 'Last 7 days', from: () => new Date(Date.now() - 6 * 864e5), to: () => today },
-  { id: '30',    label: 'Last 30 days', from: () => new Date(Date.now() - 29 * 864e5), to: () => today },
-  { id: 'month', label: 'This month', from: () => monthStart, to: () => today },
-  { id: 'year',  label: 'This year', from: () => new Date(today.getFullYear(), 0, 1), to: () => today },
-]
+const presets = computed(() => [
+  { id: 'today', label: t('reports.filters.presets.today'), from: () => today, to: () => today },
+  { id: 'week',  label: t('reports.filters.presets.week'), from: () => new Date(Date.now() - 6 * 864e5), to: () => today },
+  { id: '30',    label: t('reports.filters.presets.d30'), from: () => new Date(Date.now() - 29 * 864e5), to: () => today },
+  { id: 'month', label: t('reports.filters.presets.month'), from: () => monthStart, to: () => today },
+  { id: 'year',  label: t('reports.filters.presets.year'), from: () => new Date(today.getFullYear(), 0, 1), to: () => today },
+])
 
 function applyPreset(p) {
   activePreset.value = p.id

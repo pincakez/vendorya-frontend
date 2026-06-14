@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Profit &amp; Loss</h1>
-        <p class="page-sub">Revenue − COGS − Expenses − Returns = Net</p>
+        <h1 class="page-title">{{ t('reports.pnl.title') }}</h1>
+        <p class="page-sub">{{ t('reports.pnl.subtitle') }}</p>
       </div>
     </div>
 
@@ -11,29 +11,29 @@
 
     <div class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-label">Revenue (ex-tax)</div>
-        <div class="kpi-value"><Money :value="t.revenue ?? 0" /></div>
+        <div class="kpi-label">{{ t('reports.pnl.kpi.revenue_ex_tax') }}</div>
+        <div class="kpi-value"><Money :value="sum.revenue ?? 0" /></div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">COGS</div>
-        <div class="kpi-value"><Money :value="t.cogs ?? 0" /></div>
+        <div class="kpi-label">{{ t('reports.pnl.kpi.cogs') }}</div>
+        <div class="kpi-value"><Money :value="sum.cogs ?? 0" /></div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Expenses</div>
-        <div class="kpi-value"><Money :value="t.expenses ?? 0" /></div>
+        <div class="kpi-label">{{ t('reports.pnl.kpi.expenses') }}</div>
+        <div class="kpi-value"><Money :value="sum.expenses ?? 0" /></div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Returns</div>
-        <div class="kpi-value"><Money :value="t.returns ?? 0" /></div>
+        <div class="kpi-label">{{ t('reports.pnl.kpi.returns') }}</div>
+        <div class="kpi-value"><Money :value="sum.returns ?? 0" /></div>
       </div>
       <div class="kpi-card kpi-net" :class="netClass">
-        <div class="kpi-label">Net Profit</div>
-        <div class="kpi-value"><Money :value="t.net ?? 0" /></div>
+        <div class="kpi-label">{{ t('reports.pnl.kpi.net_profit') }}</div>
+        <div class="kpi-value"><Money :value="sum.net ?? 0" /></div>
       </div>
     </div>
 
-    <p v-if="t.reconciles === false" class="recon-warn">
-      ⚠ Reconciliation mismatch — figures do not tie out. This is a bug, report it.
+    <p v-if="sum.reconciles === false" class="recon-warn">
+      {{ t('reports.pnl.recon_warn') }}
     </p>
 
     <ReportTable
@@ -41,7 +41,7 @@
       :rows="rows"
       :totals="totals"
       :loading="loading"
-      title="Profit &amp; Loss Statement"
+      :title="t('reports.pnl.table_title')"
       filename="profit-and-loss"
       :meta="meta"
     />
@@ -50,30 +50,33 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import { formatCurrency } from '@/utils/format'
 import ReportFilters from '@/components/ui/ReportFilters.vue'
 import ReportTable from '@/components/ui/ReportTable.vue'
 
+const { t } = useI18n()
+
 const loading = ref(false)
 const rows = ref([])
 const totals = ref(null)
-const t = ref({})
+const sum = ref({})
 const filters = ref({})
 
 const meta = computed(() => `${filters.value.date_from || ''} → ${filters.value.date_to || ''}`)
-const netClass = computed(() => Number(t.value.net) < 0 ? 'net-neg' : 'net-pos')
+const netClass = computed(() => Number(sum.value.net) < 0 ? 'net-neg' : 'net-pos')
 function money(v) { return formatCurrency(v ?? 0) }
 
-const columns = [
-  { key: 'period',       label: 'Period', type: 'date' },
-  { key: 'revenue',      label: 'Revenue', type: 'currency', accent: 'money' },
-  { key: 'cogs',         label: 'COGS', type: 'currency' },
-  { key: 'gross_profit', label: 'Gross Profit', type: 'currency' },
-  { key: 'expenses',     label: 'Expenses', type: 'currency' },
-  { key: 'returns',      label: 'Returns', type: 'currency' },
-  { key: 'net',          label: 'Net', type: 'currency', accent: 'sign' },
-]
+const columns = computed(() => [
+  { key: 'period',       label: t('reports.pnl.cols.period'), type: 'date' },
+  { key: 'revenue',      label: t('reports.pnl.cols.revenue'), type: 'currency', accent: 'money' },
+  { key: 'cogs',         label: t('reports.pnl.cols.cogs'), type: 'currency' },
+  { key: 'gross_profit', label: t('reports.pnl.cols.gross_profit'), type: 'currency' },
+  { key: 'expenses',     label: t('reports.pnl.cols.expenses'), type: 'currency' },
+  { key: 'returns',      label: t('reports.pnl.cols.returns'), type: 'currency' },
+  { key: 'net',          label: t('reports.pnl.cols.net'), type: 'currency', accent: 'sign' },
+])
 
 function onFilters(f) { filters.value = f; fetchData() }
 
@@ -84,8 +87,8 @@ async function fetchData() {
     const res = await api.get('/api/reports/pnl/', { params: filters.value })
     rows.value = res.data.rows || []
     totals.value = res.data.totals || null
-    t.value = res.data.totals || {}
-  } catch { rows.value = []; totals.value = null; t.value = {} } finally { loading.value = false }
+    sum.value = res.data.totals || {}
+  } catch { rows.value = []; totals.value = null; sum.value = {} } finally { loading.value = false }
 }
 </script>
 

@@ -2,16 +2,16 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Sales Report</h1>
-        <p class="page-sub">Sales broken down by product, category, supplier or period</p>
+        <h1 class="page-title">{{ t('reports.sales.title') }}</h1>
+        <p class="page-sub">{{ t('reports.sales.subtitle') }}</p>
       </div>
     </div>
 
     <ReportFilters :show-granularity="tab === 'period'" @change="onFilters" />
 
     <div class="tab-bar">
-      <button v-for="t in tabs" :key="t.id" class="tab-btn" :class="{ active: tab === t.id }" @click="setTab(t.id)">
-        {{ t.label }}
+      <button v-for="tb in tabs" :key="tb.id" class="tab-btn" :class="{ active: tab === tb.id }" @click="setTab(tb.id)">
+        {{ tb.label }}
       </button>
     </div>
 
@@ -20,7 +20,7 @@
       :rows="rows"
       :totals="totals"
       :loading="loading"
-      :title="`Sales by ${tabLabel}`"
+      :title="t('reports.sales.table_title', { dim: tabLabel })"
       :filename="`sales-by-${tab}`"
       :meta="meta"
     />
@@ -29,42 +29,45 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import ReportFilters from '@/components/ui/ReportFilters.vue'
 import ReportTable from '@/components/ui/ReportTable.vue'
 
-const tabs = [
-  { id: 'product',  label: 'By Product' },
-  { id: 'category', label: 'By Category' },
-  { id: 'supplier', label: 'By Supplier' },
-  { id: 'period',   label: 'By Period' },
-]
+const { t } = useI18n()
+
+const tabs = computed(() => [
+  { id: 'product',  label: t('reports.sales.tabs.product') },
+  { id: 'category', label: t('reports.sales.tabs.category') },
+  { id: 'supplier', label: t('reports.sales.tabs.supplier') },
+  { id: 'period',   label: t('reports.sales.tabs.period') },
+])
 const tab = ref('product')
 const loading = ref(false)
 const rows = ref([])
 const totals = ref(null)
 const filters = ref({})
 
-const tabLabel = computed(() => tabs.find(t => t.id === tab.value).label.replace('By ', ''))
+const tabLabel = computed(() => t('reports.sales.dims.' + tab.value))
 const meta = computed(() => `${filters.value.date_from || ''} → ${filters.value.date_to || ''}`)
 
-const breakdownCols = [
-  { key: 'name',  label: 'Name',  type: 'text' },
-  { key: 'qty',   label: 'Qty Sold', type: 'qty' },
-  { key: 'sales', label: 'Sales (ex-tax)', type: 'currency', accent: 'money' },
-  { key: 'tax',   label: 'Tax', type: 'currency' },
-  { key: 'cogs',  label: 'COGS', type: 'currency' },
-  { key: 'gross', label: 'Gross (incl tax)', type: 'currency', accent: 'good' },
-]
-const periodCols = [
-  { key: 'period',    label: 'Period', type: 'date' },
-  { key: 'invoices',  label: 'Invoices', type: 'number' },
-  { key: 'net_sales', label: 'Net Sales (ex-tax)', type: 'currency', accent: 'money' },
-  { key: 'tax',       label: 'Tax', type: 'currency' },
-  { key: 'discount',  label: 'Discount', type: 'currency' },
-  { key: 'gross',     label: 'Gross', type: 'currency', accent: 'good' },
-]
-const columns = computed(() => tab.value === 'period' ? periodCols : breakdownCols)
+const breakdownCols = computed(() => [
+  { key: 'name',  label: t('reports.sales.cols.name'),  type: 'text' },
+  { key: 'qty',   label: t('reports.sales.cols.qty_sold'), type: 'qty' },
+  { key: 'sales', label: t('reports.sales.cols.sales_ex_tax'), type: 'currency', accent: 'money' },
+  { key: 'tax',   label: t('reports.sales.cols.tax'), type: 'currency' },
+  { key: 'cogs',  label: t('reports.sales.cols.cogs'), type: 'currency' },
+  { key: 'gross', label: t('reports.sales.cols.gross_incl'), type: 'currency', accent: 'good' },
+])
+const periodCols = computed(() => [
+  { key: 'period',    label: t('reports.sales.cols.period'), type: 'date' },
+  { key: 'invoices',  label: t('reports.sales.cols.invoices'), type: 'number' },
+  { key: 'net_sales', label: t('reports.sales.cols.net_sales'), type: 'currency', accent: 'money' },
+  { key: 'tax',       label: t('reports.sales.cols.tax'), type: 'currency' },
+  { key: 'discount',  label: t('reports.sales.cols.discount'), type: 'currency' },
+  { key: 'gross',     label: t('reports.sales.cols.gross'), type: 'currency', accent: 'good' },
+])
+const columns = computed(() => tab.value === 'period' ? periodCols.value : breakdownCols.value)
 
 function setTab(id) {
   tab.value = id

@@ -2,16 +2,16 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Profit Margin</h1>
-        <p class="page-sub">Margin per product / category — COGS from actual purchase costs</p>
+        <h1 class="page-title">{{ t('reports.profit_margin.title') }}</h1>
+        <p class="page-sub">{{ t('reports.profit_margin.subtitle') }}</p>
       </div>
     </div>
 
     <ReportFilters @change="onFilters" />
 
     <div class="tab-bar">
-      <button v-for="t in tabs" :key="t.id" class="tab-btn" :class="{ active: tab === t.id }" @click="setTab(t.id)">
-        {{ t.label }}
+      <button v-for="tb in tabs" :key="tb.id" class="tab-btn" :class="{ active: tab === tb.id }" @click="setTab(tb.id)">
+        {{ tb.label }}
       </button>
     </div>
 
@@ -20,7 +20,7 @@
       :rows="rows"
       :totals="totals"
       :loading="loading"
-      :title="`Profit Margin by ${tabLabel}`"
+      :title="t('reports.profit_margin.table_title', { dim: tabLabel })"
       :filename="`profit-margin-${tab}`"
       :meta="meta"
     />
@@ -29,31 +29,34 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import ReportFilters from '@/components/ui/ReportFilters.vue'
 import ReportTable from '@/components/ui/ReportTable.vue'
 
-const tabs = [
-  { id: 'product',  label: 'By Product' },
-  { id: 'category', label: 'By Category' },
-]
+const { t } = useI18n()
+
+const tabs = computed(() => [
+  { id: 'product',  label: t('reports.profit_margin.tabs.product') },
+  { id: 'category', label: t('reports.profit_margin.tabs.category') },
+])
 const tab = ref('product')
 const loading = ref(false)
 const rows = ref([])
 const totals = ref(null)
 const filters = ref({})
 
-const tabLabel = computed(() => tab.value === 'product' ? 'Product' : 'Category')
+const tabLabel = computed(() => t('reports.profit_margin.dims.' + tab.value))
 const meta = computed(() => `${filters.value.date_from || ''} → ${filters.value.date_to || ''}`)
 
-const columns = [
-  { key: 'name',       label: 'Name', type: 'text' },
-  { key: 'qty',        label: 'Qty Sold', type: 'qty' },
-  { key: 'revenue',    label: 'Revenue (ex-tax)', type: 'currency', accent: 'money' },
-  { key: 'cogs',       label: 'COGS', type: 'currency' },
-  { key: 'profit',     label: 'Profit', type: 'currency', accent: 'sign' },
-  { key: 'margin_pct', label: 'Margin %', type: 'number' },
-]
+const columns = computed(() => [
+  { key: 'name',       label: t('reports.profit_margin.cols.name'), type: 'text' },
+  { key: 'qty',        label: t('reports.profit_margin.cols.qty_sold'), type: 'qty' },
+  { key: 'revenue',    label: t('reports.profit_margin.cols.revenue_ex_tax'), type: 'currency', accent: 'money' },
+  { key: 'cogs',       label: t('reports.profit_margin.cols.cogs'), type: 'currency' },
+  { key: 'profit',     label: t('reports.profit_margin.cols.profit'), type: 'currency', accent: 'sign' },
+  { key: 'margin_pct', label: t('reports.profit_margin.cols.margin_pct'), type: 'number' },
+])
 
 function setTab(id) { tab.value = id; fetchData() }
 function onFilters(f) { filters.value = f; fetchData() }

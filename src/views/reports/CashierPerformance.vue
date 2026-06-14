@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Cashier Performance</h1>
-        <p class="page-sub">Sales, returns and shift cash differences per staff member</p>
+        <h1 class="page-title">{{ t('reports.cashier.title') }}</h1>
+        <p class="page-sub">{{ t('reports.cashier.subtitle') }}</p>
       </div>
     </div>
 
@@ -14,20 +14,23 @@
       :rows="rows"
       :totals="totals"
       :loading="loading"
-      title="Cashier Performance"
+      :title="t('reports.cashier.title')"
       filename="cashier-performance"
       :meta="meta"
-      empty-text="No staff activity in this period"
+      :empty-text="t('reports.cashier.empty')"
     />
-    <p class="hint">Sales are attributed by who collected payment. Cash difference is the sum of closed-shift overage/shortage.</p>
+    <p class="hint">{{ t('reports.cashier.hint') }}</p>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import ReportFilters from '@/components/ui/ReportFilters.vue'
 import ReportTable from '@/components/ui/ReportTable.vue'
+
+const { t } = useI18n()
 
 const loading = ref(false)
 const rows = ref([])
@@ -36,15 +39,15 @@ const filters = ref({})
 
 const meta = computed(() => `${filters.value.date_from || ''} → ${filters.value.date_to || ''}`)
 
-const columns = [
-  { key: 'name',            label: 'Staff', type: 'text' },
-  { key: 'sales_count',     label: 'Sales', type: 'number' },
-  { key: 'sales_value',     label: 'Collected', type: 'currency', accent: 'money' },
-  { key: 'returns_count',   label: 'Returns', type: 'number' },
-  { key: 'returns_value',   label: 'Refunded', type: 'currency' },
-  { key: 'shifts',          label: 'Shifts', type: 'number' },
-  { key: 'cash_difference', label: 'Cash Diff', type: 'currency', accent: 'sign' },
-]
+const columns = computed(() => [
+  { key: 'name',            label: t('reports.cashier.cols.staff'), type: 'text' },
+  { key: 'sales_count',     label: t('reports.cashier.cols.sales'), type: 'number' },
+  { key: 'sales_value',     label: t('reports.cashier.cols.collected'), type: 'currency', accent: 'money' },
+  { key: 'returns_count',   label: t('reports.cashier.cols.returns'), type: 'number' },
+  { key: 'returns_value',   label: t('reports.cashier.cols.refunded'), type: 'currency' },
+  { key: 'shifts',          label: t('reports.cashier.cols.shifts'), type: 'number' },
+  { key: 'cash_difference', label: t('reports.cashier.cols.cash_diff'), type: 'currency', accent: 'sign' },
+])
 
 function onFilters(f) { filters.value = f; fetchData() }
 

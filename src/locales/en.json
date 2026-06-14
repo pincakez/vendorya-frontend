@@ -1038,5 +1038,193 @@
       "save_changes": "Save Changes",
       "add_customer": "Add Customer"
     }
+  },
+  "reports": {
+    "table": {
+      "loading": "Loading…",
+      "no_data": "No data for this period",
+      "total": "Total"
+    },
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "branch": "Branch",
+      "all_branches": "All branches",
+      "group_by": "Group by",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "presets": {
+        "today": "Today",
+        "week": "Last 7 days",
+        "d30": "Last 30 days",
+        "month": "This month",
+        "year": "This year"
+      }
+    },
+    "sales": {
+      "title": "Sales Report",
+      "subtitle": "Sales broken down by product, category, supplier or period",
+      "table_title": "Sales by {dim}",
+      "tabs": {
+        "product": "By Product",
+        "category": "By Category",
+        "supplier": "By Supplier",
+        "period": "By Period"
+      },
+      "dims": {
+        "product": "Product",
+        "category": "Category",
+        "supplier": "Supplier",
+        "period": "Period"
+      },
+      "cols": {
+        "name": "Name",
+        "qty_sold": "Qty Sold",
+        "sales_ex_tax": "Sales (ex-tax)",
+        "tax": "Tax",
+        "cogs": "COGS",
+        "gross_incl": "Gross (incl tax)",
+        "period": "Period",
+        "invoices": "Invoices",
+        "net_sales": "Net Sales (ex-tax)",
+        "discount": "Discount",
+        "gross": "Gross"
+      }
+    },
+    "profit_margin": {
+      "title": "Profit Margin",
+      "subtitle": "Margin per product / category — COGS from actual purchase costs",
+      "table_title": "Profit Margin by {dim}",
+      "tabs": {
+        "product": "By Product",
+        "category": "By Category"
+      },
+      "dims": {
+        "product": "Product",
+        "category": "Category"
+      },
+      "cols": {
+        "name": "Name",
+        "qty_sold": "Qty Sold",
+        "revenue_ex_tax": "Revenue (ex-tax)",
+        "cogs": "COGS",
+        "profit": "Profit",
+        "margin_pct": "Margin %"
+      }
+    },
+    "pnl": {
+      "title": "Profit & Loss",
+      "subtitle": "Revenue − COGS − Expenses − Returns = Net",
+      "table_title": "Profit & Loss Statement",
+      "recon_warn": "⚠ Reconciliation mismatch — figures do not tie out. This is a bug, report it.",
+      "kpi": {
+        "revenue_ex_tax": "Revenue (ex-tax)",
+        "cogs": "COGS",
+        "expenses": "Expenses",
+        "returns": "Returns",
+        "net_profit": "Net Profit"
+      },
+      "cols": {
+        "period": "Period",
+        "revenue": "Revenue",
+        "cogs": "COGS",
+        "gross_profit": "Gross Profit",
+        "expenses": "Expenses",
+        "returns": "Returns",
+        "net": "Net"
+      }
+    },
+    "ar_aging": {
+      "title": "A/R Aging",
+      "subtitle": "Customer outstanding balances by age — net of payments, returns & credit notes",
+      "table_title": "Accounts Receivable Aging",
+      "as_of": "As of {date}",
+      "empty": "No outstanding receivables",
+      "cols": {
+        "customer": "Customer",
+        "b0_30": "0–30 days",
+        "b31_60": "31–60 days",
+        "b61_90": "61–90 days",
+        "b90_plus": "90+ days",
+        "total_due": "Total Due"
+      }
+    },
+    "ap_aging": {
+      "title": "A/P Aging",
+      "subtitle": "Supplier outstanding balances by age (received purchases, net of payments)",
+      "table_title": "Accounts Payable Aging",
+      "as_of": "As of {date}",
+      "empty": "No outstanding payables",
+      "cols": {
+        "supplier": "Supplier",
+        "b0_30": "0–30 days",
+        "b31_60": "31–60 days",
+        "b61_90": "61–90 days",
+        "b90_plus": "90+ days",
+        "total_owed": "Total Owed"
+      }
+    },
+    "expenses": {
+      "title": "Expense Breakdown",
+      "subtitle": "Expenses by category and by period",
+      "by_category": "By Category",
+      "by_period": "By Period",
+      "cols": {
+        "category": "Category",
+        "entries": "Entries",
+        "total": "Total",
+        "period": "Period"
+      }
+    },
+    "cashier": {
+      "title": "Cashier Performance",
+      "subtitle": "Sales, returns and shift cash differences per staff member",
+      "empty": "No staff activity in this period",
+      "hint": "Sales are attributed by who collected payment. Cash difference is the sum of closed-shift overage/shortage.",
+      "cols": {
+        "staff": "Staff",
+        "sales": "Sales",
+        "collected": "Collected",
+        "returns": "Returns",
+        "refunded": "Refunded",
+        "shifts": "Shifts",
+        "cash_diff": "Cash Diff"
+      }
+    },
+    "stock_ledger": {
+      "title": "Stock Movement Ledger",
+      "subtitle": "Full audit trail per variant — purchases, sales, adjustments, returns",
+      "variant": "Variant",
+      "variant_ph": "Select a variant…",
+      "product_fallback": "Product",
+      "opening": "Opening",
+      "closing": "Closing",
+      "table_title": "Stock Ledger",
+      "empty": "No movements in this period",
+      "pick_hint": "Pick a variant above to view its movement ledger.",
+      "cols": {
+        "date": "Date",
+        "type": "Type",
+        "ref": "Reference",
+        "detail": "Detail",
+        "branch": "Branch",
+        "change": "Change",
+        "balance": "Balance"
+      }
+    },
+    "tax": {
+      "title": "Tax Report",
+      "subtitle": "Output tax collected, by rate and by period",
+      "by_rate": "Collected Tax by Rate",
+      "by_period": "Collected Tax by Period",
+      "cols": {
+        "tax": "Tax",
+        "rate_pct": "Rate %",
+        "taxable_base": "Taxable Base",
+        "collected": "Collected",
+        "period": "Period"
+      }
+    }
   }
 }

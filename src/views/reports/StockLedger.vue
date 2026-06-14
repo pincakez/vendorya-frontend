@@ -2,18 +2,18 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Stock Movement Ledger</h1>
-        <p class="page-sub">Full audit trail per variant — purchases, sales, adjustments, returns</p>
+        <h1 class="page-title">{{ t('reports.stock_ledger.title') }}</h1>
+        <p class="page-sub">{{ t('reports.stock_ledger.subtitle') }}</p>
       </div>
     </div>
 
     <div class="variant-pick">
       <label class="filter-field">
-        <span>Variant</span>
+        <span>{{ t('reports.stock_ledger.variant') }}</span>
         <select v-model="variant" class="filter-input" @change="fetchData">
-          <option value="">Select a variant…</option>
+          <option value="">{{ t('reports.stock_ledger.variant_ph') }}</option>
           <option v-for="v in variants" :key="v.id" :value="v.id">
-            {{ v.sku }} — {{ v.product_name || 'Product' }}
+            {{ v.sku }} — {{ v.product_name || t('reports.stock_ledger.product_fallback') }}
           </option>
         </select>
       </label>
@@ -22,8 +22,8 @@
     <ReportFilters @change="onFilters" />
 
     <div v-if="variant" class="balance-bar">
-      <div class="bal-item"><span>Opening</span><strong>{{ qty(opening) }}</strong></div>
-      <div class="bal-item"><span>Closing</span><strong>{{ qty(closing) }}</strong></div>
+      <div class="bal-item"><span>{{ t('reports.stock_ledger.opening') }}</span><strong>{{ qty(opening) }}</strong></div>
+      <div class="bal-item"><span>{{ t('reports.stock_ledger.closing') }}</span><strong>{{ qty(closing) }}</strong></div>
     </div>
 
     <ReportTable
@@ -31,21 +31,24 @@
       :columns="columns"
       :rows="rows"
       :loading="loading"
-      title="Stock Ledger"
+      :title="t('reports.stock_ledger.table_title')"
       filename="stock-ledger"
       :meta="meta"
-      empty-text="No movements in this period"
+      :empty-text="t('reports.stock_ledger.empty')"
     />
-    <p v-else class="pick-hint">Pick a variant above to view its movement ledger.</p>
+    <p v-else class="pick-hint">{{ t('reports.stock_ledger.pick_hint') }}</p>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import { formatQty } from '@/utils/format'
 import ReportFilters from '@/components/ui/ReportFilters.vue'
 import ReportTable from '@/components/ui/ReportTable.vue'
+
+const { t } = useI18n()
 
 const loading = ref(false)
 const variants = ref([])
@@ -58,15 +61,15 @@ const filters = ref({})
 const meta = computed(() => `${filters.value.date_from || ''} → ${filters.value.date_to || ''}`)
 function qty(v) { return formatQty(v ?? 0) }
 
-const columns = [
-  { key: 'date',    label: 'Date', type: 'date' },
-  { key: 'type',    label: 'Type', type: 'text' },
-  { key: 'ref',     label: 'Reference', type: 'text' },
-  { key: 'note',    label: 'Detail', type: 'text' },
-  { key: 'branch',  label: 'Branch', type: 'text' },
-  { key: 'qty',     label: 'Change', type: 'qty', accent: 'sign' },
-  { key: 'balance', label: 'Balance', type: 'qty' },
-]
+const columns = computed(() => [
+  { key: 'date',    label: t('reports.stock_ledger.cols.date'), type: 'date' },
+  { key: 'type',    label: t('reports.stock_ledger.cols.type'), type: 'text' },
+  { key: 'ref',     label: t('reports.stock_ledger.cols.ref'), type: 'text' },
+  { key: 'note',    label: t('reports.stock_ledger.cols.detail'), type: 'text' },
+  { key: 'branch',  label: t('reports.stock_ledger.cols.branch'), type: 'text' },
+  { key: 'qty',     label: t('reports.stock_ledger.cols.change'), type: 'qty', accent: 'sign' },
+  { key: 'balance', label: t('reports.stock_ledger.cols.balance'), type: 'qty' },
+])
 
 function onFilters(f) { filters.value = f; if (variant.value) fetchData() }
 

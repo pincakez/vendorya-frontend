@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Expense Breakdown</h1>
-        <p class="page-sub">Expenses by category and by period</p>
+        <h1 class="page-title">{{ t('reports.expenses.title') }}</h1>
+        <p class="page-sub">{{ t('reports.expenses.subtitle') }}</p>
       </div>
     </div>
 
@@ -14,7 +14,7 @@
       :rows="byCategory"
       :totals="catTotals"
       :loading="loading"
-      title="By Category"
+      :title="t('reports.expenses.by_category')"
       filename="expenses-by-category"
       :meta="meta"
     />
@@ -23,7 +23,7 @@
       :rows="byPeriod"
       :totals="periodTotals"
       :loading="loading"
-      title="By Period"
+      :title="t('reports.expenses.by_period')"
       filename="expenses-by-period"
       :meta="meta"
     />
@@ -32,9 +32,12 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import ReportFilters from '@/components/ui/ReportFilters.vue'
 import ReportTable from '@/components/ui/ReportTable.vue'
+
+const { t } = useI18n()
 
 const loading = ref(false)
 const byCategory = ref([])
@@ -44,15 +47,15 @@ const filters = ref({})
 
 const meta = computed(() => `${filters.value.date_from || ''} → ${filters.value.date_to || ''}`)
 
-const catColumns = [
-  { key: 'name',  label: 'Category', type: 'text' },
-  { key: 'count', label: 'Entries', type: 'number' },
-  { key: 'total', label: 'Total', type: 'currency', accent: 'money' },
-]
-const periodColumns = [
-  { key: 'period', label: 'Period', type: 'date' },
-  { key: 'total',  label: 'Total', type: 'currency', accent: 'money' },
-]
+const catColumns = computed(() => [
+  { key: 'name',  label: t('reports.expenses.cols.category'), type: 'text' },
+  { key: 'count', label: t('reports.expenses.cols.entries'), type: 'number' },
+  { key: 'total', label: t('reports.expenses.cols.total'), type: 'currency', accent: 'money' },
+])
+const periodColumns = computed(() => [
+  { key: 'period', label: t('reports.expenses.cols.period'), type: 'date' },
+  { key: 'total',  label: t('reports.expenses.cols.total'), type: 'currency', accent: 'money' },
+])
 const catTotals = computed(() => byCategory.value.length ? { total: grandTotal.value } : null)
 const periodTotals = computed(() => byPeriod.value.length ? { total: grandTotal.value } : null)
 

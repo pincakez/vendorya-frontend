@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">A/R Aging</h1>
-        <p class="page-sub">Customer outstanding balances by age — net of payments, returns &amp; credit notes</p>
+        <h1 class="page-title">{{ t('reports.ar_aging.title') }}</h1>
+        <p class="page-sub">{{ t('reports.ar_aging.subtitle') }}</p>
       </div>
       <button class="btn-refresh" @click="fetchData" :class="{ spinning: loading }"><RefreshCw :size="15" /></button>
     </div>
@@ -13,33 +13,38 @@
       :rows="rows"
       :totals="totals"
       :loading="loading"
-      title="Accounts Receivable Aging"
+      :title="t('reports.ar_aging.table_title')"
       filename="ar-aging"
       :meta="meta"
-      empty-text="No outstanding receivables"
+      :empty-text="t('reports.ar_aging.empty')"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RefreshCw } from 'lucide-vue-next'
 import api from '@/api/axios'
 import ReportTable from '@/components/ui/ReportTable.vue'
 
+const { t } = useI18n()
+
 const loading = ref(false)
 const rows = ref([])
 const totals = ref(null)
-const meta = ref('')
+const asOf = ref('')
 
-const columns = [
-  { key: 'name',     label: 'Customer', type: 'text' },
-  { key: 'b0_30',    label: '0–30 days', type: 'currency' },
-  { key: 'b31_60',   label: '31–60 days', type: 'currency' },
-  { key: 'b61_90',   label: '61–90 days', type: 'currency' },
-  { key: 'b90_plus', label: '90+ days', type: 'currency' },
-  { key: 'total',    label: 'Total Due', type: 'currency', accent: 'money' },
-]
+const meta = computed(() => asOf.value ? t('reports.ar_aging.as_of', { date: asOf.value }) : '')
+
+const columns = computed(() => [
+  { key: 'name',     label: t('reports.ar_aging.cols.customer'), type: 'text' },
+  { key: 'b0_30',    label: t('reports.ar_aging.cols.b0_30'), type: 'currency' },
+  { key: 'b31_60',   label: t('reports.ar_aging.cols.b31_60'), type: 'currency' },
+  { key: 'b61_90',   label: t('reports.ar_aging.cols.b61_90'), type: 'currency' },
+  { key: 'b90_plus', label: t('reports.ar_aging.cols.b90_plus'), type: 'currency' },
+  { key: 'total',    label: t('reports.ar_aging.cols.total_due'), type: 'currency', accent: 'money' },
+])
 
 async function fetchData() {
   loading.value = true
@@ -47,7 +52,7 @@ async function fetchData() {
     const res = await api.get('/api/reports/ar-aging/')
     rows.value = res.data.rows || []
     totals.value = res.data.totals || null
-    meta.value = `As of ${res.data.as_of}`
+    asOf.value = res.data.as_of || ''
   } catch { rows.value = []; totals.value = null } finally { loading.value = false }
 }
 onMounted(fetchData)

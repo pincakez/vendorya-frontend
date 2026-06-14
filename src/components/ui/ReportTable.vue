@@ -14,10 +14,10 @@
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td :colspan="columns.length" class="rt-skeleton">Loading…</td>
+            <td :colspan="columns.length" class="rt-skeleton">{{ t('reports.table.loading') }}</td>
           </tr>
           <tr v-else-if="!rows.length">
-            <td :colspan="columns.length" class="table-empty">{{ emptyText }}</td>
+            <td :colspan="columns.length" class="table-empty">{{ emptyText || t('reports.table.no_data') }}</td>
           </tr>
           <tr v-for="(row, i) in rows" :key="i" class="table-row">
             <td v-for="c in columns" :key="c.key" :style="alignStyle(c)" :class="cellClass(c, row)">
@@ -28,7 +28,7 @@
         <tfoot v-if="totals && rows.length">
           <tr class="rt-total-row">
             <td v-for="(c, idx) in columns" :key="c.key" :style="alignStyle(c)">
-              <template v-if="idx === 0">{{ totalsLabel }}</template>
+              <template v-if="idx === 0">{{ totalsLabel || t('reports.table.total') }}</template>
               <template v-else-if="totals[c.key] !== undefined">{{ cell(totals[c.key], c.type) }}</template>
             </td>
           </tr>
@@ -40,20 +40,23 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ExportMenu from './ExportMenu.vue'
 import { displayValue } from '@/composables/useExport'
+
+const { t } = useI18n()
 
 const props = defineProps({
   // columns: [{ key, label, type: 'text'|'number'|'currency'|'qty'|'date', align?, accent? }]
   columns:  { type: Array,  required: true },
   rows:     { type: Array,  default: () => [] },
   totals:   { type: Object, default: null },
-  totalsLabel: { type: String, default: 'Total' },
+  totalsLabel: { type: String, default: '' },
   loading:  { type: Boolean, default: false },
   title:    { type: String, default: 'Report' },
   filename: { type: String, default: 'report' },
   meta:     { type: String, default: '' },
-  emptyText:{ type: String, default: 'No data for this period' },
+  emptyText:{ type: String, default: '' },
 })
 
 const exportColumns = computed(() => props.columns.map(c => ({ key: c.key, label: c.label, type: c.type })))

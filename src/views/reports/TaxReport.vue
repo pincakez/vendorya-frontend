@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Tax Report</h1>
-        <p class="page-sub">Output tax collected, by rate and by period</p>
+        <h1 class="page-title">{{ t('reports.tax.title') }}</h1>
+        <p class="page-sub">{{ t('reports.tax.subtitle') }}</p>
       </div>
     </div>
 
@@ -14,7 +14,7 @@
       :rows="byRate"
       :totals="rateTotals"
       :loading="loading"
-      title="Collected Tax by Rate"
+      :title="t('reports.tax.by_rate')"
       filename="tax-by-rate"
       :meta="meta"
     />
@@ -23,7 +23,7 @@
       :rows="byPeriod"
       :totals="periodTotals"
       :loading="loading"
-      title="Collected Tax by Period"
+      :title="t('reports.tax.by_period')"
       filename="tax-by-period"
       :meta="meta"
     />
@@ -32,9 +32,12 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import ReportFilters from '@/components/ui/ReportFilters.vue'
 import ReportTable from '@/components/ui/ReportTable.vue'
+
+const { t } = useI18n()
 
 const loading = ref(false)
 const byRate = ref([])
@@ -44,16 +47,16 @@ const filters = ref({})
 
 const meta = computed(() => `${filters.value.date_from || ''} → ${filters.value.date_to || ''}`)
 
-const rateColumns = [
-  { key: 'name',      label: 'Tax', type: 'text' },
-  { key: 'rate',      label: 'Rate %', type: 'number' },
-  { key: 'taxable',   label: 'Taxable Base', type: 'currency' },
-  { key: 'collected', label: 'Collected', type: 'currency', accent: 'money' },
-]
-const periodColumns = [
-  { key: 'period',    label: 'Period', type: 'date' },
-  { key: 'collected', label: 'Collected', type: 'currency', accent: 'money' },
-]
+const rateColumns = computed(() => [
+  { key: 'name',      label: t('reports.tax.cols.tax'), type: 'text' },
+  { key: 'rate',      label: t('reports.tax.cols.rate_pct'), type: 'number' },
+  { key: 'taxable',   label: t('reports.tax.cols.taxable_base'), type: 'currency' },
+  { key: 'collected', label: t('reports.tax.cols.collected'), type: 'currency', accent: 'money' },
+])
+const periodColumns = computed(() => [
+  { key: 'period',    label: t('reports.tax.cols.period'), type: 'date' },
+  { key: 'collected', label: t('reports.tax.cols.collected'), type: 'currency', accent: 'money' },
+])
 const rateTotals = computed(() => byRate.value.length ? { collected: total.value } : null)
 const periodTotals = computed(() => byPeriod.value.length ? { collected: total.value } : null)
 
