@@ -311,7 +311,7 @@ onUnmounted(() => clearInterval(tickerTimer))
 .kpi-sub  { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
 .kpi-progress { margin-top: auto; padding-top: 12px; }
 .kpi-bar  { height: 3px; border-radius: 99px; width: 100%; }
-.kpi-bar-green { background: linear-gradient(90deg, #22c55e 0%, var(--accent) 100%); animation: bar-in .8s ease forwards; transform-origin: left; }
+.kpi-bar-green { background: linear-gradient(90deg, var(--success) 0%, var(--accent) 100%); animation: bar-in .8s ease forwards; transform-origin: left; }
 @keyframes bar-in { from { transform: scaleX(0) } to { transform: scaleX(1) } }
 
 /* ── B0: Ticker strip ───────────────────────────────────────── */

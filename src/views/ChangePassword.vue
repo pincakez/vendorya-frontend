@@ -70,7 +70,7 @@ async function submit() {
 @keyframes spin { to { transform: rotate(360deg); } }
 .hint { font-size:13px;color:var(--text-muted);margin:0 0 20px;line-height:1.5; }
 .lbl { display:block;font-size:12.5px;font-weight:600;color:var(--text-secondary);margin-bottom:6px; }
-.err { display:flex;align-items:flex-start;gap:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;margin-bottom:16px;color:var(--danger);font-size:13px; }
+.err { display:flex;align-items:flex-start;gap:8px;background:var(--danger-soft);border:1px solid #fecaca;border-radius:8px;padding:10px 12px;margin-bottom:16px;color:var(--danger);font-size:13px; }
 .submit { width:100%;height:42px;background:linear-gradient(135deg,var(--accent-hover),var(--accent-hover));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 150ms,transform 80ms; }
 .submit:active { transform:scale(.97); }
 </style>

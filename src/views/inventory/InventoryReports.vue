@@ -37,7 +37,7 @@
         </div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-icon" style="background:#fef3c7;color:#d97706;"><DollarSign :size="20" /></div>
+        <div class="kpi-icon" style="background:var(--warning-soft);color:var(--warning);"><DollarSign :size="20" /></div>
         <div class="kpi-body">
           <div class="kpi-label">{{ t('inventory.reports.kpi_stock_value') }}</div>
           <div class="kpi-value"><Money :value="summary.totalValue" /></div>

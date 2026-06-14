@@ -184,8 +184,8 @@ async function doExport() {
 .rep-title { display:flex; align-items:center; gap:7px; font-size:13px; font-weight:700; }
 .rep-box ul { margin:8px 0 0; padding-left:20px; display:flex; flex-direction:column; gap:3px; }
 .rep-box li { font-size:12.5px; }
-.rep-err  { background:#fef2f2; border-color:#fecaca; color:var(--danger-hover); }
-.rep-ok   { background:#f0fdf4; border-color:#bbf7d0; color:var(--success-hover); }
+.rep-err  { background:var(--danger-soft); border-color:#fecaca; color:var(--danger-hover); }
+.rep-ok   { background:var(--success-soft); border-color:#bbf7d0; color:var(--success-hover); }
 .rep-warn { background:#fffbeb; border-color:#fde68a; color:var(--warning-hover); }
 .rep-stats { display:flex; gap:16px; margin-top:8px; font-size:12.5px; color:var(--text-secondary); }
 

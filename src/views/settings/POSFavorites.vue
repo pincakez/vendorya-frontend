@@ -93,7 +93,7 @@ async function remove(f) {
 .fav-sku   { font-family: monospace; font-size: 11px; color: var(--text-muted); }
 .fav-price { font-size: 13px; font-weight: 800; color: var(--accent); }
 .fav-del   { background: none; border: none; cursor: pointer; color: var(--text-muted); border-radius: 6px; padding: 4px; }
-.fav-del:hover { background: #fef2f2; color: var(--danger); }
+.fav-del:hover { background: var(--danger-soft); color: var(--danger); }
 
 .fav-search-card {
   width: 300px; background: var(--bg-card); border: 1px solid var(--border);

@@ -304,7 +304,7 @@ onMounted(async () => {
 .quota-count.over { color:var(--danger); }
 .quota-bar-bg { height:6px; background:var(--border); border-radius:99px; overflow:hidden; }
 .quota-bar-fill { height:100%; border-radius:99px; background:var(--accent); transition:width 400ms; }
-.quota-bar-fill.warn { background:#f59e0b; }
+.quota-bar-fill.warn { background:var(--warning); }
 .quota-bar-fill.over { background:var(--danger); }
 
 @media print {

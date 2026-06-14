@@ -1035,7 +1035,7 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #ef4444;
+  background: var(--danger);
   border: 2px solid var(--bg-header);
 }
 
@@ -1065,12 +1065,12 @@ body {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #22c55e;
+  background: var(--success);
   flex-shrink: 0;
 }
-.footer-dot.dot-green  { background: #22c55e; }
-.footer-dot.dot-red    { background: #ef4444; }
-.footer-dot.dot-yellow { background: #f59e0b; }
+.footer-dot.dot-green  { background: var(--success); }
+.footer-dot.dot-red    { background: var(--danger); }
+.footer-dot.dot-yellow { background: var(--warning); }
 .footer-dot.dot-gray   { background: var(--text-muted); }
 
 .footer-sep {
@@ -1216,11 +1216,11 @@ html.pos-mode .page-wrap   { max-width: none; padding: 0; margin: 0; height: 100
 }
 
 .app-toast-success {
-  background: #10b981;
+  background: var(--success);
   color: white;
 }
 
 .app-toast-error {
-  background: #ef4444;
+  background: var(--danger);
   color: white;
 }

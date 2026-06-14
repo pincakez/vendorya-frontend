@@ -233,7 +233,7 @@ async function confirm() {
 .pm-print-cb.disabled input { cursor: not-allowed; }
 
 .pm-error {
-  padding: 12px 16px; border-radius: 10px; background: #fef2f2;
+  padding: 12px 16px; border-radius: 10px; background: var(--danger-soft);
   border: 1px solid #fecaca; color: var(--danger); font-size: 13px; font-weight: 600;
 }
 

@@ -216,7 +216,7 @@ function genPassword() {
 .act-primary { background:var(--info); color:#fff; border-color:var(--info); }
 .act-primary:hover { background:var(--info-hover); }
 .act-danger { color:var(--danger); border-color:#fecaca; }
-.act-danger:hover { background:#fef2f2; }
+.act-danger:hover { background:var(--danger-soft); }
 .action-msg { font-size:13px; color:var(--success); font-weight:500; margin:14px 0 0; }
 
 .modal-text { font-size:13px; color:var(--text-secondary); margin:0 0 12px; line-height:1.5; }

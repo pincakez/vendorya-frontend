@@ -902,7 +902,7 @@ function fmtNum(n) {
 .pib-discount-chip {
   display: flex; align-items: center; gap: 6px; flex-shrink: 0;
   font-size: 12px; font-weight: 700; color: var(--danger);
-  padding: 4px 10px; border-radius: 8px; background: #fef2f2; border: 1px solid #fecaca;
+  padding: 4px 10px; border-radius: 8px; background: var(--danger-soft); border: 1px solid #fecaca;
 }
 .pib-discount-chip button { background: none; border: none; cursor: pointer; color: var(--danger); display: flex; align-items: center; padding: 0; }
 

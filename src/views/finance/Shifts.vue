@@ -197,7 +197,7 @@ onUnmounted(() => qab.clearActions())
 <style scoped>
 
 .shift-banner { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-radius:12px; margin-bottom:20px; border:1px solid; }
-.shift-banner.open { background:#f0fdf4; border-color:#86efac; }
+.shift-banner.open { background:var(--success-soft); border-color:#86efac; }
 .banner-left  { display:flex; align-items:center; gap:12px; }
 .banner-dot   { width:10px; height:10px; border-radius:50%; }
 .open-dot     { background:var(--success); box-shadow:0 0 0 3px #bbf7d0; animation:pulse 2s infinite; }
@@ -235,8 +235,8 @@ onUnmounted(() => qab.clearActions())
 .summary-row span:last-child { font-variant-numeric:tabular-nums; font-weight:600; }
 
 .diff-preview { padding:10px 14px; border-radius:8px; font-size:13px; font-weight:600; text-align:center; }
-.diff-preview.diff-over  { background:#f0fdf4; color:var(--success-hover); }
-.diff-preview.diff-short { background:#fef2f2; color:var(--danger); }
+.diff-preview.diff-over  { background:var(--success-soft); color:var(--success-hover); }
+.diff-preview.diff-short { background:var(--danger-soft); color:var(--danger); }
 
 .btn-danger-solid { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; background:var(--danger); color:#fff; cursor:pointer; transition:background 100ms,transform 70ms; }
 .btn-danger-solid:hover  { background:var(--danger-hover); }

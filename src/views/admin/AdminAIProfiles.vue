@@ -1262,7 +1262,7 @@ onMounted(load)
   font-size: 11.5px;
   font-weight: 600;
 }
-.quota-chip.rpm { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.quota-chip.rpm { background: var(--info-soft); color: var(--info); }
 .quota-chip.rpd { background: rgba(22,163,74,0.12);  color: var(--success); }
 .quota-chip.tok { background: rgba(239,68,68,0.12);  color: var(--admin-accent); }
 
@@ -1342,7 +1342,7 @@ onMounted(load)
   letter-spacing: .05em;
 }
 .tool-badge.write { background: var(--admin-accent-soft);  color: var(--admin-accent); }
-.tool-badge.read  { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.tool-badge.read  { background: var(--info-soft); color: var(--info); }
 .tool-badge.store { background: rgba(239,68,68,0.12); color: var(--admin-accent); }
 
 .tool-desc {

@@ -240,7 +240,7 @@ onUnmounted(() => {
 @keyframes spin { to { transform:rotate(360deg); } }
 
 .purge-btn { display:inline-flex; align-items:center; gap:5px; height:34px; padding:0 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); font-size:13px; font-weight:500; cursor:pointer; transition:background 100ms,color 100ms; }
-.purge-btn:hover { background:#fef2f2; color:var(--danger); border-color:#fca5a5; }
+.purge-btn:hover { background:var(--danger-soft); color:var(--danger); border-color:#fca5a5; }
 
 .purge-intro { font-size:13px; color:var(--text-secondary); margin:0 0 14px; line-height:1.5; }
 .form-group { margin-bottom:12px; }

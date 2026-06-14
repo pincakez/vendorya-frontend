@@ -20,7 +20,7 @@
       </div>
 
       <div class="kpi-card">
-        <div class="kpi-icon" style="background: rgba(59,130,246,0.15); color: #3b82f6;">
+        <div class="kpi-icon" style="background: var(--info-soft); color: var(--info);">
           <Building :size="20" />
         </div>
         <div>

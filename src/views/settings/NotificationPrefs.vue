@@ -180,7 +180,7 @@ onMounted(load)
 .pt-type    { display:flex; align-items:flex-start; gap:10px; }
 .pt-dot     { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:4px; }
 .dot-info    { background:var(--success); }
-.dot-warning { background:#f59e0b; }
+.dot-warning { background:var(--warning); }
 .dot-alert   { background:var(--danger); }
 .dot-admin   { background:#1e293b; }
 .pt-label   { font-size:13.5px; font-weight:600; color:var(--text-primary); }

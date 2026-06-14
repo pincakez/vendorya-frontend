@@ -382,7 +382,7 @@ onUnmounted(() => {
 .nd-item:hover { background: var(--bg-app); }
 .nd-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
 .dot-info    { background: var(--success); }
-.dot-warning { background: #f59e0b; }
+.dot-warning { background: var(--warning); }
 .dot-alert   { background: var(--danger); }
 .dot-admin   { background: #1e293b; }
 .nd-body        { flex: 1; min-width: 0; }
