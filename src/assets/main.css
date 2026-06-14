@@ -1197,6 +1197,9 @@ html.pos-mode .app-header  { display: none; }
 html.pos-mode .app-footer  { display: none; }
 html.pos-mode .app-content { padding: 0; overflow: hidden; }
 html.pos-mode .page-wrap   { max-width: none; padding: 0; margin: 0; height: 100%; display: flex; flex-direction: column; }
+/* The Transition wrapper sits between .page-wrap and .pos-view — stretch it so
+   the POS view's height:100% resolves to the full screen (no dead space below). */
+html.pos-mode .route-view  { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
 /* ── TOAST NOTIFICATIONS ───────────────────────────────── */
 .app-toast {

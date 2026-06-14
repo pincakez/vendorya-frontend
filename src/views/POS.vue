@@ -224,10 +224,8 @@
       </div>
     </div>
 
-    <!-- ─── Scan flash ─────────────────────────────────────── -->
-    <Transition name="scan-flash">
-      <div v-if="pos.animateScan" class="pos-scan-flash" />
-    </Transition>
+    <!-- ─── Scan sweep — a bright beam that races top→bottom ── -->
+    <div v-if="pos.animateScan" class="pos-scan-beam" />
 
     <!-- ─── Modals ─────────────────────────────────────────── -->
     <BranchPickerModal v-if="showBranchPicker" @selected="onBranchSelected" />
@@ -1077,16 +1075,20 @@ function fmtNum(n) {
 .pos-pay-btn:not(:disabled):active { transform: scale(0.97); transition-duration: var(--press-down); }
 .pos-pay-amount { font-size: 14px; font-weight: 700; opacity: 0.9; }
 
-/* ── Scan flash — a white band that drops from the top, fast ── */
-.pos-scan-flash {
-  position: absolute; top: 0; left: 0; right: 0; height: 50%;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0));
-  pointer-events: none; z-index: 500;
+/* ── Scan beam — a thin bright line that races from top to bottom,
+   like a barcode scanner's light. One-shot, very fast. ──────── */
+.pos-scan-beam {
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95) 50%, transparent);
+  box-shadow: 0 0 16px 4px rgba(255,255,255,0.5);
+  pointer-events: none; z-index: 500; will-change: transform;
+  animation: pos-scan-sweep 280ms var(--ease-in-out) forwards;
 }
-.scan-flash-enter-active { transition: transform 250ms var(--ease-in-out), opacity 250ms var(--ease-in-out); }
-.scan-flash-leave-active { transition: opacity 200ms var(--ease-in-out); }
-.scan-flash-enter-from { transform: translateY(-100%); opacity: 0; }
-.scan-flash-leave-to   { opacity: 0; }
+@keyframes pos-scan-sweep {
+  0%   { transform: translateY(0);      opacity: 0; }
+  12%  { opacity: 1; }
+  100% { transform: translateY(100vh);  opacity: 0.85; }
+}
 
 /* ── Success overlay ──────────────────────────────────────── */
 .pos-success-overlay {
