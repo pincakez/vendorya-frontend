@@ -145,8 +145,8 @@
                 <div style="font-size:12.5px;">Add a branch to assign staff and manage stock per location.</div>
               </td>
             </tr>
-            <tr v-for="b in branches" :key="b.id" class="table-row">
-              <td class="col-name">{{ b.name }}</td>
+            <tr v-for="b in branches" :key="b.id" class="table-row" @click="router.push('/settings/branches/' + b.id)" style="cursor:pointer;">
+              <td class="col-name" style="color:var(--accent);font-weight:600;">{{ b.name }}</td>
               <td>{{ b.address_city }}</td>
               <td class="col-street">{{ b.address_street_1 }}</td>
               <td><span v-if="b.is_main_branch" class="badge-main">Main</span></td>
@@ -776,6 +776,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X,
   Settings2, Shield, Plus, UserCog, Tag, Briefcase, Trash, Download, Printer, Palette,
@@ -787,6 +788,7 @@ import { formatCurrency } from '@/utils/format'
 import AppModal from '@/components/ui/AppModal.vue'
 import { useQZTray } from '@/composables/useQZTray'
 
+const router = useRouter()
 const fmt  = useFormatStore()
 const auth = useAuthStore()
 

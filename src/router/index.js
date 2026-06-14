@@ -51,6 +51,7 @@ const router = createRouter({
         { path: 'services',             component: () => import('@/views/services/Services.vue'),         meta: { store: true } },
         { path: 'activity-log',         component: () => import('@/views/ActivityLog.vue'),                meta: { store: true } },
         { path: 'settings',             component: () => import('@/views/settings/StoreSettings.vue'),     meta: { store: true } },
+        { path: 'settings/branches/:id', component: () => import('@/views/settings/BranchDetail.vue'),    meta: { store: true } },
         { path: 'settings/taxes',       component: () => import('@/views/settings/Taxes.vue'),             meta: { store: true } },
         { path: 'settings/profile',     component: () => import('@/views/settings/Profile.vue'),           meta: { store: true } },
         { path: 'settings/security',    component: () => import('@/views/settings/Security.vue'),          meta: { store: true } },
