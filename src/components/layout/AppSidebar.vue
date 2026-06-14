@@ -148,7 +148,7 @@ import {
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
-  BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette,
+  BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -182,6 +182,7 @@ const groups = computed(() => [
     { label: t('nav.items.attributes'),        to: '/inventory/attributes',  icon: List },
     { label: t('nav.items.inventory_reports'), to: '/inventory/reports',     icon: FileBarChart },
     { label: t('nav.items.import_export'),     to: '/inventory/import-export', icon: ArrowDownUp },
+    { label: t('nav.items.storage'),           to: '/inventory/storage',     icon: Archive },
   ] },
   { id: 'finance', title: t('nav.groups.finance'), icon: Wallet, items: [
     { label: t('nav.items.sales_invoices'), to: '/finance/invoices',     icon: FileText },
