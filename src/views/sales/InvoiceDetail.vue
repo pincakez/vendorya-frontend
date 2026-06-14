@@ -3,51 +3,51 @@
     <div class="page-header">
       <div class="header-left">
         <button class="back-btn" @click="$router.back()">
-          <ChevronLeft :size="16" /> Back
+          <ChevronLeft :size="16" /> {{ t('common.back') }}
         </button>
         <div v-if="data">
-          <h1 class="page-title">Invoice #{{ data.invoice.invoice_number }}</h1>
+          <h1 class="page-title">{{ t('sales.invoice_detail.title', { number: data.invoice.invoice_number }) }}</h1>
           <p class="page-sub">{{ fmtDate(data.invoice.date) }}<span v-if="data.customer"> · {{ data.customer.name }}</span></p>
         </div>
-        <div v-else class="page-title">Invoice Detail</div>
+        <div v-else class="page-title">{{ t('sales.invoice_detail.title_fallback') }}</div>
       </div>
       <div v-if="data" class="header-actions">
-        <span class="status-pill" :class="statusClass(data.invoice.status)">{{ data.invoice.status }}</span>
-        <button class="btn-ghost" @click="printInvoice"><Printer :size="15" /> Print</button>
+        <span class="status-pill" :class="statusClass(data.invoice.status)">{{ statusLabel(data.invoice.status) }}</span>
+        <button class="btn-ghost" @click="printInvoice"><Printer :size="15" /> {{ t('sales.invoice_detail.print') }}</button>
       </div>
     </div>
 
     <div v-if="loading" class="skeleton-block" />
-    <div v-else-if="!data" class="empty-state">Invoice not found.</div>
+    <div v-else-if="!data" class="empty-state">{{ t('sales.invoice_detail.not_found') }}</div>
     <div v-else class="detail-layout">
 
       <!-- Info grid -->
       <div class="info-card">
         <div class="info-grid">
           <div class="info-item">
-            <div class="info-label">Invoice #</div>
+            <div class="info-label">{{ t('sales.invoice_detail.info_invoice_number') }}</div>
             <div class="info-value mono">{{ data.invoice.invoice_number }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">Date</div>
+            <div class="info-label">{{ t('sales.invoice_detail.info_date') }}</div>
             <div class="info-value">{{ fmtDate(data.invoice.date) }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">Status</div>
+            <div class="info-label">{{ t('common.status') }}</div>
             <div class="info-value">
-              <span class="status-pill" :class="statusClass(data.invoice.status)">{{ data.invoice.status }}</span>
+              <span class="status-pill" :class="statusClass(data.invoice.status)">{{ statusLabel(data.invoice.status) }}</span>
             </div>
           </div>
           <div class="info-item">
-            <div class="info-label">Customer</div>
-            <div class="info-value">{{ data.customer?.name || 'Walk-in' }}</div>
+            <div class="info-label">{{ t('sales.invoice_detail.info_customer') }}</div>
+            <div class="info-value">{{ data.customer?.name || t('sales.invoice_detail.walk_in') }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">Branch</div>
+            <div class="info-label">{{ t('sales.invoice_detail.info_branch') }}</div>
             <div class="info-value">{{ data.branch?.name || data.store.name }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">Store</div>
+            <div class="info-label">{{ t('sales.invoice_detail.info_store') }}</div>
             <div class="info-value">{{ data.store.name }}</div>
           </div>
         </div>
@@ -56,27 +56,27 @@
       <!-- Totals -->
       <div class="stats-row">
         <div class="stat-card">
-          <div class="stat-label">Subtotal</div>
+          <div class="stat-label">{{ t('sales.invoice_detail.subtotal') }}</div>
           <div class="stat-value"><Money :value="data.invoice.subtotal" /></div>
         </div>
         <div class="stat-card" v-if="Number(data.invoice.discount) > 0">
-          <div class="stat-label">Discount</div>
+          <div class="stat-label">{{ t('sales.invoice_detail.discount') }}</div>
           <div class="stat-value neg">−<Money :value="data.invoice.discount" /></div>
         </div>
         <div class="stat-card" v-if="Number(data.invoice.tax_total) > 0">
-          <div class="stat-label">Tax</div>
+          <div class="stat-label">{{ t('sales.invoice_detail.tax') }}</div>
           <div class="stat-value"><Money :value="data.invoice.tax_total" /></div>
         </div>
         <div class="stat-card stat-card--accent">
-          <div class="stat-label">Grand Total</div>
+          <div class="stat-label">{{ t('sales.invoice_detail.grand_total') }}</div>
           <div class="stat-value"><Money :value="data.invoice.grand_total" /></div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Paid</div>
+          <div class="stat-label">{{ t('sales.invoice_detail.paid') }}</div>
           <div class="stat-value pos"><Money :value="data.invoice.paid_amount" /></div>
         </div>
         <div class="stat-card" v-if="balanceDue > 0">
-          <div class="stat-label">Balance Due</div>
+          <div class="stat-label">{{ t('sales.invoice_detail.balance_due') }}</div>
           <div class="stat-value neg"><Money :value="balanceDue" /></div>
         </div>
       </div>
@@ -84,19 +84,19 @@
       <!-- Line items -->
       <div class="section-card">
         <div class="section-header">
-          <h2 class="section-title">Line Items</h2>
+          <h2 class="section-title">{{ t('sales.invoice_detail.line_items') }}</h2>
           <span class="count-badge">{{ data.items.length }}</span>
         </div>
         <div class="dt-xscroll">
           <table class="dt">
             <thead>
               <tr>
-                <th>Product</th>
-                <th>SKU</th>
-                <th class="num-col">Qty</th>
-                <th class="num-col">Unit Price</th>
-                <th class="num-col">Tax</th>
-                <th class="num-col">Total</th>
+                <th>{{ t('sales.invoice_detail.col_product') }}</th>
+                <th>{{ t('sales.invoice_detail.col_sku') }}</th>
+                <th class="num-col">{{ t('sales.invoice_detail.col_qty') }}</th>
+                <th class="num-col">{{ t('sales.invoice_detail.col_unit_price') }}</th>
+                <th class="num-col">{{ t('sales.invoice_detail.col_tax') }}</th>
+                <th class="num-col">{{ t('sales.invoice_detail.col_total') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -116,7 +116,7 @@
       <!-- Payments -->
       <div class="section-card" v-if="data.payments?.length">
         <div class="section-header">
-          <h2 class="section-title">Payments</h2>
+          <h2 class="section-title">{{ t('sales.invoice_detail.payments') }}</h2>
         </div>
         <div class="payments-list">
           <div v-for="(p, i) in data.payments" :key="i" class="payment-row">
@@ -132,13 +132,20 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ChevronLeft, Printer } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 
+const { t } = useI18n()
 const props = defineProps({ id: String })
 const router = useRouter()
+
+function statusLabel(s) {
+  const key = String(s).toLowerCase()
+  return ['draft', 'posted', 'void', 'refunded'].includes(key) ? t('sales.status.' + key) : s
+}
 
 const data = ref(null)
 const loading = ref(true)

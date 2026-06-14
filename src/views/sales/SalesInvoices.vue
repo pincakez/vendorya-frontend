@@ -1,18 +1,18 @@
 <template>
   <Teleport to="body">
     <div v-if="colDragMoved && colDragKey" class="col-drag-ghost" :style="{ left: colGhostX + 'px', top: colGhostY + 'px' }">
-      {{ colByKey[colDragKey]?.label }}
+      {{ colLabel(colDragKey) }}
     </div>
   </Teleport>
   <div class="inv">
     <div class="inv-head">
-      <h1 class="inv-title">Sales</h1>
-      <p class="inv-sub">Invoices, payments, and customer sales</p>
+      <h1 class="inv-title">{{ t('sales.invoices.title') }}</h1>
+      <p class="inv-sub">{{ t('sales.invoices.sub') }}</p>
     </div>
 
     <div class="tab-bar">
       <button v-for="tab in tabs" :key="tab.id" class="tab-btn" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id">
-        <component :is="tab.icon" :size="15" /> {{ tab.label }}
+        <component :is="tab.icon" :size="15" /> {{ t('sales.invoices.tab_' + tab.id) }}
       </button>
     </div>
 
@@ -22,28 +22,28 @@
       <div class="dt-toolbar">
         <div class="dt-search">
           <Search :size="15" class="dt-search-icon" />
-          <input v-model="search" class="dt-search-input" placeholder="Search customer, invoice #…" @input="debouncedFetch" />
+          <input v-model="search" class="dt-search-input" :placeholder="t('sales.invoices.search_placeholder')" @input="debouncedFetch" />
           <button v-show="search" class="dt-x" @click="clearSearch"><X :size="13" /></button>
         </div>
 
         <select v-model="statusFilter" class="dt-filter-sel" @change="fetchInvoices(1)">
-          <option value="">All statuses</option>
-          <option value="DRAFT">Draft</option>
-          <option value="POSTED">Posted</option>
-          <option value="VOID">Void</option>
+          <option value="">{{ t('sales.invoices.status_all') }}</option>
+          <option value="DRAFT">{{ t('sales.status.draft') }}</option>
+          <option value="POSTED">{{ t('sales.status.posted') }}</option>
+          <option value="VOID">{{ t('sales.status.void') }}</option>
         </select>
 
-        <button v-if="hasAdhoc && !editing" class="dt-filter" title="Reset to assigned layout" @click="resetLayout">
+        <button v-if="hasAdhoc && !editing" class="dt-filter" :title="t('sales.invoices.reset_layout')" @click="resetLayout">
           <RotateCcw :size="14" />
         </button>
         <button v-if="canEdit && !editing" class="dt-filter" @click="enterEdit">
-          <Columns3 :size="14" /> Customize
+          <Columns3 :size="14" /> {{ t('sales.invoices.customize') }}
         </button>
-        <button v-if="canEdit && !editing" class="dt-filter" title="Assign layouts to staff" @click="openAssign">
+        <button v-if="canEdit && !editing" class="dt-filter" :title="t('sales.invoices.assign')" @click="openAssign">
           <UserCog :size="14" />
         </button>
         <button class="dt-add" @click="openModal">
-          <Plus :size="15" /> New Invoice
+          <Plus :size="15" /> {{ t('sales.invoices.new_invoice') }}
         </button>
       </div>
 
@@ -51,19 +51,19 @@
       <Transition name="edit-slide">
         <div v-if="editing" class="edit-panel">
           <div class="edit-head">
-            <span class="edit-title"><Columns3 :size="15" /> Customize columns</span>
+            <span class="edit-title"><Columns3 :size="15" /> {{ t('sales.invoices.customize_title') }}</span>
             <div class="edit-actions">
               <select v-if="presets.length" class="edit-select" @change="(e) => { const p = presets.find(x => x.id === e.target.value); if (p) loadPreset(p); e.target.value = '' }">
-                <option value="">Load preset…</option>
+                <option value="">{{ t('sales.invoices.load_preset') }}</option>
                 <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
               </select>
-              <button class="btn-ghost" @click="resetWorking">Reset</button>
-              <button class="btn-ghost" @click="cancelEdit">Cancel</button>
-              <button class="btn-ghost" @click="saveModal.open = true">Save preset</button>
-              <button class="btn-primary" @click="doneEdit">Done</button>
+              <button class="btn-ghost" @click="resetWorking">{{ t('sales.invoices.reset') }}</button>
+              <button class="btn-ghost" @click="cancelEdit">{{ t('common.cancel') }}</button>
+              <button class="btn-ghost" @click="saveModal.open = true">{{ t('sales.invoices.save_preset') }}</button>
+              <button class="btn-primary" @click="doneEdit">{{ t('sales.invoices.done') }}</button>
             </div>
           </div>
-          <p class="edit-hint">Drag to reorder · uncheck to hide · # is locked.</p>
+          <p class="edit-hint">{{ t('sales.invoices.hint') }}</p>
           <div class="chooser">
             <div
               v-for="key in working.order" :key="key" class="chooser-row"
@@ -72,7 +72,7 @@
             >
               <GripVertical :size="13" class="chooser-grip" @pointerdown.prevent="startDrag(key, $event)" />
               <input type="checkbox" class="chooser-cb" :checked="!working.hidden.includes(key)" :disabled="LOCKED.includes(key)" @change="toggleHidden(key)" />
-              <span class="chooser-label">{{ colByKey[key]?.label ?? key }}</span>
+              <span class="chooser-label">{{ colLabel(key) }}</span>
               <Lock v-if="LOCKED.includes(key)" :size="11" class="chooser-tag" />
             </div>
           </div>
@@ -98,12 +98,12 @@
                 >
                   <span class="dt-th-inner" :class="{ jend: col.align === 'right' }">
                     <component v-if="col.align === 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
-                    {{ col.label }}
+                    {{ colLabel(col.key) }}
                     <component v-if="col.align !== 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
                   </span>
                   <span class="dt-resize" @mousedown.stop.prevent="startResize(col.key, $event)" @click.stop></span>
                 </th>
-                <th class="dt-th ta-right dt-actcol">Actions</th>
+                <th class="dt-th ta-right dt-actcol">{{ t('common.actions') }}</th>
               </tr>
             </thead>
 
@@ -112,8 +112,8 @@
                 <td :colspan="displayColumns.length + 1" class="dt-empty">
                   <div class="dt-empty-inner">
                     <FileText :size="40" class="dt-empty-icon" />
-                    <div class="dt-empty-title">No invoices found</div>
-                    <div class="dt-empty-sub">Create a new invoice to record a sale.</div>
+                    <div class="dt-empty-title">{{ t('sales.invoices.empty_title') }}</div>
+                    <div class="dt-empty-sub">{{ t('sales.invoices.empty_sub') }}</div>
                   </div>
                 </td>
               </tr>
@@ -125,7 +125,7 @@
                   <template v-else-if="col.key === 'date'">{{ fmtDate(inv.date) }}</template>
                   <template v-else-if="col.key === 'customer'">{{ inv.customer_name || inv.customer }}</template>
                   <template v-else-if="col.key === 'status'">
-                    <span class="status-badge" :class="`status-${inv.status.toLowerCase()}`">{{ inv.status }}</span>
+                    <span class="status-badge" :class="`status-${inv.status.toLowerCase()}`">{{ statusLabel(inv.status) }}</span>
                   </template>
                   <template v-else-if="col.key === 'grand_total'"><Money :value="inv.grand_total" /></template>
                   <template v-else-if="col.key === 'paid_amount'"><Money :value="inv.paid_amount" /></template>
@@ -134,9 +134,9 @@
                   </template>
                 </td>
                 <td class="ta-right dt-actcol">
-                  <button v-if="inv.status === 'DRAFT'" class="row-action success" title="Post invoice" @click="postInvoice(inv)"><CheckCircle :size="13" /></button>
-                  <button v-if="inv.status !== 'VOID'" class="row-action danger" title="Void" @click="voidInvoice(inv)"><Ban :size="13" /></button>
-                  <button class="row-action" title="Print invoice" @click="printInvoice(inv)"><Printer :size="13" /></button>
+                  <button v-if="inv.status === 'DRAFT'" class="row-action success" :title="t('sales.invoices.post_title')" @click="postInvoice(inv)"><CheckCircle :size="13" /></button>
+                  <button v-if="inv.status !== 'VOID'" class="row-action danger" :title="t('sales.invoices.void_title')" @click="voidInvoice(inv)"><Ban :size="13" /></button>
+                  <button class="row-action" :title="t('sales.invoices.print_title')" @click="printInvoice(inv)"><Printer :size="13" /></button>
                 </td>
               </tr>
             </tbody>
@@ -145,12 +145,12 @@
 
         <div class="dt-foot">
           <div class="dt-perpage">
-            <span>PER PAGE</span>
+            <span>{{ t('sales.invoices.per_page') }}</span>
             <select v-model.number="pageSize" @change="fetchInvoices(1); saveAdhoc()">
               <option :value="20">20</option><option :value="50">50</option><option :value="100">100</option>
             </select>
           </div>
-          <div class="dt-showing">SHOWING {{ total === 0 ? 0 : from }}-{{ to }} OF {{ total }}</div>
+          <div class="dt-showing">{{ t('sales.invoices.showing', { from: total === 0 ? 0 : from, to, total }) }}</div>
           <div class="dt-pages">
             <button class="dt-pg" :disabled="page === 1" @click="goPage(page - 1)"><ChevronLeft :size="18" /></button>
             <span class="dt-pgnum">{{ page }} / {{ totalPages }}</span>
@@ -161,87 +161,87 @@
     </div>
 
     <!-- SAVE PRESET MODAL -->
-    <AppModal :open="saveModal.open" title="Save preset" @close="saveModal.open = false">
+    <AppModal :open="saveModal.open" :title="t('sales.invoices.save_preset')" @close="saveModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">Preset name</label><input v-model="saveModal.name" class="form-input" placeholder="e.g. Manager view" /></div>
+        <div><label class="form-label">{{ t('sales.invoices.save_preset_modal.name_label') }}</label><input v-model="saveModal.name" class="form-input" :placeholder="t('sales.invoices.save_preset_modal.name_placeholder')" /></div>
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer;">
-          <input type="checkbox" v-model="saveModal.is_default" /> Make this the store default
+          <input type="checkbox" v-model="saveModal.is_default" /> {{ t('sales.invoices.save_preset_modal.default_label') }}
         </label>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="saveModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!saveModal.name.trim()" @click="savePreset">Save</button>
+        <button class="btn-ghost" @click="saveModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!saveModal.name.trim()" @click="savePreset">{{ t('common.save') }}</button>
       </template>
     </AppModal>
 
     <!-- ASSIGN MODAL -->
-    <AppModal :open="assignModal.open" title="Assign layouts to staff" @close="assignModal.open = false">
+    <AppModal :open="assignModal.open" :title="t('sales.invoices.assign_modal.title')" @close="assignModal.open = false">
       <div class="assign-list">
         <div v-for="row in assignModal.rows" :key="row.user_id" class="assign-row">
           <div class="assign-user"><span class="assign-name">{{ row.full_name }}</span><span class="assign-role">{{ row.role }}</span></div>
           <select v-model="row.preset_id" class="form-input assign-sel" @change="assignTo(row)">
-            <option :value="null">— Default —</option>
+            <option :value="null">{{ t('sales.invoices.assign_modal.default_option') }}</option>
             <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
         </div>
-        <div v-if="!assignModal.rows.length" style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">No staff yet.</div>
+        <div v-if="!assignModal.rows.length" style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">{{ t('sales.invoices.assign_modal.no_staff') }}</div>
       </div>
     </AppModal>
 
     <!-- NEW INVOICE MODAL -->
-    <AppModal :open="modal.open" title="New Sales Invoice" width="720px" @close="closeModal">
+    <AppModal :open="modal.open" :title="t('sales.invoices.new_modal.title')" width="720px" @close="closeModal">
       <div class="form-grid">
         <div>
-          <label class="form-label">Customer</label>
+          <label class="form-label">{{ t('sales.invoices.new_modal.customer_label') }}</label>
           <select v-model="modal.customer" class="form-input">
-            <option value="">Select customer…</option>
+            <option value="">{{ t('sales.invoices.new_modal.select_customer') }}</option>
             <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }} — {{ c.phone_number }}</option>
           </select>
         </div>
         <div>
-          <label class="form-label">Date</label>
+          <label class="form-label">{{ t('sales.invoices.new_modal.date_label') }}</label>
           <input v-model="modal.date" type="datetime-local" class="form-input" />
         </div>
         <div>
-          <label class="form-label">Discount</label>
+          <label class="form-label">{{ t('sales.invoices.new_modal.discount_label') }}</label>
           <input v-model="modal.discount" type="number" min="0" step="0.01" class="form-input" placeholder="0.00" />
         </div>
         <div>
-          <label class="form-label">Status</label>
+          <label class="form-label">{{ t('sales.invoices.new_modal.status_label') }}</label>
           <select v-model="modal.status" class="form-input">
-            <option value="DRAFT">Draft</option>
-            <option value="POSTED">Post immediately</option>
+            <option value="DRAFT">{{ t('sales.invoices.new_modal.status_draft') }}</option>
+            <option value="POSTED">{{ t('sales.invoices.new_modal.status_post_now') }}</option>
           </select>
         </div>
       </div>
 
       <div style="margin-top:18px;">
-        <div class="section-label">Items</div>
+        <div class="section-label">{{ t('sales.invoices.new_modal.items_label') }}</div>
         <div v-for="(item, i) in modal.items" :key="i" class="item-row">
           <select v-model="item.variant" class="form-input item-variant">
-            <option value="">Select variant…</option>
+            <option value="">{{ t('sales.invoices.new_modal.select_variant') }}</option>
             <option v-for="v in variants" :key="v.id" :value="v.id">{{ v.product_name }} — {{ v.sku }}</option>
           </select>
-          <input v-model="item.quantity" type="number" min="1" step="1" class="form-input item-qty" placeholder="Qty" />
-          <input v-model="item.unit_price" type="number" min="0" step="0.01" class="form-input item-price" placeholder="Price" />
-          <input v-model="item.discount_amount" type="number" min="0" step="0.01" class="form-input item-disc" placeholder="Disc." title="Line discount amount" />
+          <input v-model="item.quantity" type="number" min="1" step="1" class="form-input item-qty" :placeholder="t('sales.invoices.new_modal.qty_ph')" />
+          <input v-model="item.unit_price" type="number" min="0" step="0.01" class="form-input item-price" :placeholder="t('sales.invoices.new_modal.price_ph')" />
+          <input v-model="item.discount_amount" type="number" min="0" step="0.01" class="form-input item-disc" :placeholder="t('sales.invoices.new_modal.disc_ph')" :title="t('sales.invoices.new_modal.disc_title')" />
           <button class="row-action danger" @click="modal.items.splice(i, 1)"><Trash2 :size="13" /></button>
         </div>
         <button class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ variant: '', quantity: 1, unit_price: '', discount_amount: 0, tax_amount: 0 })">
-          <Plus :size="13" /> Add Item
+          <Plus :size="13" /> {{ t('sales.invoices.new_modal.add_item') }}
         </button>
       </div>
 
       <div class="invoice-totals">
-        <div class="totals-row"><span>Subtotal</span><span><Money :value="modalSubtotal" /></span></div>
-        <div v-if="modal.discount > 0" class="totals-row"><span>Header Discount</span><span>- <Money :value="modal.discount || 0" /></span></div>
-        <div class="totals-row total-line"><span>Total</span><span><Money :value="Math.max(0, modalSubtotal - (modal.discount || 0))" /></span></div>
+        <div class="totals-row"><span>{{ t('sales.invoices.new_modal.subtotal') }}</span><span><Money :value="modalSubtotal" /></span></div>
+        <div v-if="modal.discount > 0" class="totals-row"><span>{{ t('sales.invoices.new_modal.header_discount') }}</span><span>- <Money :value="modal.discount || 0" /></span></div>
+        <div class="totals-row total-line"><span>{{ t('sales.invoices.new_modal.total') }}</span><span><Money :value="Math.max(0, modalSubtotal - (modal.discount || 0))" /></span></div>
       </div>
 
       <template #footer>
-        <button class="btn-ghost" @click="closeModal">Cancel</button>
+        <button class="btn-ghost" @click="closeModal">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="saving || !modal.customer || modal.items.length === 0" @click="saveInvoice">
-          {{ saving ? 'Saving…' : 'Save Invoice' }}
+          {{ saving ? t('common.saving') : t('sales.invoices.new_modal.save_btn') }}
         </button>
       </template>
     </AppModal>
@@ -255,29 +255,37 @@ import {
   ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown, Columns3, GripVertical, UserCog,
 } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import AppModal from '@/components/ui/AppModal.vue'
 
+const { t }  = useI18n()
 const auth   = useAuthStore()
 const router = useRouter()
 
 const tabs = [
-  { id: 'invoices', label: 'Invoices', icon: Receipt },
-  { id: 'returns',  label: 'Returns',  icon: RotateCcw },
+  { id: 'invoices', icon: Receipt },
+  { id: 'returns',  icon: RotateCcw },
 ]
 const activeTab = ref('invoices')
 
 /* ── columns ── */
 const BASE_COLUMNS = [
-  { key: 'invoice_number', label: '#',        sort: 'invoice_number', align: 'left',  cls: 'c-num' },
-  { key: 'date',           label: 'DATE',     sort: 'date',           align: 'left',  cls: '' },
-  { key: 'customer',       label: 'CUSTOMER', sort: null,             align: 'left',  cls: 'c-name' },
-  { key: 'status',         label: 'STATUS',   sort: null,             align: 'left',  cls: '' },
-  { key: 'grand_total',    label: 'TOTAL',    sort: 'grand_total',    align: 'right', cls: 'c-amount' },
-  { key: 'paid_amount',    label: 'PAID',     sort: null,             align: 'right', cls: 'c-amount' },
-  { key: 'balance',        label: 'BALANCE',  sort: null,             align: 'right', cls: 'c-amount' },
+  { key: 'invoice_number', sort: 'invoice_number', align: 'left',  cls: 'c-num' },
+  { key: 'date',           sort: 'date',           align: 'left',  cls: '' },
+  { key: 'customer',       sort: null,             align: 'left',  cls: 'c-name' },
+  { key: 'status',         sort: null,             align: 'left',  cls: '' },
+  { key: 'grand_total',    sort: 'grand_total',    align: 'right', cls: 'c-amount' },
+  { key: 'paid_amount',    sort: null,             align: 'right', cls: 'c-amount' },
+  { key: 'balance',        sort: null,             align: 'right', cls: 'c-amount' },
 ]
+
+function colLabel(key) { return t('sales.invoices.columns.' + key) }
+function statusLabel(s) {
+  const key = String(s).toLowerCase()
+  return ['draft', 'posted', 'void', 'refunded'].includes(key) ? t('sales.status.' + key) : s
+}
 
 const DEFAULT_WIDTHS = { invoice_number: 100, date: 140, customer: 200, status: 110, grand_total: 130, paid_amount: 130, balance: 130 }
 const colWidths = reactive({ ...DEFAULT_WIDTHS })
@@ -480,11 +488,11 @@ async function fetchVariants()  { try { const res = await api.get('/api/inventor
 
 /* ── actions ── */
 async function postInvoice(inv) {
-  if (!confirm(`Post invoice for ${inv.customer_name || inv.customer}?`)) return
+  if (!confirm(t('sales.invoices.confirm_post', { name: inv.customer_name || inv.customer }))) return
   await api.patch(`/api/finance/invoices/${inv.id}/`, { status: 'POSTED' }); fetchInvoices(page.value)
 }
 async function voidInvoice(inv) {
-  if (!confirm('Void this invoice? This cannot be undone.')) return
+  if (!confirm(t('sales.invoices.confirm_void'))) return
   await api.post(`/api/finance/invoices/${inv.id}/void/`); fetchInvoices(page.value)
 }
 function printInvoice(inv) { router.push(`/finance/invoices/${inv.id}/print`) }
@@ -515,7 +523,7 @@ async function saveInvoice() {
       items: modal.items.map(i => ({ variant: i.variant, quantity: Number(i.quantity), unit_price: Number(i.unit_price), discount_amount: Number(i.discount_amount) || 0 })),
     })
     closeModal(); fetchInvoices(1)
-  } catch (e) { alert(e.response?.data?.detail || 'Failed to save invoice.') } finally { saving.value = false }
+  } catch (e) { alert(e.response?.data?.detail || t('sales.invoices.err_save')) } finally { saving.value = false }
 }
 
 /* ── helpers ── */

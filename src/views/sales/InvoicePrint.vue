@@ -2,12 +2,12 @@
   <div class="print-page">
     <!-- Screen-only toolbar (hidden when printing) -->
     <div class="print-toolbar no-print">
-      <button class="tb-btn" @click="goBack"><ArrowLeft :size="15" /> Back</button>
-      <div class="tb-title">Invoice {{ inv.invoice?.invoice_number ? '#' + inv.invoice.invoice_number : '' }}</div>
-      <button class="tb-btn primary" :disabled="loading || error" @click="doPrint"><Printer :size="15" /> Print</button>
+      <button class="tb-btn" @click="goBack"><ArrowLeft :size="15" /> {{ t('sales.invoice_print.back') }}</button>
+      <div class="tb-title">{{ t('sales.invoice_print.title', { number: inv.invoice?.invoice_number ? '#' + inv.invoice.invoice_number : '' }) }}</div>
+      <button class="tb-btn primary" :disabled="loading || error" @click="doPrint"><Printer :size="15" /> {{ t('sales.invoice_print.print') }}</button>
     </div>
 
-    <div v-if="loading" class="print-state">Loading invoice…</div>
+    <div v-if="loading" class="print-state">{{ t('sales.invoice_print.loading') }}</div>
     <div v-else-if="error" class="print-state error">{{ error }}</div>
 
     <!-- The printable document -->
@@ -94,6 +94,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Printer } from 'lucide-vue-next'
 import api from '@/api/axios'
@@ -101,6 +102,7 @@ import { useFormatStore } from '@/stores/format'
 import { formatQty } from '@/utils/format'
 import { useQZTray } from '@/composables/useQZTray'
 
+const { t }  = useI18n()
 const route  = useRoute()
 const router = useRouter()
 const fmt    = useFormatStore()
@@ -141,8 +143,8 @@ async function load() {
     }
   } catch (e) {
     error.value = e.response?.status === 404
-      ? 'Invoice not found.'
-      : (e.response?.data?.detail || 'Could not load this invoice.')
+      ? t('sales.invoice_print.err_not_found')
+      : (e.response?.data?.detail || t('sales.invoice_print.err_load'))
   } finally {
     loading.value = false
   }

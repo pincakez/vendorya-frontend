@@ -2,10 +2,10 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Returns</h1>
-        <p class="page-sub">Customer refund invoices and stock returns</p>
+        <h1 class="page-title">{{ t('sales.returns.title') }}</h1>
+        <p class="page-sub">{{ t('sales.returns.sub') }}</p>
       </div>
-      <button class="btn-primary" @click="openModal"><Plus :size="14" /> New Return</button>
+      <button class="btn-primary" @click="openModal"><Plus :size="14" /> {{ t('sales.returns.new_return') }}</button>
     </div>
 
     <div class="table-wrap">
@@ -14,13 +14,13 @@
       </div>
       <table v-else class="data-table">
         <thead>
-          <tr><th>#</th><th>Date</th><th>Customer</th><th>Original Invoice</th><th>Total Refunded</th><th>Fee</th><th>Net</th><th>Method</th><th>Reason</th></tr>
+          <tr><th>#</th><th>{{ t('common.date') }}</th><th>{{ t('sales.returns.modal.customer_label') }}</th><th>{{ t('sales.returns.col_original') }}</th><th>{{ t('sales.returns.col_total_refunded') }}</th><th>{{ t('sales.returns.col_fee') }}</th><th>{{ t('sales.returns.col_net') }}</th><th>{{ t('sales.returns.col_method') }}</th><th>{{ t('sales.returns.col_reason') }}</th></tr>
         </thead>
         <tbody>
           <tr v-if="refunds.length === 0">
             <td colspan="9" class="table-empty">
               <RotateCcw :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No returns yet</div>
+              <div>{{ t('sales.returns.empty') }}</div>
             </td>
           </tr>
           <tr v-for="r in refunds" :key="r.id" class="table-row">
@@ -31,7 +31,7 @@
             <td class="col-refund"><Money :value="r.total_refunded" /></td>
             <td class="col-fee">{{ Number(r.restocking_fee) > 0 ? '' : '—' }}<Money v-if="Number(r.restocking_fee) > 0" :value="r.restocking_fee" /></td>
             <td class="col-refund"><Money :value="r.net_refund" /></td>
-            <td><span class="method-pill" :class="r.refund_method === 'STORE_CREDIT' ? 'credit' : 'cash'">{{ r.refund_method === 'STORE_CREDIT' ? 'Store Credit' : 'Cash' }}</span></td>
+            <td><span class="method-pill" :class="r.refund_method === 'STORE_CREDIT' ? 'credit' : 'cash'">{{ r.refund_method === 'STORE_CREDIT' ? t('sales.returns.method_credit') : t('sales.returns.method_cash') }}</span></td>
             <td class="col-reason">{{ r.reason || '—' }}</td>
           </tr>
         </tbody>
@@ -40,68 +40,68 @@
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchRefunds" />
 
     <!-- MODAL: New Return -->
-    <AppModal :open="modal.open" title="New Return" width="720px" @close="closeModal">
+    <AppModal :open="modal.open" :title="t('sales.returns.modal.title')" width="720px" @close="closeModal">
       <div class="form-grid">
         <div>
-          <label class="form-label">Customer</label>
+          <label class="form-label">{{ t('sales.returns.modal.customer_label') }}</label>
           <select v-model="modal.customer" class="form-input">
-            <option value="">Select customer…</option>
+            <option value="">{{ t('sales.returns.modal.select_customer') }}</option>
             <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
         <div>
-          <label class="form-label">Original Invoice # (optional)</label>
+          <label class="form-label">{{ t('sales.returns.modal.original_label') }}</label>
           <select v-model="modal.original_invoice" class="form-input">
-            <option value="">None</option>
+            <option value="">{{ t('sales.returns.modal.original_none') }}</option>
             <option v-for="inv in invoices" :key="inv.id" :value="inv.id">#{{ inv.invoice_number }} — {{ inv.customer_name }}</option>
           </select>
         </div>
         <div v-if="branches.length > 1">
-          <label class="form-label">Branch</label>
+          <label class="form-label">{{ t('sales.returns.modal.branch_label') }}</label>
           <select v-model="modal.branch" class="form-input">
             <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
           </select>
         </div>
         <div>
-          <label class="form-label">Refund Method</label>
+          <label class="form-label">{{ t('sales.returns.modal.refund_method_label') }}</label>
           <div style="display:flex;gap:8px;">
-            <button type="button" class="mode-btn" :class="{ active: modal.refund_method === 'CASH' }" @click="modal.refund_method = 'CASH'">Cash</button>
-            <button type="button" class="mode-btn" :class="{ active: modal.refund_method === 'STORE_CREDIT' }" @click="modal.refund_method = 'STORE_CREDIT'">Store Credit</button>
+            <button type="button" class="mode-btn" :class="{ active: modal.refund_method === 'CASH' }" @click="modal.refund_method = 'CASH'">{{ t('sales.returns.method_cash') }}</button>
+            <button type="button" class="mode-btn" :class="{ active: modal.refund_method === 'STORE_CREDIT' }" @click="modal.refund_method = 'STORE_CREDIT'">{{ t('sales.returns.method_credit') }}</button>
           </div>
         </div>
         <div style="grid-column:1/-1;">
-          <label class="form-label">Reason</label>
-          <textarea v-model="modal.reason" class="form-input" rows="2" placeholder="Why is this being returned?" />
+          <label class="form-label">{{ t('sales.returns.modal.reason_label') }}</label>
+          <textarea v-model="modal.reason" class="form-input" rows="2" :placeholder="t('sales.returns.modal.reason_placeholder')" />
         </div>
       </div>
       <p v-if="restockingFeePercent > 0" class="fee-note">
-        A {{ restockingFeePercent }}% restocking fee will be deducted from the payout.
+        {{ t('sales.returns.modal.fee_note', { percent: restockingFeePercent }) }}
       </p>
 
       <div style="margin-top:18px;">
-        <div class="section-label">Items to Return</div>
+        <div class="section-label">{{ t('sales.returns.modal.items_label') }}</div>
         <div v-for="(item, i) in modal.items" :key="i" class="item-row">
           <select v-model="item.variant" class="form-input item-variant">
-            <option value="">Select variant…</option>
+            <option value="">{{ t('sales.returns.modal.select_variant') }}</option>
             <option v-for="v in variants" :key="v.id" :value="v.id">{{ v.product_name }} — {{ v.sku }}</option>
           </select>
-          <input v-model="item.quantity" type="number" min="1" class="form-input item-qty" placeholder="Qty" />
-          <input v-model="item.refund_amount" type="number" min="0" step="0.01" class="form-input item-price" placeholder="Refund" />
+          <input v-model="item.quantity" type="number" min="1" class="form-input item-qty" :placeholder="t('sales.returns.modal.qty_ph')" />
+          <input v-model="item.refund_amount" type="number" min="0" step="0.01" class="form-input item-price" :placeholder="t('sales.returns.modal.refund_ph')" />
           <label class="restock-label">
             <input v-model="item.restock_inventory" type="checkbox" />
-            Restock
+            {{ t('sales.returns.modal.restock') }}
           </label>
           <button class="row-action danger" @click="modal.items.splice(i, 1)"><Trash2 :size="13" /></button>
         </div>
         <button class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ variant: '', quantity: 1, refund_amount: '', restock_inventory: true })">
-          <Plus :size="13" /> Add Item
+          <Plus :size="13" /> {{ t('sales.returns.modal.add_item') }}
         </button>
       </div>
 
       <template #footer>
-        <button class="btn-ghost" @click="closeModal">Cancel</button>
+        <button class="btn-ghost" @click="closeModal">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="saving || !modal.customer || modal.items.length === 0" @click="saveReturn">
-          {{ saving ? 'Saving…' : 'Save Return' }}
+          {{ saving ? t('common.saving') : t('sales.returns.modal.save_btn') }}
         </button>
       </template>
     </AppModal>
@@ -110,12 +110,14 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RotateCcw, Trash2, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 
 const refunds   = ref([])
@@ -176,7 +178,7 @@ function openModal() {
 function closeModal() { modal.open = false }
 
 async function saveReturn() {
-  if (!modal.branch) { alert('No branch available for this return.'); return }
+  if (!modal.branch) { alert(t('sales.returns.err_no_branch')); return }
   saving.value = true
   try {
     await api.post('/api/finance/refunds/', {
@@ -196,7 +198,7 @@ async function saveReturn() {
     fetchRefunds(1)
   } catch (e) {
     const d = e.response?.data
-    alert(d?.detail || (d ? JSON.stringify(d) : 'Failed to save return.'))
+    alert(d?.detail || (d ? JSON.stringify(d) : t('sales.returns.err_save')))
   } finally {
     saving.value = false
   }
