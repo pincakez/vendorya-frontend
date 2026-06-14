@@ -727,6 +727,54 @@
       </div>
     </div>
 
+    <!-- ══ FIELD ACCESS / VISIBILITY ══ -->
+    <div v-if="activeTab === 'visibility'">
+      <div class="settings-card" v-for="(table, tableId) in FIELD_CATALOG" :key="tableId" style="margin-bottom:16px;">
+        <div style="margin-bottom:16px;">
+          <div class="form-label" style="font-size:14px;font-weight:700;">{{ table.label }}</div>
+          <p class="form-hint">{{ table.desc }}</p>
+        </div>
+
+        <div class="fv-grid">
+          <!-- Header row -->
+          <div class="fv-cell fv-head">Field</div>
+          <div class="fv-cell fv-head fv-center" v-for="role in CONFIGURABLE_ROLES" :key="role">
+            {{ role.charAt(0) + role.slice(1).toLowerCase() }}
+          </div>
+          <div class="fv-cell fv-head fv-center fv-locked-head">Owner / Admin</div>
+
+          <!-- Field rows -->
+          <template v-for="f in table.fields" :key="f.key">
+            <div class="fv-cell">
+              <span class="fv-field-label">{{ f.label }}</span>
+              <span class="fv-field-hint">{{ f.hint }}</span>
+            </div>
+            <div class="fv-cell fv-center" v-for="role in CONFIGURABLE_ROLES" :key="role">
+              <label class="fv-check">
+                <input
+                  type="checkbox"
+                  :checked="isHidden(tableId, role, f.key)"
+                  @change="toggleHidden(tableId, role, f.key)"
+                />
+                <span class="fv-check-box"></span>
+              </label>
+            </div>
+            <div class="fv-cell fv-center">
+              <span class="fv-lock-badge">Always visible</span>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <button class="btn-primary" :disabled="visibilitySaving" @click="saveVisibility">
+          {{ visibilitySaving ? 'Saving…' : 'Save Field Access' }}
+        </button>
+        <button class="btn-ghost" @click="resetVisibility">Reset to defaults</button>
+        <span v-if="visibilitySaveMsg" style="font-size:13px;color:var(--success);font-weight:600;">{{ visibilitySaveMsg }}</span>
+      </div>
+    </div>
+
     <!-- ══ MODALS ══ -->
 
     <!-- Owner edit modal -->
@@ -829,7 +877,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Store, Receipt, GitBranch, CreditCard, Pencil, Trash2, ImageIcon, X,
-  Settings2, Shield, Plus, UserCog, Tag, Briefcase, Trash, Download, Printer, Palette,
+  Settings2, Shield, Plus, UserCog, Tag, Briefcase, Trash, Download, Printer, Palette, Eye,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
@@ -850,7 +898,8 @@ const tabs = [
   { id: 'printing', label: 'Printing Setup',    icon: Printer },
   { id: 'payments', label: 'Payment Methods',   icon: CreditCard },
   { id: 'services', label: 'Service Types',     icon: Briefcase },
-  { id: 'security', label: 'Security',          icon: Shield },
+  { id: 'security',    label: 'Security',       icon: Shield },
+  { id: 'visibility',  label: 'Field Access',   icon: Eye },
 ]
 const activeTab   = ref('store')
 const printingTab = ref('setup')
@@ -1022,6 +1071,7 @@ const settingsForm = reactive({
   pos_print_default: true, pos_double_print_default: false,
   srv_print_default: true, srv_double_print_default: true,
   receipt_copies: 1, receipt_auto_cut: true, receipt_cut_feed: 0,
+  field_visibility: {},
 })
 const taxes      = ref([])
 const currencies = ref([])
@@ -1121,6 +1171,56 @@ async function saveSecurity() {
   storeSaving.value = true
   try { await api.patch('/api/core/settings/', { session_timeout_minutes: settingsForm.session_timeout_minutes || 0, login_ip_allowlist: settingsForm.login_ip_allowlist || '' }) }
   catch (e) { alert('Error saving') } finally { storeSaving.value = false }
+}
+
+// ── Field Visibility (Layer 1) ────────────────────────────────────────────
+const CONFIGURABLE_ROLES = ['CASHIER', 'MANAGER']
+
+const FIELD_CATALOG = {
+  inventory_products: {
+    label: 'Product Catalog',
+    desc:  'Choose which columns staff see in Inventory → Products. Owner and Admin always see everything.',
+    fields: [
+      { key: 'cost_display',   label: 'Cost Price',    hint: 'What the store paid per unit' },
+      { key: 'profit_display', label: 'Profit Margin', hint: 'Profit per sale (price − cost)' },
+      { key: 'supplier_name',  label: 'Supplier',      hint: 'The product\'s supplier name' },
+      { key: 'total_stock',    label: 'Stock Qty',     hint: 'Current inventory across branches' },
+    ],
+  },
+}
+
+const visibilitySaving  = ref(false)
+const visibilitySaveMsg = ref('')
+
+function isHidden(tableId, role, field) {
+  return (settingsForm.field_visibility?.[tableId]?.[role] ?? []).includes(field)
+}
+
+function toggleHidden(tableId, role, field) {
+  if (!settingsForm.field_visibility)              settingsForm.field_visibility = {}
+  if (!settingsForm.field_visibility[tableId])     settingsForm.field_visibility[tableId] = {}
+  const arr = settingsForm.field_visibility[tableId][role] ?? []
+  const idx = arr.indexOf(field)
+  settingsForm.field_visibility[tableId][role] = idx >= 0
+    ? arr.filter(f => f !== field)
+    : [...arr, field]
+}
+
+function resetVisibility() {
+  settingsForm.field_visibility = {}
+}
+
+async function saveVisibility() {
+  visibilitySaving.value = true
+  try {
+    await api.patch('/api/core/settings/', { field_visibility: settingsForm.field_visibility })
+    visibilitySaveMsg.value = 'Saved!'
+    setTimeout(() => { visibilitySaveMsg.value = '' }, 2500)
+  } catch (e) {
+    alert(e.response?.data?.detail || 'Failed to save field access.')
+  } finally {
+    visibilitySaving.value = false
+  }
 }
 
 // ── Owners ────────────────────────────────────────────────────────────────
@@ -1488,4 +1588,42 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 :deep(.dp-lsku)    { font-size:9px; color:#888; }
 :deep(.dp-lstore)  { font-size:9px; color:#888; font-weight:bold; }
 :deep(.dp-compact) { gap:2px; }
+
+/* ── Field Visibility grid ───────────────────────────────────────────── */
+.fv-grid {
+  display: grid;
+  grid-template-columns: 1fr repeat(2, 120px) 140px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.fv-cell {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 13px;
+}
+.fv-cell:nth-last-child(-n+4) { border-bottom: none; }
+.fv-head {
+  background: var(--bg-app);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  flex-direction: row;
+  align-items: center;
+}
+.fv-center { align-items: center; flex-direction: row; justify-content: center; }
+.fv-locked-head { color: var(--text-muted); opacity: 0.6; }
+.fv-field-label { font-weight: 600; color: var(--text-primary); }
+.fv-field-hint  { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.fv-lock-badge  { font-size: 11px; font-weight: 600; color: var(--text-muted); background: var(--bg-app); border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; }
+.fv-check       { display: flex; align-items: center; cursor: pointer; }
+.fv-check input { display: none; }
+.fv-check-box   { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 5px; background: var(--bg-card); transition: background 120ms, border-color 120ms; position: relative; }
+.fv-check input:checked + .fv-check-box { background: var(--danger); border-color: var(--danger); }
+.fv-check input:checked + .fv-check-box::after { content: ''; position: absolute; left: 4px; top: 1px; width: 5px; height: 9px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg); }
 </style>
