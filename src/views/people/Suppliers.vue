@@ -1,34 +1,34 @@
 <template>
   <Teleport to="body">
     <div v-if="colDragMoved && colDragKey" class="col-drag-ghost" :style="{ left: colGhostX + 'px', top: colGhostY + 'px' }">
-      {{ colByKey[colDragKey]?.label }}
+      {{ colLabel(colDragKey) }}
     </div>
   </Teleport>
   <div class="sup">
     <div class="sup-head">
-      <h1 class="sup-title">Suppliers</h1>
-      <p class="sup-sub">Manage suppliers and track outstanding purchase balances</p>
+      <h1 class="sup-title">{{ t('people.suppliers.title') }}</h1>
+      <p class="sup-sub">{{ t('people.suppliers.subtitle') }}</p>
     </div>
 
     <!-- STICKY TOOLBAR -->
     <div class="dt-toolbar">
       <div class="dt-search">
         <Search :size="15" class="dt-search-icon" />
-        <input v-model="search" class="dt-search-input" placeholder="Search supplier…" @input="debouncedFetch" />
+        <input v-model="search" class="dt-search-input" :placeholder="t('people.suppliers.search_ph')" @input="debouncedFetch" />
         <button v-show="search" class="dt-x" @click="clearSearch"><X :size="13" /></button>
       </div>
 
-      <button v-if="hasAdhoc && !editing" class="dt-filter" title="Reset to assigned layout" @click="resetLayout">
+      <button v-if="hasAdhoc && !editing" class="dt-filter" :title="t('common.dt.reset_layout')" @click="resetLayout">
         <RotateCcw :size="14" />
       </button>
       <button v-if="canEdit && !editing" class="dt-filter" @click="enterEdit">
-        <Columns3 :size="14" /> Customize
+        <Columns3 :size="14" /> {{ t('common.dt.customize') }}
       </button>
-      <button v-if="canEdit && !editing" class="dt-filter" title="Assign layouts to staff" @click="openAssign">
+      <button v-if="canEdit && !editing" class="dt-filter" :title="t('common.dt.assign')" @click="openAssign">
         <UserCog :size="14" />
       </button>
       <button class="dt-add" @click="openNew">
-        <Plus :size="15" /> Add Supplier
+        <Plus :size="15" /> {{ t('people.suppliers.add') }}
       </button>
     </div>
 
@@ -36,19 +36,19 @@
     <Transition name="edit-slide">
       <div v-if="editing" class="edit-panel">
         <div class="edit-head">
-          <span class="edit-title"><Columns3 :size="15" /> Customize columns</span>
+          <span class="edit-title"><Columns3 :size="15" /> {{ t('common.dt.customize_title') }}</span>
           <div class="edit-actions">
             <select v-if="presets.length" class="edit-select" @change="(e) => { const p = presets.find(x => x.id === e.target.value); if (p) loadPreset(p); e.target.value = '' }">
-              <option value="">Load preset…</option>
+              <option value="">{{ t('common.dt.load_preset') }}</option>
               <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
-            <button class="btn-ghost" @click="resetWorking">Reset</button>
-            <button class="btn-ghost" @click="cancelEdit">Cancel</button>
-            <button class="btn-ghost" @click="saveModal.open = true">Save preset</button>
-            <button class="btn-primary" @click="doneEdit">Done</button>
+            <button class="btn-ghost" @click="resetWorking">{{ t('common.dt.reset') }}</button>
+            <button class="btn-ghost" @click="cancelEdit">{{ t('common.cancel') }}</button>
+            <button class="btn-ghost" @click="saveModal.open = true">{{ t('common.dt.save_preset') }}</button>
+            <button class="btn-primary" @click="doneEdit">{{ t('common.dt.done') }}</button>
           </div>
         </div>
-        <p class="edit-hint">Drag to reorder · uncheck to hide · Name is locked.</p>
+        <p class="edit-hint">{{ t('common.dt.hint', { col: colLabel('name') }) }}</p>
         <div class="chooser">
           <div
             v-for="key in working.order" :key="key" class="chooser-row"
@@ -57,7 +57,7 @@
           >
             <GripVertical :size="13" class="chooser-grip" @pointerdown.prevent="startDrag(key, $event)" />
             <input type="checkbox" class="chooser-cb" :checked="!working.hidden.includes(key)" :disabled="LOCKED.includes(key)" @change="toggleHidden(key)" />
-            <span class="chooser-label">{{ colByKey[key]?.label ?? key }}</span>
+            <span class="chooser-label">{{ colLabel(key) }}</span>
             <Lock v-if="LOCKED.includes(key)" :size="11" class="chooser-tag" />
           </div>
         </div>
@@ -83,12 +83,12 @@
               >
                 <span class="dt-th-inner" :class="{ jend: col.align === 'right' }">
                   <component v-if="col.align === 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
-                  {{ col.label }}
+                  {{ colLabel(col.key) }}
                   <component v-if="col.align !== 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
                 </span>
                 <span class="dt-resize" @mousedown.stop.prevent="startResize(col.key, $event)" @click.stop></span>
               </th>
-              <th class="dt-th ta-right dt-actcol">Actions</th>
+              <th class="dt-th ta-right dt-actcol">{{ t('common.actions') }}</th>
             </tr>
           </thead>
 
@@ -97,8 +97,8 @@
               <td :colspan="displayColumns.length + 1" class="dt-empty">
                 <div class="dt-empty-inner">
                   <Building2 :size="40" class="dt-empty-icon" />
-                  <div class="dt-empty-title">No suppliers found</div>
-                  <div class="dt-empty-sub">Add suppliers to link them to purchase invoices.</div>
+                  <div class="dt-empty-title">{{ t('people.suppliers.empty_title') }}</div>
+                  <div class="dt-empty-sub">{{ t('people.suppliers.empty_sub') }}</div>
                 </div>
               </td>
             </tr>
@@ -118,8 +118,8 @@
                 </template>
               </td>
               <td class="ta-right dt-actcol" @click.stop>
-                <button class="row-action" title="Edit supplier" @click="openEdit(s)"><Pencil :size="14" /></button>
-                <button class="row-action danger" title="Delete supplier" @click="deleteSupplier(s.id)"><Trash2 :size="14" /></button>
+                <button class="row-action" :title="t('people.suppliers.edit_title')" @click="openEdit(s)"><Pencil :size="14" /></button>
+                <button class="row-action danger" :title="t('people.suppliers.delete_title')" @click="deleteSupplier(s.id)"><Trash2 :size="14" /></button>
               </td>
             </tr>
           </tbody>
@@ -128,12 +128,12 @@
 
       <div class="dt-foot">
         <div class="dt-perpage">
-          <span>PER PAGE</span>
+          <span>{{ t('common.dt.per_page') }}</span>
           <select v-model.number="pageSize" @change="fetchSuppliers(1); saveAdhoc()">
             <option :value="20">20</option><option :value="50">50</option><option :value="100">100</option>
           </select>
         </div>
-        <div class="dt-showing">SHOWING {{ total === 0 ? 0 : from }}-{{ to }} OF {{ total }}</div>
+        <div class="dt-showing">{{ t('common.dt.showing', { from: total === 0 ? 0 : from, to, total }) }}</div>
         <div class="dt-pages">
           <button class="dt-pg" :disabled="page === 1" @click="goPage(page - 1)"><ChevronLeft :size="18" /></button>
           <span class="dt-pgnum">{{ page }} / {{ totalPages }}</span>
@@ -143,93 +143,93 @@
     </div>
 
     <!-- SAVE PRESET MODAL -->
-    <AppModal :open="saveModal.open" title="Save preset" @close="saveModal.open = false">
+    <AppModal :open="saveModal.open" :title="t('common.dt.save_preset')" @close="saveModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">Preset name</label><input v-model="saveModal.name" class="form-input" placeholder="e.g. Manager view" /></div>
+        <div><label class="form-label">{{ t('common.dt.save_preset_modal.name_label') }}</label><input v-model="saveModal.name" class="form-input" :placeholder="t('common.dt.save_preset_modal.name_placeholder')" /></div>
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer;">
-          <input type="checkbox" v-model="saveModal.is_default" /> Make this the store default
+          <input type="checkbox" v-model="saveModal.is_default" /> {{ t('common.dt.save_preset_modal.default_label') }}
         </label>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="saveModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!saveModal.name.trim()" @click="savePreset">Save</button>
+        <button class="btn-ghost" @click="saveModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!saveModal.name.trim()" @click="savePreset">{{ t('common.save') }}</button>
       </template>
     </AppModal>
 
     <!-- ASSIGN MODAL -->
-    <AppModal :open="assignModal.open" title="Assign layouts to staff" @close="assignModal.open = false">
+    <AppModal :open="assignModal.open" :title="t('common.dt.assign_modal.title')" @close="assignModal.open = false">
       <div class="assign-list">
         <div v-for="row in assignModal.rows" :key="row.user_id" class="assign-row">
           <div class="assign-user"><span class="assign-name">{{ row.full_name }}</span><span class="assign-role">{{ row.role }}</span></div>
           <select v-model="row.preset_id" class="form-input assign-sel" @change="assignTo(row)">
-            <option :value="null">— Default —</option>
+            <option :value="null">{{ t('common.dt.assign_modal.default_option') }}</option>
             <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
         </div>
-        <div v-if="!assignModal.rows.length" style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">No staff yet.</div>
+        <div v-if="!assignModal.rows.length" style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">{{ t('common.dt.assign_modal.no_staff') }}</div>
       </div>
     </AppModal>
 
     <!-- NEW SUPPLIER MODAL -->
-    <AppModal :open="newModal.open" title="New Supplier" @close="closeNew">
+    <AppModal :open="newModal.open" :title="t('people.suppliers.new_modal.title')" @close="closeNew">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label class="form-label">Supplier Name <span class="req">*</span></label>
-          <input v-model="newModal.name" class="form-input" placeholder="e.g. Al-Nour Textiles" />
+          <label class="form-label">{{ t('people.suppliers.new_modal.name_label') }} <span class="req">*</span></label>
+          <input v-model="newModal.name" class="form-input" :placeholder="t('people.suppliers.new_modal.name_ph')" />
         </div>
         <div>
-          <label class="form-label">Supplier Code Prefix <span class="req">*</span> <span class="label-hint">— 3 digits (100–999)</span></label>
+          <label class="form-label">{{ t('people.suppliers.new_modal.prefix_label') }} <span class="req">*</span> <span class="label-hint">{{ t('people.suppliers.new_modal.prefix_hint') }}</span></label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input v-model="newModal.code_prefix" class="form-input" placeholder="e.g. 101" maxlength="3" style="width:90px;" @input="newModal.prefixCheck = null" />
+            <input v-model="newModal.code_prefix" class="form-input" :placeholder="t('people.suppliers.new_modal.prefix_ph')" maxlength="3" style="width:90px;" @input="newModal.prefixCheck = null" />
             <button class="btn-check" :disabled="!newModal.code_prefix || newModal.code_prefix.length !== 3 || newModal.checkingPrefix" @click="checkNewPrefix">
-              {{ newModal.checkingPrefix ? '…' : 'Check' }}
+              {{ newModal.checkingPrefix ? '…' : t('people.suppliers.new_modal.check') }}
             </button>
-            <span v-if="newModal.prefixCheck === true"  class="check-ok">Available</span>
-            <span v-else-if="newModal.prefixCheck === false" class="check-taken">Already taken</span>
+            <span v-if="newModal.prefixCheck === true"  class="check-ok">{{ t('people.suppliers.new_modal.available') }}</span>
+            <span v-else-if="newModal.prefixCheck === false" class="check-taken">{{ t('people.suppliers.new_modal.taken') }}</span>
           </div>
-          <p class="field-note">Once registered, the prefix is permanent — it's embedded in every SKU of this supplier.</p>
+          <p class="field-note">{{ t('people.suppliers.new_modal.prefix_note') }}</p>
         </div>
         <div>
-          <label class="form-label">Contact Info <span class="label-hint">(optional)</span></label>
-          <textarea v-model="newModal.contact_info" class="form-input" rows="2" placeholder="Phone, email, address…" />
+          <label class="form-label">{{ t('people.suppliers.new_modal.contact_label') }} <span class="label-hint">({{ t('common.optional') }})</span></label>
+          <textarea v-model="newModal.contact_info" class="form-input" rows="2" :placeholder="t('people.suppliers.new_modal.contact_ph')" />
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="closeNew">Cancel</button>
-        <button class="btn-primary" :disabled="!newModal.name.trim() || newModal.prefixCheck !== true" @click="openConfirm">Register Supplier</button>
+        <button class="btn-ghost" @click="closeNew">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!newModal.name.trim() || newModal.prefixCheck !== true" @click="openConfirm">{{ t('people.suppliers.new_modal.register') }}</button>
       </template>
     </AppModal>
 
     <!-- CONFIRM PREFIX LOCK MODAL -->
-    <AppModal :open="confirmModal.open" title="Confirm Prefix Registration" @close="confirmModal.open = false">
+    <AppModal :open="confirmModal.open" :title="t('people.suppliers.confirm_modal.title')" @close="confirmModal.open = false">
       <div class="confirm-body">
         <div class="confirm-icon"><Lock :size="22" /></div>
-        <p class="confirm-text">Register prefix <strong>{{ newModal.code_prefix }}</strong> for <strong>{{ newModal.name }}</strong>?</p>
-        <p class="confirm-warn">This cannot be changed after confirmation. The prefix will be embedded in all SKUs generated for this supplier.</p>
+        <p class="confirm-text">{{ t('people.suppliers.confirm_modal.text', { prefix: newModal.code_prefix, name: newModal.name }) }}</p>
+        <p class="confirm-warn">{{ t('people.suppliers.confirm_modal.warn') }}</p>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="confirmModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="saving" @click="submitNew">{{ saving ? 'Creating…' : 'Confirm & Register' }}</button>
+        <button class="btn-ghost" @click="confirmModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="saving" @click="submitNew">{{ saving ? t('people.suppliers.confirm_modal.creating') : t('people.suppliers.confirm_modal.confirm') }}</button>
       </template>
     </AppModal>
 
     <!-- EDIT SUPPLIER MODAL -->
-    <AppModal :open="editModal.open" title="Edit Supplier" @close="closeEdit">
+    <AppModal :open="editModal.open" :title="t('people.suppliers.edit_modal.title')" @close="closeEdit">
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">Supplier Name</label><input v-model="editModal.name" class="form-input" /></div>
+        <div><label class="form-label">{{ t('people.suppliers.edit_modal.name_label') }}</label><input v-model="editModal.name" class="form-input" /></div>
         <div>
-          <label class="form-label">Supplier Code Prefix</label>
+          <label class="form-label">{{ t('people.suppliers.edit_modal.prefix_label') }}</label>
           <div style="display:flex;align-items:center;gap:8px;">
             <input :value="editModal.code_prefix" class="form-input locked-input" style="width:90px;" disabled />
             <Lock :size="13" class="lock-icon" />
-            <span style="font-size:12px;color:var(--text-muted);">Locked — embedded in all SKUs</span>
+            <span style="font-size:12px;color:var(--text-muted);">{{ t('people.suppliers.edit_modal.prefix_locked') }}</span>
           </div>
         </div>
-        <div><label class="form-label">Contact Info <span class="label-hint">(optional)</span></label><textarea v-model="editModal.contact_info" class="form-input" rows="2" /></div>
+        <div><label class="form-label">{{ t('people.suppliers.edit_modal.contact_label') }} <span class="label-hint">({{ t('common.optional') }})</span></label><textarea v-model="editModal.contact_info" class="form-input" rows="2" /></div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="closeEdit">Cancel</button>
-        <button class="btn-primary" :disabled="!editModal.name.trim() || saving" @click="saveEdit">{{ saving ? 'Saving…' : 'Save Changes' }}</button>
+        <button class="btn-ghost" @click="closeEdit">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!editModal.name.trim() || saving" @click="saveEdit">{{ saving ? t('common.saving') : t('people.suppliers.edit_modal.save') }}</button>
       </template>
     </AppModal>
   </div>
@@ -238,6 +238,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import {
   Search, X, Building2, Pencil, Trash2, Plus, Lock,
   ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown,
@@ -247,8 +248,11 @@ import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import AppModal from '@/components/ui/AppModal.vue'
 
+const { t } = useI18n()
 const auth   = useAuthStore()
 const router = useRouter()
+
+function colLabel(key) { return t('people.suppliers.columns.' + key) }
 
 /* ── columns ── */
 const BASE_COLUMNS = [
@@ -472,7 +476,7 @@ async function submitNew() {
   try {
     await api.post('/api/inventory/suppliers/', { name: newModal.name, code_prefix: newModal.code_prefix, contact_info: newModal.contact_info || '' })
     confirmModal.open = false; closeNew(); fetchSuppliers(1)
-  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error creating supplier') } finally { saving.value = false }
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('people.suppliers.err_create')) } finally { saving.value = false }
 }
 
 function openEdit(s) { Object.assign(editModal, { open: true, id: s.id, name: s.name, code_prefix: s.code_prefix, contact_info: s.contact_info || '' }) }
@@ -480,13 +484,13 @@ function closeEdit() { editModal.open = false }
 async function saveEdit() {
   saving.value = true
   try { await api.patch(`/api/inventory/suppliers/${editModal.id}/`, { name: editModal.name, contact_info: editModal.contact_info || '' }); closeEdit(); fetchSuppliers(page.value) }
-  catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving supplier') } finally { saving.value = false }
+  catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('people.suppliers.err_save')) } finally { saving.value = false }
 }
 
 async function deleteSupplier(id) {
-  if (!confirm('Delete this supplier? This cannot be undone.')) return
+  if (!confirm(t('people.suppliers.confirm_delete'))) return
   try { await api.delete(`/api/inventory/suppliers/${id}/`); fetchSuppliers(page.value) }
-  catch (e) { alert(e.response?.data?.detail || 'Cannot delete — supplier may have linked purchases.') }
+  catch (e) { alert(e.response?.data?.detail || t('people.suppliers.err_delete')) }
 }
 
 onMounted(() => { loadLayout() })

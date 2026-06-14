@@ -93,7 +93,30 @@
     "notes": "Notes",
     "date": "Date",
     "status": "Status",
-    "search": "Search"
+    "search": "Search",
+    "dt": {
+      "reset_layout": "Reset to assigned layout",
+      "customize": "Customize",
+      "assign": "Assign layouts to staff",
+      "customize_title": "Customize columns",
+      "load_preset": "Load preset…",
+      "reset": "Reset",
+      "save_preset": "Save preset",
+      "done": "Done",
+      "hint": "Drag to reorder · uncheck to hide · {col} is locked.",
+      "per_page": "PER PAGE",
+      "showing": "SHOWING {from}-{to} OF {total}",
+      "save_preset_modal": {
+        "name_label": "Preset name",
+        "name_placeholder": "e.g. Manager view",
+        "default_label": "Make this the store default"
+      },
+      "assign_modal": {
+        "title": "Assign layouts to staff",
+        "default_option": "— Default —",
+        "no_staff": "No staff yet."
+      }
+    }
   },
   "inventory": {
     "products": {
@@ -810,6 +833,210 @@
       "err_stock": "Insufficient stock: ",
       "err_stock_item": "{name} (have {have}, need {need})",
       "err_failed": "Payment failed. Please try again."
+    }
+  },
+  "people": {
+    "customers": {
+      "title": "Customers",
+      "subtitle": "Manage your customer list and track balances",
+      "search_ph": "Search name or phone…",
+      "add": "Add Customer",
+      "columns": {
+        "name": "Name",
+        "phone_number": "Phone",
+        "notes": "Notes",
+        "balance": "Balance",
+        "store_credit": "Store Credit"
+      },
+      "empty_title": "No customers found",
+      "empty_sub": "Adjust your search or add a new customer.",
+      "owes": "Owes",
+      "credit": "Credit",
+      "edit_title": "Edit customer",
+      "delete_title": "Delete customer",
+      "confirm_delete": "Delete this customer?"
+    },
+    "suppliers": {
+      "title": "Suppliers",
+      "subtitle": "Manage suppliers and track outstanding purchase balances",
+      "search_ph": "Search supplier…",
+      "add": "Add Supplier",
+      "columns": {
+        "name": "Name",
+        "prefix": "Prefix",
+        "contact": "Contact",
+        "balance": "Outstanding Balance"
+      },
+      "empty_title": "No suppliers found",
+      "empty_sub": "Add suppliers to link them to purchase invoices.",
+      "edit_title": "Edit supplier",
+      "delete_title": "Delete supplier",
+      "confirm_delete": "Delete this supplier? This cannot be undone.",
+      "err_create": "Error creating supplier",
+      "err_save": "Error saving supplier",
+      "err_delete": "Cannot delete — supplier may have linked purchases.",
+      "new_modal": {
+        "title": "New Supplier",
+        "name_label": "Supplier Name",
+        "name_ph": "e.g. Al-Nour Textiles",
+        "prefix_label": "Supplier Code Prefix",
+        "prefix_hint": "— 3 digits (100–999)",
+        "prefix_ph": "e.g. 101",
+        "check": "Check",
+        "available": "Available",
+        "taken": "Already taken",
+        "prefix_note": "Once registered, the prefix is permanent — it's embedded in every SKU of this supplier.",
+        "contact_label": "Contact Info",
+        "contact_ph": "Phone, email, address…",
+        "register": "Register Supplier"
+      },
+      "confirm_modal": {
+        "title": "Confirm Prefix Registration",
+        "text": "Register prefix {prefix} for {name}?",
+        "warn": "This cannot be changed after confirmation. The prefix will be embedded in all SKUs generated for this supplier.",
+        "creating": "Creating…",
+        "confirm": "Confirm & Register"
+      },
+      "edit_modal": {
+        "title": "Edit Supplier",
+        "name_label": "Supplier Name",
+        "prefix_label": "Supplier Code Prefix",
+        "prefix_locked": "Locked — embedded in all SKUs",
+        "contact_label": "Contact Info",
+        "save": "Save Changes"
+      }
+    },
+    "customer_detail": {
+      "customer": "Customer",
+      "not_found": "Customer not found.",
+      "info": {
+        "phone": "Phone",
+        "balance": "Balance",
+        "credit_limit": "Credit Limit",
+        "store_default": "Store default",
+        "store_credit": "Store Credit",
+        "none": "None",
+        "notes": "Notes"
+      },
+      "owes": "Owes",
+      "credit": "Credit",
+      "invoice_history": "Invoice History",
+      "inv_cols": {
+        "num": "#",
+        "date": "Date",
+        "total": "Total",
+        "paid": "Paid",
+        "balance": "Balance",
+        "method": "Method",
+        "status": "Status"
+      },
+      "no_invoices": "No invoices yet.",
+      "badge_paid": "Paid",
+      "edit_modal": {
+        "title": "Edit Customer",
+        "name_label": "Name",
+        "phone_label": "Phone",
+        "credit_limit_label": "Credit Limit",
+        "credit_limit_ph": "Leave blank for store default",
+        "notes_label": "Notes"
+      }
+    },
+    "supplier_detail": {
+      "supplier": "Supplier",
+      "not_found": "Supplier not found.",
+      "prefix": "Prefix:",
+      "locked": "Locked",
+      "info": {
+        "contact": "Contact",
+        "code_prefix": "Code Prefix",
+        "outstanding": "Outstanding Balance",
+        "settled": "Settled"
+      },
+      "purchase_history": "Purchase History",
+      "pur_cols": {
+        "ref": "Ref",
+        "date": "Date",
+        "total": "Total",
+        "paid": "Paid",
+        "outstanding": "Outstanding",
+        "status": "Status",
+        "notes": "Notes"
+      },
+      "no_purchases": "No purchases yet.",
+      "pur_status": {
+        "received": "Received",
+        "draft": "Draft",
+        "void": "Void"
+      }
+    },
+    "staff": {
+      "title": "Staff",
+      "subtitle": "Manage your team, roles and access",
+      "search_ph": "Search name or email…",
+      "cols": {
+        "name": "Name",
+        "username": "Username",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status"
+      },
+      "empty": "No staff members yet",
+      "active": "Active",
+      "inactive": "Inactive",
+      "new_title": "New Staff Member",
+      "edit_title": "Edit Staff Member",
+      "new_action": "New Staff",
+      "first_name": "First Name",
+      "first_name_ph": "First name",
+      "last_name": "Last Name",
+      "last_name_ph": "Last name",
+      "username_label": "Username",
+      "username_ph": "e.g. ahmed.cashier",
+      "email_label": "Email (optional)",
+      "email_ph": "email@example.com",
+      "role_label": "Role",
+      "roles": {
+        "cashier": "Cashier",
+        "manager": "Manager",
+        "admin": "Admin",
+        "owner": "Owner"
+      },
+      "password_label": "Password",
+      "password_new": "New Password (leave blank to keep current)",
+      "password_keep_ph": "Leave blank to keep unchanged",
+      "password_set_ph": "Set a password",
+      "phone_label": "Phone Number",
+      "phone_ph": "e.g. 01012345678",
+      "whatsapp_label": "WhatsApp",
+      "whatsapp_ph": "e.g. 01012345678",
+      "active_label": "Active",
+      "can_login": "Can log in",
+      "blocked_login": "Blocked from logging in",
+      "save_changes": "Save Changes",
+      "add_staff": "Add Staff",
+      "err_save": "Error saving staff member"
+    },
+    "customer_form": {
+      "title_new": "New Customer",
+      "title_edit": "Edit Customer",
+      "gender": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "name_label": "Full Name",
+      "name_required_hint": "(name or phone required)",
+      "name_ph": "e.g. Ahmed Hassan",
+      "phone_label": "Phone Number",
+      "phone_ph": "e.g. 01012345678",
+      "email_label": "Email",
+      "email_ph": "e.g. ahmed@example.com",
+      "credit_limit_label": "Credit Limit",
+      "credit_limit_ph": "Blank = store default",
+      "credit_limit_hint": "Max unpaid balance. Blank = store default.",
+      "notes_label": "Notes",
+      "notes_ph": "Any notes about this customer…",
+      "err_save": "Could not save customer.",
+      "save_changes": "Save Changes",
+      "add_customer": "Add Customer"
     }
   }
 }

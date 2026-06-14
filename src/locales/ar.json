@@ -93,7 +93,30 @@
     "notes": "الملاحظات",
     "date": "التاريخ",
     "status": "الحالة",
-    "search": "بحث"
+    "search": "بحث",
+    "dt": {
+      "reset_layout": "إعادة التعيين إلى التخطيط المخصص",
+      "customize": "تخصيص",
+      "assign": "تعيين التخطيطات للموظفين",
+      "customize_title": "تخصيص الأعمدة",
+      "load_preset": "تحميل إعداد مسبق…",
+      "reset": "إعادة تعيين",
+      "save_preset": "حفظ الإعداد",
+      "done": "تم",
+      "hint": "اسحب لإعادة الترتيب · ألغِ التحديد للإخفاء · {col} مقفل.",
+      "per_page": "لكل صفحة",
+      "showing": "عرض {from}-{to} من {total}",
+      "save_preset_modal": {
+        "name_label": "اسم الإعداد",
+        "name_placeholder": "مثال: عرض المدير",
+        "default_label": "اجعله الافتراضي للمتجر"
+      },
+      "assign_modal": {
+        "title": "تعيين التخطيطات للموظفين",
+        "default_option": "— الافتراضي —",
+        "no_staff": "لا يوجد موظفون بعد."
+      }
+    }
   },
   "inventory": {
     "products": {
@@ -810,6 +833,210 @@
       "err_stock": "المخزون غير كافٍ: ",
       "err_stock_item": "{name} (المتوفر {have}، المطلوب {need})",
       "err_failed": "فشلت عملية الدفع. حاول مرة أخرى."
+    }
+  },
+  "people": {
+    "customers": {
+      "title": "العملاء",
+      "subtitle": "إدارة قائمة عملائك ومتابعة الأرصدة",
+      "search_ph": "ابحث بالاسم أو الهاتف…",
+      "add": "إضافة عميل",
+      "columns": {
+        "name": "الاسم",
+        "phone_number": "الهاتف",
+        "notes": "ملاحظات",
+        "balance": "الرصيد",
+        "store_credit": "رصيد المتجر"
+      },
+      "empty_title": "لم يتم العثور على عملاء",
+      "empty_sub": "عدّل بحثك أو أضف عميلاً جديداً.",
+      "owes": "مدين",
+      "credit": "دائن",
+      "edit_title": "تعديل العميل",
+      "delete_title": "حذف العميل",
+      "confirm_delete": "حذف هذا العميل؟"
+    },
+    "suppliers": {
+      "title": "الموردون",
+      "subtitle": "إدارة الموردين ومتابعة أرصدة المشتريات المستحقة",
+      "search_ph": "ابحث عن مورّد…",
+      "add": "إضافة مورّد",
+      "columns": {
+        "name": "الاسم",
+        "prefix": "البادئة",
+        "contact": "معلومات الاتصال",
+        "balance": "الرصيد المستحق"
+      },
+      "empty_title": "لم يتم العثور على موردين",
+      "empty_sub": "أضف موردين لربطهم بفواتير المشتريات.",
+      "edit_title": "تعديل المورّد",
+      "delete_title": "حذف المورّد",
+      "confirm_delete": "حذف هذا المورّد؟ لا يمكن التراجع عن هذا.",
+      "err_create": "خطأ في إنشاء المورّد",
+      "err_save": "خطأ في حفظ المورّد",
+      "err_delete": "تعذّر الحذف — قد يكون للمورّد مشتريات مرتبطة.",
+      "new_modal": {
+        "title": "مورّد جديد",
+        "name_label": "اسم المورّد",
+        "name_ph": "مثال: نسيج النور",
+        "prefix_label": "بادئة كود المورّد",
+        "prefix_hint": "— 3 أرقام (100–999)",
+        "prefix_ph": "مثال: 101",
+        "check": "تحقق",
+        "available": "متاحة",
+        "taken": "مستخدمة بالفعل",
+        "prefix_note": "بمجرد تسجيلها، تصبح البادئة دائمة — فهي مضمّنة في كل رمز SKU لهذا المورّد.",
+        "contact_label": "معلومات الاتصال",
+        "contact_ph": "هاتف، بريد إلكتروني، عنوان…",
+        "register": "تسجيل المورّد"
+      },
+      "confirm_modal": {
+        "title": "تأكيد تسجيل البادئة",
+        "text": "تسجيل البادئة {prefix} للمورّد {name}؟",
+        "warn": "لا يمكن تغيير هذا بعد التأكيد. ستُضمّن البادئة في جميع رموز SKU التي تُنشأ لهذا المورّد.",
+        "creating": "جارٍ الإنشاء…",
+        "confirm": "تأكيد وتسجيل"
+      },
+      "edit_modal": {
+        "title": "تعديل المورّد",
+        "name_label": "اسم المورّد",
+        "prefix_label": "بادئة كود المورّد",
+        "prefix_locked": "مقفلة — مضمّنة في جميع رموز SKU",
+        "contact_label": "معلومات الاتصال",
+        "save": "حفظ التغييرات"
+      }
+    },
+    "customer_detail": {
+      "customer": "عميل",
+      "not_found": "لم يتم العثور على العميل.",
+      "info": {
+        "phone": "الهاتف",
+        "balance": "الرصيد",
+        "credit_limit": "حد الائتمان",
+        "store_default": "افتراضي المتجر",
+        "store_credit": "رصيد المتجر",
+        "none": "لا يوجد",
+        "notes": "ملاحظات"
+      },
+      "owes": "مدين",
+      "credit": "دائن",
+      "invoice_history": "سجل الفواتير",
+      "inv_cols": {
+        "num": "#",
+        "date": "التاريخ",
+        "total": "الإجمالي",
+        "paid": "المدفوع",
+        "balance": "الرصيد",
+        "method": "الطريقة",
+        "status": "الحالة"
+      },
+      "no_invoices": "لا توجد فواتير بعد.",
+      "badge_paid": "مدفوعة",
+      "edit_modal": {
+        "title": "تعديل العميل",
+        "name_label": "الاسم",
+        "phone_label": "الهاتف",
+        "credit_limit_label": "حد الائتمان",
+        "credit_limit_ph": "اتركه فارغاً لاستخدام افتراضي المتجر",
+        "notes_label": "ملاحظات"
+      }
+    },
+    "supplier_detail": {
+      "supplier": "مورّد",
+      "not_found": "لم يتم العثور على المورّد.",
+      "prefix": "البادئة:",
+      "locked": "مقفلة",
+      "info": {
+        "contact": "معلومات الاتصال",
+        "code_prefix": "بادئة الكود",
+        "outstanding": "الرصيد المستحق",
+        "settled": "مُسوّى"
+      },
+      "purchase_history": "سجل المشتريات",
+      "pur_cols": {
+        "ref": "المرجع",
+        "date": "التاريخ",
+        "total": "الإجمالي",
+        "paid": "المدفوع",
+        "outstanding": "المستحق",
+        "status": "الحالة",
+        "notes": "ملاحظات"
+      },
+      "no_purchases": "لا توجد مشتريات بعد.",
+      "pur_status": {
+        "received": "مستلمة",
+        "draft": "مسودة",
+        "void": "ملغاة"
+      }
+    },
+    "staff": {
+      "title": "الموظفون",
+      "subtitle": "إدارة فريقك والصلاحيات والوصول",
+      "search_ph": "ابحث بالاسم أو البريد…",
+      "cols": {
+        "name": "الاسم",
+        "username": "اسم المستخدم",
+        "email": "البريد الإلكتروني",
+        "role": "الصلاحية",
+        "status": "الحالة"
+      },
+      "empty": "لا يوجد موظفون بعد",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "new_title": "موظف جديد",
+      "edit_title": "تعديل الموظف",
+      "new_action": "موظف جديد",
+      "first_name": "الاسم الأول",
+      "first_name_ph": "الاسم الأول",
+      "last_name": "اسم العائلة",
+      "last_name_ph": "اسم العائلة",
+      "username_label": "اسم المستخدم",
+      "username_ph": "مثال: ahmed.cashier",
+      "email_label": "البريد الإلكتروني (اختياري)",
+      "email_ph": "email@example.com",
+      "role_label": "الصلاحية",
+      "roles": {
+        "cashier": "كاشير",
+        "manager": "مدير",
+        "admin": "مسؤول",
+        "owner": "مالك"
+      },
+      "password_label": "كلمة المرور",
+      "password_new": "كلمة مرور جديدة (اتركها فارغة للإبقاء على الحالية)",
+      "password_keep_ph": "اتركها فارغة للإبقاء عليها دون تغيير",
+      "password_set_ph": "عيّن كلمة مرور",
+      "phone_label": "رقم الهاتف",
+      "phone_ph": "مثال: 01012345678",
+      "whatsapp_label": "واتساب",
+      "whatsapp_ph": "مثال: 01012345678",
+      "active_label": "نشط",
+      "can_login": "يمكنه تسجيل الدخول",
+      "blocked_login": "ممنوع من تسجيل الدخول",
+      "save_changes": "حفظ التغييرات",
+      "add_staff": "إضافة موظف",
+      "err_save": "خطأ في حفظ الموظف"
+    },
+    "customer_form": {
+      "title_new": "عميل جديد",
+      "title_edit": "تعديل العميل",
+      "gender": "الجنس",
+      "male": "ذكر",
+      "female": "أنثى",
+      "name_label": "الاسم الكامل",
+      "name_required_hint": "(الاسم أو الهاتف مطلوب)",
+      "name_ph": "مثال: أحمد حسن",
+      "phone_label": "رقم الهاتف",
+      "phone_ph": "مثال: 01012345678",
+      "email_label": "البريد الإلكتروني",
+      "email_ph": "مثال: ahmed@example.com",
+      "credit_limit_label": "حد الائتمان",
+      "credit_limit_ph": "فارغ = افتراضي المتجر",
+      "credit_limit_hint": "أقصى رصيد غير مدفوع. فارغ = افتراضي المتجر.",
+      "notes_label": "ملاحظات",
+      "notes_ph": "أي ملاحظات حول هذا العميل…",
+      "err_save": "تعذّر حفظ العميل.",
+      "save_changes": "حفظ التغييرات",
+      "add_customer": "إضافة عميل"
     }
   }
 }

@@ -1,30 +1,30 @@
 <template>
-  <AppModal :open="open" :title="customerId ? 'Edit Customer' : 'New Customer'" @close="$emit('close')">
+  <AppModal :open="open" :title="customerId ? t('people.customer_form.title_edit') : t('people.customer_form.title_new')" @close="$emit('close')">
     <div class="cfm-form">
 
       <!-- Gender -->
       <div class="cfm-row">
-        <label class="form-label">Gender</label>
+        <label class="form-label">{{ t('people.customer_form.gender') }}</label>
         <div class="cfm-radio-group">
           <label class="cfm-radio" :class="{ active: form.gender === 'MALE' }">
             <input type="radio" v-model="form.gender" value="MALE" tabindex="1" />
-            <span>Male</span>
+            <span>{{ t('people.customer_form.male') }}</span>
           </label>
           <label class="cfm-radio" :class="{ active: form.gender === 'FEMALE' }">
             <input type="radio" v-model="form.gender" value="FEMALE" tabindex="2" />
-            <span>Female</span>
+            <span>{{ t('people.customer_form.female') }}</span>
           </label>
         </div>
       </div>
 
       <!-- Name -->
       <div class="cfm-row">
-        <label class="form-label">Full Name <span class="cfm-optional" v-if="!form.name && !form.phone_number">(name or phone required)</span></label>
+        <label class="form-label">{{ t('people.customer_form.name_label') }} <span class="cfm-optional" v-if="!form.name && !form.phone_number">{{ t('people.customer_form.name_required_hint') }}</span></label>
         <input
           ref="nameInputEl"
           v-model="form.name"
           class="form-input"
-          placeholder="e.g. Ahmed Hassan"
+          :placeholder="t('people.customer_form.name_ph')"
           tabindex="3"
           @keydown.enter.prevent="save"
         />
@@ -32,11 +32,11 @@
 
       <!-- Phone -->
       <div class="cfm-row">
-        <label class="form-label">Phone Number <span class="cfm-optional">(optional)</span></label>
+        <label class="form-label">{{ t('people.customer_form.phone_label') }} <span class="cfm-optional">({{ t('common.optional') }})</span></label>
         <input
           v-model="form.phone_number"
           class="form-input"
-          placeholder="e.g. 01012345678"
+          :placeholder="t('people.customer_form.phone_ph')"
           tabindex="4"
           @keydown.enter.prevent="save"
         />
@@ -44,12 +44,12 @@
 
       <!-- Email -->
       <div class="cfm-row">
-        <label class="form-label">Email <span class="cfm-optional">(optional)</span></label>
+        <label class="form-label">{{ t('people.customer_form.email_label') }} <span class="cfm-optional">({{ t('common.optional') }})</span></label>
         <input
           v-model="form.email"
           type="email"
           class="form-input"
-          placeholder="e.g. ahmed@example.com"
+          :placeholder="t('people.customer_form.email_ph')"
           tabindex="5"
           @keydown.enter.prevent="save"
         />
@@ -57,26 +57,26 @@
 
       <!-- Credit Limit -->
       <div class="cfm-row">
-        <label class="form-label">Credit Limit <span class="cfm-optional">(optional)</span></label>
+        <label class="form-label">{{ t('people.customer_form.credit_limit_label') }} <span class="cfm-optional">({{ t('common.optional') }})</span></label>
         <input
           v-model.number="form.credit_limit"
           type="number" min="0" step="100"
           class="form-input"
-          placeholder="Blank = store default"
+          :placeholder="t('people.customer_form.credit_limit_ph')"
           tabindex="6"
           @keydown.enter.prevent="save"
         />
-        <p class="cfm-hint">Max unpaid balance. Blank = store default.</p>
+        <p class="cfm-hint">{{ t('people.customer_form.credit_limit_hint') }}</p>
       </div>
 
       <!-- Notes -->
       <div class="cfm-row">
-        <label class="form-label">Notes <span class="cfm-optional">(optional)</span></label>
+        <label class="form-label">{{ t('people.customer_form.notes_label') }} <span class="cfm-optional">({{ t('common.optional') }})</span></label>
         <textarea
           v-model="form.notes"
           class="form-input"
           rows="2"
-          placeholder="Any notes about this customer…"
+          :placeholder="t('people.customer_form.notes_ph')"
           tabindex="7"
         />
       </div>
@@ -85,21 +85,24 @@
     </div>
 
     <template #footer>
-      <button class="btn-ghost" tabindex="9" @click="$emit('close')">Cancel</button>
+      <button class="btn-ghost" tabindex="9" @click="$emit('close')">{{ t('common.cancel') }}</button>
       <button
         class="btn-primary"
         tabindex="8"
         :disabled="!_canSave || saving"
         @click="save"
-      >{{ saving ? 'Saving…' : (customerId ? 'Save Changes' : 'Add Customer') }}</button>
+      >{{ saving ? t('common.saving') : (customerId ? t('people.customer_form.save_changes') : t('people.customer_form.add_customer')) }}</button>
     </template>
   </AppModal>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
+
+const { t } = useI18n()
 
 const props = defineProps({
   open:         { type: Boolean, default: false },
@@ -167,9 +170,9 @@ async function save() {
     const data = err?.response?.data
     if (data) {
       const msgs = Object.values(data).flat()
-      errorMsg.value = msgs[0] || 'Could not save customer.'
+      errorMsg.value = msgs[0] || t('people.customer_form.err_save')
     } else {
-      errorMsg.value = 'Could not save customer.'
+      errorMsg.value = t('people.customer_form.err_save')
     }
   } finally {
     saving.value = false

@@ -3,35 +3,35 @@
     <div class="page-header">
       <div class="header-left">
         <button class="back-btn" @click="$router.back()">
-          <ChevronLeft :size="16" /> Back
+          <ChevronLeft :size="16" /> {{ t('common.back') }}
         </button>
         <div v-if="supplier">
           <h1 class="page-title">{{ supplier.name }}</h1>
-          <p class="page-sub">Prefix: {{ supplier.code_prefix }} <span v-if="supplier.prefix_locked" class="lock-badge"><Lock :size="10" /> Locked</span></p>
+          <p class="page-sub">{{ t('people.supplier_detail.prefix') }} {{ supplier.code_prefix }} <span v-if="supplier.prefix_locked" class="lock-badge"><Lock :size="10" /> {{ t('people.supplier_detail.locked') }}</span></p>
         </div>
-        <div v-else class="page-title">Supplier</div>
+        <div v-else class="page-title">{{ t('people.supplier_detail.supplier') }}</div>
       </div>
     </div>
 
     <div v-if="loading" class="skeleton-block" />
-    <div v-else-if="!supplier" class="empty-state">Supplier not found.</div>
+    <div v-else-if="!supplier" class="empty-state">{{ t('people.supplier_detail.not_found') }}</div>
     <div v-else class="detail-layout">
 
       <div class="info-card">
         <div class="info-grid">
           <div class="info-item">
-            <div class="info-label">Contact</div>
+            <div class="info-label">{{ t('people.supplier_detail.info.contact') }}</div>
             <div class="info-value">{{ supplier.contact_info || '—' }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">Code Prefix</div>
+            <div class="info-label">{{ t('people.supplier_detail.info.code_prefix') }}</div>
             <div class="info-value mono">{{ supplier.code_prefix }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">Outstanding Balance</div>
+            <div class="info-label">{{ t('people.supplier_detail.info.outstanding') }}</div>
             <div class="info-value">
               <span v-if="Number(supplier.balance) > 0" class="badge-owe"><Money :value="supplier.balance" /></span>
-              <span v-else class="badge-paid">Settled</span>
+              <span v-else class="badge-paid">{{ t('people.supplier_detail.info.settled') }}</span>
             </div>
           </div>
         </div>
@@ -39,7 +39,7 @@
 
       <div class="section-card">
         <div class="section-header">
-          <h2 class="section-title">Purchase History</h2>
+          <h2 class="section-title">{{ t('people.supplier_detail.purchase_history') }}</h2>
           <span class="count-badge">{{ total }}</span>
         </div>
         <div v-if="purLoading" class="table-skeleton"><div v-for="i in 5" :key="i" class="skeleton-row" /></div>
@@ -47,18 +47,18 @@
         <table class="dt">
           <thead>
             <tr>
-              <th class="dt-th">Ref</th>
-              <th class="dt-th">Date</th>
-              <th class="dt-th">Total</th>
-              <th class="dt-th">Paid</th>
-              <th class="dt-th">Outstanding</th>
-              <th class="dt-th">Status</th>
-              <th class="dt-th">Notes</th>
+              <th class="dt-th">{{ t('people.supplier_detail.pur_cols.ref') }}</th>
+              <th class="dt-th">{{ t('people.supplier_detail.pur_cols.date') }}</th>
+              <th class="dt-th">{{ t('people.supplier_detail.pur_cols.total') }}</th>
+              <th class="dt-th">{{ t('people.supplier_detail.pur_cols.paid') }}</th>
+              <th class="dt-th">{{ t('people.supplier_detail.pur_cols.outstanding') }}</th>
+              <th class="dt-th">{{ t('people.supplier_detail.pur_cols.status') }}</th>
+              <th class="dt-th">{{ t('people.supplier_detail.pur_cols.notes') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="purchases.length === 0">
-              <td colspan="7" class="dt-empty">No purchases yet.</td>
+              <td colspan="7" class="dt-empty">{{ t('people.supplier_detail.no_purchases') }}</td>
             </tr>
             <tr v-for="p in purchases" :key="p.id" class="dt-row">
               <td class="mono">{{ p.vendor_reference || '—' }}</td>
@@ -67,9 +67,9 @@
               <td><Money :value="p.paid_amount" /></td>
               <td>
                 <span v-if="Number(p.total_amount) - Number(p.paid_amount) > 0" class="badge-owe"><Money :value="Number(p.total_amount) - Number(p.paid_amount)" /></span>
-                <span v-else class="badge-paid">Settled</span>
+                <span v-else class="badge-paid">{{ t('people.supplier_detail.info.settled') }}</span>
               </td>
-              <td><span class="status-pill" :class="'s-' + p.status.toLowerCase()">{{ p.status }}</span></td>
+              <td><span class="status-pill" :class="'s-' + p.status.toLowerCase()">{{ purStatusLabel(p.status) }}</span></td>
               <td class="text-muted">{{ p.notes || '—' }}</td>
             </tr>
           </tbody>
@@ -83,12 +83,20 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ChevronLeft, Lock } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 
+const { t } = useI18n()
 const props = defineProps({ id: String })
+
+function purStatusLabel(s) {
+  const key = (s || '').toLowerCase()
+  const known = ['received', 'draft', 'void']
+  return known.includes(key) ? t('people.supplier_detail.pur_status.' + key) : s
+}
 
 const supplier = ref(null)
 const loading = ref(true)

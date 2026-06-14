@@ -2,13 +2,13 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Staff</h1>
-        <p class="page-sub">Manage your team, roles and access</p>
+        <h1 class="page-title">{{ t('people.staff.title') }}</h1>
+        <p class="page-sub">{{ t('people.staff.subtitle') }}</p>
       </div>
       <div class="header-right">
         <div class="search-wrap">
           <Search :size="14" class="search-icon" />
-          <input v-model="search" class="search-input" placeholder="Search name or email…" @input="onSearch" />
+          <input v-model="search" class="search-input" :placeholder="t('people.staff.search_ph')" @input="onSearch" />
         </div>
       </div>
     </div>
@@ -20,11 +20,11 @@
       <table v-else class="data-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
+            <th>{{ t('people.staff.cols.name') }}</th>
+            <th>{{ t('people.staff.cols.username') }}</th>
+            <th>{{ t('people.staff.cols.email') }}</th>
+            <th>{{ t('people.staff.cols.role') }}</th>
+            <th>{{ t('people.staff.cols.status') }}</th>
             <th style="width:60px;"></th>
           </tr>
         </thead>
@@ -32,7 +32,7 @@
           <tr v-if="staff.length === 0">
             <td colspan="6" class="table-empty">
               <UserCog :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No staff members yet</div>
+              <div>{{ t('people.staff.empty') }}</div>
             </td>
           </tr>
           <tr v-for="s in staff" :key="s.id" class="table-row" :class="{ inactive: !s.is_active }">
@@ -44,10 +44,10 @@
             </td>
             <td class="col-username">{{ s.username }}</td>
             <td class="col-email">{{ s.email || '—' }}</td>
-            <td><span class="role-badge" :class="'role-' + s.role.toLowerCase()">{{ s.role }}</span></td>
+            <td><span class="role-badge" :class="'role-' + s.role.toLowerCase()">{{ roleLabel(s.role) }}</span></td>
             <td>
-              <span v-if="s.is_active" class="status-active">Active</span>
-              <span v-else class="status-inactive">Inactive</span>
+              <span v-if="s.is_active" class="status-active">{{ t('people.staff.active') }}</span>
+              <span v-else class="status-inactive">{{ t('people.staff.inactive') }}</span>
             </td>
             <td>
               <button class="row-action" @click="openEdit(s)"><Pencil :size="13" /></button>
@@ -59,61 +59,61 @@
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchStaff" />
 
     <!-- MODAL: Add / Edit -->
-    <AppModal :open="modal.open" :title="modal.id ? 'Edit Staff Member' : 'New Staff Member'" no-backdrop-close @close="closeModal">
+    <AppModal :open="modal.open" :title="modal.id ? t('people.staff.edit_title') : t('people.staff.new_title')" no-backdrop-close @close="closeModal">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
-            <label class="form-label">First Name</label>
-            <input v-model="modal.first_name" class="form-input" placeholder="First name" />
+            <label class="form-label">{{ t('people.staff.first_name') }}</label>
+            <input v-model="modal.first_name" class="form-input" :placeholder="t('people.staff.first_name_ph')" />
           </div>
           <div>
-            <label class="form-label">Last Name</label>
-            <input v-model="modal.last_name" class="form-input" placeholder="Last name" />
+            <label class="form-label">{{ t('people.staff.last_name') }}</label>
+            <input v-model="modal.last_name" class="form-input" :placeholder="t('people.staff.last_name_ph')" />
           </div>
         </div>
         <div>
-          <label class="form-label">Username</label>
-          <input v-model="modal.username" class="form-input" placeholder="e.g. ahmed.cashier" :disabled="!!modal.id" />
+          <label class="form-label">{{ t('people.staff.username_label') }}</label>
+          <input v-model="modal.username" class="form-input" :placeholder="t('people.staff.username_ph')" :disabled="!!modal.id" />
         </div>
         <div>
-          <label class="form-label">Email (optional)</label>
-          <input v-model="modal.email" class="form-input" type="email" placeholder="email@example.com" />
+          <label class="form-label">{{ t('people.staff.email_label') }}</label>
+          <input v-model="modal.email" class="form-input" type="email" :placeholder="t('people.staff.email_ph')" />
         </div>
         <div>
-          <label class="form-label">Role</label>
+          <label class="form-label">{{ t('people.staff.role_label') }}</label>
           <select v-model="modal.role" class="form-input">
-            <option value="CASHIER">Cashier</option>
-            <option value="MANAGER">Manager</option>
-            <option value="ADMIN">Admin</option>
-            <option value="OWNER">Owner</option>
+            <option value="CASHIER">{{ t('people.staff.roles.cashier') }}</option>
+            <option value="MANAGER">{{ t('people.staff.roles.manager') }}</option>
+            <option value="ADMIN">{{ t('people.staff.roles.admin') }}</option>
+            <option value="OWNER">{{ t('people.staff.roles.owner') }}</option>
           </select>
         </div>
         <div>
-          <label class="form-label">{{ modal.id ? 'New Password (leave blank to keep current)' : 'Password' }}</label>
-          <input v-model="modal.password" class="form-input" type="password" :placeholder="modal.id ? 'Leave blank to keep unchanged' : 'Set a password'" />
+          <label class="form-label">{{ modal.id ? t('people.staff.password_new') : t('people.staff.password_label') }}</label>
+          <input v-model="modal.password" class="form-input" type="password" :placeholder="modal.id ? t('people.staff.password_keep_ph') : t('people.staff.password_set_ph')" />
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
-            <label class="form-label">Phone Number</label>
-            <input v-model="modal.phone_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+            <label class="form-label">{{ t('people.staff.phone_label') }}</label>
+            <input v-model="modal.phone_number" class="form-input" :placeholder="t('people.staff.phone_ph')" type="tel" />
           </div>
           <div>
-            <label class="form-label">WhatsApp</label>
-            <input v-model="modal.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" type="tel" />
+            <label class="form-label">{{ t('people.staff.whatsapp_label') }}</label>
+            <input v-model="modal.whatsapp_number" class="form-input" :placeholder="t('people.staff.whatsapp_ph')" type="tel" />
           </div>
         </div>
         <div v-if="modal.id" style="display:flex;align-items:center;gap:10px;padding-top:4px;">
-          <label class="form-label" style="margin:0;">Active</label>
+          <label class="form-label" style="margin:0;">{{ t('people.staff.active_label') }}</label>
           <button class="toggle-btn" :class="{ on: modal.is_active }" @click="modal.is_active = !modal.is_active">
             <span class="toggle-knob" />
           </button>
-          <span style="font-size:12px;color:var(--text-muted);">{{ modal.is_active ? 'Can log in' : 'Blocked from logging in' }}</span>
+          <span style="font-size:12px;color:var(--text-muted);">{{ modal.is_active ? t('people.staff.can_login') : t('people.staff.blocked_login') }}</span>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="closeModal">Cancel</button>
+        <button class="btn-ghost" @click="closeModal">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="!modal.username.trim() || (!modal.id && !modal.password.trim()) || saving" @click="save">
-          {{ saving ? 'Saving…' : (modal.id ? 'Save Changes' : 'Add Staff') }}
+          {{ saving ? t('common.saving') : (modal.id ? t('people.staff.save_changes') : t('people.staff.add_staff')) }}
         </button>
       </template>
     </AppModal>
@@ -122,13 +122,21 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Search, UserCog, Pencil } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 
+const { t } = useI18n()
 const qab = useQABStore()
+
+function roleLabel(role) {
+  const key = (role || '').toLowerCase()
+  const known = ['cashier', 'manager', 'admin', 'owner']
+  return known.includes(key) ? t('people.staff.roles.' + key) : role
+}
 
 const staff    = ref([])
 const loading  = ref(false)
@@ -187,13 +195,13 @@ async function save() {
     closeModal()
     fetchStaff(modal.id ? page.value : 1)
   } catch (e) {
-    alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving staff member')
+    alert(e.response?.data ? JSON.stringify(e.response.data) : t('people.staff.err_save'))
   } finally { saving.value = false }
 }
 
 onMounted(() => {
   fetchStaff()
-  qab.setActions([{ id: 'new-staff', label: 'New Staff', icon: 'plus', handler: openNew }])
+  qab.setActions([{ id: 'new-staff', label: t('people.staff.new_action'), icon: 'plus', handler: openNew }])
 })
 onUnmounted(() => qab.clearActions())
 

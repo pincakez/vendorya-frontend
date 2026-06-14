@@ -4,48 +4,48 @@
     <div class="page-header">
       <div class="header-left">
         <button class="back-btn" @click="$router.back()">
-          <ChevronLeft :size="16" /> Back
+          <ChevronLeft :size="16" /> {{ t('common.back') }}
         </button>
         <div v-if="customer">
           <h1 class="page-title">{{ customer.name }}</h1>
           <p class="page-sub">{{ customer.phone_number || '—' }}</p>
         </div>
-        <div v-else class="page-title">Customer</div>
+        <div v-else class="page-title">{{ t('people.customer_detail.customer') }}</div>
       </div>
       <div v-if="customer" class="header-right">
-        <button class="btn-secondary" @click="openEdit"><Pencil :size="14" /> Edit</button>
+        <button class="btn-secondary" @click="openEdit"><Pencil :size="14" /> {{ t('common.edit') }}</button>
       </div>
     </div>
 
     <div v-if="loading" class="skeleton-block" />
-    <div v-else-if="!customer" class="empty-state">Customer not found.</div>
+    <div v-else-if="!customer" class="empty-state">{{ t('people.customer_detail.not_found') }}</div>
     <div v-else class="detail-layout">
 
       <!-- Info card -->
       <div class="info-card">
         <div class="info-grid">
           <div class="info-item">
-            <div class="info-label">Phone</div>
+            <div class="info-label">{{ t('people.customer_detail.info.phone') }}</div>
             <div class="info-value">{{ customer.phone_number || '—' }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">Balance</div>
+            <div class="info-label">{{ t('people.customer_detail.info.balance') }}</div>
             <div class="info-value">
-              <span v-if="Number(customer.balance) > 0" class="badge-owe">Owes <Money :value="customer.balance" /></span>
-              <span v-else-if="Number(customer.balance) < 0" class="badge-credit">Credit <Money :value="Math.abs(Number(customer.balance))" /></span>
+              <span v-if="Number(customer.balance) > 0" class="badge-owe">{{ t('people.customer_detail.owes') }} <Money :value="customer.balance" /></span>
+              <span v-else-if="Number(customer.balance) < 0" class="badge-credit">{{ t('people.customer_detail.credit') }} <Money :value="Math.abs(Number(customer.balance))" /></span>
               <span v-else>—</span>
             </div>
           </div>
           <div class="info-item">
-            <div class="info-label">Credit Limit</div>
-            <div class="info-value"><Money v-if="customer.credit_limit" :value="customer.credit_limit" /> <span v-else class="text-muted">Store default</span></div>
+            <div class="info-label">{{ t('people.customer_detail.info.credit_limit') }}</div>
+            <div class="info-value"><Money v-if="customer.credit_limit" :value="customer.credit_limit" /> <span v-else class="text-muted">{{ t('people.customer_detail.info.store_default') }}</span></div>
           </div>
           <div class="info-item">
-            <div class="info-label">Store Credit</div>
-            <div class="info-value"><Money v-if="Number(customer.store_credit) > 0" :value="customer.store_credit" /> <span v-else class="text-muted">None</span></div>
+            <div class="info-label">{{ t('people.customer_detail.info.store_credit') }}</div>
+            <div class="info-value"><Money v-if="Number(customer.store_credit) > 0" :value="customer.store_credit" /> <span v-else class="text-muted">{{ t('people.customer_detail.info.none') }}</span></div>
           </div>
           <div class="info-item">
-            <div class="info-label">Notes</div>
+            <div class="info-label">{{ t('people.customer_detail.info.notes') }}</div>
             <div class="info-value">{{ customer.notes || '—' }}</div>
           </div>
         </div>
@@ -54,25 +54,25 @@
       <!-- Invoices -->
       <div class="section-card">
         <div class="section-header">
-          <h2 class="section-title">Invoice History</h2>
+          <h2 class="section-title">{{ t('people.customer_detail.invoice_history') }}</h2>
           <span class="count-badge">{{ total }}</span>
         </div>
         <div v-if="invLoading" class="table-skeleton"><div v-for="i in 5" :key="i" class="skeleton-row" /></div>
         <table v-else class="data-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Date</th>
-              <th>Total</th>
-              <th>Paid</th>
-              <th>Balance</th>
-              <th>Method</th>
-              <th>Status</th>
+              <th>{{ t('people.customer_detail.inv_cols.num') }}</th>
+              <th>{{ t('people.customer_detail.inv_cols.date') }}</th>
+              <th>{{ t('people.customer_detail.inv_cols.total') }}</th>
+              <th>{{ t('people.customer_detail.inv_cols.paid') }}</th>
+              <th>{{ t('people.customer_detail.inv_cols.balance') }}</th>
+              <th>{{ t('people.customer_detail.inv_cols.method') }}</th>
+              <th>{{ t('people.customer_detail.inv_cols.status') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="invoices.length === 0">
-              <td colspan="7" class="table-empty">No invoices yet.</td>
+              <td colspan="7" class="table-empty">{{ t('people.customer_detail.no_invoices') }}</td>
             </tr>
             <tr v-for="inv in invoices" :key="inv.id" class="table-row" @click="goInvoice(inv.id)">
               <td class="mono">{{ inv.invoice_number || '—' }}</td>
@@ -81,10 +81,10 @@
               <td><Money :value="inv.paid_amount" /></td>
               <td>
                 <span v-if="Number(inv.grand_total) - Number(inv.paid_amount) > 0" class="badge-owe"><Money :value="Number(inv.grand_total) - Number(inv.paid_amount)" /></span>
-                <span v-else class="badge-paid">Paid</span>
+                <span v-else class="badge-paid">{{ t('people.customer_detail.badge_paid') }}</span>
               </td>
               <td class="text-muted">{{ inv.payment_method || '—' }}</td>
-              <td><span class="status-pill" :class="'s-' + inv.status.toLowerCase()">{{ inv.status }}</span></td>
+              <td><span class="status-pill" :class="'s-' + inv.status.toLowerCase()">{{ invStatusLabel(inv.status) }}</span></td>
             </tr>
           </tbody>
         </table>
@@ -93,28 +93,28 @@
     </div>
 
     <!-- Edit modal (reuse Customers.vue logic inline) -->
-    <AppModal :open="editModal.open" title="Edit Customer" @close="editModal.open = false">
+    <AppModal :open="editModal.open" :title="t('people.customer_detail.edit_modal.title')" @close="editModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label class="form-label">Name *</label>
+          <label class="form-label">{{ t('people.customer_detail.edit_modal.name_label') }} *</label>
           <input v-model="editModal.name" class="form-input" />
         </div>
         <div>
-          <label class="form-label">Phone</label>
+          <label class="form-label">{{ t('people.customer_detail.edit_modal.phone_label') }}</label>
           <input v-model="editModal.phone" class="form-input" />
         </div>
         <div>
-          <label class="form-label">Credit Limit</label>
-          <input v-model="editModal.credit_limit" class="form-input" type="number" placeholder="Leave blank for store default" />
+          <label class="form-label">{{ t('people.customer_detail.edit_modal.credit_limit_label') }}</label>
+          <input v-model="editModal.credit_limit" class="form-input" type="number" :placeholder="t('people.customer_detail.edit_modal.credit_limit_ph')" />
         </div>
         <div>
-          <label class="form-label">Notes</label>
+          <label class="form-label">{{ t('people.customer_detail.edit_modal.notes_label') }}</label>
           <textarea v-model="editModal.notes" class="form-input" rows="2" />
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="editModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="editModal.saving" @click="saveEdit">{{ editModal.saving ? 'Saving…' : 'Save' }}</button>
+        <button class="btn-ghost" @click="editModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="editModal.saving" @click="saveEdit">{{ editModal.saving ? t('common.saving') : t('common.save') }}</button>
       </template>
     </AppModal>
   </div>
@@ -123,14 +123,22 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ChevronLeft, Pencil } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 
+const { t } = useI18n()
 const props = defineProps({ id: String })
 const router = useRouter()
+
+function invStatusLabel(s) {
+  const key = (s || '').toLowerCase()
+  const known = ['draft', 'posted', 'void', 'refunded']
+  return known.includes(key) ? t('sales.status.' + key) : s
+}
 
 const customer = ref(null)
 const loading = ref(true)

@@ -1,34 +1,34 @@
 <template>
   <Teleport to="body">
     <div v-if="colDragMoved && colDragKey" class="col-drag-ghost" :style="{ left: colGhostX + 'px', top: colGhostY + 'px' }">
-      {{ colByKey[colDragKey]?.label }}
+      {{ colLabel(colDragKey) }}
     </div>
   </Teleport>
   <div class="cust">
     <div class="cust-head">
-      <h1 class="cust-title">Customers</h1>
-      <p class="cust-sub">Manage your customer list and track balances</p>
+      <h1 class="cust-title">{{ t('people.customers.title') }}</h1>
+      <p class="cust-sub">{{ t('people.customers.subtitle') }}</p>
     </div>
 
     <!-- STICKY TOOLBAR -->
     <div class="dt-toolbar">
       <div class="dt-search">
         <Search :size="15" class="dt-search-icon" />
-        <input v-model="search" class="dt-search-input" placeholder="Search name or phone…" @input="debouncedFetch" />
+        <input v-model="search" class="dt-search-input" :placeholder="t('people.customers.search_ph')" @input="debouncedFetch" />
         <button v-show="search" class="dt-x" @click="clearSearch"><X :size="13" /></button>
       </div>
 
-      <button v-if="hasAdhoc && !editing" class="dt-filter" title="Reset to assigned layout" @click="resetLayout">
+      <button v-if="hasAdhoc && !editing" class="dt-filter" :title="t('common.dt.reset_layout')" @click="resetLayout">
         <RotateCcw :size="14" />
       </button>
       <button v-if="canEdit && !editing" class="dt-filter" @click="enterEdit">
-        <Columns3 :size="14" /> Customize
+        <Columns3 :size="14" /> {{ t('common.dt.customize') }}
       </button>
-      <button v-if="canEdit && !editing" class="dt-filter" title="Assign layouts to staff" @click="openAssign">
+      <button v-if="canEdit && !editing" class="dt-filter" :title="t('common.dt.assign')" @click="openAssign">
         <UserCog :size="14" />
       </button>
       <button class="dt-add" @click="openNew">
-        <Plus :size="15" /> Add Customer
+        <Plus :size="15" /> {{ t('people.customers.add') }}
       </button>
     </div>
 
@@ -36,19 +36,19 @@
     <Transition name="edit-slide">
       <div v-if="editing" class="edit-panel">
         <div class="edit-head">
-          <span class="edit-title"><Columns3 :size="15" /> Customize columns</span>
+          <span class="edit-title"><Columns3 :size="15" /> {{ t('common.dt.customize_title') }}</span>
           <div class="edit-actions">
             <select v-if="presets.length" class="edit-select" @change="(e) => { const p = presets.find(x => x.id === e.target.value); if (p) loadPreset(p); e.target.value = '' }">
-              <option value="">Load preset…</option>
+              <option value="">{{ t('common.dt.load_preset') }}</option>
               <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
-            <button class="btn-ghost" @click="resetWorking">Reset</button>
-            <button class="btn-ghost" @click="cancelEdit">Cancel</button>
-            <button class="btn-ghost" @click="saveModal.open = true">Save preset</button>
-            <button class="btn-primary" @click="doneEdit">Done</button>
+            <button class="btn-ghost" @click="resetWorking">{{ t('common.dt.reset') }}</button>
+            <button class="btn-ghost" @click="cancelEdit">{{ t('common.cancel') }}</button>
+            <button class="btn-ghost" @click="saveModal.open = true">{{ t('common.dt.save_preset') }}</button>
+            <button class="btn-primary" @click="doneEdit">{{ t('common.dt.done') }}</button>
           </div>
         </div>
-        <p class="edit-hint">Drag to reorder · uncheck to hide · Name is locked.</p>
+        <p class="edit-hint">{{ t('common.dt.hint', { col: colLabel('name') }) }}</p>
         <div class="chooser">
           <div
             v-for="key in working.order" :key="key" class="chooser-row"
@@ -62,7 +62,7 @@
               :disabled="LOCKED.includes(key)"
               @change="toggleHidden(key)"
             />
-            <span class="chooser-label">{{ colByKey[key]?.label ?? key }}</span>
+            <span class="chooser-label">{{ colLabel(key) }}</span>
             <Lock v-if="LOCKED.includes(key)" :size="11" class="chooser-tag" />
           </div>
         </div>
@@ -88,12 +88,12 @@
               >
                 <span class="dt-th-inner" :class="{ jend: col.align === 'right' }">
                   <component v-if="col.align === 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
-                  {{ col.label }}
+                  {{ colLabel(col.key) }}
                   <component v-if="col.align !== 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
                 </span>
                 <span class="dt-resize" @mousedown.stop.prevent="startResize(col.key, $event)" @click.stop></span>
               </th>
-              <th class="dt-th ta-right dt-actcol">Actions</th>
+              <th class="dt-th ta-right dt-actcol">{{ t('common.actions') }}</th>
             </tr>
           </thead>
 
@@ -102,16 +102,16 @@
               <td :colspan="displayColumns.length + 1" class="dt-empty">
                 <div class="dt-empty-inner">
                   <Users :size="40" class="dt-empty-icon" />
-                  <div class="dt-empty-title">No customers found</div>
-                  <div class="dt-empty-sub">Adjust your search or add a new customer.</div>
+                  <div class="dt-empty-title">{{ t('people.customers.empty_title') }}</div>
+                  <div class="dt-empty-sub">{{ t('people.customers.empty_sub') }}</div>
                 </div>
               </td>
             </tr>
             <tr v-for="c in customers" :key="c.id" class="dt-row clickable" @click="router.push('/people/customers/' + c.id)">
               <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '']">
                 <template v-if="col.key === 'balance'">
-                  <span v-if="Number(c.balance) > 0" class="balance-owe">Owes <Money :value="c.balance" /></span>
-                  <span v-else-if="Number(c.balance) < 0" class="balance-credit">Credit <Money :value="Math.abs(c.balance)" /></span>
+                  <span v-if="Number(c.balance) > 0" class="balance-owe">{{ t('people.customers.owes') }} <Money :value="c.balance" /></span>
+                  <span v-else-if="Number(c.balance) < 0" class="balance-credit">{{ t('people.customers.credit') }} <Money :value="Math.abs(c.balance)" /></span>
                   <span v-else class="balance-zero">—</span>
                 </template>
                 <template v-else-if="col.key === 'store_credit'">
@@ -121,8 +121,8 @@
                 <template v-else>{{ c[col.field] || '—' }}</template>
               </td>
               <td class="ta-right dt-actcol" @click.stop>
-                <button class="row-action" title="Edit customer" @click="openEdit(c)"><Pencil :size="14" /></button>
-                <button class="row-action danger" title="Delete customer" @click="deleteCustomer(c.id)"><Trash2 :size="14" /></button>
+                <button class="row-action" :title="t('people.customers.edit_title')" @click="openEdit(c)"><Pencil :size="14" /></button>
+                <button class="row-action danger" :title="t('people.customers.delete_title')" @click="deleteCustomer(c.id)"><Trash2 :size="14" /></button>
               </td>
             </tr>
           </tbody>
@@ -132,12 +132,12 @@
       <!-- FOOTER -->
       <div class="dt-foot">
         <div class="dt-perpage">
-          <span>PER PAGE</span>
+          <span>{{ t('common.dt.per_page') }}</span>
           <select v-model.number="pageSize" @change="fetchCustomers(1); saveAdhoc()">
             <option :value="20">20</option><option :value="50">50</option><option :value="100">100</option>
           </select>
         </div>
-        <div class="dt-showing">SHOWING {{ total === 0 ? 0 : from }}-{{ to }} OF {{ total }}</div>
+        <div class="dt-showing">{{ t('common.dt.showing', { from: total === 0 ? 0 : from, to, total }) }}</div>
         <div class="dt-pages">
           <button class="dt-pg" :disabled="page === 1" @click="goPage(page - 1)"><ChevronLeft :size="18" /></button>
           <span class="dt-pgnum">{{ page }} / {{ totalPages }}</span>
@@ -147,25 +147,25 @@
     </div>
 
     <!-- SAVE PRESET MODAL -->
-    <AppModal :open="saveModal.open" title="Save preset" @close="saveModal.open = false">
+    <AppModal :open="saveModal.open" :title="t('common.dt.save_preset')" @close="saveModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label class="form-label">Preset name</label>
-          <input v-model="saveModal.name" class="form-input" placeholder="e.g. Manager view" />
+          <label class="form-label">{{ t('common.dt.save_preset_modal.name_label') }}</label>
+          <input v-model="saveModal.name" class="form-input" :placeholder="t('common.dt.save_preset_modal.name_placeholder')" />
         </div>
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer;">
           <input type="checkbox" v-model="saveModal.is_default" />
-          Make this the store default
+          {{ t('common.dt.save_preset_modal.default_label') }}
         </label>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="saveModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!saveModal.name.trim()" @click="savePreset">Save</button>
+        <button class="btn-ghost" @click="saveModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!saveModal.name.trim()" @click="savePreset">{{ t('common.save') }}</button>
       </template>
     </AppModal>
 
     <!-- ASSIGN MODAL -->
-    <AppModal :open="assignModal.open" title="Assign layouts to staff" @close="assignModal.open = false">
+    <AppModal :open="assignModal.open" :title="t('common.dt.assign_modal.title')" @close="assignModal.open = false">
       <div class="assign-list">
         <div v-for="row in assignModal.rows" :key="row.user_id" class="assign-row">
           <div class="assign-user">
@@ -173,11 +173,11 @@
             <span class="assign-role">{{ row.role }}</span>
           </div>
           <select v-model="row.preset_id" class="form-input assign-sel" @change="assignTo(row)">
-            <option :value="null">— Default —</option>
+            <option :value="null">{{ t('common.dt.assign_modal.default_option') }}</option>
             <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
         </div>
-        <div v-if="!assignModal.rows.length" style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">No staff yet.</div>
+        <div v-if="!assignModal.rows.length" style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">{{ t('common.dt.assign_modal.no_staff') }}</div>
       </div>
     </AppModal>
 
@@ -196,6 +196,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import {
   Search, X, Users, Pencil, Trash2, Plus,
   ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown,
@@ -206,8 +207,11 @@ import { useAuthStore } from '@/stores/auth'
 import AppModal          from '@/components/ui/AppModal.vue'
 import CustomerFormModal from '@/components/shared/CustomerFormModal.vue'
 
+const { t } = useI18n()
 const auth   = useAuthStore()
 const router = useRouter()
+
+function colLabel(key) { return t('people.customers.columns.' + key) }
 
 /* ── columns ── */
 const BASE_COLUMNS = [
@@ -430,7 +434,7 @@ function onCustomerSaved() {
 }
 
 async function deleteCustomer(id) {
-  if (!confirm('Delete this customer?')) return
+  if (!confirm(t('people.customers.confirm_delete'))) return
   await api.delete(`/api/auth/customers/${id}/`)
   fetchCustomers(page.value)
 }
