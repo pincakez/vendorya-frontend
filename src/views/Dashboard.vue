@@ -167,13 +167,9 @@
         </div>
       </div>
 
-      <!-- B7: AI Insights placeholder ─ 10 cols -->
-      <div class="dash-b7 b-card b-card--dim intersect:motion-preset-slide-left intersect:motion-delay-[300ms] intersect:motion-ease-spring-bouncier intersect-once">
-        <div class="placeholder-wrap">
-          <Zap :size="28" class="placeholder-icon" />
-          <p class="placeholder-title">{{ t('core.dash.ai_insights') }}</p>
-          <p class="placeholder-sub">{{ t('core.dash.ai_sub') }}</p>
-        </div>
+      <!-- B7: V-Agent AI Insights ─ 10 cols -->
+      <div class="dash-b7 b-card intersect:motion-preset-slide-left intersect:motion-delay-[300ms] intersect:motion-ease-spring-bouncier intersect-once" style="padding:0;overflow:hidden;">
+        <VAInsights />
       </div>
 
     </div>
@@ -183,10 +179,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RefreshCw, ShoppingBag, CheckCircle, Briefcase, Zap } from 'lucide-vue-next'
+import { RefreshCw, ShoppingBag, CheckCircle, Briefcase } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { formatQty } from '@/utils/format'
 import Money from '@/components/ui/Money.vue'
+import VAInsights from '@/components/dashboard/VAInsights.vue'
 
 const { t } = useI18n()
 const loading = ref(false)
