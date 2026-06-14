@@ -495,5 +495,102 @@
       "table_potential_revenue": "Potential Revenue",
       "empty": "No stock data found"
     }
+  },
+  "finance": {
+    "shifts": {
+      "title": "Work Shifts",
+      "sub": "Open and close cashier sessions, track cash flow",
+      "banner_open": "Shift Open",
+      "banner_started": "Started {time}",
+      "starting_cash": "Starting cash",
+      "close_shift": "Close Shift",
+      "tab_history": "Shift History",
+      "col_starting": "Starting Cash",
+      "col_expected": "Expected",
+      "col_counted": "Counted",
+      "col_difference": "Difference",
+      "empty": "No shift history yet",
+      "status_open": "OPEN",
+      "status_closed": "CLOSED",
+      "open_modal": {
+        "title": "Open New Shift",
+        "cash_label": "Starting Cash in Drawer",
+        "branch_label": "Branch",
+        "open_btn": "Open Shift"
+      },
+      "close_modal": {
+        "title": "Close Shift",
+        "starting_cash": "Starting Cash",
+        "expected_cash": "Expected Cash",
+        "counted_label": "Counted Cash in Drawer",
+        "difference": "Difference",
+        "close_btn": "Close Shift"
+      }
+    },
+    "shift_detail": {
+      "title": "Shift Detail",
+      "not_found": "Shift not found.",
+      "opened": "Opened",
+      "closed": "Closed",
+      "starting_cash": "Starting Cash",
+      "expected_cash": "Expected Cash",
+      "counted_cash": "Counted Cash",
+      "difference": "Difference",
+      "total_sales": "Total Sales",
+      "invoices": "Invoices",
+      "section_sales": "Sales During Shift",
+      "empty_sales": "No sales during this shift.",
+      "col_time": "Time",
+      "col_customer": "Customer",
+      "col_total": "Total",
+      "col_paid": "Paid",
+      "paid_badge": "Paid",
+      "status_open": "OPEN",
+      "status_closed": "CLOSED"
+    },
+    "cash_drawer": {
+      "title": "Cash Drawer",
+      "sub": "Today's cash movements and current balance",
+      "cash_in": "Cash In (Today)",
+      "cash_out": "Cash Out (Expenses)",
+      "expected_balance": "Expected Balance",
+      "current_shift": "Current Shift",
+      "open_since": "Open · since {time}",
+      "no_open_shift": "No open shift",
+      "payments_title": "Today's Cash Payments",
+      "col_time": "Time",
+      "col_invoice": "Invoice #",
+      "col_amount": "Amount",
+      "empty": "No cash payments today"
+    },
+    "expenses": {
+      "title": "Expenses",
+      "sub": "Track store operating expenses by category",
+      "tab_expenses": "Expenses",
+      "tab_categories": "Categories",
+      "col_category": "Category",
+      "col_amount": "Amount",
+      "empty": "No expenses recorded",
+      "cat_col_parent": "Parent",
+      "cat_empty": "No categories yet",
+      "exp_modal": {
+        "title": "New Expense",
+        "category_label": "Category",
+        "select": "Select…",
+        "amount_label": "Amount",
+        "date_label": "Date",
+        "description_label": "Description (optional)",
+        "description_placeholder": "What was this for?"
+      },
+      "cat_modal": {
+        "new_title": "New Category",
+        "edit_title": "Edit Category",
+        "name_placeholder": "e.g. Utilities",
+        "parent_label": "Parent (optional)",
+        "parent_none": "None"
+      },
+      "confirm_delete_expense": "Delete this expense?",
+      "confirm_delete_category": "Delete this category?"
+    }
   }
 }

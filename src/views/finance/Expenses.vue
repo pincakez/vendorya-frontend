@@ -2,15 +2,15 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Expenses</h1>
-        <p class="page-sub">Track store operating expenses by category</p>
+        <h1 class="page-title">{{ t('finance.expenses.title') }}</h1>
+        <p class="page-sub">{{ t('finance.expenses.sub') }}</p>
       </div>
     </div>
 
     <div class="tab-bar">
       <button v-for="tab in tabs" :key="tab.id" class="tab-btn" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id">
         <component :is="tab.icon" :size="15" />
-        {{ tab.label }}
+        {{ t('finance.expenses.tab_' + tab.id) }}
       </button>
     </div>
 
@@ -22,13 +22,13 @@
         </div>
         <table v-else class="data-table">
           <thead>
-            <tr><th>Date</th><th>Category</th><th>Amount</th><th>Description</th><th style="width:60px;"></th></tr>
+            <tr><th>{{ t('common.date') }}</th><th>{{ t('finance.expenses.col_category') }}</th><th>{{ t('finance.expenses.col_amount') }}</th><th>{{ t('common.description') }}</th><th style="width:60px;"></th></tr>
           </thead>
           <tbody>
             <tr v-if="expenses.length === 0">
               <td colspan="5" class="table-empty">
                 <Wallet :size="32" style="opacity:.3;margin-bottom:8px;" />
-                <div>No expenses recorded</div>
+                <div>{{ t('finance.expenses.empty') }}</div>
               </td>
             </tr>
             <tr v-for="e in expenses" :key="e.id" class="table-row">
@@ -50,10 +50,10 @@
     <div v-if="activeTab === 'categories'">
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Name</th><th>Parent</th><th style="width:80px;"></th></tr></thead>
+          <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('finance.expenses.cat_col_parent') }}</th><th style="width:80px;"></th></tr></thead>
           <tbody>
             <tr v-if="categories.length === 0">
-              <td colspan="3" class="table-empty">No categories yet</td>
+              <td colspan="3" class="table-empty">{{ t('finance.expenses.cat_empty') }}</td>
             </tr>
             <tr v-for="c in categories" :key="c.id" class="table-row">
               <td class="col-name">{{ c.name }}</td>
@@ -69,52 +69,52 @@
     </div>
 
     <!-- MODAL: New Expense -->
-    <AppModal :open="expModal.open" title="New Expense" @close="expModal.open = false">
+    <AppModal :open="expModal.open" :title="t('finance.expenses.exp_modal.title')" @close="expModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label class="form-label">Category</label>
+          <label class="form-label">{{ t('finance.expenses.exp_modal.category_label') }}</label>
           <select v-model="expModal.category" class="form-input">
-            <option value="">Select…</option>
+            <option value="">{{ t('finance.expenses.exp_modal.select') }}</option>
             <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
         <div>
-          <label class="form-label">Amount</label>
+          <label class="form-label">{{ t('finance.expenses.exp_modal.amount_label') }}</label>
           <input v-model="expModal.amount" type="number" min="0" step="0.01" class="form-input" placeholder="0.00" />
         </div>
         <div>
-          <label class="form-label">Date</label>
+          <label class="form-label">{{ t('finance.expenses.exp_modal.date_label') }}</label>
           <input v-model="expModal.date" type="date" class="form-input" />
         </div>
         <div>
-          <label class="form-label">Description (optional)</label>
-          <textarea v-model="expModal.description" class="form-input" rows="2" placeholder="What was this for?" />
+          <label class="form-label">{{ t('finance.expenses.exp_modal.description_label') }}</label>
+          <textarea v-model="expModal.description" class="form-input" rows="2" :placeholder="t('finance.expenses.exp_modal.description_placeholder')" />
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="expModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!expModal.category || !expModal.amount" @click="saveExpense">Save</button>
+        <button class="btn-ghost" @click="expModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!expModal.category || !expModal.amount" @click="saveExpense">{{ t('common.save') }}</button>
       </template>
     </AppModal>
 
     <!-- MODAL: Category -->
-    <AppModal :open="catModal.open" :title="catModal.id ? 'Edit Category' : 'New Category'" @close="catModal.open = false">
+    <AppModal :open="catModal.open" :title="catModal.id ? t('finance.expenses.cat_modal.edit_title') : t('finance.expenses.cat_modal.new_title')" @close="catModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label class="form-label">Name</label>
-          <input v-model="catModal.name" class="form-input" placeholder="e.g. Utilities" />
+          <label class="form-label">{{ t('common.name') }}</label>
+          <input v-model="catModal.name" class="form-input" :placeholder="t('finance.expenses.cat_modal.name_placeholder')" />
         </div>
         <div>
-          <label class="form-label">Parent (optional)</label>
+          <label class="form-label">{{ t('finance.expenses.cat_modal.parent_label') }}</label>
           <select v-model="catModal.parent" class="form-input">
-            <option value="">None</option>
+            <option value="">{{ t('finance.expenses.cat_modal.parent_none') }}</option>
             <option v-for="c in categories.filter(c => c.id !== catModal.id)" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="catModal.open = false">Cancel</button>
-        <button class="btn-primary" :disabled="!catModal.name.trim()" @click="saveCat">Save</button>
+        <button class="btn-ghost" @click="catModal.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="!catModal.name.trim()" @click="saveCat">{{ t('common.save') }}</button>
       </template>
     </AppModal>
   </div>
@@ -122,6 +122,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Wallet, Tags, Trash2, Pencil } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -130,12 +131,13 @@ import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const qab  = useQABStore()
 
 const tabs = [
-  { id: 'expenses',   label: 'Expenses',   icon: Wallet },
-  { id: 'categories', label: 'Categories', icon: Tags },
+  { id: 'expenses',   icon: Wallet },
+  { id: 'categories', icon: Tags },
 ]
 const activeTab = ref('expenses')
 
@@ -168,7 +170,7 @@ async function fetchCategories() {
 }
 
 async function deleteExpense(id) {
-  if (!confirm('Delete this expense?')) return
+  if (!confirm(t('finance.expenses.confirm_delete_expense'))) return
   await api.delete(`/api/finance/expenses/${id}/`)
   fetchExpenses(page.value)
 }
@@ -208,7 +210,7 @@ async function saveCat() {
 }
 
 async function deleteCat(id) {
-  if (!confirm('Delete this category?')) return
+  if (!confirm(t('finance.expenses.confirm_delete_category'))) return
   await api.delete(`/api/finance/expense-categories/${id}/`)
   fetchCategories()
 }

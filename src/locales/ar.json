@@ -495,5 +495,102 @@
       "table_potential_revenue": "الإيراد المحتمل",
       "empty": "لا توجد بيانات مخزون"
     }
+  },
+  "finance": {
+    "shifts": {
+      "title": "ورديات العمل",
+      "sub": "افتح وأغلق جلسات الكاشير وتتبّع التدفق النقدي",
+      "banner_open": "وردية مفتوحة",
+      "banner_started": "بدأت {time}",
+      "starting_cash": "النقد الافتتاحي",
+      "close_shift": "إغلاق الوردية",
+      "tab_history": "سجل الورديات",
+      "col_starting": "النقد الافتتاحي",
+      "col_expected": "المتوقع",
+      "col_counted": "المعدود",
+      "col_difference": "الفرق",
+      "empty": "لا يوجد سجل ورديات بعد",
+      "status_open": "مفتوحة",
+      "status_closed": "مغلقة",
+      "open_modal": {
+        "title": "فتح وردية جديدة",
+        "cash_label": "النقد الافتتاحي في الدرج",
+        "branch_label": "الفرع",
+        "open_btn": "فتح الوردية"
+      },
+      "close_modal": {
+        "title": "إغلاق الوردية",
+        "starting_cash": "النقد الافتتاحي",
+        "expected_cash": "النقد المتوقع",
+        "counted_label": "النقد المعدود في الدرج",
+        "difference": "الفرق",
+        "close_btn": "إغلاق الوردية"
+      }
+    },
+    "shift_detail": {
+      "title": "تفاصيل الوردية",
+      "not_found": "الوردية غير موجودة.",
+      "opened": "وقت الفتح",
+      "closed": "وقت الإغلاق",
+      "starting_cash": "النقد الافتتاحي",
+      "expected_cash": "النقد المتوقع",
+      "counted_cash": "النقد المعدود",
+      "difference": "الفرق",
+      "total_sales": "إجمالي المبيعات",
+      "invoices": "الفواتير",
+      "section_sales": "المبيعات خلال الوردية",
+      "empty_sales": "لا توجد مبيعات خلال هذه الوردية.",
+      "col_time": "الوقت",
+      "col_customer": "العميل",
+      "col_total": "الإجمالي",
+      "col_paid": "المدفوع",
+      "paid_badge": "مدفوعة",
+      "status_open": "مفتوحة",
+      "status_closed": "مغلقة"
+    },
+    "cash_drawer": {
+      "title": "درج النقد",
+      "sub": "حركات النقد اليوم والرصيد الحالي",
+      "cash_in": "النقد الوارد (اليوم)",
+      "cash_out": "النقد الصادر (المصروفات)",
+      "expected_balance": "الرصيد المتوقع",
+      "current_shift": "الوردية الحالية",
+      "open_since": "مفتوحة · منذ {time}",
+      "no_open_shift": "لا توجد وردية مفتوحة",
+      "payments_title": "مدفوعات النقد اليوم",
+      "col_time": "الوقت",
+      "col_invoice": "رقم الفاتورة",
+      "col_amount": "المبلغ",
+      "empty": "لا توجد مدفوعات نقدية اليوم"
+    },
+    "expenses": {
+      "title": "المصروفات",
+      "sub": "تتبّع مصروفات تشغيل المتجر حسب الفئة",
+      "tab_expenses": "المصروفات",
+      "tab_categories": "الفئات",
+      "col_category": "الفئة",
+      "col_amount": "المبلغ",
+      "empty": "لا توجد مصروفات مسجلة",
+      "cat_col_parent": "الفئة الأصل",
+      "cat_empty": "لا توجد فئات بعد",
+      "exp_modal": {
+        "title": "مصروف جديد",
+        "category_label": "الفئة",
+        "select": "اختر…",
+        "amount_label": "المبلغ",
+        "date_label": "التاريخ",
+        "description_label": "الوصف (اختياري)",
+        "description_placeholder": "ما الغرض من هذا؟"
+      },
+      "cat_modal": {
+        "new_title": "فئة جديدة",
+        "edit_title": "تعديل الفئة",
+        "name_placeholder": "مثال: المرافق",
+        "parent_label": "الفئة الأصل (اختياري)",
+        "parent_none": "بدون"
+      },
+      "confirm_delete_expense": "حذف هذا المصروف؟",
+      "confirm_delete_category": "حذف هذه الفئة؟"
+    }
   }
 }

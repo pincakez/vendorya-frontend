@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Cash Drawer</h1>
-        <p class="page-sub">Today's cash movements and current balance</p>
+        <h1 class="page-title">{{ t('finance.cash_drawer.title') }}</h1>
+        <p class="page-sub">{{ t('finance.cash_drawer.sub') }}</p>
       </div>
     </div>
 
@@ -17,21 +17,21 @@
         <div class="kpi-card">
           <div class="kpi-icon" style="background:var(--accent-soft);color:var(--accent);"><Banknote :size="20" /></div>
           <div class="kpi-body">
-            <div class="kpi-label">Cash In (Today)</div>
+            <div class="kpi-label">{{ t('finance.cash_drawer.cash_in') }}</div>
             <div class="kpi-value"><Money :value="stats.cash_in" /></div>
           </div>
         </div>
         <div class="kpi-card">
           <div class="kpi-icon" style="background:var(--danger-soft);color:var(--danger);"><ArrowUpFromLine :size="20" /></div>
           <div class="kpi-body">
-            <div class="kpi-label">Cash Out (Expenses)</div>
+            <div class="kpi-label">{{ t('finance.cash_drawer.cash_out') }}</div>
             <div class="kpi-value"><Money :value="stats.cash_out" /></div>
           </div>
         </div>
         <div class="kpi-card">
           <div class="kpi-icon" style="background:var(--success-soft);color:var(--success);"><Wallet :size="20" /></div>
           <div class="kpi-body">
-            <div class="kpi-label">Expected Balance</div>
+            <div class="kpi-label">{{ t('finance.cash_drawer.expected_balance') }}</div>
             <div class="kpi-value"><Money :value="stats.expected_balance" /></div>
           </div>
         </div>
@@ -40,9 +40,9 @@
             <Clock :size="20" />
           </div>
           <div class="kpi-body">
-            <div class="kpi-label">Current Shift</div>
+            <div class="kpi-label">{{ t('finance.cash_drawer.current_shift') }}</div>
             <div class="kpi-value" style="font-size:15px;">
-              {{ openShift ? `Open · since ${fmtTime(openShift.start_time)}` : 'No open shift' }}
+              {{ openShift ? t('finance.cash_drawer.open_since', { time: fmtTime(openShift.start_time) }) : t('finance.cash_drawer.no_open_shift') }}
             </div>
           </div>
         </div>
@@ -50,16 +50,16 @@
 
       <!-- Today's cash payments table -->
       <div style="margin-top:28px;">
-        <div class="section-title">Today's Cash Payments</div>
+        <div class="section-title">{{ t('finance.cash_drawer.payments_title') }}</div>
         <div class="dt-card">
           <div class="dt-xscroll">
         <table class="dt">
             <thead>
-              <tr><th class="dt-th">Time</th><th class="dt-th">Invoice #</th><th class="dt-th">Amount</th></tr>
+              <tr><th class="dt-th">{{ t('finance.cash_drawer.col_time') }}</th><th class="dt-th">{{ t('finance.cash_drawer.col_invoice') }}</th><th class="dt-th">{{ t('finance.cash_drawer.col_amount') }}</th></tr>
             </thead>
             <tbody>
               <tr v-if="payments.length === 0">
-                <td colspan="3" class="dt-empty">No cash payments today</td>
+                <td colspan="3" class="dt-empty">{{ t('finance.cash_drawer.empty') }}</td>
               </tr>
               <tr v-for="p in payments" :key="p.id" class="dt-row">
                 <td>{{ fmtTime(p.created_at) }}</td>
@@ -77,11 +77,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Banknote, ArrowUpFromLine, Wallet, Clock } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { formatNumber } from '@/utils/format'
 
+const { t }   = useI18n()
 const auth    = useAuthStore()
 const loading = ref(false)
 const openShift = ref(null)

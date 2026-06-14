@@ -3,51 +3,51 @@
     <div class="page-header">
       <div class="header-left">
         <button class="back-btn" @click="$router.back()">
-          <ChevronLeft :size="16" /> Back
+          <ChevronLeft :size="16" /> {{ t('common.back') }}
         </button>
         <div v-if="shift">
-          <h1 class="page-title">Shift Detail</h1>
-          <p class="page-sub">{{ fmtDate(shift.start_time) }} · {{ shift.status }}</p>
+          <h1 class="page-title">{{ t('finance.shift_detail.title') }}</h1>
+          <p class="page-sub">{{ fmtDate(shift.start_time) }} · {{ statusLabel(shift.status) }}</p>
         </div>
-        <div v-else class="page-title">Shift Detail</div>
+        <div v-else class="page-title">{{ t('finance.shift_detail.title') }}</div>
       </div>
     </div>
 
     <div v-if="loading" class="skeleton-block" />
-    <div v-else-if="!summary" class="empty-state">Shift not found.</div>
+    <div v-else-if="!summary" class="empty-state">{{ t('finance.shift_detail.not_found') }}</div>
     <div v-else class="detail-layout">
 
       <!-- Shift info row -->
       <div class="info-card">
         <div class="info-grid">
           <div class="info-item">
-            <div class="info-label">Status</div>
+            <div class="info-label">{{ t('common.status') }}</div>
             <div class="info-value">
-              <span class="status-pill" :class="shift.status === 'OPEN' ? 's-open' : 's-closed'">{{ shift.status }}</span>
+              <span class="status-pill" :class="shift.status === 'OPEN' ? 's-open' : 's-closed'">{{ statusLabel(shift.status) }}</span>
             </div>
           </div>
           <div class="info-item">
-            <div class="info-label">Opened</div>
+            <div class="info-label">{{ t('finance.shift_detail.opened') }}</div>
             <div class="info-value">{{ fmtDateTime(shift.start_time) }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">Closed</div>
+            <div class="info-label">{{ t('finance.shift_detail.closed') }}</div>
             <div class="info-value">{{ shift.end_time ? fmtDateTime(shift.end_time) : '—' }}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">Starting Cash</div>
+            <div class="info-label">{{ t('finance.shift_detail.starting_cash') }}</div>
             <div class="info-value"><Money :value="shift.starting_cash" /></div>
           </div>
           <div class="info-item">
-            <div class="info-label">Expected Cash</div>
+            <div class="info-label">{{ t('finance.shift_detail.expected_cash') }}</div>
             <div class="info-value"><Money :value="shift.expected_cash" /></div>
           </div>
           <div class="info-item">
-            <div class="info-label">Counted Cash</div>
+            <div class="info-label">{{ t('finance.shift_detail.counted_cash') }}</div>
             <div class="info-value">{{ shift.closing_cash != null ? '' : '—' }}<Money v-if="shift.closing_cash != null" :value="shift.closing_cash" /></div>
           </div>
           <div class="info-item">
-            <div class="info-label">Difference</div>
+            <div class="info-label">{{ t('finance.shift_detail.difference') }}</div>
             <div class="info-value" :class="Number(shift.difference) !== 0 ? (Number(shift.difference) > 0 ? 'pos' : 'neg') : ''">
               {{ shift.difference != null ? (Number(shift.difference) >= 0 ? '+' : '') : '' }}<Money v-if="shift.difference != null" :value="shift.difference" />
               <span v-else>—</span>
@@ -59,11 +59,11 @@
       <!-- Stats row -->
       <div class="stats-row">
         <div class="stat-card">
-          <div class="stat-label">Total Sales</div>
+          <div class="stat-label">{{ t('finance.shift_detail.total_sales') }}</div>
           <div class="stat-value"><Money :value="summary.total_sales" /></div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Invoices</div>
+          <div class="stat-label">{{ t('finance.shift_detail.invoices') }}</div>
           <div class="stat-value">{{ summary.invoice_count }}</div>
         </div>
         <div class="stat-card" v-for="pb in summary.payment_breakdown" :key="pb.method">
@@ -75,7 +75,7 @@
       <!-- Invoices during shift -->
       <div class="section-card">
         <div class="section-header">
-          <h2 class="section-title">Sales During Shift</h2>
+          <h2 class="section-title">{{ t('finance.shift_detail.section_sales') }}</h2>
           <span class="count-badge">{{ summary.invoice_count }}</span>
         </div>
         <div class="dt-xscroll">
@@ -83,15 +83,15 @@
           <thead>
             <tr>
               <th class="dt-th">#</th>
-              <th class="dt-th">Time</th>
-              <th class="dt-th">Customer</th>
-              <th class="dt-th">Total</th>
-              <th class="dt-th">Paid</th>
+              <th class="dt-th">{{ t('finance.shift_detail.col_time') }}</th>
+              <th class="dt-th">{{ t('finance.shift_detail.col_customer') }}</th>
+              <th class="dt-th">{{ t('finance.shift_detail.col_total') }}</th>
+              <th class="dt-th">{{ t('finance.shift_detail.col_paid') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="summary.invoices.length === 0">
-              <td colspan="5" class="dt-empty">No sales during this shift.</td>
+              <td colspan="5" class="dt-empty">{{ t('finance.shift_detail.empty_sales') }}</td>
             </tr>
             <tr v-for="inv in summary.invoices" :key="inv.id" class="dt-row">
               <td class="mono">{{ inv.invoice_number || '—' }}</td>
@@ -100,7 +100,7 @@
               <td><Money :value="inv.grand_total" /></td>
               <td>
                 <span v-if="Number(inv.grand_total) - Number(inv.paid_total) > 0" class="badge-owe"><Money :value="Number(inv.grand_total) - Number(inv.paid_total)" /></span>
-                <span v-else class="badge-paid">Paid</span>
+                <span v-else class="badge-paid">{{ t('finance.shift_detail.paid_badge') }}</span>
               </td>
             </tr>
           </tbody>
@@ -113,11 +113,18 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ChevronLeft } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 
+const { t } = useI18n()
 const props = defineProps({ id: String })
+
+function statusLabel(s) {
+  const key = String(s).toLowerCase()
+  return (key === 'open' || key === 'closed') ? t('finance.shift_detail.status_' + key) : s
+}
 
 const summary = ref(null)
 const shift = ref(null)

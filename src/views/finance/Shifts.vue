@@ -2,8 +2,8 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Work Shifts</h1>
-        <p class="page-sub">Open and close cashier sessions, track cash flow</p>
+        <h1 class="page-title">{{ t('finance.shifts.title') }}</h1>
+        <p class="page-sub">{{ t('finance.shifts.sub') }}</p>
       </div>
     </div>
 
@@ -12,17 +12,17 @@
       <div class="banner-left">
         <div class="banner-dot open-dot" />
         <div>
-          <div class="banner-title">Shift Open</div>
-          <div class="banner-sub">Started {{ fmtDateTime(openShift.start_time) }} · Starting cash: <Money :value="openShift.starting_cash" /></div>
+          <div class="banner-title">{{ t('finance.shifts.banner_open') }}</div>
+          <div class="banner-sub">{{ t('finance.shifts.banner_started', { time: fmtDateTime(openShift.start_time) }) }} · {{ t('finance.shifts.starting_cash') }}: <Money :value="openShift.starting_cash" /></div>
         </div>
       </div>
-      <button class="btn-danger" @click="openCloseModal">Close Shift</button>
+      <button class="btn-danger" @click="openCloseModal">{{ t('finance.shifts.close_shift') }}</button>
     </div>
 
     <div class="tab-bar">
       <button v-for="tab in tabs" :key="tab.id" class="tab-btn" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id">
         <component :is="tab.icon" :size="15" />
-        {{ tab.label }}
+        {{ t('finance.shifts.tab_' + tab.id) }}
       </button>
     </div>
 
@@ -34,18 +34,18 @@
         </div>
         <table v-else class="data-table">
           <thead>
-            <tr><th>Date</th><th>Status</th><th>Starting Cash</th><th>Expected</th><th>Counted</th><th>Difference</th></tr>
+            <tr><th>{{ t('common.date') }}</th><th>{{ t('common.status') }}</th><th>{{ t('finance.shifts.col_starting') }}</th><th>{{ t('finance.shifts.col_expected') }}</th><th>{{ t('finance.shifts.col_counted') }}</th><th>{{ t('finance.shifts.col_difference') }}</th></tr>
           </thead>
           <tbody>
             <tr v-if="shifts.length === 0">
               <td colspan="6" class="table-empty">
                 <Clock :size="32" style="opacity:.3;margin-bottom:8px;" />
-                <div>No shift history yet</div>
+                <div>{{ t('finance.shifts.empty') }}</div>
               </td>
             </tr>
             <tr v-for="s in shifts" :key="s.id" class="table-row" style="cursor:pointer" @click="router.push('/finance/shifts/' + s.id)">
               <td>{{ fmtDateTime(s.start_time) }}</td>
-              <td><span class="status-badge" :class="`status-${s.status.toLowerCase()}`">{{ s.status }}</span></td>
+              <td><span class="status-badge" :class="`status-${s.status.toLowerCase()}`">{{ statusLabel(s.status) }}</span></td>
               <td class="col-amount"><Money :value="s.starting_cash" /></td>
               <td class="col-amount"><Money :value="s.expected_cash" /></td>
               <td class="col-amount"><Money :value="s.closing_cash" /></td>
@@ -60,41 +60,41 @@
     </div>
 
     <!-- MODAL: Open Shift -->
-    <AppModal :open="openModal" title="Open New Shift" @close="openModal = false">
+    <AppModal :open="openModal" :title="t('finance.shifts.open_modal.title')" @close="openModal = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label class="form-label">Starting Cash in Drawer</label>
+          <label class="form-label">{{ t('finance.shifts.open_modal.cash_label') }}</label>
           <input v-model="startingCash" type="number" min="0" step="0.01" class="form-input" placeholder="0.00" />
         </div>
         <div>
-          <label class="form-label">Branch</label>
+          <label class="form-label">{{ t('finance.shifts.open_modal.branch_label') }}</label>
           <input class="form-input" :value="auth.user?.store?.name || 'Main'" disabled />
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="openModal = false">Cancel</button>
-        <button class="btn-primary" @click="openShiftAction">Open Shift</button>
+        <button class="btn-ghost" @click="openModal = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" @click="openShiftAction">{{ t('finance.shifts.open_modal.open_btn') }}</button>
       </template>
     </AppModal>
 
     <!-- MODAL: Close Shift -->
-    <AppModal :open="closeModal" title="Close Shift" @close="closeModal = false">
+    <AppModal :open="closeModal" :title="t('finance.shifts.close_modal.title')" @close="closeModal = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div class="shift-summary">
-          <div class="summary-row"><span>Starting Cash</span><span><Money :value="openShift?.starting_cash" /></span></div>
-          <div class="summary-row"><span>Expected Cash</span><span><Money :value="openShift?.expected_cash" /></span></div>
+          <div class="summary-row"><span>{{ t('finance.shifts.close_modal.starting_cash') }}</span><span><Money :value="openShift?.starting_cash" /></span></div>
+          <div class="summary-row"><span>{{ t('finance.shifts.close_modal.expected_cash') }}</span><span><Money :value="openShift?.expected_cash" /></span></div>
         </div>
         <div>
-          <label class="form-label">Counted Cash in Drawer</label>
+          <label class="form-label">{{ t('finance.shifts.close_modal.counted_label') }}</label>
           <input v-model="countedCash" type="number" min="0" step="0.01" class="form-input" placeholder="0.00" />
         </div>
         <div v-if="countedCash !== ''" class="diff-preview" :class="diffClass(countedCash - (openShift?.expected_cash || 0))">
-          Difference: {{ Number(countedCash - (openShift?.expected_cash || 0)) >= 0 ? '+' : '' }}<Money :value="countedCash - (openShift?.expected_cash || 0)" />
+          {{ t('finance.shifts.close_modal.difference') }}: {{ Number(countedCash - (openShift?.expected_cash || 0)) >= 0 ? '+' : '' }}<Money :value="countedCash - (openShift?.expected_cash || 0)" />
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="closeModal = false">Cancel</button>
-        <button class="btn-danger-solid" @click="closeShiftAction">Close Shift</button>
+        <button class="btn-ghost" @click="closeModal = false">{{ t('common.cancel') }}</button>
+        <button class="btn-danger-solid" @click="closeShiftAction">{{ t('finance.shifts.close_modal.close_btn') }}</button>
       </template>
     </AppModal>
   </div>
@@ -102,6 +102,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Clock, History } from 'lucide-vue-next'
 import api from '@/api/axios'
@@ -111,13 +112,19 @@ import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
+const { t } = useI18n()
 const auth   = useAuthStore()
 const qab    = useQABStore()
 const router = useRouter()
 
 const tabs = [
-  { id: 'history', label: 'Shift History', icon: History },
+  { id: 'history', icon: History },
 ]
+
+function statusLabel(s) {
+  const key = String(s).toLowerCase()
+  return (key === 'open' || key === 'closed') ? t('finance.shifts.status_' + key) : s
+}
 const activeTab   = ref('history')
 const shifts      = ref([])
 const openShift   = ref(null)

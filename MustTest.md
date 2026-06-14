@@ -1,2 +1,0 @@
-
-- [ ] **Arabic Phase 2 (Inventory) — browser eyeball pass** (s68): switch locale to AR and walk all 8 inventory views (Products incl. tabs/customize/bulk/all modals, ProductDetail, Categories, Attributes, Purchases, StockAdjustments, ImportExport, InventoryReports). Verify glossary terms, no layout shift, Western numerals, currency `LE` format, and that locale-switch re-translates computed arrays (tabs, DELETE_REASONS, reasons). Then EN regression.
