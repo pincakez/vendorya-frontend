@@ -569,23 +569,40 @@
           </div>
         </div>
 
-        <!-- Label Designs -->
+        <!-- Label Designs — driven by LabelPreset model records -->
         <div class="section-heading-row" style="margin-bottom:14px;">
           <span class="section-group-title">Label Designs</span>
+          <button class="btn-ghost btn-sm" @click="printingTab = 'labels'">Manage presets →</button>
         </div>
-        <div class="design-grid">
-          <div v-for="d in labelDesigns" :key="d.id"
-               class="design-card" :class="{ active: activeLabelDesign === d.id }"
-               @click="activeLabelDesign = d.id; saveDesignPref()">
-            <div class="design-preview design-preview--label" v-html="d.preview"></div>
+        <div v-if="presetsLoading" class="design-grid">
+          <div v-for="i in 2" :key="i" class="design-card" style="min-height:160px;animation:shimmer 1.4s infinite;background:var(--border);" />
+        </div>
+        <div v-else-if="presets.length === 0" class="design-empty">
+          <Tag :size="28" style="opacity:.3;margin-bottom:8px;" />
+          <span>No label presets yet.</span>
+          <button class="btn-ghost btn-sm" @click="printingTab = 'labels'">Add your first preset →</button>
+        </div>
+        <div v-else class="design-grid">
+          <div v-for="p in presets" :key="p.id"
+               class="design-card" :class="{ active: p.is_default }">
+            <div class="design-preview design-preview--label" v-html="buildLabelPreview(p)"></div>
             <div class="design-info">
-              <span class="design-name">{{ d.name }}</span>
-              <span class="design-desc">{{ d.desc }}</span>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span class="design-name">{{ p.name }}</span>
+                <span class="design-size-badge">{{ p.width_mm }}×{{ p.height_mm }}mm</span>
+              </div>
+              <span class="design-desc">{{ labelPresetDesc(p) }}</span>
             </div>
             <div class="design-actions">
-              <span v-if="activeLabelDesign === d.id" class="design-active-badge">Active</span>
-              <button class="btn-secondary btn-sm" @click.stop="testDesign('label', d.id)">
-                <Printer :size="13" /> Test
+              <span v-if="p.is_default" class="design-active-badge">Default</span>
+              <button v-else class="btn-ghost btn-sm" @click.stop="setDefaultPreset(p.id)">Set Default</button>
+              <button
+                class="btn-secondary btn-sm"
+                :disabled="!settingsForm.label_printer_name || labelTestingId === p.id"
+                :title="!settingsForm.label_printer_name ? 'Set label printer name first (Initial Setup tab)' : ''"
+                @click.stop="testLabelPreset(p)"
+              >
+                <Printer :size="13" /> {{ labelTestingId === p.id ? '…' : 'Test' }}
               </button>
             </div>
           </div>
@@ -819,7 +836,7 @@ import { useFormatStore } from '@/stores/format'
 import { useAuthStore } from '@/stores/auth'
 import { formatCurrency } from '@/utils/format'
 import AppModal from '@/components/ui/AppModal.vue'
-import { useQZTray } from '@/composables/useQZTray'
+import { useQZTray, buildLabelTSPL } from '@/composables/useQZTray'
 
 const router = useRouter()
 const fmt  = useFormatStore()
@@ -840,7 +857,6 @@ const printingTab = ref('setup')
 
 /* ── Print Designs ─────────────────────────────────────────────────── */
 const activeReceiptDesign = ref(localStorage.getItem('vya_receipt_design') || 'classic')
-const activeLabelDesign   = ref(localStorage.getItem('vya_label_design')   || 'standard')
 const designSaveMsg       = ref('')
 
 const receiptDesigns = [
@@ -864,36 +880,67 @@ const receiptDesigns = [
   },
 ]
 
-const labelDesigns = [
-  {
-    id: 'standard',
-    name: 'Standard',
-    desc: 'Name + price + barcode — the most common layout.',
-    preview: `<div class="dp-label"><div class="dp-lname">Product Name</div><div class="dp-lbarcode">|||||||||||||||</div><div class="dp-lprice">150.00</div></div>`,
-  },
-  {
-    id: 'compact',
-    name: 'Compact',
-    desc: 'SKU + price only — for small labels.',
-    preview: `<div class="dp-label dp-compact"><div class="dp-lsku">SKU-001</div><div class="dp-lprice">150.00</div></div>`,
-  },
-  {
-    id: 'detailed',
-    name: 'Detailed',
-    desc: 'Store name + product name + SKU + barcode + price.',
-    preview: `<div class="dp-label"><div class="dp-lstore">My Store</div><div class="dp-lname dp-sm">Product Name</div><div class="dp-lbarcode">|||||||||||||||</div><div class="dp-lsku">SKU-001</div><div class="dp-lprice">150.00</div></div>`,
-  },
-]
+// Build an HTML preview string from a LabelPreset record.
+function buildLabelPreview(p) {
+  const parts = ['<div class="dp-label">']
+  if (p.show_store_name)   parts.push('<div class="dp-lstore">My Store</div>')
+  if (p.show_product_name) parts.push('<div class="dp-lname">Product Name</div>')
+  if (p.show_barcode)      parts.push('<div class="dp-lbarcode">|||||||||||||||</div>')
+  if (p.show_sku)          parts.push('<div class="dp-lsku">SKU-001</div>')
+  if (p.show_price)        parts.push('<div class="dp-lprice">150.00 EGP</div>')
+  parts.push('</div>')
+  return parts.join('')
+}
+
+function labelPresetDesc(p) {
+  const fields = []
+  if (p.show_store_name)   fields.push('store')
+  if (p.show_product_name) fields.push('name')
+  if (p.show_barcode)      fields.push('barcode')
+  if (p.show_sku)          fields.push('SKU')
+  if (p.show_price)        fields.push('price')
+  return `${p.width_mm}×${p.height_mm} mm · ${fields.join(', ')}`
+}
+
+async function setDefaultPreset(id) {
+  try {
+    await api.patch(`/api/core/label-presets/${id}/`, { is_default: true })
+    await fetchPresets()
+  } catch { /* silent */ }
+}
+
+const labelTestingId = ref(null)
+
+async function testLabelPreset(p) {
+  if (!settingsForm.label_printer_name) return
+  labelTestingId.value = p.id
+  try {
+    await qzSendRaw(settingsForm.label_printer_name, buildLabelTSPL(p))
+  } catch (e) {
+    alert(e.message || 'Print failed — is QZ Tray running?')
+  } finally {
+    labelTestingId.value = null
+  }
+}
 
 function saveDesignPref() {
   localStorage.setItem('vya_receipt_design', activeReceiptDesign.value)
-  localStorage.setItem('vya_label_design',   activeLabelDesign.value)
   designSaveMsg.value = 'Design preference saved.'
   setTimeout(() => { designSaveMsg.value = '' }, 2000)
 }
 
 function testDesign(type, id) {
-  alert(`Test ${type} print sent (design: ${id}). Make sure your printer is connected via QZ Tray.`)
+  if (type === 'receipt') {
+    if (!settingsForm.receipt_printer_name) {
+      alert('Set a receipt printer name first (Initial Setup tab).')
+      return
+    }
+    qzTestPrinter(settingsForm.receipt_printer_name, 'receipt', {
+      copies:     settingsForm.receipt_copies,
+      autoCut:    settingsForm.receipt_auto_cut,
+      cutFeedMm:  settingsForm.receipt_cut_feed,
+    }).catch(e => alert(e.message || 'Print failed — is QZ Tray running?'))
+  }
 }
 
 const egyptCities = [
@@ -1180,7 +1227,7 @@ const notifyOk       = ref(false)
 const newServiceType = ref('')
 
 // QZ Tray
-const { isAvailable: qzIsAvailable, testPrinter: qzTestPrinter } = useQZTray()
+const { isAvailable: qzIsAvailable, testPrinter: qzTestPrinter, sendRaw: qzSendRaw } = useQZTray()
 const qzStatus  = ref(null)   // null = untested, true = connected, false = not running
 const qzTesting = ref(false)
 const printerTesting = reactive({ label: false, receipt: false })
@@ -1421,6 +1468,8 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .design-desc { font-size:11.5px; color:var(--text-muted); }
 .design-actions { display:flex; align-items:center; justify-content:space-between; }
 .design-active-badge { font-size:11px; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:2px 8px; border-radius:20px; }
+.design-size-badge   { font-size:10px; font-weight:600; color:var(--text-muted); background:var(--bg-app); border:1px solid var(--border); border-radius:4px; padding:1px 5px; }
+.design-empty        { display:flex; flex-direction:column; align-items:center; gap:8px; padding:36px 0; color:var(--text-muted); font-size:13px; }
 
 /* mini receipt / label preview elements */
 :deep(.dp-receipt) { display:flex; flex-direction:column; gap:3px; font-family:monospace; }

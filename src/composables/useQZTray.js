@@ -86,6 +86,50 @@ function _testReceipt() {
 // Build ESC/POS print footer: optional extra feed + optional auto-cut.
 // cutFeedMm: extra paper to advance before cutting (0 = no extra feed).
 // ESC J n feeds n × (1/360 inch) ≈ n/14.2 mm; clamped to 255 dots (~18 mm).
+// Generate TSPL commands for a LabelPreset record with optional sample data.
+export function buildLabelTSPL(preset, {
+  storeName   = 'Vendorya Store',
+  productName = 'Sample Product',
+  sku         = 'TEST-SKU-001',
+  price       = '150.00',
+} = {}) {
+  const W = preset.width_mm
+  const H = preset.height_mm
+  const lines = [
+    `SIZE ${W} mm, ${H} mm\r\n`,
+    `GAP 3 mm, 0 mm\r\n`,
+    `DIRECTION 0\r\n`,
+    `REFERENCE 0,0\r\n`,
+    `OFFSET 0 mm\r\n`,
+    `CLS\r\n`,
+  ]
+  const fieldCount = [preset.show_store_name, preset.show_product_name, preset.show_barcode, preset.show_sku, preset.show_price].filter(Boolean).length
+  const step = fieldCount > 0 ? Math.max(14, Math.floor((H - 12) / fieldCount)) : 16
+  let y = 8
+  if (preset.show_store_name) {
+    lines.push(`TEXT 10,${y},"1",0,1,1,"${storeName}"\r\n`)
+    y += step
+  }
+  if (preset.show_product_name) {
+    lines.push(`TEXT 10,${y},"2",0,1,1,"${productName}"\r\n`)
+    y += step + 4
+  }
+  if (preset.show_barcode) {
+    const bH = Math.min(50, Math.max(20, H - y - (preset.show_sku ? 18 : 0) - (preset.show_price ? 18 : 0) - 8))
+    lines.push(`BARCODE 10,${y},"128",${bH},0,0,2,2,"${sku}"\r\n`)
+    y += bH + 4
+  }
+  if (preset.show_sku) {
+    lines.push(`TEXT 10,${y},"1",0,1,1,"${sku}"\r\n`)
+    y += step
+  }
+  if (preset.show_price) {
+    lines.push(`TEXT 10,${y},"2",0,1,1,"${price} EGP"\r\n`)
+  }
+  lines.push(`PRINT 1\r\n`)
+  return lines.join('')
+}
+
 export function buildPrintFooter(autoCut = true, cutFeedMm = 0) {
   let footer = ''
   if (cutFeedMm > 0) {
