@@ -39,8 +39,11 @@
       <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--warning-soft);color:var(--warning);"><DollarSign :size="20" /></div>
         <div class="kpi-body">
-          <div class="kpi-label">{{ t('inventory.reports.kpi_stock_value') }}</div>
+          <div class="kpi-label">{{ t('inventory.reports.kpi_total_inv_value') }}</div>
           <div class="kpi-value"><Money :value="summary.totalValue" /></div>
+          <div v-if="summary.storageValue > 0" class="kpi-note">
+            {{ t('inventory.reports.incl_storage') }} <Money :value="summary.storageValue" />
+          </div>
         </div>
       </div>
     </div>
@@ -61,13 +64,16 @@
               <th>{{ t('inventory.reports.table_qty') }}</th>
               <th>{{ t('inventory.reports.table_cost_price') }}</th>
               <th>{{ t('inventory.reports.table_stock_value') }}</th>
+              <th>{{ t('inventory.reports.table_storage_qty') }}</th>
+              <th>{{ t('inventory.reports.table_storage_value') }}</th>
+              <th>{{ t('inventory.reports.table_total_value') }}</th>
               <th>{{ t('inventory.reports.table_sell_price') }}</th>
               <th>{{ t('inventory.reports.table_potential_revenue') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="filteredRows.length === 0">
-              <td colspan="8" class="table-empty">{{ t('inventory.reports.empty') }}</td>
+              <td colspan="11" class="table-empty">{{ t('inventory.reports.empty') }}</td>
             </tr>
             <tr v-for="(row, i) in filteredRows" :key="i" class="table-row">
               <td class="col-name">{{ row.productName }}</td>
@@ -76,6 +82,9 @@
               <td :class="Number(row.qty) === 0 ? 'col-zero' : ''">{{ formatQty(row.qty) }}</td>
               <td class="col-muted"><Money :value="row.costPrice" /></td>
               <td class="col-value"><Money :value="row.stockValue" /></td>
+              <td :class="Number(row.storageQty) === 0 ? 'col-muted' : 'col-storage'">{{ formatQty(row.storageQty) }}</td>
+              <td class="col-muted"><Money :value="row.storageValue" /></td>
+              <td class="col-value"><Money :value="row.totalValue" /></td>
               <td class="col-muted"><Money :value="row.sellPrice" /></td>
               <td class="col-revenue"><Money :value="row.potentialRevenue" /></td>
             </tr>
@@ -100,7 +109,7 @@ const loading = ref(false)
 const search  = ref('')
 const rows    = ref([])
 
-const summary = ref({ totalProducts: 0, totalVariants: 0, totalUnits: 0, totalValue: 0 })
+const summary = ref({ totalProducts: 0, totalVariants: 0, totalUnits: 0, activeValue: 0, storageValue: 0, totalValue: 0 })
 
 async function load() {
   loading.value = true
@@ -118,17 +127,28 @@ async function load() {
 
     const productSet = new Set()
     let totalUnits = 0
-    let totalValue = 0
+    let activeValue = 0
+    let storageValue = 0
     const newRows = []
 
     for (const v of allVariants) {
       productSet.add(v.product)
+      const cost = Number(v.cost_price)
+      const sell = Number(v.sell_price)
+      // Storage is branch-agnostic (one pool per variant). Count its value once
+      // per variant, and attribute it to the variant's first table row so the
+      // Total Value column doesn't double-count across branches.
+      const storageQty = Number(v.storage_qty || 0)
+      const variantStorageVal = storageQty * cost
+      storageValue += variantStorageVal
+      let firstRow = true
       for (const sl of v.stock_levels || []) {
         const qty   = Number(sl.quantity)
-        const cost  = Number(v.cost_price)
-        const sell  = Number(v.sell_price)
         totalUnits += qty
-        totalValue += qty * cost
+        activeValue += qty * cost
+        const rowStorageQty = firstRow ? storageQty : 0
+        const rowStorageVal = firstRow ? variantStorageVal : 0
+        firstRow = false
         newRows.push({
           productName: v.product_name || '—',
           sku: v.sku,
@@ -136,18 +156,23 @@ async function load() {
           qty,
           costPrice: cost,
           stockValue: qty * cost,
+          storageQty: rowStorageQty,
+          storageValue: rowStorageVal,
+          totalValue: qty * cost + rowStorageVal,
           sellPrice: sell,
           potentialRevenue: qty * sell,
         })
       }
     }
 
-    rows.value = newRows.sort((a, b) => b.stockValue - a.stockValue)
+    rows.value = newRows.sort((a, b) => b.totalValue - a.totalValue)
     summary.value = {
       totalProducts: productSet.size,
       totalVariants: allVariants.length,
       totalUnits,
-      totalValue,
+      activeValue,
+      storageValue,
+      totalValue: activeValue + storageValue,
     }
   } finally { loading.value = false }
 }
@@ -174,6 +199,7 @@ onMounted(load)
 .kpi-body  { flex:1; }
 .kpi-label { font-size:11.5px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px; }
 .kpi-value { font-size:20px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
+.kpi-note  { font-size:11px; color:var(--text-muted); font-weight:500; margin-top:3px; display:flex; align-items:center; gap:3px; }
 .skeleton-card { height:78px; background:var(--border); border-radius:12px; animation:shimmer 1.4s ease-in-out infinite; }
 @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
 
@@ -197,4 +223,5 @@ onMounted(load)
 .col-zero    { color:var(--danger); font-weight:600; }
 .col-value   { font-variant-numeric:tabular-nums; font-weight:600; color:var(--text-primary); }
 .col-revenue { font-variant-numeric:tabular-nums; color:var(--success); font-weight:600; }
+.col-storage { font-variant-numeric:tabular-nums; color:var(--accent); font-weight:600; }
 </style>

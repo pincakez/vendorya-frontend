@@ -72,6 +72,13 @@
           <div class="kpi-tag">{{ t('core.dash.stock_health') }}</div>
           <router-link to="/inventory/products" class="chip-link">{{ t('core.dash.view') }}</router-link>
         </div>
+        <div class="b3-inv">
+          <div class="b3-inv-tag">{{ t('core.dash.inv_value') }}</div>
+          <div class="b3-inv-num"><Money :value="data.inventory_value_total" /></div>
+          <div v-if="Number(data.inventory_value_storage) > 0" class="b3-inv-sub">
+            {{ t('core.dash.incl_storage') }} <Money :value="data.inventory_value_storage" />
+          </div>
+        </div>
         <div v-if="data.low_stock_count === 0" class="b3-ok">
           <CheckCircle :size="16" /> {{ t('core.dash.all_healthy') }}
         </div>
@@ -191,6 +198,9 @@ const data = ref({
   open_shift:           null,
   low_stock_count:      0,
   low_stock_items:      [],
+  inventory_value_active:  0,
+  inventory_value_storage: 0,
+  inventory_value_total:   0,
   recent_sales:         [],
   upcoming_services:    [],
 })
@@ -366,6 +376,10 @@ onUnmounted(() => clearInterval(tickerTimer))
 .b3-ok    { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--success); margin-top: 6px; }
 .b3-count { font-size: 26px; font-weight: 800; color: var(--warning); margin: 2px 0 6px; line-height: 1; }
 .b3-count-sub { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+.b3-inv { padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--border); }
+.b3-inv-tag { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin-bottom: 3px; }
+.b3-inv-num { font-size: 24px; font-weight: 800; color: var(--text-primary); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.b3-inv-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
 .chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
 
 /* ── Chips ──────────────────────────────────────────────────── */

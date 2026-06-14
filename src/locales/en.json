@@ -519,7 +519,12 @@
    "table_stock_value": "Stock Value",
    "table_sell_price": "Sell Price",
    "table_potential_revenue": "Potential Revenue",
-   "empty": "No stock data found"
+   "empty": "No stock data found",
+   "kpi_total_inv_value": "Total Inventory Value",
+   "incl_storage": "incl.",
+   "table_storage_qty": "Storage Qty",
+   "table_storage_value": "Storage Value",
+   "table_total_value": "Total Value"
   },
   "storage": {
    "title": "Storage",
@@ -1264,6 +1269,12 @@
     "branch": "Branch",
     "change": "Change",
     "balance": "Balance"
+   },
+   "scope": {
+    "label": "Scope",
+    "active": "Active",
+    "storage": "Storage",
+    "combined": "Combined"
    }
   },
   "tax": {
@@ -1945,7 +1956,9 @@
    "ins_shift": "Shift running since {t} · {user}",
    "ins_restock": "{n} items need restocking",
    "ins_services": "{n} services scheduled",
-   "ins_caught_up": "Your store is all caught up — have a great day!"
+   "ins_caught_up": "Your store is all caught up — have a great day!",
+   "inv_value": "Inventory Value",
+   "incl_storage": "incl."
   },
   "services": {
    "title": "Services",

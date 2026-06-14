@@ -519,7 +519,12 @@
    "table_stock_value": "قيمة المخزون",
    "table_sell_price": "سعر البيع",
    "table_potential_revenue": "الإيراد المحتمل",
-   "empty": "لا توجد بيانات مخزون"
+   "empty": "لا توجد بيانات مخزون",
+   "kpi_total_inv_value": "إجمالي قيمة المخزون",
+   "incl_storage": "منها",
+   "table_storage_qty": "كمية التخزين",
+   "table_storage_value": "قيمة التخزين",
+   "table_total_value": "القيمة الإجمالية"
   },
   "storage": {
    "title": "التخزين",
@@ -1264,6 +1269,12 @@
     "branch": "الفرع",
     "change": "التغيير",
     "balance": "الرصيد"
+   },
+   "scope": {
+    "label": "النطاق",
+    "active": "النشط",
+    "storage": "التخزين",
+    "combined": "مجمّع"
    }
   },
   "tax": {
@@ -1945,7 +1956,9 @@
    "ins_shift": "الوردية جارية منذ {t} · {user}",
    "ins_restock": "{n} صنف بحاجة لإعادة تخزين",
    "ins_services": "{n} خدمة مجدولة",
-   "ins_caught_up": "متجرك مكتمل المتابعة — نتمنى لك يومًا رائعًا!"
+   "ins_caught_up": "متجرك مكتمل المتابعة — نتمنى لك يومًا رائعًا!",
+   "inv_value": "قيمة المخزون",
+   "incl_storage": "منها"
   },
   "services": {
    "title": "الخدمات",

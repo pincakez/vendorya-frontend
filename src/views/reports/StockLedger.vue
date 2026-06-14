@@ -7,7 +7,7 @@
       </div>
     </div>
 
-    <div class="variant-pick">
+    <div class="ledger-controls">
       <label class="filter-field">
         <span>{{ t('reports.stock_ledger.variant') }}</span>
         <select v-model="variant" class="filter-input" @change="fetchData">
@@ -17,6 +17,16 @@
           </option>
         </select>
       </label>
+      <div class="scope-field">
+        <span>{{ t('reports.stock_ledger.scope.label') }}</span>
+        <div class="scope-toggle">
+          <button v-for="s in scopes" :key="s"
+            class="scope-btn" :class="{ active: scope === s }"
+            @click="setScope(s)">
+            {{ t('reports.stock_ledger.scope.' + s) }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <ReportFilters @change="onFilters" />
@@ -57,6 +67,10 @@ const rows = ref([])
 const opening = ref('0')
 const closing = ref('0')
 const filters = ref({})
+const scopes = ['active', 'storage', 'combined']
+const scope = ref('active')
+
+function setScope(s) { scope.value = s; if (variant.value) fetchData() }
 
 const meta = computed(() => `${filters.value.date_from || ''} → ${filters.value.date_to || ''}`)
 function qty(v) { return formatQty(v ?? 0) }
@@ -78,7 +92,7 @@ async function fetchData() {
   loading.value = true
   try {
     const res = await api.get('/api/reports/stock-ledger/', {
-      params: { variant: variant.value, ...filters.value },
+      params: { variant: variant.value, scope: scope.value, ...filters.value },
     })
     rows.value = res.data.rows || []
     opening.value = res.data.opening_balance || '0'
@@ -103,9 +117,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.variant-pick { margin-bottom:16px; }
-.filter-field { display:flex; flex-direction:column; gap:4px; max-width:420px; }
+.ledger-controls { display:flex; flex-wrap:wrap; align-items:flex-end; gap:16px; margin-bottom:16px; }
+.filter-field { display:flex; flex-direction:column; gap:4px; min-width:280px; flex:1; max-width:420px; }
 .filter-field span { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
+.scope-field { display:flex; flex-direction:column; gap:4px; }
+.scope-field span { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
+.scope-toggle { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--bg-card); }
+.scope-btn { padding:8px 14px; font-size:13px; font-weight:600; color:var(--text-muted); background:transparent; border:none; cursor:pointer; transition:background 120ms,color 120ms; }
+.scope-btn:not(:last-child) { border-right:1px solid var(--border); }
+.scope-btn:hover { color:var(--text-primary); }
+.scope-btn.active { background:var(--accent); color:#fff; }
 .filter-input { padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); font-size:13px; outline:none; }
 .filter-input:focus { border-color:var(--accent); }
 .balance-bar { display:flex; gap:14px; margin-bottom:16px; }
