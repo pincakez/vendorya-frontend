@@ -11,6 +11,7 @@
       <div class="dash-b5 skel" />
       <div class="dash-b6 skel" />
       <div class="dash-b7 skel" />
+
     </div>
 
     <!-- Live grid -->
