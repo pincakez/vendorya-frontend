@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
-const PALETTE = ['#f78f1e', '#3772ff', '#ba2d0b', '#b1ddf1', '#f5ee9e']
+const PALETTE = ['#f78f1e', '#3772ff', '#ba2d0b', '#0e4749', '#2b193d']
 const DAYS    = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 const WEEKS = [
@@ -70,7 +70,7 @@ function advance() {
   chartOptions.value = buildOptions(PALETTE[next % PALETTE.length])
 }
 
-onMounted(()  => { timer = setInterval(advance, 2800) })
+onMounted(()  => { timer = setInterval(advance, 6000) })
 onUnmounted(() => clearInterval(timer))
 </script>
 
