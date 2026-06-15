@@ -4,6 +4,7 @@
     <!-- ─── Top bar ─────────────────────────────────────────── -->
     <div class="pos-topbar">
       <div class="pos-topbar-left">
+        <button class="pos-back-btn" @click="goBack" :title="'Back'"><ArrowLeft :size="15" /></button>
         <span class="pos-brand">{{ t('pos.brand') }}</span>
         <span class="pos-divider">|</span>
         <span class="pos-store">{{ auth.storeName }}</span>
@@ -289,7 +290,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
   Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
-  Printer, FileText, ShoppingCart, CheckCircle2,
+  Printer, FileText, ShoppingCart, CheckCircle2, ArrowLeft,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore }  from '@/stores/auth'
@@ -305,6 +306,11 @@ import ServiceFormModal    from '@/views/services/ServiceFormModal.vue'
 
 const router = useRouter()
 const { t } = useI18n()
+
+function goBack() {
+  const prev = window.history.state?.back
+  router.push(prev && prev !== '/pos' ? prev : '/dashboard')
+}
 const auth   = useAuthStore()
 const cart   = useCartStore()
 const pos    = usePosStore()
@@ -822,6 +828,14 @@ function fmtNum(n) {
   border-bottom: 1px solid var(--border); height: 54px; flex-shrink: 0;
 }
 .pos-topbar-left { display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0; }
+.pos-back-btn {
+  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+  border: 1px solid var(--border); background: var(--bg-app); color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: background 120ms, color 120ms, transform 100ms;
+}
+.pos-back-btn:hover  { background: var(--border); color: var(--text-primary); }
+.pos-back-btn:active { transform: scale(0.9); }
 .pos-brand { font-size: 15px; font-weight: 900; color: var(--accent); letter-spacing: 0.1em; }
 .pos-divider { color: var(--border); font-size: 20px; }
 .pos-store  { font-size: 13px; font-weight: 700; color: var(--text-secondary); }

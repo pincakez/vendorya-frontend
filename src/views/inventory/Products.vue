@@ -515,6 +515,8 @@ import { useFormatStore } from '@/stores/format'
 import { formatQty } from '@/utils/format'
 import { showSuccessToast } from '@/utils/toast'
 import { useFormDirty } from '@/composables/useFormDirty'
+import { useCtrlN } from '@/composables/useCtrlN'
+useCtrlN(openAddProduct)
 import AppModal from '@/components/ui/AppModal.vue'
 import ReasonModal from '@/components/ui/ReasonModal.vue'
 

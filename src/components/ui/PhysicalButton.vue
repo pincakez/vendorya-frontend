@@ -79,12 +79,17 @@ const tiltStyle = computed(() =>
 
 /* primary — the POS / hero button */
 .pb-primary {
-  background: var(--accent); color: #1a1208;
+  background: linear-gradient(155deg, #ffaa3b 0%, #f07800 100%);
+  color: #1a1208;
   border-radius: 12px; padding: 12px 16px; font-size: 14px; font-weight: 700;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-  transition: background 140ms;
+  box-shadow: 0 4px 16px rgba(247,143,30,.45), inset 0 1px 0 rgba(255,255,255,.28);
+  text-shadow: 0 1px 2px rgba(0,0,0,.12);
+  transition: box-shadow 160ms, filter 160ms;
 }
-.pb-primary:hover { background: var(--accent-hover); }
+.pb-primary:hover {
+  filter: brightness(1.07);
+  box-shadow: 0 6px 22px rgba(247,143,30,.58), inset 0 1px 0 rgba(255,255,255,.35);
+}
 
 /* sidebar — nav rows inside group cards */
 .pb-sidebar {

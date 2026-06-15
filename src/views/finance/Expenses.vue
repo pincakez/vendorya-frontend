@@ -125,6 +125,8 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Wallet, Tags, Trash2, Pencil } from 'lucide-vue-next'
 import api from '@/api/axios'
+import { useCtrlN } from '@/composables/useCtrlN'
+useCtrlN(openNewExpense)
 import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'

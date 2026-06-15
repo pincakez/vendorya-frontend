@@ -119,6 +119,8 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Tag, Pencil, Trash2, AlignLeft, List, Hash, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
+import { useCtrlN } from '@/composables/useCtrlN'
+useCtrlN(openNew)
 import AppModal from '@/components/ui/AppModal.vue'
 
 const { t } = useI18n()

@@ -122,6 +122,8 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { PackageSearch, CheckCircle } from 'lucide-vue-next'
 import api from '@/api/axios'
+import { useCtrlN } from '@/composables/useCtrlN'
+useCtrlN(openModal)
 import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'

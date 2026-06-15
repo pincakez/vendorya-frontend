@@ -191,6 +191,8 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ArrowLeftRight } from 'lucide-vue-next'
 import api from '@/api/axios'
+import { useCtrlN } from '@/composables/useCtrlN'
+useCtrlN(openModal)
 import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 

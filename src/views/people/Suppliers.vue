@@ -245,6 +245,8 @@ import {
   Columns3, GripVertical, UserCog, RotateCcw,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
+import { useCtrlN } from '@/composables/useCtrlN'
+useCtrlN(openNew)
 import { useAuthStore } from '@/stores/auth'
 import AppModal from '@/components/ui/AppModal.vue'
 

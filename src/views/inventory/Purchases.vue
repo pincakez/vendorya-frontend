@@ -150,6 +150,8 @@ import { useI18n } from 'vue-i18n'
 import { ShoppingCart, PackageCheck, Trash2, Plus, Tag } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import api from '@/api/axios'
+import { useCtrlN } from '@/composables/useCtrlN'
+useCtrlN(openNew)
 import { useAuthStore } from '@/stores/auth'
 import { useQABStore } from '@/stores/qab'
 import { useLabelsStore } from '@/stores/labels'

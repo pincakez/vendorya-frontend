@@ -239,6 +239,8 @@ import {
   XCircle, Archive, FileText, RotateCcw,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
+import { useCtrlN } from '@/composables/useCtrlN'
+useCtrlN(openNew)
 import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import Money from '@/components/ui/Money.vue'
