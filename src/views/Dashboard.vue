@@ -21,7 +21,7 @@
 
     <!-- ── Skeleton ────────────────────────────────────────── -->
     <div v-if="loading" class="dash-grid">
-      <div v-for="i in 4" :key="i" class="dash-card skel" />
+      <div v-for="i in 10" :key="i" class="dash-card skel" />
     </div>
 
     <!-- ── Live Grid ───────────────────────────────────────── -->
@@ -97,6 +97,123 @@
         </div>
       </div>
 
+      <!-- Today's KPIs -->
+      <div class="dash-card intersect:motion-preset-slide-left intersect:motion-delay-[300ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <div class="b-head">
+          <span class="b-title">Today</span>
+          <BarChart3 :size="14" style="color: var(--text-muted)" />
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-item">
+            <span class="kpi-val"><Money :value="data.today_sales_total" /></span>
+            <span class="kpi-lbl">Revenue</span>
+          </div>
+          <div class="kpi-divider" />
+          <div class="kpi-item">
+            <span class="kpi-val">{{ data.today_invoices_count }}</span>
+            <span class="kpi-lbl">Sales</span>
+          </div>
+          <div class="kpi-divider" />
+          <div class="kpi-item">
+            <span class="kpi-val"><Money :value="avgTicket" /></span>
+            <span class="kpi-lbl">Avg Ticket</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shift Summary -->
+      <div class="dash-card intersect:motion-preset-slide-left intersect:motion-delay-[360ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <div class="b-head">
+          <span class="b-title">Current Shift</span>
+          <router-link to="/finance/shifts" class="chip-link">View</router-link>
+        </div>
+        <div v-if="!data.open_shift" class="b-empty">
+          <Clock :size="28" /><span>No shift open</span>
+        </div>
+        <div v-else class="shift-body">
+          <div class="shift-avatar">{{ shiftInitials }}</div>
+          <div class="shift-info">
+            <div class="shift-cashier">{{ data.open_shift.user }}</div>
+            <div class="shift-since">Since {{ fmtTime(data.open_shift.start_time) }}</div>
+          </div>
+          <div class="shift-stats">
+            <div class="shift-stat">
+              <span class="shift-stat-val">{{ data.open_shift.invoices_count }}</span>
+              <span class="shift-stat-lbl">Sales</span>
+            </div>
+            <div class="shift-stat-sep" />
+            <div class="shift-stat">
+              <span class="shift-stat-val"><Money :value="data.open_shift.sales_total" /></span>
+              <span class="shift-stat-lbl">Revenue</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Debt -->
+      <div class="dash-card intersect:motion-preset-slide-left intersect:motion-delay-[420ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <div class="b-head">
+          <span class="b-title">Customer Debt</span>
+          <router-link to="/people/customers" class="chip-link">View all</router-link>
+        </div>
+        <div v-if="!data.customer_debt?.length" class="b-empty">
+          <Users :size="28" /><span>No outstanding balances</span>
+        </div>
+        <div v-else class="sales-list">
+          <div v-for="(c, i) in data.customer_debt" :key="i" class="sales-row">
+            <span class="sales-customer">{{ c.name }}</span>
+            <span class="chip chip-red debt-amt"><Money :value="c.outstanding" /></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Sellers -->
+      <div class="dash-card intersect:motion-preset-slide-left intersect:motion-delay-[480ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <div class="b-head">
+          <span class="b-title">Top Sellers</span>
+          <span class="chip-muted">This week</span>
+        </div>
+        <div v-if="!data.top_sellers?.length" class="b-empty">
+          <TrendingUp :size="28" /><span>No sales this week</span>
+        </div>
+        <div v-else class="seller-list">
+          <div v-for="(item, i) in data.top_sellers" :key="i" class="seller-row">
+            <span class="seller-rank">{{ i + 1 }}</span>
+            <span class="seller-name">{{ item.name }}</span>
+            <span class="seller-qty">×{{ fmtQty(item.qty) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales by Category -->
+      <div class="dash-card intersect:motion-preset-slide-left intersect:motion-delay-[540ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <div class="b-head">
+          <span class="b-title">Sales by Category</span>
+          <span class="chip-muted">This week</span>
+        </div>
+        <div v-if="!data.sales_by_category?.length" class="b-empty">
+          <PieChart :size="28" /><span>No sales this week</span>
+        </div>
+        <template v-else>
+          <apexchart
+            type="bar"
+            :options="catChartOptions"
+            :series="catChartSeries"
+            height="155"
+          />
+        </template>
+      </div>
+
+      <!-- Best of the Month -->
+      <div class="dash-card intersect:motion-preset-slide-left intersect:motion-delay-[600ms] intersect:motion-ease-spring-bouncier intersect-once">
+        <BestOfMonth
+          :attribute="data.best_of_month?.attribute"
+          :category="data.best_of_month?.category"
+          :day="data.best_of_month?.day"
+          :hours="data.best_of_month?.hours"
+        />
+      </div>
+
     </div>
   </div>
 </template>
@@ -104,26 +221,33 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RefreshCw, ShoppingBag, CheckCircle, Briefcase } from 'lucide-vue-next'
+import { RefreshCw, ShoppingBag, CheckCircle, Briefcase, BarChart3, Clock, Users, TrendingUp, PieChart } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
-import VAInsights from '@/components/dashboard/VAInsights.vue'
 import DemoWeekChart from '@/components/dashboard/DemoWeekChart.vue'
+import BestOfMonth from '@/components/dashboard/BestOfMonth.vue'
+import { formatQty } from '@/utils/format'
 
 const { t } = useI18n()
 const loading = ref(false)
 
+const CAT_COLORS = ['#f78f1e', '#3772ff', '#ba2d0b', '#0e4749', '#2b193d']
+
 const data = ref({
-  today_sales_total:       0,
-  today_invoices_count:    0,
-  today_items_sold:        0,
-  open_shift:              null,
-  low_stock_count:         0,
-  low_stock_items:         [],
-  inventory_value_total:   0,
-  inventory_value_storage: 0,
-  recent_sales:            [],
-  upcoming_services:       [],
+  today_sales_total:        0,
+  today_invoices_count:     0,
+  today_items_sold:         0,
+  open_shift:               null,
+  low_stock_count:          0,
+  low_stock_items:          [],
+  inventory_value_total:    0,
+  inventory_value_storage:  0,
+  recent_sales:             [],
+  upcoming_services:        [],
+  top_sellers:              [],
+  customer_debt:            [],
+  sales_by_category:        [],
+  best_of_month:            { attribute: null, category: null, day: null, hours: null },
 })
 
 // ── Ticker ──────────────────────────────────────────────────
@@ -149,6 +273,55 @@ function startTicker() {
   }, 6000)
 }
 
+// ── Computed ─────────────────────────────────────────────────
+const avgTicket = computed(() => {
+  const cnt = data.value.today_invoices_count
+  const tot = parseFloat(data.value.today_sales_total) || 0
+  return cnt > 0 ? (tot / cnt).toFixed(2) : 0
+})
+
+const shiftInitials = computed(() => {
+  const name = data.value.open_shift?.user || ''
+  return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+})
+
+const catChartSeries = computed(() => [{
+  name: 'Revenue',
+  data: (data.value.sales_by_category || []).map(c => ({
+    x: c.name.length > 14 ? c.name.slice(0, 13) + '…' : c.name,
+    y: parseFloat(c.total),
+  })),
+}])
+
+const catChartOptions = computed(() => ({
+  chart: {
+    type: 'bar',
+    background: 'transparent',
+    toolbar: { show: false },
+    animations: { enabled: false },
+    parentHeightOffset: 0,
+  },
+  plotOptions: {
+    bar: { horizontal: true, barHeight: '52%', borderRadius: 4, distributed: true },
+  },
+  colors: CAT_COLORS,
+  dataLabels: { enabled: false },
+  legend: { show: false },
+  xaxis: {
+    labels: { show: false },
+    axisBorder: { show: false },
+    axisTicks: { show: false },
+  },
+  yaxis: {
+    labels: {
+      style: { fontSize: '11px', colors: ['var(--text-muted)'] },
+      maxWidth: 90,
+    },
+  },
+  grid: { show: false, padding: { left: 0, right: 8, top: -10, bottom: -10 } },
+  tooltip: { y: { formatter: (v) => `$${Number(v).toLocaleString()}` } },
+}))
+
 // ── Data ────────────────────────────────────────────────────
 async function fetchData() {
   loading.value = true
@@ -160,6 +333,8 @@ async function fetchData() {
     loading.value = false
   }
 }
+
+function fmtQty(v) { return formatQty ? formatQty(v) : Number(v).toFixed(0) }
 
 function fmtTime(d) {
   return d ? new Date(d).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '—'
@@ -259,6 +434,7 @@ onUnmounted(() => clearInterval(tickerTimer))
 .chip       { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; }
 .chip-amber { background: rgba(245,158,11,.15); color: #92400e; }
 .chip-red   { background: rgba(239,68,68,.12);  color: var(--danger); }
+.chip-muted { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 .dark .chip-amber { background: rgba(245,158,11,.20); color: #fbbf24; }
 .dark .chip-red   { background: rgba(239,68,68,.18);  color: #f87171; }
 .chip-link        { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
@@ -302,6 +478,37 @@ onUnmounted(() => clearInterval(tickerTimer))
 .stock-row:last-child { border-bottom: none; }
 .stock-row:hover { background: var(--bg-app); }
 .stock-name { font-size: 13px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; margin-right: 10px; }
+
+/* ── Today's KPIs ───────────────────────────────────────────── */
+.kpi-grid    { display: flex; align-items: center; justify-content: space-around; flex: 1; gap: 0; }
+.kpi-item    { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.kpi-val     { font-size: 17px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kpi-lbl     { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); }
+.kpi-divider { width: 1px; height: 40px; background: var(--border); flex-shrink: 0; }
+
+/* ── Shift Summary ──────────────────────────────────────────── */
+.shift-body    { display: flex; flex-direction: column; flex: 1; gap: 12px; padding-top: 4px; }
+.shift-avatar  { width: 40px; height: 40px; border-radius: 12px; background: var(--accent); color: #fff; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.shift-info    { display: flex; flex-direction: row; align-items: center; gap: 12px; }
+.shift-cashier { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.shift-since   { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+.shift-stats   { display: flex; align-items: center; justify-content: space-around; background: var(--bg-app); border-radius: 12px; padding: 12px 16px; margin-top: auto; }
+.shift-stat    { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.shift-stat-val { font-size: 16px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.shift-stat-lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
+.shift-stat-sep { width: 1px; height: 32px; background: var(--border); }
+
+/* ── Customer Debt ──────────────────────────────────────────── */
+.debt-amt { font-variant-numeric: tabular-nums; }
+
+/* ── Top Sellers ────────────────────────────────────────────── */
+.seller-list { display: flex; flex-direction: column; flex: 1; overflow: auto; margin: 0 -20px -18px; }
+.seller-row  { display: flex; align-items: center; padding: 9px 20px; border-bottom: 1px solid var(--border); gap: 10px; transition: background 100ms; }
+.seller-row:last-child { border-bottom: none; }
+.seller-row:hover { background: var(--bg-app); }
+.seller-rank { font-size: 11px; font-weight: 800; color: var(--text-muted); width: 16px; flex-shrink: 0; }
+.seller-name { font-size: 13px; font-weight: 500; color: var(--text-primary); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seller-qty  { font-size: 12px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
 
 /* ── Narrow screens ─────────────────────────────────────────── */
 @media (max-width: 580px) {
