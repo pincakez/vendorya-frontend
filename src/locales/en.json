@@ -1765,7 +1765,7 @@
    "social": "Social Media",
    "facebook": "Facebook Page",
    "instagram": "Instagram",
-   "instagram_ph": "@yourhandle or URL",
+   "instagram_ph": "{'@'}yourhandle or URL",
    "save_store": "Save Store Info",
    "owners": "Owners",
    "no_owners": "No owners yet",
