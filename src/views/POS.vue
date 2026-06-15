@@ -171,6 +171,7 @@
 
       <!-- RIGHT — Actions + Summary + PAY -->
       <div class="pos-right">
+        <div class="pos-right-scroll">
         <div class="pos-actions-grid">
           <button class="pac" :class="{ 'pac--held': cart.heldCarts.length }" @click="holdOrResume">
             <Pause :size="16" />
@@ -216,6 +217,7 @@
         </div>
 
         <PosNumpad class="pos-numpad" />
+        </div>
 
         <button class="pos-pay-btn" :disabled="cart.isEmpty" @click="openPayment">
           <span>{{ t('pos.pay') }}</span>
@@ -1016,10 +1018,16 @@ function fmtNum(n) {
 /* ── Right panel ──────────────────────────────────────────── */
 .pos-right {
   width: 268px; min-width: 268px; height: 100%;
-  display: flex; flex-direction: column; gap: 10px;
-  padding: 10px; background: var(--bg-card); overflow-y: auto;
+  display: flex; flex-direction: column;
+  padding: 10px; background: var(--bg-card); overflow: hidden;
   border: 1px solid var(--border); border-radius: 16px;
   box-shadow: var(--shadow-card);
+}
+/* Everything above PAY scrolls if the viewport is short (e.g. browser zoom),
+   so the PAY button stays pinned and visible at all zoom levels. */
+.pos-right-scroll {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px;
 }
 
 .pos-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -1064,6 +1072,7 @@ function fmtNum(n) {
 .pos-pay-btn {
   width: 100%; padding: 16px 12px; border-radius: 14px; border: none;
   background: var(--success); color: #fff; cursor: pointer;
+  flex-shrink: 0; margin-top: 10px;
   display: flex; align-items: center; justify-content: space-between;
   font-size: 18px; font-weight: 900; letter-spacing: 0.08em;
   box-shadow: 0 4px 14px rgba(34,197,94,0.28);
@@ -1078,16 +1087,18 @@ function fmtNum(n) {
 /* ── Scan beam — a thin bright line that races from top to bottom,
    like a barcode scanner's light. One-shot, very fast. ──────── */
 .pos-scan-beam {
-  position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95) 50%, transparent);
-  box-shadow: 0 0 16px 4px rgba(255,255,255,0.5);
+  position: absolute; left: 0; right: 0; top: -120px; height: 120px;
+  background: linear-gradient(to bottom,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.55) 50%,
+    rgba(255,255,255,0) 100%);
   pointer-events: none; z-index: 500; will-change: transform;
-  animation: pos-scan-sweep 280ms var(--ease-in-out) forwards;
+  animation: pos-scan-sweep 300ms var(--ease-in-out) forwards;
 }
 @keyframes pos-scan-sweep {
-  0%   { transform: translateY(0);      opacity: 0; }
-  12%  { opacity: 1; }
-  100% { transform: translateY(100vh);  opacity: 0.85; }
+  0%   { transform: translateY(0);                 opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(calc(100vh + 120px)); opacity: 0.9; }
 }
 
 /* ── Success overlay ──────────────────────────────────────── */
