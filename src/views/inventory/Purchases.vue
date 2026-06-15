@@ -39,12 +39,12 @@
         <table class="dt">
         <thead>
           <tr>
+            <th class="dt-th">{{ t('inventory.purchases.table_number') }}</th>
             <th class="dt-th">{{ t('inventory.purchases.table_supplier') }}</th>
             <th class="dt-th">{{ t('inventory.purchases.table_ref') }}</th>
             <th class="dt-th">{{ t('inventory.purchases.table_date') }}</th>
             <th class="dt-th">{{ t('inventory.purchases.table_status') }}</th>
             <th class="dt-th">{{ t('inventory.purchases.table_total') }}</th>
-            <th class="dt-th">{{ t('inventory.purchases.table_paid') }}</th>
             <th class="dt-th" style="width:80px;"></th>
           </tr>
         </thead>
@@ -56,12 +56,12 @@
             </td>
           </tr>
           <tr v-for="p in purchases" :key="p.id" class="dt-row" @click="openView(p)" style="cursor:pointer;">
-            <td class="col-name">{{ p.supplier_name || p.supplier }}</td>
+            <td class="col-ref">{{ p.purchase_number || '—' }}</td>
+            <td class="col-name">{{ p.supplier_name || t('inventory.purchases.no_supplier') }}</td>
             <td class="col-ref">{{ p.vendor_reference || '—' }}</td>
             <td>{{ fmtDate(p.date) }}</td>
             <td><span class="status-badge" :class="`status-${p.status.toLowerCase()}`">{{ statusLabel(p.status) }}</span></td>
             <td class="col-amount"><Money :value="p.total_amount" /></td>
-            <td class="col-amount"><Money :value="p.paid_amount" /></td>
             <td @click.stop>
               <button v-if="p.status === 'DRAFT'" class="row-action success" :disabled="!p.supplier" :title="p.supplier ? t('inventory.purchases.receive_hint') : t('inventory.purchases.receive_needs_supplier')" @click="receivePurchase(p)">
                 <PackageCheck :size="13" />
@@ -78,44 +78,116 @@
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchPurchases" />
 
     <!-- MODAL: New / View Purchase -->
-    <AppModal :open="modal.open" :title="modal.id ? t('inventory.purchases.modal_view_title') : t('inventory.purchases.modal_new_title')" width="720px" :no-backdrop-close="!modal.id" @close="closeModal">
+    <AppModal :open="modal.open" :title="modalTitle" width="860px" :no-backdrop-close="true" @close="tryClose">
       <div class="form-grid">
         <div>
           <label class="form-label">
             {{ t('inventory.purchases.form_supplier') }}
-            <span v-if="!modal.id && !modal.supplier" class="draft-hint">{{ t('inventory.purchases.draft_only_hint') }}</span>
+            <span v-if="!modal.supplier" class="draft-hint">{{ t('inventory.purchases.draft_only_hint') }}</span>
           </label>
-          <select v-model="modal.supplier" class="form-input" :disabled="!!modal.id">
+          <select v-model="modal.supplier" class="form-input" :disabled="!supplierEditable">
             <option value="">{{ t('inventory.purchases.select_supplier') }}</option>
             <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
         <div>
+          <label class="form-label">{{ t('inventory.purchases.form_number') }}</label>
+          <input v-model="modal.purchase_number" class="form-input" :placeholder="t('inventory.purchases.form_number_placeholder')" :disabled="readOnly" />
+        </div>
+        <div>
           <label class="form-label">{{ t('inventory.purchases.form_date') }}</label>
-          <input v-model="modal.date" type="datetime-local" class="form-input" :disabled="!!modal.id" />
+          <input v-model="modal.date" type="datetime-local" class="form-input" :disabled="readOnly" />
         </div>
         <div>
           <label class="form-label">{{ t('inventory.purchases.form_vendor_ref') }}</label>
-          <input v-model="modal.vendor_reference" class="form-input" :placeholder="t('inventory.purchases.form_vendor_ref_placeholder')" :disabled="!!modal.id" />
+          <input v-model="modal.vendor_reference" class="form-input" :placeholder="t('inventory.purchases.form_vendor_ref_placeholder')" :disabled="readOnly" />
         </div>
-        <div>
+        <div style="grid-column:1 / -1;">
           <label class="form-label">{{ t('inventory.purchases.form_notes') }}</label>
-          <input v-model="modal.notes" class="form-input" :placeholder="t('inventory.purchases.form_notes_placeholder')" :disabled="!!modal.id" />
+          <input v-model="modal.notes" class="form-input" :placeholder="t('inventory.purchases.form_notes_placeholder')" :disabled="readOnly" />
         </div>
       </div>
 
       <div style="margin-top:18px;">
         <div class="section-label">{{ t('inventory.purchases.items_section') }}</div>
-        <div v-for="(item, i) in modal.items" :key="i" class="item-row">
-          <select v-model="item.variant" class="form-input item-variant" :disabled="!!modal.id">
-            <option value="">{{ t('inventory.purchases.select_variant') }}</option>
-            <option v-for="v in variants" :key="v.id" :value="v.id">{{ v.product_name }} — {{ v.sku }}</option>
-          </select>
-          <input v-model="item.quantity" type="number" min="1" class="form-input item-qty" :placeholder="t('inventory.purchases.qty_placeholder')" :disabled="!!modal.id" />
-          <input v-model="item.unit_cost" type="number" min="0" step="0.01" class="form-input item-price" :placeholder="t('inventory.purchases.cost_placeholder')" :disabled="!!modal.id" />
-          <button v-if="!modal.id" class="row-action danger" @click="modal.items.splice(i, 1)"><Trash2 :size="13" /></button>
+
+        <div class="items-head">
+          <span class="ih-sku">{{ t('inventory.purchases.col_sku') }}</span>
+          <span class="ih-name">{{ t('inventory.purchases.col_item') }}</span>
+          <span class="ih-qty">{{ t('inventory.purchases.col_qty') }}</span>
+          <span class="ih-num">{{ t('inventory.purchases.col_base') }}</span>
+          <span class="ih-num">{{ t('inventory.purchases.col_retail') }}</span>
+          <span class="ih-del"></span>
         </div>
-        <button v-if="!modal.id" class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ variant: '', quantity: 1, unit_cost: '' })">
+
+        <div v-for="(row, i) in modal.rows" :key="i" class="item-card" :class="{ 'is-new': row.kind === 'new' && (row.name || '').trim() }">
+          <div class="item-main">
+            <!-- SKU cell -->
+            <div class="cell-sku" :title="skuHint(row)">
+              <span v-if="row.sku" class="sku-val">{{ row.sku }}</span>
+              <Lock v-else-if="row.kind === 'new' && (row.name||'').trim() && !modal.supplier" :size="12" class="sku-lock" />
+              <span v-else class="sku-dash">—</span>
+            </div>
+
+            <!-- Name autocomplete -->
+            <div class="cell-name">
+              <input
+                v-model="row.name"
+                class="form-input"
+                :placeholder="t('inventory.purchases.item_search_placeholder')"
+                :disabled="readOnly"
+                autocomplete="off"
+                @input="onNameInput(row)"
+                @focus="row._open = (row._results && row._results.length > 0)"
+                @blur="closeRowSoon(row)"
+              />
+              <div v-if="row._open && row._results && row._results.length" class="ac-dropdown">
+                <button
+                  v-for="r in row._results" :key="r.id"
+                  class="ac-item"
+                  @mousedown.prevent="pickProduct(row, r)"
+                >
+                  <span class="ac-name">{{ r.name }}</span>
+                  <span class="ac-meta">{{ r.sku_display }} · {{ formatNumber(r.default_variant_price) }}</span>
+                </button>
+              </div>
+            </div>
+
+            <input v-model="row.quantity" type="number" min="1" step="1" class="form-input cell-qty" :disabled="readOnly" />
+            <input v-model="row.base_price" type="number" min="0" step="0.01" class="form-input cell-num" :placeholder="t('inventory.purchases.col_base')" :disabled="readOnly" />
+            <input v-model="row.retail_price" type="number" min="0" step="0.01" class="form-input cell-num" :placeholder="t('inventory.purchases.col_retail')" :disabled="readOnly" />
+
+            <button v-if="!readOnly" class="row-action danger cell-del" @click="modal.rows.splice(i, 1)"><Trash2 :size="13" /></button>
+          </div>
+
+          <!-- NEW product extra fields -->
+          <div v-if="row.kind === 'new' && (row.name||'').trim() && !readOnly" class="item-extra">
+            <div class="ie-field">
+              <label class="ie-label">{{ t('inventory.purchases.col_category') }}</label>
+              <select v-model="row.category" class="form-input" @change="row.subcategory = ''">
+                <option value="">{{ t('inventory.purchases.category_none') }}</option>
+                <option v-for="c in topCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
+              </select>
+            </div>
+            <div class="ie-field" v-if="row.category && subCategories(row.category).length">
+              <label class="ie-label">{{ t('inventory.purchases.col_subcategory') }}</label>
+              <select v-model="row.subcategory" class="form-input">
+                <option value="">{{ t('inventory.purchases.category_none') }}</option>
+                <option v-for="c in subCategories(row.category)" :key="c.id" :value="c.id">{{ c.name }}</option>
+              </select>
+            </div>
+            <div class="ie-field" v-for="def in attrDefs" :key="def.id">
+              <label class="ie-label">{{ def.name }}</label>
+              <select v-if="def.input_type === 'SELECT'" v-model="row._attrs[def.id]" class="form-input">
+                <option value="">—</option>
+                <option v-for="opt in (def.options || [])" :key="opt" :value="opt">{{ opt }}</option>
+              </select>
+              <input v-else v-model="row._attrs[def.id]" class="form-input" :placeholder="def.name" />
+            </div>
+          </div>
+        </div>
+
+        <button v-if="!readOnly" class="btn-ghost" style="margin-top:10px;" @click="addRow">
           <Plus :size="13" /> {{ t('inventory.purchases.add_item') }}
         </button>
       </div>
@@ -127,12 +199,30 @@
         </div>
       </div>
 
+      <!-- Print option -->
+      <div v-if="!readOnly" class="print-opt" :class="{ disabled: !modal.supplier }">
+        <label class="print-check" :title="!modal.supplier ? t('inventory.purchases.print_needs_supplier') : ''">
+          <input type="checkbox" v-model="printNow" :disabled="!modal.supplier" />
+          <Tag :size="14" /> {{ t('inventory.purchases.print_now') }}
+        </label>
+        <template v-if="printNow && modal.supplier">
+          <span class="print-x">×</span>
+          <input v-model.number="labelCopies" type="number" min="1" max="99" class="form-input print-copies" />
+          <span class="print-hint">{{ t('inventory.purchases.print_copies_hint') }}</span>
+        </template>
+      </div>
+
       <template #footer>
-        <button class="btn-ghost" @click="closeModal">{{ modal.id ? t('common.close') : t('common.cancel') }}</button>
-        <button v-if="modal.id" class="btn-ghost" @click="openLabelPicker"><Tag :size="14" /> {{ t('inventory.purchases.print_labels') }}</button>
-        <button v-if="!modal.id" class="btn-primary" :disabled="saving || modal.items.length === 0" @click="savePurchase">
-          {{ saving ? t('common.saving') : t('inventory.purchases.save_purchase') }}
-        </button>
+        <button class="btn-ghost" @click="tryClose">{{ t('common.cancel') }}</button>
+        <button v-if="modal.id && readOnly" class="btn-ghost" @click="openLabelPicker"><Tag :size="14" /> {{ t('inventory.purchases.print_labels') }}</button>
+        <template v-if="!readOnly">
+          <button class="btn-secondary" :disabled="saving || !hasRows" @click="saveDraft">
+            {{ saving ? t('common.saving') : t('inventory.purchases.save_draft') }}
+          </button>
+          <button class="btn-primary" :disabled="saving || !hasRows || !modal.supplier" :title="!modal.supplier ? t('inventory.purchases.save_needs_supplier') : ''" @click="savePurchase">
+            {{ saving ? t('common.saving') : t('inventory.purchases.save_purchase') }}
+          </button>
+        </template>
       </template>
     </AppModal>
 
@@ -166,19 +256,17 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X } from 'lucide-vue-next'
+import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X, Lock } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openNew)
-import { useAuthStore } from '@/stores/auth'
 import { useLabelsStore } from '@/stores/labels'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
 const { t }       = useI18n()
-const auth        = useAuthStore()
 const labelsStore = useLabelsStore()
 const router      = useRouter()
 
@@ -193,7 +281,8 @@ const searchQ        = ref('')
 const dateFrom       = ref('')
 const dateTo         = ref('')
 const suppliers      = ref([])
-const variants       = ref([])
+const categories     = ref([])
+const attrDefs       = ref([])
 
 let searchTimer = null
 function debouncedFetch() {
@@ -230,11 +319,23 @@ async function fetchSuppliers() {
   } catch {}
 }
 
-async function fetchVariants() {
+async function fetchCategories() {
   try {
-    const res = await api.get('/api/inventory/variants/', { params: { page_size: 200 } })
-    variants.value = res.data.results ?? res.data
+    const res = await api.get('/api/inventory/categories/', { params: { page_size: 500 } })
+    categories.value = res.data.results ?? res.data
   } catch {}
+}
+
+async function fetchAttrDefs() {
+  try {
+    const res = await api.get('/api/inventory/attributes/', { params: { page_size: 200 } })
+    attrDefs.value = res.data.results ?? res.data
+  } catch {}
+}
+
+const topCategories = computed(() => categories.value.filter(c => !c.parent))
+function subCategories(parentId) {
+  return categories.value.filter(c => c.parent === parentId)
 }
 
 function statusLabel(s) {
@@ -255,61 +356,173 @@ async function deletePurchase(p) {
   fetchPurchases(page.value)
 }
 
+// ── Modal ──────────────────────────────────────────────────────────────────
 const saving = ref(false)
+const printNow = ref(false)
+const labelCopies = ref(1)
 const modal  = reactive({
-  open: false, id: null, supplier: '', date: '', vendor_reference: '', notes: '',
-  items: [],
+  open: false, id: null, status: 'DRAFT', supplier: '', origSupplier: '',
+  purchase_number: '', date: '', vendor_reference: '', notes: '', rows: [],
 })
 
+const readOnly        = computed(() => modal.status === 'RECEIVED')
+const supplierEditable = computed(() => !readOnly.value && !modal.origSupplier)
+const modalTitle = computed(() => {
+  if (!modal.id) return t('inventory.purchases.modal_new_title')
+  return readOnly.value ? t('inventory.purchases.modal_view_title') : t('inventory.purchases.modal_edit_title')
+})
+const hasRows = computed(() => modal.rows.some(r => r.variant || (r.name || '').trim()))
 const modalTotal = computed(() =>
-  modal.items.reduce((sum, i) => sum + (Number(i.quantity) * Number(i.unit_cost) || 0), 0)
+  modal.rows.reduce((sum, r) => sum + (Number(r.quantity) * Number(r.base_price) || 0), 0)
 )
+
+function blankRow() {
+  return { kind: 'new', variant: '', sku: '', name: '', quantity: 1, base_price: '', retail_price: '',
+           category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null }
+}
 
 function openNew() {
   const now = new Date()
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
+  printNow.value = false; labelCopies.value = 1
   Object.assign(modal, {
-    open: true, id: null, supplier: '', date: now.toISOString().slice(0, 16),
-    vendor_reference: '', notes: '', items: [],
+    open: true, id: null, status: 'DRAFT', supplier: '', origSupplier: '',
+    purchase_number: '', date: now.toISOString().slice(0, 16),
+    vendor_reference: '', notes: '', rows: [blankRow()],
   })
 }
 
-function openView(p) {
+function loadModal(p) {
+  printNow.value = false; labelCopies.value = 1
+  const rows = []
+  for (const it of (p.items || [])) {
+    rows.push({ kind: 'existing', variant: it.variant, sku: it.sku, name: it.product_name,
+                quantity: Number(it.quantity), base_price: it.unit_cost, retail_price: it.retail_price,
+                category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null })
+  }
+  for (const d of (p.draft_items || [])) {
+    const _attrs = {}
+    for (const a of (d.attributes || [])) _attrs[a.definition] = a.value
+    rows.push({ kind: 'new', variant: '', sku: '', name: d.name, quantity: Number(d.quantity),
+                base_price: d.base_price, retail_price: d.retail_price,
+                category: d.category || '', subcategory: d.subcategory || '',
+                _attrs, _results: [], _open: false, _timer: null })
+  }
+  if (rows.length === 0 || p.status === 'DRAFT') rows.push(blankRow())
   Object.assign(modal, {
-    open: true, id: p.id,
-    supplier: p.supplier,
-    date: p.date?.slice(0, 16) || '',
-    vendor_reference: p.vendor_reference || '',
-    notes: p.notes || '',
-    items: (p.items || []).map(i => ({ variant: i.variant, quantity: i.quantity, unit_cost: i.unit_cost })),
+    open: true, id: p.id, status: p.status, supplier: p.supplier || '', origSupplier: p.supplier || '',
+    purchase_number: p.purchase_number || '', date: p.date?.slice(0, 16) || '',
+    vendor_reference: p.vendor_reference || '', notes: p.notes || '', rows,
   })
 }
 
-function closeModal() { modal.open = false }
+async function openView(p) {
+  // fetch fresh single record (list payload already carries items/draft_items, but be safe)
+  try {
+    const res = await api.get(`/api/finance/purchases/${p.id}/`)
+    loadModal(res.data)
+  } catch { loadModal(p) }
+}
 
-async function savePurchase() {
+function isDirty() {
+  return hasRows.value || modal.vendor_reference || modal.notes
+}
+function tryClose() {
+  if (!readOnly.value && !modal.id && isDirty()) {
+    if (!confirm(t('inventory.purchases.confirm_cancel'))) return
+  }
+  modal.open = false
+}
+
+function addRow() { modal.rows.push(blankRow()) }
+
+// ── Autocomplete ─────────────────────────────────────────────────────────
+function onNameInput(row) {
+  // typing past a selected product turns it back into a new-product line
+  if (row.kind === 'existing') { row.kind = 'new'; row.variant = ''; row.sku = '' }
+  clearTimeout(row._timer)
+  const q = (row.name || '').trim()
+  if (q.length < 2) { row._results = []; row._open = false; return }
+  row._timer = setTimeout(async () => {
+    try {
+      const res = await api.get('/api/inventory/products/', { params: { search: q, page_size: 8 } })
+      row._results = (res.data.results ?? res.data).filter(r => r.default_variant_id)
+      row._open = row._results.length > 0
+    } catch { row._results = []; row._open = false }
+  }, 250)
+}
+function pickProduct(row, r) {
+  row.kind = 'existing'
+  row.variant = r.default_variant_id
+  row.sku = r.sku_display
+  row.name = r.name
+  if (row.retail_price === '' || row.retail_price == null) row.retail_price = r.default_variant_price
+  row._open = false
+  row._results = []
+}
+function closeRowSoon(row) { setTimeout(() => { row._open = false }, 150) }
+
+function skuHint(row) {
+  if (row.sku) return row.sku
+  if (row.kind === 'new' && (row.name || '').trim() && !modal.supplier) return t('inventory.purchases.sku_needs_supplier')
+  return ''
+}
+
+// ── Save ─────────────────────────────────────────────────────────────────
+function rowsToLines() {
+  return modal.rows
+    .filter(r => r.variant || (r.name || '').trim())
+    .map(r => {
+      const base = { quantity: Number(r.quantity) || 1, base_price: Number(r.base_price) || 0,
+                     retail_price: r.retail_price === '' || r.retail_price == null ? null : Number(r.retail_price) }
+      if (r.variant) return { variant: r.variant, ...base }
+      const attributes = Object.entries(r._attrs || {})
+        .filter(([, v]) => v !== '' && v != null)
+        .map(([definition, value]) => ({ definition, value }))
+      return { name: r.name.trim(), category: r.category || null, subcategory: r.subcategory || null, attributes, ...base }
+    })
+}
+
+async function persist() {
+  const payload = {
+    supplier: modal.supplier || null,
+    date: modal.date,
+    purchase_number: modal.purchase_number || '',
+    vendor_reference: modal.vendor_reference,
+    notes: modal.notes,
+    lines: rowsToLines(),
+  }
+  const res = modal.id
+    ? await api.patch(`/api/finance/purchases/${modal.id}/`, payload)
+    : await api.post('/api/finance/purchases/', payload)
+  return res.data
+}
+
+async function saveDraft() {
   saving.value = true
   try {
-    const payload = {
-      supplier: modal.supplier,
-      branch: auth.user?.store?.id,
-      date: modal.date,
-      vendor_reference: modal.vendor_reference,
-      notes: modal.notes,
-      items: modal.items.map(i => ({
-        variant: i.variant,
-        quantity: Number(i.quantity),
-        unit_cost: Number(i.unit_cost),
-      })),
-    }
-    await api.post('/api/finance/purchases/', payload)
-    closeModal()
-    fetchPurchases(1)
+    const data = await persist()
+    loadModal(data)          // reload in place → SKUs + purchase number now visible
+    fetchPurchases(page.value)
   } catch (e) {
     alert(e.response?.data?.detail || t('inventory.purchases.err_save'))
-  } finally {
-    saving.value = false
-  }
+  } finally { saving.value = false }
+}
+
+async function savePurchase() {
+  if (!modal.supplier) return
+  saving.value = true
+  try {
+    const data = await persist()
+    await api.post(`/api/finance/purchases/${data.id}/receive/`)
+    const wantPrint = printNow.value
+    const copies = Math.max(1, Number(labelCopies.value) || 1)
+    modal.open = false
+    fetchPurchases(1)
+    if (wantPrint) await startLabelPrint(data.id, copies)
+  } catch (e) {
+    alert(e.response?.data?.detail || t('inventory.purchases.err_save'))
+  } finally { saving.value = false }
 }
 
 function fmtDate(d) {
@@ -318,28 +531,43 @@ function fmtDate(d) {
 }
 
 // ── Label printing ────────────────────────────────────────────────────────
-const labelPicker = reactive({ open: false, loading: false, presets: [], selectedId: null, totalQty: 0, invoiceId: null })
+const labelPicker = reactive({ open: false, loading: false, presets: [], selectedId: null, totalQty: 0, invoiceId: null, copies: 1 })
 
-async function openLabelPicker() {
-  labelPicker.invoiceId = modal.id
-  labelPicker.totalQty  = modal.items.reduce((s, i) => s + (Number(i.quantity) || 0), 0)
-  labelPicker.loading   = true
-  labelPicker.open      = true
+async function startLabelPrint(invoiceId, copies) {
+  labelPicker.invoiceId = invoiceId
+  labelPicker.copies = copies
+  labelPicker.loading = true
+  labelPicker.open = true
   labelPicker.selectedId = null
   try {
     const res = await api.get('/api/core/label-presets/')
     labelPicker.presets = res.data.results ?? res.data
     const def = labelPicker.presets.find(p => p.is_default)
     if (def) labelPicker.selectedId = def.id
+    const ld = await api.get(`/api/finance/purchases/${invoiceId}/label-data/`)
+    labelPicker.totalQty = (ld.data.items || []).reduce((s, i) => s + (Number(i.quantity) || 0), 0) * copies
+    labelPicker._items = ld.data.items
+    labelPicker._storeName = ld.data.store_name
   } finally { labelPicker.loading = false }
+}
+
+async function openLabelPicker() {
+  await startLabelPrint(modal.id, 1)
 }
 
 async function printLabels() {
   const preset = labelPicker.presets.find(p => p.id === labelPicker.selectedId)
   if (!preset) return
   try {
-    const res = await api.get(`/api/finance/purchases/${labelPicker.invoiceId}/label-data/`)
-    labelsStore.setJob({ preset, store_name: res.data.store_name, items: res.data.items })
+    let items = labelPicker._items
+    if (!items) {
+      const res = await api.get(`/api/finance/purchases/${labelPicker.invoiceId}/label-data/`)
+      items = res.data.items
+      labelPicker._storeName = res.data.store_name
+    }
+    const copies = Math.max(1, Number(labelPicker.copies) || 1)
+    const expanded = items.map(i => ({ ...i, quantity: (Number(i.quantity) || 0) * copies }))
+    labelsStore.setJob({ preset, store_name: labelPicker._storeName, items: expanded })
     labelPicker.open = false
     router.push('/print/labels')
   } catch { alert(t('inventory.purchases.err_label_data')) }
@@ -348,12 +576,12 @@ async function printLabels() {
 onMounted(() => {
   fetchPurchases()
   fetchSuppliers()
-  fetchVariants()
+  fetchCategories()
+  fetchAttrDefs()
 })
 </script>
 
 <style scoped>
-
 .toolbar { display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
 .toolbar-search { position:relative; display:flex; align-items:center; }
 .search-icon { position:absolute; left:9px; color:var(--text-muted); pointer-events:none; }
@@ -362,7 +590,6 @@ onMounted(() => {
 .filter-date   { max-width:140px; }
 .draft-hint { font-size:11px; font-weight:400; color:var(--warning, #d97706); margin-left:6px; }
 
-.table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .table-skeleton { padding:8px 0; }
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
 @keyframes shimmer { to { background-position:-200% 0; } }
@@ -378,20 +605,50 @@ onMounted(() => {
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action.success:hover { background:var(--success-soft); color:var(--success); }
 .row-action.danger:hover  { background:var(--danger-soft); color:var(--danger); }
+.row-action:disabled { opacity:.4; cursor:not-allowed; }
 
 .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .section-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:10px; }
 
-.item-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
-.item-variant { flex:2; min-width:0; }
-.item-qty   { width:70px; flex-shrink:0; }
-.item-price { width:100px; flex-shrink:0; }
+/* Item rows */
+.items-head { display:grid; grid-template-columns:96px 1fr 70px 100px 100px 32px; gap:8px; padding:0 4px 6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
+.ih-num { text-align:left; }
+
+.item-card { border:1px solid var(--border); border-radius:10px; padding:8px; margin-bottom:8px; background:var(--bg-card); transition:border-color 120ms; }
+.item-card.is-new { border-color:color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.item-main { display:grid; grid-template-columns:96px 1fr 70px 100px 100px 32px; gap:8px; align-items:center; }
+
+.cell-sku { font-family:monospace; font-size:12px; display:flex; align-items:center; justify-content:center; min-height:34px; }
+.sku-val  { color:var(--text-primary); font-weight:600; }
+.sku-dash { color:var(--text-muted); opacity:.5; }
+.sku-lock { color:var(--warning, #d97706); }
+
+.cell-name { position:relative; }
+.cell-qty  { text-align:center; }
+.cell-num  { font-variant-numeric:tabular-nums; }
+.cell-del  { justify-self:center; }
+
+.ac-dropdown { position:absolute; top:100%; left:0; right:0; z-index:30; margin-top:4px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow-card, 0 6px 20px rgba(0,0,0,.12)); overflow:hidden; max-height:240px; overflow-y:auto; }
+.ac-item { display:flex; flex-direction:column; gap:2px; width:100%; text-align:left; padding:8px 10px; border:none; background:none; cursor:pointer; transition:background 100ms; }
+.ac-item:hover { background:var(--bg-app); }
+.ac-name { font-size:13px; font-weight:500; color:var(--text-primary); }
+.ac-meta { font-size:11px; font-family:monospace; color:var(--text-muted); }
+
+.item-extra { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); }
+.ie-field { display:flex; flex-direction:column; gap:3px; min-width:140px; }
+.ie-label { font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
 
 .invoice-totals { margin-top:18px; border-top:1px solid var(--border); padding-top:14px; display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
 .totals-row { display:flex; gap:32px; font-size:13px; color:var(--text-secondary); }
 .totals-row span:last-child { font-variant-numeric:tabular-nums; min-width:90px; text-align:right; }
 .total-line { font-size:15px; font-weight:700; color:var(--text-primary); }
 
+.print-opt { display:flex; align-items:center; gap:10px; margin-top:14px; padding:10px 12px; border:1px dashed var(--border); border-radius:8px; }
+.print-opt.disabled { opacity:.55; }
+.print-check { display:flex; align-items:center; gap:7px; font-size:13px; font-weight:500; cursor:pointer; }
+.print-x { color:var(--text-muted); }
+.print-copies { width:64px; text-align:center; }
+.print-hint { font-size:12px; color:var(--text-muted); }
 
 .preset-option { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:border-color 100ms,background 100ms; }
 .preset-option:hover   { background:var(--bg-app); }
