@@ -169,60 +169,59 @@
         </div>
       </div>
 
-      <!-- RIGHT — Actions + Summary + PAY -->
+      <!-- RIGHT — Actions + Keypad (scroll) · Total + PAY (pinned) -->
       <div class="pos-right">
         <div class="pos-right-scroll">
-        <div class="pos-actions-grid">
-          <button class="pac" :class="{ 'pac--held': cart.heldCarts.length }" @click="holdOrResume">
-            <Pause :size="16" />
-            <span>{{ t('pos.actions.hold') }}<span v-if="cart.heldCarts.length" class="pac-badge">{{ cart.heldCarts.length }}</span></span>
-            <kbd>F4</kbd>
-          </button>
-          <button class="pac" @click="showDiscount = true">
-            <Percent :size="16" />
-            <span>{{ t('pos.actions.discount') }}</span>
-            <kbd>F8</kbd>
-          </button>
-          <button class="pac" @click="$router.push('/finance/returns')">
-            <CornerDownLeft :size="16" />
-            <span>{{ t('pos.actions.returns') }}</span>
-          </button>
-          <button class="pac" @click="focusCustomer">
-            <UserIcon :size="16" />
-            <span>{{ t('pos.actions.customer') }}</span>
-          </button>
-          <button class="pac" @click="reprint" :disabled="!pos.lastPostedInvoiceId">
-            <Printer :size="16" />
-            <span>{{ t('pos.actions.reprint') }}</span>
-            <kbd>F2</kbd>
-          </button>
-          <button class="pac pac--disabled" disabled>
-            <FileText :size="16" />
-            <span>{{ t('pos.actions.note') }}</span>
-          </button>
+          <div class="pos-actions-grid">
+            <button class="pac" :class="{ 'pac--held': cart.heldCarts.length }" :data-tip="actionTip('hold')" @click="holdOrResume">
+              <Pause :size="15" />
+              <span>{{ t('pos.actions.hold') }}<span v-if="cart.heldCarts.length" class="pac-badge">{{ cart.heldCarts.length }}</span></span>
+            </button>
+            <button class="pac" :data-tip="actionTip('discount')" @click="showDiscount = true">
+              <Percent :size="15" />
+              <span>{{ t('pos.actions.discount') }}</span>
+            </button>
+            <button class="pac" :data-tip="actionTip('returns')" @click="$router.push('/finance/returns')">
+              <CornerDownLeft :size="15" />
+              <span>{{ t('pos.actions.returns') }}</span>
+            </button>
+            <button class="pac" :data-tip="actionTip('customer')" @click="focusCustomer">
+              <UserIcon :size="15" />
+              <span>{{ t('pos.actions.customer') }}</span>
+            </button>
+            <button class="pac" :data-tip="actionTip('reprint')" @click="reprint" :disabled="!pos.lastPostedInvoiceId">
+              <Printer :size="15" />
+              <span>{{ t('pos.actions.reprint') }}</span>
+            </button>
+            <button class="pac pac--disabled" :data-tip="actionTip('note')" disabled>
+              <FileText :size="15" />
+              <span>{{ t('pos.actions.note') }}</span>
+            </button>
+          </div>
+
+          <PosNumpad class="pos-numpad" />
         </div>
 
-        <div class="pos-summary">
-          <div class="psum-row">
-            <span>{{ t('pos.summary.subtotal') }}</span><span>{{ fmtNum(cart.subtotal) }}</span>
+        <div class="pos-right-foot">
+          <div class="pos-summary">
+            <div class="psum-row">
+              <span>{{ t('pos.summary.subtotal') }}</span><span>{{ fmtNum(cart.subtotal) }}</span>
+            </div>
+            <div v-if="cart.discount > 0" class="psum-row psum-discount">
+              <span>{{ t('pos.summary.discount') }}</span><span>− {{ fmtNum(cart.discount) }}</span>
+            </div>
+            <div class="psum-divider" />
+            <div class="psum-row psum-total">
+              <span>{{ t('pos.summary.total') }}</span><span>{{ fmtNum(cart.grandTotal) }}</span>
+            </div>
+            <div class="psum-items">{{ t('pos.items_count', { n: cart.itemCount }, cart.itemCount) }}</div>
           </div>
-          <div v-if="cart.discount > 0" class="psum-row psum-discount">
-            <span>{{ t('pos.summary.discount') }}</span><span>− {{ fmtNum(cart.discount) }}</span>
-          </div>
-          <div class="psum-divider" />
-          <div class="psum-row psum-total">
-            <span>{{ t('pos.summary.total') }}</span><span>{{ fmtNum(cart.grandTotal) }}</span>
-          </div>
-          <div class="psum-items">{{ t('pos.items_count', { n: cart.itemCount }, cart.itemCount) }}</div>
-        </div>
 
-        <PosNumpad class="pos-numpad" />
+          <button class="pos-pay-btn" :disabled="cart.isEmpty" @click="openPayment">
+            <span>{{ t('pos.pay') }}</span>
+            <span class="pos-pay-amount">{{ auth.currencySymbol }} {{ fmtNum(cart.grandTotal) }}</span>
+          </button>
         </div>
-
-        <button class="pos-pay-btn" :disabled="cart.isEmpty" @click="openPayment">
-          <span>{{ t('pos.pay') }}</span>
-          <span class="pos-pay-amount">{{ auth.currencySymbol }} {{ fmtNum(cart.grandTotal) }}</span>
-        </button>
       </div>
     </div>
 
@@ -713,6 +712,13 @@ const shortcuts = computed(() => ({
   ...(posSettings.value.shortcuts || {}),
 }))
 
+// Hover tooltip text for an action button: "Name · Shortcut" (or just name).
+function actionTip(action) {
+  const name = t(`pos.actions.${action}`)
+  const key  = shortcuts.value[action]   // customer/note have none → name only
+  return key ? `${name} · ${key}` : name
+}
+
 function buildKeyStr(e) {
   let k = ''
   if (e.ctrlKey && e.key !== 'Control')   k += 'Ctrl+'
@@ -1030,30 +1036,37 @@ function fmtNum(n) {
   display: flex; flex-direction: column; gap: 10px;
 }
 
-.pos-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pos-actions-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
 .pac {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px; padding: 11px 6px; border-radius: 12px;
-  border: 1.5px solid var(--border); background: var(--bg-card);
+  gap: 2px; padding: 6px 3px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--bg-card);
   cursor: pointer; position: relative;
-  font-size: 12px; font-weight: 700; color: var(--text-secondary);
+  font-size: 9.5px; font-weight: 700; color: var(--text-secondary);
   box-shadow: var(--shadow-card);
   transition: background 140ms var(--ease-out), border-color 140ms var(--ease-out),
               color 140ms var(--ease-out), box-shadow 140ms var(--ease-out),
               transform var(--press-back) var(--ease-spring);
 }
+.pac span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .pac:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .pac:active:not(:disabled) { transform: scale(var(--press-scale)); box-shadow: none; transition-duration: var(--press-down); }
 .pac--held { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .pac--disabled { opacity: 0.35; cursor: not-allowed; }
-.pac kbd {
-  font-size: 9px; padding: 1px 5px; border-radius: 4px;
-  background: var(--border); color: var(--text-muted); font-family: inherit;
-}
 .pac-badge {
-  position: absolute; top: 5px; right: 5px;
-  background: var(--accent); color: #fff; font-size: 9px; font-weight: 800;
-  border-radius: 5px; padding: 1px 5px; min-width: 14px; text-align: center;
+  position: absolute; top: 3px; right: 3px;
+  background: var(--accent); color: #fff; font-size: 8px; font-weight: 800;
+  border-radius: 5px; padding: 0 4px; min-width: 12px; text-align: center;
+}
+/* Hover annotation: "Name · Shortcut" — drops below the button so the top
+   row isn't clipped by the scroll container. */
+.pac[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute; top: calc(100% + 5px); left: 50%; transform: translateX(-50%);
+  background: var(--text-primary); color: var(--bg-card);
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+  padding: 4px 9px; border-radius: 7px; z-index: 60;
+  pointer-events: none; box-shadow: 0 6px 18px rgba(0,0,0,0.25);
 }
 
 .pos-summary {
@@ -1066,13 +1079,14 @@ function fmtNum(n) {
 .psum-total    { font-size: 17px; font-weight: 900; color: var(--text-primary); }
 .psum-items    { font-size: 11px; color: var(--text-muted); text-align: right; }
 
-/* Keypad anchors itself + Pay to the bottom of the panel; summary stays up top. */
-.pos-numpad { margin-top: auto; }
+/* Total box + PAY are pinned at the bottom (always visible); buttons + keypad
+   scroll above them when the viewport is short. */
+.pos-right-foot { flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; padding-top: 10px; }
 
 .pos-pay-btn {
   width: 100%; padding: 16px 12px; border-radius: 14px; border: none;
   background: var(--success); color: #fff; cursor: pointer;
-  flex-shrink: 0; margin-top: 10px;
+  flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
   font-size: 18px; font-weight: 900; letter-spacing: 0.08em;
   box-shadow: 0 4px 14px rgba(34,197,94,0.28);
@@ -1087,18 +1101,18 @@ function fmtNum(n) {
 /* ── Scan beam — a thin bright line that races from top to bottom,
    like a barcode scanner's light. One-shot, very fast. ──────── */
 .pos-scan-beam {
-  position: absolute; left: 0; right: 0; top: -120px; height: 120px;
+  position: absolute; left: 0; right: 0; top: -480px; height: 480px;
   background: linear-gradient(to bottom,
     rgba(255,255,255,0) 0%,
-    rgba(255,255,255,0.55) 50%,
+    rgba(255,255,255,0.5) 50%,
     rgba(255,255,255,0) 100%);
   pointer-events: none; z-index: 500; will-change: transform;
-  animation: pos-scan-sweep 300ms var(--ease-in-out) forwards;
+  animation: pos-scan-sweep 320ms var(--ease-in-out) forwards;
 }
 @keyframes pos-scan-sweep {
   0%   { transform: translateY(0);                 opacity: 0; }
   10%  { opacity: 1; }
-  100% { transform: translateY(calc(100vh + 120px)); opacity: 0.9; }
+  100% { transform: translateY(calc(100vh + 480px)); opacity: 0.9; }
 }
 
 /* ── Success overlay ──────────────────────────────────────── */
