@@ -440,7 +440,14 @@
    "confirm_receive": "Receive stock for this purchase from {supplier}?",
    "confirm_delete_draft": "Delete this draft purchase?",
    "err_save": "Failed to save.",
-   "err_label_data": "Could not load label data."
+   "err_label_data": "Could not load label data.",
+   "search_placeholder": "Search by supplier or invoice #…",
+   "filter_all_suppliers": "All suppliers",
+   "filter_date_from": "From date",
+   "filter_date_to": "To date",
+   "clear_filters": "Clear",
+   "draft_only_hint": "· saves as Draft",
+   "receive_needs_supplier": "Assign a supplier before receiving stock"
   },
   "adjustments": {
    "title": "Stock Adjustments",

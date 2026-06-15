@@ -11,11 +11,24 @@
     </div>
 
     <div class="toolbar">
+      <div class="toolbar-search">
+        <Search :size="14" class="search-icon" />
+        <input v-model="searchQ" class="form-input search-input" :placeholder="t('inventory.purchases.search_placeholder')" @input="debouncedFetch" />
+      </div>
       <select v-model="statusFilter" class="form-input filter-select" @change="fetchPurchases(1)">
         <option value="">{{ t('inventory.purchases.status_all') }}</option>
         <option value="DRAFT">{{ t('inventory.purchases.status_draft') }}</option>
         <option value="RECEIVED">{{ t('inventory.purchases.status_received') }}</option>
       </select>
+      <select v-model="supplierFilter" class="form-input filter-select" @change="fetchPurchases(1)">
+        <option value="">{{ t('inventory.purchases.filter_all_suppliers') }}</option>
+        <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
+      </select>
+      <input v-model="dateFrom" type="date" class="form-input filter-date" :title="t('inventory.purchases.filter_date_from')" @change="fetchPurchases(1)" />
+      <input v-model="dateTo" type="date" class="form-input filter-date" :title="t('inventory.purchases.filter_date_to')" @change="fetchPurchases(1)" />
+      <button v-if="searchQ || statusFilter || supplierFilter || dateFrom || dateTo" class="btn-ghost btn-sm" @click="clearFilters">
+        <X :size="13" /> {{ t('inventory.purchases.clear_filters') }}
+      </button>
     </div>
 
     <div class="dt-card">
@@ -50,7 +63,7 @@
             <td class="col-amount"><Money :value="p.total_amount" /></td>
             <td class="col-amount"><Money :value="p.paid_amount" /></td>
             <td @click.stop>
-              <button v-if="p.status === 'DRAFT'" class="row-action success" :title="t('inventory.purchases.receive_hint')" @click="receivePurchase(p)">
+              <button v-if="p.status === 'DRAFT'" class="row-action success" :disabled="!p.supplier" :title="p.supplier ? t('inventory.purchases.receive_hint') : t('inventory.purchases.receive_needs_supplier')" @click="receivePurchase(p)">
                 <PackageCheck :size="13" />
               </button>
               <button v-if="p.status === 'DRAFT'" class="row-action danger" :title="t('common.delete')" @click="deletePurchase(p)">
@@ -65,10 +78,13 @@
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchPurchases" />
 
     <!-- MODAL: New / View Purchase -->
-    <AppModal :open="modal.open" :title="modal.id ? t('inventory.purchases.modal_view_title') : t('inventory.purchases.modal_new_title')" width="720px" @close="closeModal">
+    <AppModal :open="modal.open" :title="modal.id ? t('inventory.purchases.modal_view_title') : t('inventory.purchases.modal_new_title')" width="720px" :no-backdrop-close="!modal.id" @close="closeModal">
       <div class="form-grid">
         <div>
-          <label class="form-label">{{ t('inventory.purchases.form_supplier') }}</label>
+          <label class="form-label">
+            {{ t('inventory.purchases.form_supplier') }}
+            <span v-if="!modal.id && !modal.supplier" class="draft-hint">{{ t('inventory.purchases.draft_only_hint') }}</span>
+          </label>
           <select v-model="modal.supplier" class="form-input" :disabled="!!modal.id">
             <option value="">{{ t('inventory.purchases.select_supplier') }}</option>
             <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
@@ -114,7 +130,7 @@
       <template #footer>
         <button class="btn-ghost" @click="closeModal">{{ modal.id ? t('common.close') : t('common.cancel') }}</button>
         <button v-if="modal.id" class="btn-ghost" @click="openLabelPicker"><Tag :size="14" /> {{ t('inventory.purchases.print_labels') }}</button>
-        <button v-if="!modal.id" class="btn-primary" :disabled="saving || !modal.supplier || modal.items.length === 0" @click="savePurchase">
+        <button v-if="!modal.id" class="btn-primary" :disabled="saving || modal.items.length === 0" @click="savePurchase">
           {{ saving ? t('common.saving') : t('inventory.purchases.save_purchase') }}
         </button>
       </template>
@@ -150,7 +166,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShoppingCart, PackageCheck, Trash2, Plus, Tag } from 'lucide-vue-next'
+import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
@@ -166,21 +182,41 @@ const auth        = useAuthStore()
 const labelsStore = useLabelsStore()
 const router      = useRouter()
 
-const purchases    = ref([])
-const loading      = ref(false)
-const total        = ref(0)
-const page         = ref(1)
-const pageSize     = 20
-const statusFilter = ref('')
-const suppliers    = ref([])
-const variants     = ref([])
+const purchases      = ref([])
+const loading        = ref(false)
+const total          = ref(0)
+const page           = ref(1)
+const pageSize       = 20
+const statusFilter   = ref('')
+const supplierFilter = ref('')
+const searchQ        = ref('')
+const dateFrom       = ref('')
+const dateTo         = ref('')
+const suppliers      = ref([])
+const variants       = ref([])
+
+let searchTimer = null
+function debouncedFetch() {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => fetchPurchases(1), 300)
+}
+
+function clearFilters() {
+  searchQ.value = ''; statusFilter.value = ''; supplierFilter.value = ''
+  dateFrom.value = ''; dateTo.value = ''
+  fetchPurchases(1)
+}
 
 async function fetchPurchases(p = 1) {
   loading.value = true
   page.value = p
   try {
     const params = { page: p, page_size: pageSize }
-    if (statusFilter.value) params.status = statusFilter.value
+    if (statusFilter.value)   params.status    = statusFilter.value
+    if (supplierFilter.value) params.supplier  = supplierFilter.value
+    if (searchQ.value)        params.q         = searchQ.value
+    if (dateFrom.value)       params.date_from = dateFrom.value
+    if (dateTo.value)         params.date_to   = dateTo.value
     const res = await api.get('/api/finance/purchases/', { params })
     purchases.value = res.data.results ?? res.data
     total.value     = res.data.count ?? purchases.value.length
@@ -318,8 +354,13 @@ onMounted(() => {
 
 <style scoped>
 
-.toolbar { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+.toolbar { display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.toolbar-search { position:relative; display:flex; align-items:center; }
+.search-icon { position:absolute; left:9px; color:var(--text-muted); pointer-events:none; }
+.search-input { padding-left:30px; min-width:220px; }
 .filter-select { max-width:160px; }
+.filter-date   { max-width:140px; }
+.draft-hint { font-size:11px; font-weight:400; color:var(--warning, #d97706); margin-left:6px; }
 
 .table-empty { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .table-skeleton { padding:8px 0; }

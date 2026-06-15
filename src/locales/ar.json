@@ -439,7 +439,14 @@
    "confirm_receive": "استلام المخزون لفاتورة الشراء هذه من {supplier}؟",
    "confirm_delete_draft": "حذف فاتورة الشراء المسودة هذه؟",
    "err_save": "تعذّر الحفظ.",
-   "err_label_data": "تعذّر تحميل بيانات الملصق."
+   "err_label_data": "تعذّر تحميل بيانات الملصق.",
+   "search_placeholder": "بحث بالمورّد أو رقم الفاتورة…",
+   "filter_all_suppliers": "كل الموردين",
+   "filter_date_from": "من تاريخ",
+   "filter_date_to": "إلى تاريخ",
+   "clear_filters": "مسح",
+   "draft_only_hint": "· يُحفظ كمسوّدة",
+   "receive_needs_supplier": "حدّد مورّداً قبل استلام المخزون"
   },
   "adjustments": {
    "title": "تسويات المخزون",
