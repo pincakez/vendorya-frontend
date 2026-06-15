@@ -5,6 +5,9 @@
         <h1 class="page-title">{{ t('inventory.purchases.title') }}</h1>
         <p class="page-sub">{{ t('inventory.purchases.sub') }}</p>
       </div>
+      <button class="btn-primary" @click="openNew">
+        <Plus :size="15" /> {{ t('inventory.purchases.modal_new_title') }}
+      </button>
     </div>
 
     <div class="toolbar">
@@ -145,7 +148,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ShoppingCart, PackageCheck, Trash2, Plus, Tag } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
@@ -153,7 +156,6 @@ import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openNew)
 import { useAuthStore } from '@/stores/auth'
-import { useQABStore } from '@/stores/qab'
 import { useLabelsStore } from '@/stores/labels'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
@@ -161,7 +163,6 @@ import { formatNumber } from '@/utils/format'
 
 const { t }       = useI18n()
 const auth        = useAuthStore()
-const qab         = useQABStore()
 const labelsStore = useLabelsStore()
 const router      = useRouter()
 
@@ -309,12 +310,10 @@ async function printLabels() {
 }
 
 onMounted(() => {
-  qab.setActions([{ id: 'new', label: t('inventory.purchases.modal_new_title'), icon: 'plus', handler: openNew }])
   fetchPurchases()
   fetchSuppliers()
   fetchVariants()
 })
-onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
