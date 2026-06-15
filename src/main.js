@@ -6,6 +6,7 @@ import './assets/main.css'
 import Money from './components/ui/Money.vue'
 import { Observer } from 'tailwindcss-intersect'
 import i18n from './i18n'
+import VueApexCharts from 'vue3-apexcharts'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -15,6 +16,7 @@ app.use(i18n)
 
 // Global display component for currency amounts (colored symbol, right-side).
 app.component('Money', Money)
+app.use(VueApexCharts)
 
 // Init theme before mount so no flash of wrong theme
 import { useThemeStore } from './stores/theme'
