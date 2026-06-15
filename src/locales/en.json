@@ -856,6 +856,7 @@
   "brand": "POS",
   "numpad": {
    "title": "Keypad",
+   "calculator": "Calculator",
    "num_lock": "Num Lock"
   },
   "search_placeholder": "Search products or scan barcode… (F1)",
@@ -869,8 +870,12 @@
   "col": {
    "item": "Item",
    "qty": "Qty",
+   "disc": "%",
    "price": "Price"
   },
+  "add_discount": "+",
+  "additive_label": "Discounts are additive",
+  "line_discount": "Item discounts",
   "cart_empty": "Start scanning or search for products",
   "actions": {
    "hold": "Hold",
@@ -909,7 +914,10 @@
   },
   "discount_modal": {
    "title": "Apply Discount",
+   "title_line": "Item Discount",
    "tab_fixed": "Fixed",
+   "tab_free": "Free",
+   "free_note": "This item will be free of charge.",
    "preview": "Discount: {sym} {amount}",
    "apply": "Apply"
   },

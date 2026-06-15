@@ -1,6 +1,10 @@
 <template>
   <div class="pos-view" @keydown="onGlobalKey" tabindex="-1" ref="posRoot">
 
+   <!-- Compact scale wrapper: shrinks the POS ~22% but still fills the screen.
+        Modals/overlays live OUTSIDE this so they render at full size. -->
+   <div class="pos-scale">
+
     <!-- ─── Top bar ─────────────────────────────────────────── -->
     <div class="pos-topbar">
       <div class="pos-topbar-left">
@@ -137,6 +141,7 @@
         <div class="pos-cart-header">
           <span class="pch-item">{{ t('pos.col.item') }}</span>
           <span class="pch-qty">{{ t('pos.col.qty') }}</span>
+          <span class="pch-disc">{{ t('pos.col.disc') }}</span>
           <span class="pch-price">{{ t('pos.col.price') }}</span>
           <span></span>
         </div>
@@ -159,7 +164,13 @@
                 <span class="pcr-qty-val">{{ item.qty }}</span>
                 <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.variant_id, item.qty + 1)">+</button>
               </div>
-              <span class="pcr-price">{{ fmtNum(item.price * item.qty) }}</span>
+              <button class="pcr-disc" :class="{ 'pcr-disc--set': item.discType }" @click.stop="openLineDiscount(item)">
+                {{ lineDiscLabel(item) }}
+              </button>
+              <span class="pcr-price" :class="{ 'pcr-price--cut': item.discType }">
+                <template v-if="item.discType"><s>{{ fmtNum(item.price * item.qty) }}</s> {{ fmtNum(item.price * item.qty - cart.lineDiscount(item)) }}</template>
+                <template v-else>{{ fmtNum(item.price * item.qty) }}</template>
+              </span>
               <button class="pcr-del" @click.stop="removeItem(item.variant_id)"><X :size="13" /></button>
             </div>
           </TransitionGroup>
@@ -178,7 +189,7 @@
               <Pause :size="15" />
               <span>{{ t('pos.actions.hold') }}<span v-if="cart.heldCarts.length" class="pac-badge">{{ cart.heldCarts.length }}</span></span>
             </button>
-            <button class="pac" :data-tip="actionTip('discount')" @click="showDiscount = true">
+            <button class="pac" :data-tip="actionTip('discount')" @click="openInvoiceDiscount">
               <Percent :size="15" />
               <span>{{ t('pos.actions.discount') }}</span>
             </button>
@@ -200,13 +211,16 @@
             </button>
           </div>
 
-          <PosNumpad class="pos-numpad" />
+          <PosNumpad class="pos-numpad" ref="numpadRef" @key="onNumpadKey" @mode-change="numpadCalc = $event" />
         </div>
 
         <div class="pos-right-foot">
           <div class="pos-summary">
             <div class="psum-row">
               <span>{{ t('pos.summary.subtotal') }}</span><span>{{ fmtNum(cart.subtotal) }}</span>
+            </div>
+            <div v-if="cart.lineDiscountTotal > 0" class="psum-row psum-discount">
+              <span>{{ t('pos.line_discount') }}</span><span>− {{ fmtNum(cart.lineDiscountTotal) }}</span>
             </div>
             <div v-if="cart.discount > 0" class="psum-row psum-discount">
               <span>{{ t('pos.summary.discount') }}</span><span>− {{ fmtNum(cart.discount) }}</span>
@@ -218,6 +232,11 @@
             <div class="psum-items">{{ t('pos.items_count', { n: cart.itemCount }, cart.itemCount) }}</div>
           </div>
 
+          <label class="pos-additive">
+            <input type="checkbox" :checked="cart.additive" @change="cart.setAdditive($event.target.checked)" />
+            <span>{{ t('pos.additive_label') }}</span>
+          </label>
+
           <button class="pos-pay-btn" :disabled="cart.isEmpty" @click="openPayment">
             <span>{{ t('pos.pay') }}</span>
             <span class="pos-pay-amount">{{ auth.currencySymbol }} {{ fmtNum(cart.grandTotal) }}</span>
@@ -225,6 +244,7 @@
         </div>
       </div>
     </div>
+   </div><!-- /pos-scale -->
 
     <!-- ─── Scan sweep — a bright beam that races top→bottom ── -->
     <div v-if="pos.animateScan" class="pos-scan-beam" />
@@ -232,7 +252,7 @@
     <!-- ─── Modals ─────────────────────────────────────────── -->
     <BranchPickerModal v-if="showBranchPicker" @selected="onBranchSelected" />
     <PaymentModal      v-if="showPayment"   @close="showPayment = false"   @success="onPaymentSuccess" />
-    <DiscountModal     v-if="showDiscount"  @close="showDiscount = false" />
+    <DiscountModal     v-if="showDiscount"  :context="discountCtx" @close="showDiscount = false" />
     <CustomerFormModal
       :open="showAddCustomer"
       :prefill-name="addCustomerPrefill.name"
@@ -524,8 +544,13 @@ async function syncInvoice() {
     customer: cart.customerId,
     date:     new Date().toISOString(),
     status:   'DRAFT',
-    discount: cart.discount,
-    items:    cart.items.map(i => ({ variant: i.variant_id, quantity: i.qty, unit_price: i.price })),
+    discount: cart.invoiceDiscountAmount,
+    items:    cart.items.map(i => ({
+      variant: i.variant_id,
+      quantity: i.qty,
+      unit_price: i.price,
+      discount_amount: cart.lineDiscount(i),
+    })),
   }
   try {
     if (!pos.currentInvoiceId) {
@@ -537,9 +562,9 @@ async function syncInvoice() {
   } catch { /* best-effort */ }
 }
 
-watch(() => cart.items.map(i => `${i.variant_id}:${i.qty}`).join(), schedulePatch)
+watch(() => cart.items.map(i => `${i.variant_id}:${i.qty}:${i.discType || ''}:${i.discValue || 0}`).join(), schedulePatch)
 watch(() => cart.customerId, schedulePatch)
-watch(() => cart.discount, schedulePatch)
+watch(() => `${cart.invDiscType || ''}:${cart.invDiscValue}:${cart.additive}`, schedulePatch)
 
 function removeItem(variantId) {
   cart.removeItem(variantId)
@@ -659,13 +684,43 @@ async function resumeHeld(i) {
 // ── Payment ──────────────────────────────────────────────────
 const showPayment    = ref(false)
 const showDiscount   = ref(false)
+const discountCtx    = ref('invoice')   // 'invoice' or { variantId, lineTotal }
 const successInvoice = ref(null)
+
+// ── Numpad / calculator ──────────────────────────────────────
+const numpadRef  = ref(null)
+const numpadCalc = ref(false)
+
+// Keypad mode: a pressed key types into the search bar (touch + physical via numpad).
+function onNumpadKey(id) {
+  searchInputEl.value?.focus()
+  if (id === 'back') searchQuery.value = searchQuery.value.slice(0, -1)
+  else               searchQuery.value += id
+  onSearchInput()
+}
+
+// ── Discount helpers ─────────────────────────────────────────
+function openInvoiceDiscount() {
+  discountCtx.value = 'invoice'
+  showDiscount.value = true
+}
+function openLineDiscount(item) {
+  discountCtx.value = { variantId: item.variant_id, lineTotal: item.price * item.qty }
+  showDiscount.value = true
+}
+function lineDiscLabel(item) {
+  if (!item.discType) return t('pos.add_discount')          // "+"
+  if (item.discType === 'free') return t('pos.discount_modal.tab_free')
+  if (item.discType === 'percent') return `${item.discValue}%`
+  return `−${item.discValue}`
+}
 
 async function openPayment() {
   if (cart.isEmpty) return
-  if (!pos.currentInvoiceId) {
-    await syncInvoice()
-  }
+  // Flush any pending debounced patch so the draft reflects the latest
+  // discounts/qty before we checkout the (otherwise stale) server draft.
+  clearTimeout(patchTimer)
+  await syncInvoice()
   if (pos.currentInvoiceId) {
     showPayment.value = true
   } else {
@@ -750,9 +805,17 @@ function onGlobalKey(e) {
 
   const k = buildKeyStr(e)
 
-  // F1 always focuses search
+  // F1 always focuses search (and drops out of calculator mode)
   if (k === 'F1' || k === (shortcuts.value.focus_search || 'F1')) {
-    e.preventDefault(); searchInputEl.value?.focus(); return
+    e.preventDefault(); numpadRef.value?.exitCalc(); searchInputEl.value?.focus(); return
+  }
+
+  // Calculator mode: number/operator keys drive the calc, not the search bar
+  if (numpadCalc.value) {
+    const ek = e.key
+    const isCalc = (ek >= '0' && ek <= '9') || ek === '.' || '+-*/'.includes(ek)
+      || ek === 'Enter' || ek === '=' || ek === 'Backspace' || ek === 'Escape'
+    if (isCalc) { e.preventDefault(); numpadRef.value?.feedKey(ek); return }
   }
 
   // Function-key shortcuts work even while the search input is focused
@@ -761,7 +824,7 @@ function onGlobalKey(e) {
 
   if (k === 'F7')                                  { e.preventDefault(); showServiceModal.value = true; return }
   if (k === (shortcuts.value.pay || 'F9'))         { e.preventDefault(); openPayment(); return }
-  if (k === (shortcuts.value.discount || 'F8'))    { e.preventDefault(); showDiscount.value = true; return }
+  if (k === (shortcuts.value.discount || 'F8'))    { e.preventDefault(); openInvoiceDiscount(); return }
   if (k === (shortcuts.value.hold || 'F4'))        { e.preventDefault(); holdOrResume(); return }
   if (k === (shortcuts.value.reprint || 'F2'))     { e.preventDefault(); reprint(); return }
   if (k === (shortcuts.value.remove_last || 'F10')){ e.preventDefault(); removeLast(); return }
@@ -817,8 +880,16 @@ function fmtNum(n) {
 
 <style scoped>
 .pos-view {
-  display: flex; flex-direction: column; height: 100%;
+  height: 100%;
   background: var(--bg-app); outline: none; position: relative; overflow: hidden;
+}
+
+/* Compact wrapper: render at 1/0.78 size then scale down to 0.78 → ~22% smaller
+   while still filling the viewport. transform-origin keeps it pinned top-left. */
+.pos-scale {
+  display: flex; flex-direction: column;
+  width: calc(100% / 0.78); height: calc(100% / 0.78);
+  transform: scale(0.78); transform-origin: top left;
 }
 
 /* ── Top bar ──────────────────────────────────────────────── */
@@ -966,17 +1037,17 @@ function fmtNum(n) {
 .pib-discount-chip button { background: none; border: none; cursor: pointer; color: var(--danger); display: flex; align-items: center; padding: 0; }
 
 .pos-cart-header {
-  display: grid; grid-template-columns: 1fr 96px 90px 36px;
+  display: grid; grid-template-columns: 1fr 96px 64px 90px 36px;
   padding: 7px 14px; background: var(--bg-app);
   font-size: 10px; font-weight: 800; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--text-muted); flex-shrink: 0;
 }
-.pch-qty, .pch-price { text-align: center; }
+.pch-qty, .pch-disc, .pch-price { text-align: center; }
 
 .pos-cart-body { flex: 1; overflow-y: auto; background: var(--bg-app); padding: 5px 0; }
 .pcr-list { position: relative; }
 .pos-cart-row {
-  display: grid; grid-template-columns: 1fr 96px 90px 36px;
+  display: grid; grid-template-columns: 1fr 96px 64px 90px 36px;
   align-items: center; padding: 9px 12px; cursor: pointer;
   margin: 5px 8px; border-radius: 12px;
   background: var(--bg-card); border: 1px solid var(--border);
@@ -1011,7 +1082,22 @@ function fmtNum(n) {
 .pcr-qty-btn:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 .pcr-qty-btn:active { transform: scale(0.88); transition-duration: var(--press-down); }
 .pcr-qty-val { font-size: 13px; font-weight: 800; min-width: 20px; text-align: center; }
+.pcr-disc {
+  justify-self: center; min-width: 44px; padding: 2px 6px; border-radius: 7px;
+  border: 1px dashed var(--border); background: var(--bg-app); cursor: pointer;
+  font-size: 11px; font-weight: 800; color: var(--text-muted); line-height: 18px;
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out),
+              color 120ms var(--ease-out), transform var(--press-back) var(--ease-spring);
+}
+.pcr-disc:hover { border-color: var(--accent); color: var(--accent); }
+.pcr-disc:active { transform: scale(0.9); transition-duration: var(--press-down); }
+.pcr-disc.pcr-disc--set {
+  border-style: solid; border-color: var(--danger); color: var(--danger);
+  background: var(--danger-soft);
+}
 .pcr-price { font-size: 13.5px; font-weight: 800; color: var(--text-primary); text-align: center; }
+.pcr-price--cut { display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+.pcr-price--cut s { font-size: 11px; font-weight: 600; color: var(--text-muted); }
 .pcr-del {
   width: 28px; height: 28px; border-radius: 7px; border: none; background: none;
   cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
@@ -1096,6 +1182,12 @@ function fmtNum(n) {
 /* Total box + PAY are pinned at the bottom (always visible); buttons + keypad
    scroll above them when the viewport is short. */
 .pos-right-foot { flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; padding-top: 10px; }
+.pos-additive {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  font-size: 12px; font-weight: 700; color: var(--text-secondary);
+  padding: 2px 2px; user-select: none;
+}
+.pos-additive input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
 
 .pos-pay-btn {
   width: 100%; padding: 16px 12px; border-radius: 14px; border: none;

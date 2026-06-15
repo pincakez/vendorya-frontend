@@ -861,11 +861,20 @@
   "walk_in": "عميل نقدي",
   "no_customer_found": "لم يتم العثور على عميل — اضغط Enter أو انقر للإضافة",
   "draft": "#مسودة",
+  "numpad": {
+   "title": "لوحة الأرقام",
+   "calculator": "الآلة الحاسبة",
+   "num_lock": "Num Lock"
+  },
   "col": {
    "item": "الصنف",
    "qty": "الكمية",
+   "disc": "%",
    "price": "السعر"
   },
+  "add_discount": "+",
+  "additive_label": "الخصومات تراكمية",
+  "line_discount": "خصومات الأصناف",
   "cart_empty": "ابدأ المسح أو ابحث عن المنتجات",
   "actions": {
    "hold": "تعليق",
@@ -904,7 +913,10 @@
   },
   "discount_modal": {
    "title": "تطبيق خصم",
+   "title_line": "خصم الصنف",
    "tab_fixed": "مبلغ ثابت",
+   "tab_free": "مجاني",
+   "free_note": "سيكون هذا الصنف مجانياً.",
    "preview": "الخصم: {sym} {amount}",
    "apply": "تطبيق"
   },
