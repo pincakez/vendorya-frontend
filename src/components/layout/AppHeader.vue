@@ -105,8 +105,13 @@
         <span v-if="auth.isPremium" class="nhdr-premium-badge">PREMIUM</span>
       </div>
 
-      <!-- Role badge -->
-      <span v-if="auth.userRole" class="header-role-badge">{{ t('people.staff.roles.' + auth.userRole.toLowerCase()) }}</span>
+      <!-- Role badge + logout icon -->
+      <div v-if="auth.userRole" class="header-role-wrap">
+        <span class="header-role-badge">{{ t('people.staff.roles.' + auth.userRole.toLowerCase()) }}</span>
+        <button class="header-logout-icon" @click="logoutModal = true" :title="t('nav.log_out')">
+          <LogOut :size="15" />
+        </button>
+      </div>
 
       <!-- Notification bell -->
       <div class="bell-wrap" ref="bellRef">
@@ -135,6 +140,11 @@
         </Transition>
       </div>
 
+      <!-- Settings -->
+      <button class="header-icon-btn" @click="router.push('/settings')" :title="t('nav.items.store_settings')">
+        <Settings :size="18" />
+      </button>
+
       <!-- Theme toggle -->
       <button class="header-icon-btn" @click="theme.toggle()" :title="theme.dark ? 'Switch to light mode' : 'Switch to dark mode'">
         <Sun v-if="theme.dark" :size="18" />
@@ -147,14 +157,43 @@
       </button>
     </template>
   </header>
+
+  <!-- Logout confirmation modal -->
+  <Teleport to="body">
+    <Transition name="lo-fade">
+      <div v-if="logoutModal" class="lo-overlay" @click.self="logoutModal = false" @keydown="onLoModalKey">
+        <div class="lo-card" role="dialog" aria-modal="true">
+          <div class="lo-icon-wrap"><LogOut :size="22" /></div>
+          <div class="lo-title">{{ t('nav.logout_confirm_title') }}</div>
+          <div class="lo-body">{{ t('nav.logout_confirm_body') }}</div>
+          <div class="lo-btns">
+            <button
+              ref="loCancelBtn"
+              class="lo-btn lo-cancel"
+              :class="{ focused: loFocus === 0 }"
+              @click="logoutModal = false"
+              @mouseenter="loFocus = 0"
+            >{{ t('common.cancel') }}</button>
+            <button
+              ref="loConfirmBtn"
+              class="lo-btn lo-confirm"
+              :class="{ focused: loFocus === 1 }"
+              @click="doLogout"
+              @mouseenter="loFocus = 1"
+            ><LogOut :size="14" /> {{ t('nav.log_out') }}</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
-  Bell, Sun, Moon, Search, ChevronDown, Check, ArrowLeft, Bot, Eye,
+  Bell, Sun, Moon, Search, ChevronDown, Check, ArrowLeft, Bot, Eye, LogOut,
   LayoutDashboard, Package, ShoppingCart, SlidersHorizontal, Tag, List, FileBarChart,
   FileText, CornerDownLeft, Receipt, Clock, Wallet, Users, Truck, Briefcase,
   LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator, Sparkles,
@@ -304,6 +343,39 @@ function timeAgo(iso) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
+/* ── Logout confirm modal ──────────────────── */
+const logoutModal  = ref(false)
+const loFocus      = ref(0)   // 0 = Cancel, 1 = Logout
+const loCancelBtn  = ref(null)
+const loConfirmBtn = ref(null)
+
+watch(logoutModal, (val) => {
+  if (val) {
+    loFocus.value = 0
+    nextTick(() => loCancelBtn.value?.focus())
+  }
+})
+
+function onLoModalKey(e) {
+  if (!logoutModal.value) return
+  if (e.key === 'Escape') { logoutModal.value = false; return }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+    loFocus.value = loFocus.value === 0 ? 1 : 0
+    nextTick(() => (loFocus.value === 0 ? loCancelBtn.value : loConfirmBtn.value)?.focus())
+    e.preventDefault()
+  }
+  if (e.key === 'Enter') {
+    if (loFocus.value === 1) doLogout()
+    else logoutModal.value = false
+    e.preventDefault()
+  }
+}
+
+async function doLogout() {
+  logoutModal.value = false
+  await auth.logout()
+}
+
 onMounted(() => {
   if (auth.isSuperadmin) {
     fetchStores()
@@ -315,12 +387,14 @@ onMounted(() => {
   }
   document.addEventListener('click', onDocClick)
   window.addEventListener('keydown', onSearchKey)
+  window.addEventListener('keydown', onLoModalKey)
 })
 onUnmounted(() => {
   clearInterval(pollTimer)
   clearTimeout(storeSearchTimer)
   document.removeEventListener('click', onDocClick)
   window.removeEventListener('keydown', onSearchKey)
+  window.removeEventListener('keydown', onLoModalKey)
 })
 </script>
 
@@ -462,4 +536,58 @@ onUnmounted(() => {
 
 .dropdown-enter-active, .dropdown-leave-active { transition: opacity 150ms, transform 150ms; }
 .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px); }
+
+/* ── Role badge + logout icon ───────────────────────────────── */
+.header-role-wrap {
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+.header-logout-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 7px; border: none;
+  background: rgba(239,68,68,0.10); color: var(--danger);
+  cursor: pointer; flex-shrink: 0;
+  transition: background 120ms, transform 80ms;
+}
+.header-logout-icon:hover  { background: rgba(239,68,68,0.20); }
+.header-logout-icon:active { transform: scale(0.91); }
+
+/* ── Logout confirm modal ───────────────────────────────────── */
+.lo-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.42); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+}
+.lo-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 32px 28px 24px;
+  width: 340px; max-width: 90vw; text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.24);
+}
+.lo-icon-wrap {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: rgba(239,68,68,0.10); color: var(--danger);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+}
+.lo-title { font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; }
+.lo-body  { font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 24px; }
+.lo-btns  { display: flex; gap: 10px; }
+.lo-btn {
+  flex: 1; padding: 10px 16px; border-radius: 10px; border: none;
+  font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: inherit;
+  transition: background 120ms, transform 80ms;
+}
+.lo-btn:active { transform: scale(0.96); }
+.lo-cancel  { background: var(--bg-app); color: var(--text-primary); border: 1.5px solid var(--border); }
+.lo-cancel:hover  { background: var(--border); }
+.lo-cancel.focused  { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lo-confirm {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: var(--danger); color: #fff;
+}
+.lo-confirm:hover { background: #dc2626; }
+.lo-confirm.focused { outline: 2px solid var(--danger); outline-offset: 2px; }
+
+.lo-fade-enter-active, .lo-fade-leave-active { transition: opacity 180ms, transform 180ms; }
+.lo-fade-enter-from, .lo-fade-leave-to { opacity: 0; transform: scale(0.96); }
 </style>

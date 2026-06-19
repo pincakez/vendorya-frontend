@@ -96,20 +96,10 @@
           </div>
         </div>
       </div>
-      <!-- ── SCROLL-END ACTIONS (settings + logout — scrolls with nav) ── -->
-      <div class="nsb-actions-row" :class="{ 'nsb-col': collapsed }">
-        <!-- Exit to Admin (sudo acting on a store) -->
-        <button v-if="acting" class="nsb-gear-btn" :title="t('nav.exit_to_admin')" @click="exitToAdmin">
+      <!-- ── SCROLL-END ACTIONS (exit-to-admin only — logout/settings moved to header) ── -->
+      <div v-if="acting" class="nsb-actions-row" :class="{ 'nsb-col': collapsed }">
+        <button class="nsb-gear-btn" :title="t('nav.exit_to_admin')" @click="exitToAdmin">
           <ArrowLeft :size="22" />
-        </button>
-        <!-- Settings gear (store users only) -->
-        <button v-if="!admin" class="nsb-gear-btn" :title="t('nav.store_settings_btn')" @click="go('/settings')">
-          <Settings :size="22" />
-        </button>
-        <!-- Logout red button -->
-        <button class="nsb-logout-btn" :class="{ 'nsb-logout-col': collapsed }" @click="auth.logout()" :title="t('nav.log_out')">
-          <AlertTriangle :size="15" />
-          <span v-if="!collapsed">{{ t('nav.log_out') }}</span>
         </button>
       </div>
     </div><!-- /nsb-scroll-area -->

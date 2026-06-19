@@ -219,20 +219,29 @@
           </div>
           <div class="form-group">
             <label class="form-label">{{ t('settings.store.item_noun') }}</label>
-            <select v-model="settingsForm.item_noun" class="form-input" style="width:160px;">
-              <option value="NAME">{{ t('settings.store.noun_name') }}</option>
-              <option value="PRODUCT">{{ t('settings.store.noun_product') }}</option>
-              <option value="ITEM">{{ t('settings.store.noun_item') }}</option>
-              <option value="MODEL">{{ t('settings.store.noun_model') }}</option>
-            </select>
-            <p class="form-hint">{{ t('settings.store.item_noun_hint') }}</p>
+            <input
+              v-model="settingsForm.item_noun"
+              class="form-input"
+              style="width:160px;"
+              maxlength="10"
+              :placeholder="t('settings.store.item_noun_ph')"
+              @input="settingsForm.item_noun = settingsForm.item_noun.replace(/[^A-Za-z0-9-]/g, '')"
+            />
+            <p class="form-hint">{{ t('settings.store.item_noun_hint') }} {{ t('settings.store.item_noun_rules') }}</p>
           </div>
           <div class="form-group" style="grid-column:1/-1;">
             <label class="form-label">{{ t('settings.store.cat_levels') }}</label>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <input v-for="(lvl, i) in settingsForm.category_level_names" :key="i" v-model="settingsForm.category_level_names[i]" class="form-input" style="width:150px;" :placeholder="t('settings.store.tier', { n: i + 1 })" />
+              <input
+                v-for="(lvl, i) in settingsForm.category_level_names"
+                :key="i"
+                v-model="settingsForm.category_level_names[i]"
+                class="form-input"
+                style="width:160px;"
+                :placeholder="t('settings.store.cat_level_ph', { n: i + 1 })"
+              />
             </div>
-            <p class="form-hint">{{ t('settings.store.cat_levels_hint') }}</p>
+            <p class="form-hint">{{ t('settings.store.cat_levels_hint') }} {{ t('settings.store.cat_levels_empty_hint') }}</p>
           </div>
         </div>
 

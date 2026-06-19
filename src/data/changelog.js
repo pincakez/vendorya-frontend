@@ -12,6 +12,56 @@
 
 export const changelog = [
   {
+    version: '1.5.0',
+    date: '2026-06-20',
+    tag: 'New',
+    en: {
+      title: 'Diagnosis notes on service jobs — with instant notifications',
+      points: [
+        'Engineers can now write a free-text diagnosis on any service job (e.g. "cracked screen backlight, battery at 40%"). It saves whether you mark the job Done or leave it open.',
+        'Every time a diagnosis or a cost estimate is added or updated, the whole team gets an orange notification right away — no one is left out of the loop.',
+        'Cost changes trigger the same notification, so the cashier always knows what to quote the customer.',
+      ],
+    },
+    ar: {
+      title: 'ملاحظات التشخيص في الخدمات — مع إشعارات فورية',
+      points: [
+        'يستطيع الفنيون الآن كتابة ملاحظة تشخيص حرة على أي طلب خدمة (مثلاً: "شاشة مكسورة، البطارية 40%"). تُحفظ سواء تمّ تسليم الجهاز أم لا.',
+        'في كل مرة تُضاف تشخيص أو يُعدَّل تقدير التكلفة، يصل إشعار برتقالي للفريق كله فوراً — لا أحد يبقى خارج الصورة.',
+        'تغييرات التكلفة تُطلق الإشعار ذاته، حتى يعرف الكاشير دائماً ما يُبلّغ به العميل.',
+      ],
+    },
+  },
+  {
+    version: '1.4.1',
+    date: '2026-06-20',
+    tag: 'Improved',
+    en: {
+      title: 'Cleaner header, simpler people forms, and a few small fixes',
+      points: [
+        'Logout button and Settings icon moved to the top header for quicker access. Logging out now shows a confirmation step so you never do it by accident.',
+        'The forms for adding a Customer, Supplier, or Staff member now start simple — just name, phone, and email. Click "More details" to expand the full form (WhatsApp, Instagram, website, country, city, notes). You can save with a name alone.',
+        'Suppliers now store company name, all contact info, and social links — fill in as much or as little as you need.',
+        'Staff can be added with just a name — a username is created automatically, and a password is generated if you leave it blank.',
+        'Category level names in Settings now show placeholder text. Empty levels are hidden from the column picker in the Products table.',
+        'The "Items are called" field in Settings is now free-text — type any word you like (letters, numbers, hyphens, max 10 characters).',
+        'POS attribute/category display raised from 4 to 6 slots.',
+      ],
+    },
+    ar: {
+      title: 'رأس الصفحة أكثر نظافة، نماذج أشخاص أبسط، وإصلاحات صغيرة',
+      points: [
+        'زر تسجيل الخروج وأيقونة الإعدادات انتقلا إلى شريط العنوان العلوي للوصول السريع. تسجيل الخروج يطلب الآن تأكيداً حتى لا يحدث بالخطأ.',
+        'نماذج إضافة العميل والمورّد وعضو الفريق أصبحت بسيطة في البداية — الاسم والهاتف والبريد فقط. اضغط "تفاصيل إضافية" لعرض الحقول الكاملة (واتساب، إنستجرام، موقع، دولة، مدينة، ملاحظات). يمكنك الحفظ بالاسم وحده.',
+        'يخزّن المورّد الآن اسم الشركة وبيانات التواصل الكاملة والروابط — أضف ما تشاء.',
+        'يمكن إضافة الموظف بالاسم فقط — اسم المستخدم يُنشأ تلقائيًا، وكذلك كلمة المرور إن تركتها فارغة.',
+        'أسماء مستويات الفئات في الإعدادات تُظهر الآن نص إرشادي. المستويات الفارغة مخفية من قائمة الأعمدة في جدول المنتجات.',
+        'حقل "المنتجات تُسمّى" في الإعدادات أصبح نصًا حرًا — اكتب أي كلمة تريدها (حروف وأرقام وشرطات، 10 أحرف كحد أقصى).',
+        'رفعنا عدد الفئات والخصائص في إعدادات نقطة البيع من 4 إلى 6.',
+      ],
+    },
+  },
+  {
     version: '1.4.0',
     date: '2026-06-19',
     tag: 'New',

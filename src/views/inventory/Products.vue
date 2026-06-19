@@ -590,10 +590,14 @@ const colOrder = ref(BASE_COLUMNS.map(c => c.key))
 // Columns). Only applies to fresh users — saved layouts/presets take over.
 const colHidden = ref(['cat3', 'cat4'])
 
-// Layer 1: attr columns always permitted; others permitted if field is present in data.
+// Layer 1: attr columns always permitted; cat columns only if the level name is non-empty;
+// others permitted if the field is present in data.
 const permittedKeys = computed(() => {
   const sample = products.value[0]
-  return columns.value.filter(c => c.isAttr || !c.field || !sample || sample[c.field] !== undefined).map(c => c.key)
+  return columns.value.filter(c => {
+    if (c.key in _CAT_IDX && !fmtStore.categoryLevels[_CAT_IDX[c.key]]) return false
+    return c.isAttr || !c.field || !sample || sample[c.field] !== undefined
+  }).map(c => c.key)
 })
 
 // Edit mode previews live off the working copy.

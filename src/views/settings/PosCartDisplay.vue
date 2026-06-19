@@ -11,7 +11,7 @@
     <div class="settings-card" :style="{ marginTop: embedded ? '0' : '24px' }">
       <div class="cd-head">
         <span class="cd-title">{{ t('settings.cart_display.heading') }}</span>
-        <span class="cd-count" :class="{ full: selected.length >= 4 }">{{ selected.length }}/4</span>
+        <span class="cd-count" :class="{ full: selected.length >= 6 }">{{ selected.length }}/6</span>
       </div>
       <p class="cd-hint">{{ t('settings.cart_display.hint') }}</p>
 
@@ -19,7 +19,7 @@
         <button
           v-for="f in fields" :key="f.token"
           type="button"
-          :class="['cd-chip', { active: isSelected(f.token), locked: !isSelected(f.token) && selected.length >= 4 }]"
+          :class="['cd-chip', { active: isSelected(f.token), locked: !isSelected(f.token) && selected.length >= 6 }]"
           @click="toggle(f.token)"
         >
           <span class="cd-order" v-if="isSelected(f.token)">{{ orderOf(f.token) + 1 }}</span>
@@ -76,7 +76,7 @@ function orderOf(token)    { return selected.value.indexOf(token) }
 function toggle(token) {
   const i = selected.value.indexOf(token)
   if (i >= 0) { selected.value.splice(i, 1); return }
-  if (selected.value.length >= 4) return   // cap at 4 total
+  if (selected.value.length >= 6) return   // cap at 6 total
   selected.value.push(token)
 }
 

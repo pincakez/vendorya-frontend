@@ -207,12 +207,26 @@
               placeholder="0.00"
             />
           </div>
+          <div class="det-field det-full det-diagnosis">
+            <span class="det-lbl det-diagnosis-lbl">
+              {{ t('core.services.diagnosis_label') }}
+              <span class="det-diagnosis-hint">{{ t('core.services.diagnosis_hint') }}</span>
+            </span>
+            <textarea
+              v-model="detail.editDiagnosis"
+              class="form-input det-diagnosis-input"
+              rows="3"
+              :placeholder="t('core.services.diagnosis_ph')"
+            />
+          </div>
         </div>
       </div>
 
       <template #footer>
         <template v-if="detail.service?.status === 'OPEN'">
-          <button class="btn-ghost" @click="detail.open = false">{{ t('core.services.not_yet') }}</button>
+          <button class="btn-ghost" :disabled="detail.busy" @click="detailNotYet">
+            {{ detail.busy ? t('common.saving') : t('core.services.not_yet') }}
+          </button>
           <button class="btn-success" :disabled="detail.busy" @click="detailMarkDone">
             {{ detail.busy ? t('core.services.processing') : t('core.services.done_short') }}
           </button>
@@ -220,7 +234,7 @@
         <template v-else>
           <button class="btn-ghost" @click="detail.open = false">{{ t('common.close') }}</button>
           <button
-            v-if="detail_costChanged"
+            v-if="detail_hasChanges"
             class="btn-primary" :disabled="detail.busy"
             @click="saveCost"
           >{{ detail.busy ? t('common.saving') : t('core.services.save_cost') }}</button>
@@ -282,10 +296,10 @@ const confirm = reactive({
 })
 
 /* ── detail modal ────────────────────────────────────────────────── */
-const detail = reactive({ open: false, service: null, editCost: 0, busy: false })
-const detail_costChanged = computed(() =>
-  detail.service && parseFloat(detail.editCost) !== parseFloat(detail.service.cost)
-)
+const detail = reactive({ open: false, service: null, editCost: 0, editDiagnosis: '', busy: false })
+const detail_costChanged      = computed(() => detail.service && parseFloat(detail.editCost) !== parseFloat(detail.service.cost))
+const detail_diagnosisChanged = computed(() => detail.service && detail.editDiagnosis.trim() !== (detail.service.diagnosis || '').trim())
+const detail_hasChanges       = computed(() => detail_costChanged.value || detail_diagnosisChanged.value)
 
 /* ── date formatter ──────────────────────────────────────────────── */
 function fmtDate(d) {
@@ -446,15 +460,26 @@ async function executeReturn() {
 
 /* ── detail modal ────────────────────────────────────────────────── */
 function openDetail(s) {
-  detail.service  = s
-  detail.editCost = parseFloat(s.cost) || 0
-  detail.open     = true
-  detail.busy     = false
+  detail.service       = s
+  detail.editCost      = parseFloat(s.cost) || 0
+  detail.editDiagnosis = s.diagnosis || ''
+  detail.open          = true
+  detail.busy          = false
+}
+
+async function _saveChangesIfAny() {
+  if (!detail_hasChanges.value) return
+  const payload = {}
+  if (detail_costChanged.value)      payload.cost      = detail.editCost
+  if (detail_diagnosisChanged.value) payload.diagnosis = detail.editDiagnosis.trim()
+  const { data } = await api.patch(`/api/services/${detail.service.id}/`, payload)
+  Object.assign(detail.service, data)
 }
 
 async function detailMarkDone() {
   detail.busy = true
   try {
+    await _saveChangesIfAny()
     await api.post(`/api/services/${detail.service.id}/done/`)
     detail.open = false
     fetchItems(); fetchCounts()
@@ -463,11 +488,21 @@ async function detailMarkDone() {
   } finally { detail.busy = false }
 }
 
+async function detailNotYet() {
+  detail.busy = true
+  try {
+    await _saveChangesIfAny()
+    detail.open = false
+    fetchItems()
+  } catch (e) {
+    alert(e?.response?.data?.detail ?? t('core.services.err_cost'))
+  } finally { detail.busy = false }
+}
+
 async function saveCost() {
   detail.busy = true
   try {
-    const { data } = await api.patch(`/api/services/${detail.service.id}/`, { cost: detail.editCost })
-    Object.assign(detail.service, data)
+    await _saveChangesIfAny()
     detail.open = false
     fetchItems()
   } catch (e) {
@@ -609,6 +644,11 @@ onMounted(() => {
 .det-lbl   { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
 .det-val   { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
 .det-cost-input { max-width: 140px; padding: 6px 10px; font-size: 14px; font-weight: 600; }
+
+.det-diagnosis { margin-top: 4px; border-top: 1px dashed var(--border); padding-top: 12px; }
+.det-diagnosis-lbl { display: flex; align-items: center; gap: 8px; }
+.det-diagnosis-hint { font-size: 10px; font-weight: 400; color: var(--text-muted); text-transform: none; letter-spacing: 0; }
+.det-diagnosis-input { font-size: 13px; resize: vertical; min-height: 72px; }
 
 .btn-success {
   padding: 8px 20px; border-radius: 8px; border: none;
