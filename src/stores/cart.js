@@ -92,8 +92,13 @@ export const useCartStore = defineStore('cart', {
       const unitId = variant.unit_id || null
       const key = `${variant.id}|${unitId || 'base'}`
       const existing = this.items.find(i => i.key === key)
-      if (existing) {
+      // Weight lines (sold per kg, decimal qty) don't auto-increment on re-add —
+      // the cashier sets the exact weight; a fresh add seeds 1.000 kg to edit.
+      const isWeight = !!variant.is_weight
+      if (existing && !isWeight) {
         existing.qty++
+      } else if (existing && isWeight) {
+        // already on the cart — leave its weight as-is for the cashier to edit
       } else {
         this.items.push({
           key,
@@ -101,6 +106,7 @@ export const useCartStore = defineStore('cart', {
           unit_id: unitId,
           unit_factor: parseFloat(variant.unit_factor) || 1,
           unit_name: variant.unit_name || '',
+          is_weight: isWeight,
           name: variant.name,
           price: parseFloat(variant.price) || 0,
           qty: 1,

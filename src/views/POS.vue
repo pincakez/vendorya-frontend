@@ -160,9 +160,15 @@
                 </div>
               </div>
               <div class="pcr-qty-ctrl">
-                <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.key, item.qty - 1)">−</button>
-                <span class="pcr-qty-val">{{ item.qty }}</span>
-                <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.key, item.qty + 1)">+</button>
+                <!-- Weight line: click the value to re-enter the kg off the scale -->
+                <button v-if="item.is_weight" class="pcr-weight-val" @click.stop="openWeightEntry(item.key)">
+                  {{ fmtQty(item.qty) }} kg
+                </button>
+                <template v-else>
+                  <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.key, item.qty - 1)">−</button>
+                  <span class="pcr-qty-val">{{ item.qty }}</span>
+                  <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.key, item.qty + 1)">+</button>
+                </template>
               </div>
               <button class="pcr-disc" :class="{ 'pcr-disc--set': item.discType }" @click.stop="openLineDiscount(item)">
                 {{ lineDiscLabel(item) }}
@@ -270,6 +276,26 @@
           </button>
         </div>
         <button class="pos-unit-cancel" @click="unitPicker = null">{{ t('common.cancel') }}</button>
+      </div>
+    </div>
+    <!-- Weight entry: type the kg off the scale for a per-kg product -->
+    <div v-if="weightEntry" class="pos-unit-overlay" @click.self="confirmWeightEntry">
+      <div class="pos-unit-card pos-weight-card">
+        <div class="pos-unit-head">{{ weightEntry.name }}</div>
+        <div class="pos-unit-sub">{{ t('pos.weight.enter') }} · {{ fmtNum(weightEntry.price) }}{{ t('pos.weight.per_kg') }}</div>
+        <div class="pos-weight-display">
+          <input ref="weightInputEl" v-model="weightEntry.value" class="pos-weight-input"
+                 inputmode="decimal" @keyup.enter="confirmWeightEntry"
+                 :placeholder="t('pos.weight.kg_placeholder')" />
+          <span class="pos-weight-unit">kg</span>
+        </div>
+        <div class="pos-weight-total">= {{ fmtNum((parseFloat(weightEntry.value) || 0) * weightEntry.price) }}</div>
+        <div class="pos-weight-pad">
+          <button v-for="k in ['7','8','9','4','5','6','1','2','3','.','0','C']" :key="k"
+                  class="pos-weight-key" :class="{ 'pos-weight-key--c': k === 'C' }"
+                  @click="weightKey(k)">{{ k }}</button>
+        </div>
+        <button class="pos-unit-cancel pos-weight-ok" @click="confirmWeightEntry">{{ t('common.done') }}</button>
       </div>
     </div>
     <CustomerFormModal
@@ -522,6 +548,7 @@ async function addToCart(product, unit = null) {
   }
   const chosen = unit || units[0] || null
   const isBase = !chosen || chosen.is_base
+  const isWeight = !!(chosen && chosen.is_weight)
   cart.addItem({
     id:    product.default_variant_id,
     name:  product.name,
@@ -529,11 +556,17 @@ async function addToCart(product, unit = null) {
     stock: product.default_variant_stock,
     unit_id:     isBase ? null : chosen.id,
     unit_factor: chosen ? chosen.factor : 1,
-    unit_name:   isBase ? '' : chosen.name,
+    unit_name:   isWeight ? 'kg' : (isBase ? '' : chosen.name),
+    is_weight:   isWeight,
     attributes: product.attributes_summary || null,
     category:   product.category_name || '',
   })
   unitPicker.value = null
+  // Weight product → immediately ask the cashier for the weight off the scale.
+  if (isWeight) {
+    const key = `${product.default_variant_id}|base`
+    openWeightEntry(key)
+  }
   searchQuery.value = ''
   searchResults.value = []
   pos.triggerScan()
@@ -722,6 +755,31 @@ const discountCtx    = ref('invoice')   // 'invoice' or { key, lineTotal }
 // Pack/Strip/Tablet choice before it can be added to the cart.
 const unitPicker     = ref(null)
 const successInvoice = ref(null)
+
+// Weight entry: set to { key, name, price, value } when a weight product (sold
+// per kg, decimal qty) needs the cashier to type the weight off the scale.
+const weightEntry = ref(null)
+function openWeightEntry(key) {
+  const item = cart.items.find(i => i.key === key)
+  if (!item) return
+  weightEntry.value = { key, name: item.name, price: item.price, value: String(item.qty || '') }
+  nextTick(() => weightInputEl.value?.focus())
+}
+function weightKey(d) {
+  if (!weightEntry.value) return
+  if (d === 'C') { weightEntry.value.value = ''; return }
+  if (d === '.' && weightEntry.value.value.includes('.')) return
+  weightEntry.value.value = (weightEntry.value.value + d).slice(0, 10)
+}
+function confirmWeightEntry() {
+  if (!weightEntry.value) return
+  const kg = parseFloat(weightEntry.value.value)
+  if (!Number.isFinite(kg) || kg <= 0) { cart.removeItem(weightEntry.value.key) }
+  else cart.updateQty(weightEntry.value.key, kg)
+  weightEntry.value = null
+  nextTick(() => searchInputEl.value?.focus())
+}
+const weightInputEl = ref(null)
 
 // ── Numpad / calculator ──────────────────────────────────────
 const numpadRef  = ref(null)
@@ -912,6 +970,10 @@ function playBeep() {
 function fmtNum(n) {
   return parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
+// Weight qty: up to 3 decimals (gram precision), trailing zeros trimmed (0.250 → 0.25).
+function fmtQty(n) {
+  return (parseFloat(n) || 0).toFixed(3).replace(/\.?0+$/, '') || '0'
+}
 </script>
 
 <style scoped>
@@ -949,6 +1011,36 @@ function fmtNum(n) {
   border: 1px solid var(--border); background: transparent;
   color: var(--text-secondary); font-weight: 600; cursor: pointer;
 }
+
+/* ── Weight entry modal ── */
+.pos-weight-card { width: 320px; max-width: 92vw; }
+.pos-weight-display {
+  display: flex; align-items: center; gap: 8px; margin-top: 12px;
+  border: 1px solid var(--border); border-radius: 10px; padding: 4px 14px;
+  background: var(--surface, transparent);
+}
+.pos-weight-input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-size: 30px; font-weight: 800; color: var(--text); text-align: right; width: 100%;
+}
+.pos-weight-unit { font-size: 16px; font-weight: 700; color: var(--text-muted); }
+.pos-weight-total { margin-top: 8px; text-align: right; font-size: 15px; font-weight: 700; color: var(--accent); }
+.pos-weight-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.pos-weight-key {
+  padding: 14px 0; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface, transparent); color: var(--text);
+  font-size: 18px; font-weight: 700; cursor: pointer; transition: transform .08s, background .12s;
+}
+.pos-weight-key:hover { background: var(--accent-soft); border-color: var(--accent); }
+.pos-weight-key:active { transform: scale(0.9); }
+.pos-weight-key--c { color: var(--danger, #dc2626); }
+.pos-weight-ok { background: var(--accent); color: #fff; border-color: var(--accent); }
+.pcr-weight-val {
+  padding: 4px 10px; border-radius: 7px; border: 1px solid var(--accent);
+  background: var(--accent-soft); color: var(--accent);
+  font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap;
+}
+.pcr-weight-val:active { transform: scale(0.92); }
 
 /* Compact wrapper: render at 1/0.78 size then scale down to 0.78 → ~22% smaller
    while still filling the viewport. transform-origin keeps it pinned top-left. */

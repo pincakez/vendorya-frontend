@@ -337,6 +337,12 @@
       "barcode": "Barcode",
       "track_expiry": "Track expiry & batches (FEFO)",
       "track_expiry_hint": "Hold this product as dated batches and sell earliest-expiry-first. Capture an expiry date when you receive stock.",
+      "selling_mode": "Selling Mode",
+      "mode_unit": "By Unit",
+      "mode_weight": "By Weight (kg)",
+      "mode_unit_hint": "Sold as whole pieces — quantity goes up one at a time.",
+      "mode_weight_hint": "Sold by weight. Stock is held in kilograms and the cashier types the weight off the scale; the price below is the price per kg.",
+      "sell_price_per_kg": "Sell price / kg",
       "batches_section": "Expiry Batches (FEFO)",
       "batch_expiry": "Expiry",
       "batch_no": "Batch No.",
@@ -965,7 +971,12 @@
       "err_failed": "Payment failed. Please try again.",
       "err_expired": "Blocked: this sale would draw from expired stock ({names}). Adjust or remove the expired batch."
     },
-    "choose_unit": "Choose a unit"
+    "choose_unit": "Choose a unit",
+    "weight": {
+      "enter": "Enter weight",
+      "per_kg": " / kg",
+      "kg_placeholder": "0.000"
+    }
   },
   "people": {
     "customers": {

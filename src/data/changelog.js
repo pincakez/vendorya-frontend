@@ -12,6 +12,29 @@
 
 export const changelog = [
   {
+    version: '1.4.0',
+    date: '2026-06-19',
+    tag: 'New',
+    en: {
+      title: 'Sell products by weight',
+      points: [
+        'Any product can now be sold by weight instead of by the piece — perfect for groceries, delis, butchers and produce.',
+        'Set the price per kilogram, and at the POS the cashier just types the weight off the scale (e.g. 0.250 kg) on a quick keypad — the line total is worked out instantly.',
+        'Stock is tracked to the gram, so your counts and profit stay exact.',
+        'Turn it on per product under its “Selling Mode” toggle — only visible once you enable Weight-Based Selling in Settings → Capabilities.',
+      ],
+    },
+    ar: {
+      title: 'بيع المنتجات بالوزن',
+      points: [
+        'يمكن الآن بيع أي منتج بالوزن بدلاً من القطعة — مثالي للبقالة والأطعمة واللحوم والخضروات.',
+        'حدّد السعر لكل كيلوجرام، وعند نقطة البيع يكتب الكاشير الوزن من الميزان (مثلاً 0.250 كجم) على لوحة أرقام سريعة — ويُحسب إجمالي السطر فوراً.',
+        'يُتتبّع المخزون حتى الجرام، لتبقى الأعداد والأرباح دقيقة.',
+        'فعّلها لكل منتج عبر مفتاح «طريقة البيع» — يظهر فقط بعد تفعيل البيع بالوزن من الإعدادات ← الإمكانيات.',
+      ],
+    },
+  },
+  {
     version: '1.3.0',
     date: '2026-06-19',
     tag: 'New',

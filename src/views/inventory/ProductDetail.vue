@@ -226,7 +226,7 @@
           <div class="prod-prices-row">
             <div><label class="form-label">{{ t('inventory.product_detail.base_price_label') }}</label><input v-model.number="editModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
             <div><label class="form-label">{{ t('inventory.product_detail.cost_price_label') }}</label><input v-model.number="editModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
-            <div><label class="form-label">{{ t('inventory.product_detail.sell_price_label') }}</label><input v-model.number="editModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
+            <div><label class="form-label">{{ isWeightMode ? t('inventory.product_detail.sell_price_per_kg') : t('inventory.product_detail.sell_price_label') }}</label><input v-model.number="editModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
           </div>
         </div>
         <!-- RIGHT COLUMN -->
@@ -265,6 +265,20 @@
         </div>
       </div>
 
+      <!-- ══ Selling mode (opt-in weight selling, gated by store switch) ══ -->
+      <div v-if="weightEnabled" class="prod-expiry-row">
+        <div style="display:flex;flex-direction:column;gap:6px;width:100%;">
+          <span class="form-label" style="margin-bottom:0;">{{ t('inventory.product_detail.selling_mode') }}</span>
+          <div class="prod-mode-toggle">
+            <button type="button" class="prod-mode-btn" :class="{ active: editModal.selling_mode !== 'WEIGHT' }"
+                    @click="editModal.selling_mode = 'UNIT'">{{ t('inventory.product_detail.mode_unit') }}</button>
+            <button type="button" class="prod-mode-btn" :class="{ active: editModal.selling_mode === 'WEIGHT' }"
+                    @click="editModal.selling_mode = 'WEIGHT'">{{ t('inventory.product_detail.mode_weight') }}</button>
+          </div>
+          <span class="prod-units-hint">{{ isWeightMode ? t('inventory.product_detail.mode_weight_hint') : t('inventory.product_detail.mode_unit_hint') }}</span>
+        </div>
+      </div>
+
       <!-- ══ Expiry / batch tracking (opt-in, gated by store switch) ══ -->
       <div v-if="expiryEnabled" class="prod-expiry-row">
         <label class="prod-expiry-toggle">
@@ -276,8 +290,8 @@
         </label>
       </div>
 
-      <!-- ══ Selling units (opt-in multi-UoM) ══ -->
-      <div class="prod-units-section">
+      <!-- ══ Selling units (opt-in multi-UoM) — hidden in weight mode (mutually exclusive) ══ -->
+      <div v-if="!isWeightMode" class="prod-units-section">
         <div class="prod-units-head">
           <div>
             <div class="form-label" style="margin-bottom:2px;">{{ t('inventory.product_detail.selling_units') }}</div>
@@ -396,12 +410,15 @@ async function removeImage() {
 const editModal = reactive({
   open: false, name: '', description: '', category: '',
   supplierName: '', base_price: 0, cost_price: 0, sell_price: 0,
-  reorder_level: 0, attrs: {}, unit: 'pcs', units: [], track_expiry: false, saving: false, error: '',
+  reorder_level: 0, attrs: {}, unit: 'pcs', units: [], track_expiry: false,
+  selling_mode: 'UNIT', saving: false, error: '',
 })
 
-// Store master switch — gates the per-product expiry checkbox + batch panel so
-// non-pharmacy stores never see the option.
+// Store master switches — gate the per-product expiry checkbox + batch panel and
+// the weight-selling mode toggle so stores that don't use them never see the option.
 const expiryEnabled = ref(false)
+const weightEnabled = ref(false)
+const isWeightMode = computed(() => editModal.selling_mode === 'WEIGHT')
 
 function addUnitRow() {
   editModal.units.push({ id: null, name: '', factor: null, sell_price: 0, barcode: '' })
@@ -431,6 +448,7 @@ async function openEditModal() {
   try {
     const s = await api.get('/api/core/settings/')
     expiryEnabled.value = !!s.data.expiry_tracking_enabled
+    weightEnabled.value = !!s.data.weight_selling_enabled
   } catch { /* noop */ }
 
   const p = product.value
@@ -445,6 +463,7 @@ async function openEditModal() {
   editModal.reorder_level = v ? Number(v.reorder_level ?? 0) : 0
   editModal.unit = p.unit || 'pcs'
   editModal.track_expiry = !!p.track_expiry
+  editModal.selling_mode = p.selling_mode || 'UNIT'
   // Opt-in alternate units come back in selling_units; the base unit (is_base)
   // is implicit and excluded from the editable rows.
   editModal.units = (p.selling_units || [])
@@ -475,10 +494,12 @@ async function saveEdit() {
     sell_price: editModal.sell_price || 0,
     reorder_level: editModal.reorder_level ?? 0,
     track_expiry: editModal.track_expiry,
+    selling_mode: editModal.selling_mode,
     attributes: attributes_payload,
     // Only send rows that have a name + a positive factor; backend reconciles
     // (creates new, updates by id, soft-deletes any the user removed).
-    selling_units: editModal.units
+    // Weight products are per-kg only — packs are mutually exclusive, so send none.
+    selling_units: isWeightMode.value ? [] : editModal.units
       .filter(u => (u.name || '').trim() && Number(u.factor) > 0)
       .map(u => ({ id: u.id || undefined, name: u.name.trim(), factor: u.factor,
                    sell_price: u.sell_price || 0, barcode: u.barcode || '' })),
@@ -664,6 +685,10 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 .prod-expiry-toggle { display:flex; gap:10px; align-items:flex-start; cursor:pointer; }
 .prod-expiry-toggle input { margin-top:3px; width:16px; height:16px; accent-color:var(--accent); }
 .prod-expiry-toggle > span { display:flex; flex-direction:column; }
+.prod-mode-toggle { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; width:max-content; }
+.prod-mode-btn { padding:7px 18px; font-size:13px; font-weight:600; background:var(--surface,transparent); color:var(--text-muted); border:none; cursor:pointer; transition:background .15s, color .15s; }
+.prod-mode-btn + .prod-mode-btn { border-left:1px solid var(--border); }
+.prod-mode-btn.active { background:var(--accent); color:#fff; }
 
 /* ── Edit modal shared styles ── */
 .prod-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }

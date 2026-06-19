@@ -88,7 +88,6 @@
           <div class="cap-head">
             <span class="cap-title">{{ t('settings.capabilities.weight_title') }}</span>
             <button class="info-btn" :class="{ on: openInfo==='weight' }" @click="toggleInfo('weight')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
-            <span class="soon-flag">{{ t('settings.capabilities.coming_soon') }}</span>
           </div>
           <div class="cap-desc">{{ t('settings.capabilities.weight_desc') }}</div>
           <div v-if="openInfo==='weight'" class="info-box">{{ t('settings.capabilities.weight_info') }}</div>
