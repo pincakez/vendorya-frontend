@@ -4,11 +4,36 @@
 // Western numerals everywhere (per the Arabic localization rules). No RTL flip.
 //
 // Shape:
-//   { date: 'YYYY-MM-DD', tag: 'New' | 'Improved' | 'Fixed',
+//   { version: 'X.Y.Z', date: 'YYYY-MM-DD', tag: 'New' | 'Improved' | 'Fixed',
 //     en: { title, points: [] }, ar: { title, points: [] } }
+//
+// Versioning: first public release = 1.1.0. A big new feature bumps the middle
+// number (1.1.0 → 1.2.0); a small follow-up or fix bumps the last (1.2.0 → 1.2.1).
 
 export const changelog = [
   {
+    version: '1.2.1',
+    date: '2026-06-19',
+    tag: 'Improved',
+    en: {
+      title: 'Smoother pharmacy receiving',
+      points: [
+        'Receiving a brand-new medicine? You can now mark it for expiry tracking right on its first delivery — no need to create it first and receive it a second time.',
+        'Receive stock by the strip or the full pack, not only by single piece — the system converts it to your base unit automatically and keeps your costs correct.',
+        'Turning expiry tracking off now hides it cleanly everywhere, while your existing batch records stay safely stored in case you switch it back on.',
+      ],
+    },
+    ar: {
+      title: 'استلام أبسط للصيدليات',
+      points: [
+        'تستلم دواءً جديداً؟ يمكنك الآن تفعيل تتبّع الصلاحية له مباشرةً عند أول توريد — دون الحاجة لإنشائه أولاً ثم استلامه مرة أخرى.',
+        'استلم المخزون بالشريط أو العلبة كاملة، لا بالقطعة فقط — ويحوّله النظام إلى وحدتك الأساسية تلقائياً مع بقاء التكاليف صحيحة.',
+        'إيقاف تتبّع الصلاحية يخفيه الآن بنظافة من كل مكان، مع بقاء سجلات دفعاتك محفوظة بأمان في حال أعدت تفعيله.',
+      ],
+    },
+  },
+  {
+    version: '1.2.0',
     date: '2026-06-19',
     tag: 'New',
     en: {
@@ -33,6 +58,7 @@ export const changelog = [
     },
   },
   {
+    version: '1.1.0',
     date: '2026-06-19',
     tag: 'New',
     en: {

@@ -17,6 +17,7 @@
         <div class="settings-card cl-card">
           <div class="cl-head">
             <span class="cl-tag" :class="`cl-tag--${entry.tag.toLowerCase()}`">{{ tagLabel(entry.tag) }}</span>
+            <span v-if="entry.version" class="cl-version">v{{ entry.version }}</span>
             <span class="cl-date">{{ fmtDate(entry.date) }}</span>
           </div>
           <h2 class="cl-entry-title" dir="auto">{{ pick(entry).title }}</h2>
@@ -77,6 +78,11 @@ function fmtDate(d) {
 .cl-tag--new      { background: color-mix(in oklab, var(--accent) 16%, transparent); color: var(--accent); }
 .cl-tag--improved { background: rgba(59,130,246,.14); color: #3b82f6; }
 .cl-tag--fixed    { background: rgba(34,197,94,.14); color: #16a34a; }
+.cl-version {
+  font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--bg-subtle, rgba(120,120,120,.12)); color: var(--text-secondary);
+}
 .cl-date { font-size: 12px; color: var(--text-muted); }
 
 .cl-entry-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 10px; }

@@ -184,6 +184,26 @@
               </select>
               <input v-else v-model="row._attrs[def.id]" class="form-input" :placeholder="def.name" />
             </div>
+            <!-- Onboard a brand-new product as expiry/batch-tracked on first receipt -->
+            <div v-if="expiryEnabled" class="ie-field ie-track-expiry">
+              <label class="ie-check">
+                <input type="checkbox" v-model="row.track_expiry" />
+                <span>{{ t('inventory.purchases.track_expiry_new') }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Buy-by-unit — pick a pack/strip; stock converts to base on receive -->
+          <div v-if="row.kind === 'existing' && (row._units || []).length > 1 && !readOnly"
+               class="item-extra item-unit">
+            <div class="ie-field">
+              <label class="ie-label">{{ t('inventory.purchases.unit_hint') }}</label>
+              <select v-model="row.unit" class="form-input">
+                <option v-for="u in row._units" :key="u.id || 'base'" :value="u.id || ''">
+                  {{ u.name }}{{ u.is_base ? '' : ` (×${u.factor})` }}
+                </option>
+              </select>
+            </div>
           </div>
 
           <!-- Expiry / batch capture — only for expiry-tracked products -->
@@ -295,6 +315,7 @@ const dateTo         = ref('')
 const suppliers      = ref([])
 const categories     = ref([])
 const attrDefs       = ref([])
+const expiryEnabled  = ref(false)   // store master switch → gates new-product expiry toggle
 
 let searchTimer = null
 function debouncedFetch() {
@@ -391,6 +412,7 @@ const modalTotal = computed(() =>
 function blankRow() {
   return { kind: 'new', variant: '', sku: '', name: '', quantity: 1, base_price: '', retail_price: '',
            track_expiry: false, expiry_date: '', batch_number: '',
+           unit: '', _units: [],
            category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null }
 }
 
@@ -412,6 +434,7 @@ function loadModal(p) {
     rows.push({ kind: 'existing', variant: it.variant, sku: it.sku, name: it.product_name,
                 quantity: Number(it.quantity), base_price: it.unit_cost, retail_price: it.retail_price,
                 track_expiry: !!it.track_expiry, expiry_date: it.expiry_date || '', batch_number: it.batch_number || '',
+                unit: it.unit || '', _units: it.selling_units || [],
                 category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null })
   }
   for (const d of (p.draft_items || [])) {
@@ -453,7 +476,7 @@ function addRow() { modal.rows.push(blankRow()) }
 // ── Autocomplete ─────────────────────────────────────────────────────────
 function onNameInput(row) {
   // typing past a selected product turns it back into a new-product line
-  if (row.kind === 'existing') { row.kind = 'new'; row.variant = ''; row.sku = '' }
+  if (row.kind === 'existing') { row.kind = 'new'; row.variant = ''; row.sku = ''; row.unit = ''; row._units = [] }
   clearTimeout(row._timer)
   const q = (row.name || '').trim()
   if (q.length < 2) { row._results = []; row._open = false; return }
@@ -471,6 +494,8 @@ function pickProduct(row, r) {
   row.sku = r.sku_display
   row.name = r.name
   row.track_expiry = !!r.track_expiry   // drives the expiry capture row below
+  row._units = r.selling_units || []    // base + any pack/strip units → unit picker
+  row.unit = ''                         // default to base unit (factor 1)
   if (row.retail_price === '' || row.retail_price == null) row.retail_price = r.default_variant_price
   row._open = false
   row._results = []
@@ -494,11 +519,15 @@ function rowsToLines() {
         base.expiry_date = r.expiry_date || null
         base.batch_number = r.batch_number || ''
       }
-      if (r.variant) return { variant: r.variant, ...base }
+      // Existing line received in a pack/strip → send the chosen unit (NULL = base).
+      if (r.variant) return { variant: r.variant, unit: r.unit || null, ...base }
       const attributes = Object.entries(r._attrs || {})
         .filter(([, v]) => v !== '' && v != null)
         .map(([definition, value]) => ({ definition, value }))
-      return { name: r.name.trim(), category: r.category || null, subcategory: r.subcategory || null, attributes, ...base }
+      // New product: tell the backend to onboard it as expiry-tracked from its first
+      // receipt (closes the inline-new-product gap). Ignored unless the store switch is on.
+      return { name: r.name.trim(), category: r.category || null, subcategory: r.subcategory || null,
+               attributes, track_expiry: !!r.track_expiry, ...base }
     })
 }
 
@@ -592,11 +621,19 @@ async function printLabels() {
   } catch { alert(t('inventory.purchases.err_label_data')) }
 }
 
+async function fetchStoreSettings() {
+  try {
+    const s = await api.get('/api/core/settings/')
+    expiryEnabled.value = !!s.data.expiry_tracking_enabled
+  } catch {}
+}
+
 onMounted(() => {
   fetchPurchases()
   fetchSuppliers()
   fetchCategories()
   fetchAttrDefs()
+  fetchStoreSettings()
 })
 </script>
 
@@ -656,6 +693,10 @@ onMounted(() => {
 .item-extra { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); }
 .ie-field { display:flex; flex-direction:column; gap:3px; min-width:140px; }
 .ie-label { font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
+.ie-check { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-secondary); cursor:pointer; }
+.ie-check input { width:15px; height:15px; accent-color:var(--accent); cursor:pointer; }
+.ie-track-expiry { justify-content:flex-end; align-self:center; }
+.item-unit .form-input { min-width:160px; }
 
 .invoice-totals { margin-top:18px; border-top:1px solid var(--border); padding-top:14px; display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
 .totals-row { display:flex; gap:32px; font-size:13px; color:var(--text-secondary); }

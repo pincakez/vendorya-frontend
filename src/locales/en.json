@@ -491,7 +491,9 @@
       "save_needs_supplier": "Assign a supplier to save & receive",
       "confirm_cancel": "Discard this purchase? Your entered items will be lost.",
       "expiry_date": "Expiry date",
-      "batch_number": "Batch / Lot no."
+      "batch_number": "Batch / Lot no.",
+      "unit_hint": "Receive in this unit — stock converts to base automatically",
+      "track_expiry_new": "Track expiry & batches for this new product (FEFO)"
     },
     "adjustments": {
       "title": "Stock Adjustments",
