@@ -172,26 +172,77 @@
 
     <!-- NEW SUPPLIER MODAL -->
     <AppModal :open="newModal.open" :title="t('people.suppliers.new_modal.title')" @close="closeNew">
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <div>
+      <div class="pfm-form">
+        <div class="pfm-row">
           <label class="form-label">{{ t('people.suppliers.new_modal.name_label') }} <span class="req">*</span></label>
           <input v-model="newModal.name" class="form-input" :placeholder="t('people.suppliers.new_modal.name_ph')" />
         </div>
-        <div>
-          <label class="form-label">{{ t('people.suppliers.new_modal.prefix_label') }} <span class="req">*</span> <span class="label-hint">{{ t('people.suppliers.new_modal.prefix_hint') }}</span></label>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input v-model="newModal.code_prefix" class="form-input" :placeholder="t('people.suppliers.new_modal.prefix_ph')" maxlength="3" style="width:90px;" @input="newModal.prefixCheck = null" />
-            <button class="btn-check" :disabled="!newModal.code_prefix || newModal.code_prefix.length !== 3 || newModal.checkingPrefix" @click="checkNewPrefix">
-              {{ newModal.checkingPrefix ? '…' : t('people.suppliers.new_modal.check') }}
-            </button>
-            <span v-if="newModal.prefixCheck === true"  class="check-ok">{{ t('people.suppliers.new_modal.available') }}</span>
-            <span v-else-if="newModal.prefixCheck === false" class="check-taken">{{ t('people.suppliers.new_modal.taken') }}</span>
-          </div>
-          <p class="field-note">{{ t('people.suppliers.new_modal.prefix_note') }}</p>
+        <div class="pfm-row">
+          <label class="form-label">{{ t('people.suppliers.new_modal.phone_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
+          <input v-model="newModal.phone_number" class="form-input" type="tel" placeholder="01012345678" />
         </div>
-        <div>
-          <label class="form-label">{{ t('people.suppliers.new_modal.contact_label') }} <span class="label-hint">({{ t('common.optional') }})</span></label>
-          <textarea v-model="newModal.contact_info" class="form-input" rows="2" :placeholder="t('people.suppliers.new_modal.contact_ph')" />
+        <div class="pfm-row">
+          <label class="form-label">{{ t('people.suppliers.new_modal.email_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
+          <input v-model="newModal.email" class="form-input" type="email" placeholder="info@company.com" />
+        </div>
+
+        <button type="button" class="pfm-expand-btn" @click="newModal.expanded = !newModal.expanded">
+          <ChevronDown :size="14" :class="['pfm-chev', { open: newModal.expanded }]" />
+          {{ newModal.expanded ? t('people.pfm.collapse') : t('people.pfm.more_fields') }}
+        </button>
+
+        <div v-if="newModal.expanded" class="pfm-expanded">
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.pfm.company') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
+            <input v-model="newModal.company_name" class="form-input" :placeholder="t('people.suppliers.new_modal.company_ph')" />
+          </div>
+          <div class="pfm-2col">
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.pfm.whatsapp') }}</label>
+              <input v-model="newModal.whatsapp_number" class="form-input" placeholder="01012345678" />
+            </div>
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.pfm.instagram') }}</label>
+              <input v-model="newModal.instagram" class="form-input" placeholder="@handle" />
+            </div>
+          </div>
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.pfm.website') }}</label>
+            <input v-model="newModal.website" class="form-input" placeholder="https://…" />
+          </div>
+          <div class="pfm-2col">
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.pfm.country') }}</label>
+              <input v-model="newModal.country" class="form-input" placeholder="Egypt" />
+            </div>
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.pfm.city') }}</label>
+              <input v-model="newModal.city" class="form-input" placeholder="Cairo" />
+            </div>
+          </div>
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.pfm.notes') }}</label>
+            <textarea v-model="newModal.notes" class="form-input" rows="2" :placeholder="t('people.pfm.notes_ph')" />
+          </div>
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.suppliers.new_modal.prefix_label') }} <span class="label-hint">{{ t('people.suppliers.new_modal.prefix_hint') }}</span></label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input v-model="newModal.code_prefix" class="form-input" :placeholder="t('people.suppliers.new_modal.prefix_ph')" maxlength="3" style="width:90px;" @input="newModal.prefixCheck = null" />
+              <button class="btn-check" :disabled="!newModal.code_prefix || newModal.code_prefix.length !== 3 || newModal.checkingPrefix" @click="checkNewPrefix">
+                {{ newModal.checkingPrefix ? '…' : t('people.suppliers.new_modal.check') }}
+              </button>
+              <span v-if="newModal.prefixCheck === true" class="check-ok">{{ t('people.suppliers.new_modal.available') }}</span>
+              <span v-else-if="newModal.prefixCheck === false" class="check-taken">{{ t('people.suppliers.new_modal.taken') }}</span>
+            </div>
+            <p class="field-note">{{ t('people.suppliers.new_modal.prefix_note') }}</p>
+          </div>
+        </div>
+
+        <!-- prefix status shown in simple view when auto-checked -->
+        <div v-if="!newModal.expanded" class="pfm-prefix-status">
+          <span v-if="newModal.checkingPrefix" class="pfm-opt">Checking prefix…</span>
+          <span v-else-if="newModal.prefixCheck === true" class="check-ok">Code prefix auto-assigned ✓</span>
+          <span v-else-if="newModal.prefixCheck === false" class="check-taken">Prefix conflict — expand to fix</span>
         </div>
       </div>
       <template #footer>
@@ -215,17 +266,67 @@
 
     <!-- EDIT SUPPLIER MODAL -->
     <AppModal :open="editModal.open" :title="t('people.suppliers.edit_modal.title')" @close="closeEdit">
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <div><label class="form-label">{{ t('people.suppliers.edit_modal.name_label') }}</label><input v-model="editModal.name" class="form-input" /></div>
-        <div>
-          <label class="form-label">{{ t('people.suppliers.edit_modal.prefix_label') }}</label>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input :value="editModal.code_prefix" class="form-input locked-input" style="width:90px;" disabled />
-            <Lock :size="13" class="lock-icon" />
-            <span style="font-size:12px;color:var(--text-muted);">{{ t('people.suppliers.edit_modal.prefix_locked') }}</span>
+      <div class="pfm-form">
+        <div class="pfm-row">
+          <label class="form-label">{{ t('people.suppliers.edit_modal.name_label') }} <span class="req">*</span></label>
+          <input v-model="editModal.name" class="form-input" />
+        </div>
+        <div class="pfm-row">
+          <label class="form-label">{{ t('people.suppliers.new_modal.phone_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
+          <input v-model="editModal.phone_number" class="form-input" type="tel" placeholder="01012345678" />
+        </div>
+        <div class="pfm-row">
+          <label class="form-label">{{ t('people.suppliers.new_modal.email_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
+          <input v-model="editModal.email" class="form-input" type="email" placeholder="info@company.com" />
+        </div>
+
+        <button type="button" class="pfm-expand-btn" @click="editModal.expanded = !editModal.expanded">
+          <ChevronDown :size="14" :class="['pfm-chev', { open: editModal.expanded }]" />
+          {{ editModal.expanded ? t('people.pfm.collapse') : t('people.pfm.more_fields') }}
+        </button>
+
+        <div v-if="editModal.expanded" class="pfm-expanded">
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.pfm.company') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
+            <input v-model="editModal.company_name" class="form-input" :placeholder="t('people.suppliers.new_modal.company_ph')" />
+          </div>
+          <div class="pfm-2col">
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.pfm.whatsapp') }}</label>
+              <input v-model="editModal.whatsapp_number" class="form-input" placeholder="01012345678" />
+            </div>
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.pfm.instagram') }}</label>
+              <input v-model="editModal.instagram" class="form-input" placeholder="@handle" />
+            </div>
+          </div>
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.pfm.website') }}</label>
+            <input v-model="editModal.website" class="form-input" placeholder="https://…" />
+          </div>
+          <div class="pfm-2col">
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.pfm.country') }}</label>
+              <input v-model="editModal.country" class="form-input" placeholder="Egypt" />
+            </div>
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.pfm.city') }}</label>
+              <input v-model="editModal.city" class="form-input" placeholder="Cairo" />
+            </div>
+          </div>
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.pfm.notes') }}</label>
+            <textarea v-model="editModal.notes" class="form-input" rows="2" :placeholder="t('people.pfm.notes_ph')" />
+          </div>
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.suppliers.edit_modal.prefix_label') }}</label>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <input :value="editModal.code_prefix" class="form-input locked-input" style="width:90px;" disabled />
+              <Lock :size="13" class="lock-icon" />
+              <span style="font-size:12px;color:var(--text-muted);">{{ t('people.suppliers.edit_modal.prefix_locked') }}</span>
+            </div>
           </div>
         </div>
-        <div><label class="form-label">{{ t('people.suppliers.edit_modal.contact_label') }} <span class="label-hint">({{ t('common.optional') }})</span></label><textarea v-model="editModal.contact_info" class="form-input" rows="2" /></div>
       </div>
       <template #footer>
         <button class="btn-ghost" @click="closeEdit">{{ t('common.cancel') }}</button>
@@ -242,7 +343,7 @@ import { useI18n } from 'vue-i18n'
 import {
   Search, X, Building2, Pencil, Trash2, Plus, Lock,
   ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown,
-  Columns3, GripVertical, UserCog, RotateCcw,
+  Columns3, GripVertical, UserCog, RotateCcw, ChevronDown,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
@@ -459,12 +560,31 @@ function clearSearch() { search.value = ''; fetchSuppliers(1) }
 
 /* ── CRUD ── */
 const saving = ref(false)
-const newModal = reactive({ open: false, name: '', code_prefix: '', contact_info: '', prefixCheck: null, checkingPrefix: false })
+
+const _newDefaults = () => ({
+  open: false, expanded: false, name: '', code_prefix: '', prefixCheck: null, checkingPrefix: false,
+  phone_number: '', email: '', company_name: '',
+  whatsapp_number: '', instagram: '', website: '', country: 'Egypt', city: '', notes: '',
+})
+const newModal     = reactive(_newDefaults())
 const confirmModal = reactive({ open: false })
-const editModal    = reactive({ open: false, id: null, name: '', code_prefix: '', contact_info: '' })
+
+const _editDefaults = () => ({
+  open: false, expanded: false, id: null, name: '', code_prefix: '',
+  phone_number: '', email: '', company_name: '',
+  whatsapp_number: '', instagram: '', website: '', country: 'Egypt', city: '', notes: '',
+})
+const editModal = reactive(_editDefaults())
 
 function suggestPrefix() { return String(Math.floor(Math.random() * 900) + 100) }
-function openNew() { Object.assign(newModal, { open: true, name: '', code_prefix: suggestPrefix(), contact_info: '', prefixCheck: null, checkingPrefix: false }) }
+
+async function openNew() {
+  Object.assign(newModal, { ..._newDefaults(), open: true, code_prefix: suggestPrefix(), checkingPrefix: true })
+  try {
+    const res = await api.get('/api/inventory/suppliers/check-prefix/', { params: { prefix: newModal.code_prefix } })
+    newModal.prefixCheck = res.data.available
+  } catch { newModal.prefixCheck = false } finally { newModal.checkingPrefix = false }
+}
 function closeNew() { newModal.open = false }
 
 async function checkNewPrefix() {
@@ -476,17 +596,37 @@ function openConfirm() { confirmModal.open = true }
 async function submitNew() {
   saving.value = true
   try {
-    await api.post('/api/inventory/suppliers/', { name: newModal.name, code_prefix: newModal.code_prefix, contact_info: newModal.contact_info || '' })
+    await api.post('/api/inventory/suppliers/', {
+      name: newModal.name, code_prefix: newModal.code_prefix,
+      phone_number: newModal.phone_number || '', email: newModal.email || '',
+      company_name: newModal.company_name || '', whatsapp_number: newModal.whatsapp_number || '',
+      instagram: newModal.instagram || '', website: newModal.website || '',
+      country: newModal.country || '', city: newModal.city || '', notes: newModal.notes || '',
+    })
     confirmModal.open = false; closeNew(); fetchSuppliers(1)
   } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('people.suppliers.err_create')) } finally { saving.value = false }
 }
 
-function openEdit(s) { Object.assign(editModal, { open: true, id: s.id, name: s.name, code_prefix: s.code_prefix, contact_info: s.contact_info || '' }) }
+function openEdit(s) {
+  Object.assign(editModal, {
+    ..._editDefaults(), open: true, id: s.id, name: s.name, code_prefix: s.code_prefix,
+    phone_number: s.phone_number || '', email: s.email || '', company_name: s.company_name || '',
+    whatsapp_number: s.whatsapp_number || '', instagram: s.instagram || '', website: s.website || '',
+    country: s.country || 'Egypt', city: s.city || '', notes: s.notes || '',
+  })
+}
 function closeEdit() { editModal.open = false }
 async function saveEdit() {
   saving.value = true
-  try { await api.patch(`/api/inventory/suppliers/${editModal.id}/`, { name: editModal.name, contact_info: editModal.contact_info || '' }); closeEdit(); fetchSuppliers(page.value) }
-  catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('people.suppliers.err_save')) } finally { saving.value = false }
+  try {
+    await api.patch(`/api/inventory/suppliers/${editModal.id}/`, {
+      name: editModal.name, phone_number: editModal.phone_number || '', email: editModal.email || '',
+      company_name: editModal.company_name || '', whatsapp_number: editModal.whatsapp_number || '',
+      instagram: editModal.instagram || '', website: editModal.website || '',
+      country: editModal.country || '', city: editModal.city || '', notes: editModal.notes || '',
+    })
+    closeEdit(); fetchSuppliers(page.value)
+  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('people.suppliers.err_save')) } finally { saving.value = false }
 }
 
 async function deleteSupplier(id) {
@@ -557,6 +697,17 @@ onMounted(() => { loadLayout() })
 .check-ok    { font-size: 12px; font-weight: 600; color: var(--success); white-space: nowrap; }
 .check-taken { font-size: 12px; font-weight: 600; color: var(--danger); white-space: nowrap; }
 .confirm-body { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 0 4px; text-align: center; }
+
+.pfm-form { display: flex; flex-direction: column; gap: 12px; }
+.pfm-row  { display: flex; flex-direction: column; gap: 4px; }
+.pfm-opt  { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+.pfm-expand-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--accent); padding: 2px 0; align-self: flex-start; transition: opacity 120ms; }
+.pfm-expand-btn:hover { opacity: .75; }
+.pfm-chev { transition: transform 220ms ease; flex-shrink: 0; }
+.pfm-chev.open { transform: rotate(180deg); }
+.pfm-expanded { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; border-top: 1px dashed var(--border); }
+.pfm-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pfm-prefix-status { font-size: 12px; }
 .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background: rgba(247,143,30,0.1); display: flex; align-items: center; justify-content: center; color: var(--accent); }
 .confirm-text { font-size: 15px; font-weight: 500; color: var(--text-primary); margin: 0; line-height: 1.5; }
 .confirm-warn { font-size: 12.5px; color: var(--text-muted); margin: 0; max-width: 320px; line-height: 1.5; }

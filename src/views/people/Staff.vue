@@ -10,6 +10,9 @@
           <Search :size="14" class="search-icon" />
           <input v-model="search" class="search-input" :placeholder="t('people.staff.search_ph')" @input="onSearch" />
         </div>
+        <button class="btn-primary" @click="openNew">
+          <Plus :size="14" /> {{ t('people.staff.new_action') }}
+        </button>
       </div>
     </div>
 
@@ -60,59 +63,72 @@
 
     <!-- MODAL: Add / Edit -->
     <AppModal :open="modal.open" :title="modal.id ? t('people.staff.edit_title') : t('people.staff.new_title')" no-backdrop-close @close="closeModal">
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div>
-            <label class="form-label">{{ t('people.staff.first_name') }}</label>
+      <div class="pfm-form">
+        <!-- Simple fields -->
+        <div class="pfm-2col">
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.staff.first_name') }} <span class="req">*</span></label>
             <input v-model="modal.first_name" class="form-input" :placeholder="t('people.staff.first_name_ph')" />
           </div>
-          <div>
+          <div class="pfm-row">
             <label class="form-label">{{ t('people.staff.last_name') }}</label>
             <input v-model="modal.last_name" class="form-input" :placeholder="t('people.staff.last_name_ph')" />
           </div>
         </div>
-        <div>
-          <label class="form-label">{{ t('people.staff.username_label') }}</label>
-          <input v-model="modal.username" class="form-input" :placeholder="t('people.staff.username_ph')" :disabled="!!modal.id" />
+        <div class="pfm-row">
+          <label class="form-label">{{ t('people.staff.phone_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
+          <input v-model="modal.phone_number" class="form-input" type="tel" :placeholder="t('people.staff.phone_ph')" />
         </div>
-        <div>
-          <label class="form-label">{{ t('people.staff.email_label') }}</label>
+        <div class="pfm-row">
+          <label class="form-label">{{ t('people.staff.email_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
           <input v-model="modal.email" class="form-input" type="email" :placeholder="t('people.staff.email_ph')" />
         </div>
-        <div>
-          <label class="form-label">{{ t('people.staff.role_label') }}</label>
-          <select v-model="modal.role" class="form-input">
-            <option value="CASHIER">{{ t('people.staff.roles.cashier') }}</option>
-            <option value="MANAGER">{{ t('people.staff.roles.manager') }}</option>
-            <option value="ADMIN">{{ t('people.staff.roles.admin') }}</option>
-            <option value="OWNER">{{ t('people.staff.roles.owner') }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label">{{ modal.id ? t('people.staff.password_new') : t('people.staff.password_label') }}</label>
-          <input v-model="modal.password" class="form-input" type="password" :placeholder="modal.id ? t('people.staff.password_keep_ph') : t('people.staff.password_set_ph')" />
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div>
-            <label class="form-label">{{ t('people.staff.phone_label') }}</label>
-            <input v-model="modal.phone_number" class="form-input" :placeholder="t('people.staff.phone_ph')" type="tel" />
-          </div>
-          <div>
+
+        <!-- Expand toggle -->
+        <button type="button" class="pfm-expand-btn" @click="staffExpanded = !staffExpanded">
+          <ChevronDown :size="14" :class="['pfm-chev', { open: staffExpanded }]" />
+          {{ staffExpanded ? t('people.pfm.collapse') : t('people.pfm.more_fields') }}
+        </button>
+
+        <!-- Expanded fields -->
+        <div v-if="staffExpanded" class="pfm-expanded">
+          <div class="pfm-row">
             <label class="form-label">{{ t('people.staff.whatsapp_label') }}</label>
-            <input v-model="modal.whatsapp_number" class="form-input" :placeholder="t('people.staff.whatsapp_ph')" type="tel" />
+            <input v-model="modal.whatsapp_number" class="form-input" type="tel" :placeholder="t('people.staff.whatsapp_ph')" />
           </div>
-        </div>
-        <div v-if="modal.id" style="display:flex;align-items:center;gap:10px;padding-top:4px;">
-          <label class="form-label" style="margin:0;">{{ t('people.staff.active_label') }}</label>
-          <button class="toggle-btn" :class="{ on: modal.is_active }" @click="modal.is_active = !modal.is_active">
-            <span class="toggle-knob" />
-          </button>
-          <span style="font-size:12px;color:var(--text-muted);">{{ modal.is_active ? t('people.staff.can_login') : t('people.staff.blocked_login') }}</span>
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.staff.username_label') }}
+              <span class="pfm-opt">{{ modal.id ? '' : t('people.staff.username_auto_hint') }}</span>
+            </label>
+            <input v-model="modal.username" class="form-input" :placeholder="t('people.staff.username_ph')" :disabled="!!modal.id" />
+          </div>
+          <div class="pfm-row">
+            <label class="form-label">{{ modal.id ? t('people.staff.password_new') : t('people.staff.password_label') }}
+              <span v-if="!modal.id" class="pfm-opt">({{ t('people.staff.password_auto_hint') }})</span>
+            </label>
+            <input v-model="modal.password" class="form-input" type="password" :placeholder="modal.id ? t('people.staff.password_keep_ph') : t('people.staff.password_set_ph')" />
+          </div>
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.staff.role_label') }}</label>
+            <select v-model="modal.role" class="form-input">
+              <option value="CASHIER">{{ t('people.staff.roles.cashier') }}</option>
+              <option value="MANAGER">{{ t('people.staff.roles.manager') }}</option>
+              <option value="ADMIN">{{ t('people.staff.roles.admin') }}</option>
+              <option value="OWNER">{{ t('people.staff.roles.owner') }}</option>
+            </select>
+          </div>
+          <div v-if="modal.id" style="display:flex;align-items:center;gap:10px;">
+            <label class="form-label" style="margin:0;">{{ t('people.staff.active_label') }}</label>
+            <button class="toggle-btn" :class="{ on: modal.is_active }" @click="modal.is_active = !modal.is_active">
+              <span class="toggle-knob" />
+            </button>
+            <span style="font-size:12px;color:var(--text-muted);">{{ modal.is_active ? t('people.staff.can_login') : t('people.staff.blocked_login') }}</span>
+          </div>
         </div>
       </div>
       <template #footer>
         <button class="btn-ghost" @click="closeModal">{{ t('common.cancel') }}</button>
-        <button class="btn-primary" :disabled="!modal.username.trim() || (!modal.id && !modal.password.trim()) || saving" @click="save">
+        <button class="btn-primary" :disabled="!modal.first_name.trim() && !modal.last_name.trim() || saving" @click="save">
           {{ saving ? t('common.saving') : (modal.id ? t('people.staff.save_changes') : t('people.staff.add_staff')) }}
         </button>
       </template>
@@ -121,18 +137,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, UserCog, Pencil } from 'lucide-vue-next'
+import { Search, UserCog, Pencil, Plus, ChevronDown } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openNew)
-import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const { t } = useI18n()
-const qab = useQABStore()
 
 function roleLabel(role) {
   const key = (role || '').toLowerCase()
@@ -166,17 +180,28 @@ async function fetchStaff(p = 1) {
   } catch { staff.value = [] } finally { loading.value = false }
 }
 
+const staffExpanded = ref(false)
 const modal = reactive({ open: false, id: null, username: '', first_name: '', last_name: '', email: '', role: 'CASHIER', password: '', is_active: true, phone_number: '', whatsapp_number: '' })
+
+watch(() => modal.open, (val) => { if (!val) staffExpanded.value = false })
 
 function openNew() {
   Object.assign(modal, { open: true, id: null, username: '', first_name: '', last_name: '', email: '', role: 'CASHIER', password: '', is_active: true, phone_number: '', whatsapp_number: '' })
+  staffExpanded.value = false
 }
 function openEdit(s) {
   Object.assign(modal, { open: true, id: s.id, username: s.username, first_name: s.first_name, last_name: s.last_name, email: s.email || '', role: s.role, password: '', is_active: s.is_active, phone_number: s.phone_number || '', whatsapp_number: s.whatsapp_number || '' })
+  staffExpanded.value = false
 }
 function closeModal() { modal.open = false }
 
+function _autoUsername() {
+  const base = (modal.first_name + modal.last_name).toLowerCase().replace(/[^a-z0-9]/g, '') || 'staff'
+  return base + String(Math.floor(Math.random() * 900) + 100)
+}
+
 async function save() {
+  if (!modal.first_name.trim() && !modal.last_name.trim()) return
   saving.value = true
   try {
     const payload = {
@@ -187,13 +212,14 @@ async function save() {
       phone_number:    modal.phone_number,
       whatsapp_number: modal.whatsapp_number,
     }
-    if (!modal.id) payload.username = modal.username
-    if (modal.id)  payload.is_active = modal.is_active
-    if (modal.password.trim()) payload.password = modal.password
-
-    modal.id
-      ? await api.patch(`/api/auth/staff/${modal.id}/`, payload)
-      : await api.post('/api/auth/staff/', { ...payload, username: modal.username, password: modal.password })
+    if (modal.id) {
+      payload.is_active = modal.is_active
+      if (modal.password.trim()) payload.password = modal.password
+      await api.patch(`/api/auth/staff/${modal.id}/`, payload)
+    } else {
+      const username = modal.username.trim() || _autoUsername()
+      await api.post('/api/auth/staff/', { ...payload, username, password: modal.password || undefined })
+    }
     closeModal()
     fetchStaff(modal.id ? page.value : 1)
   } catch (e) {
@@ -203,9 +229,7 @@ async function save() {
 
 onMounted(() => {
   fetchStaff()
-  qab.setActions([{ id: 'new-staff', label: t('people.staff.new_action'), icon: 'plus', handler: openNew }])
 })
-onUnmounted(() => qab.clearActions())
 
 function initials(s) {
   const name = `${s.first_name} ${s.last_name}`.trim() || s.username
@@ -270,4 +294,15 @@ function avatarColor(username) {
 .form-input  { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; box-sizing:border-box; transition:border-color 120ms; }
 .form-input:focus { border-color:var(--accent); }
 .form-input:disabled { opacity:.5; cursor:default; }
+
+.pfm-form { display: flex; flex-direction: column; gap: 12px; }
+.pfm-row  { display: flex; flex-direction: column; gap: 4px; }
+.pfm-opt  { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+.pfm-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pfm-expand-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--accent); padding: 2px 0; align-self: flex-start; transition: opacity 120ms; }
+.pfm-expand-btn:hover { opacity: .75; }
+.pfm-chev { transition: transform 220ms ease; flex-shrink: 0; }
+.pfm-chev.open { transform: rotate(180deg); }
+.pfm-expanded { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; border-top: 1px dashed var(--border); }
+.req { color: var(--danger); font-weight: 700; }
 </style>
