@@ -12,6 +12,29 @@
 
 export const changelog = [
   {
+    version: '1.3.0',
+    date: '2026-06-19',
+    tag: 'New',
+    en: {
+      title: 'One place to switch features on and off',
+      points: [
+        'New Settings → Capabilities page gathers your store’s big optional features in one spot: Multi-Unit Selling, Expiry / Batch Tracking, and Weight-Based Selling (coming soon).',
+        'Each switch has a plain-language “?” explaining exactly what it does before you flip it.',
+        'Turning a feature off never deletes anything — it just hides it, and a clear confirmation tells you what will be affected. Switch it back on and your data returns.',
+        'New stores now pick a Store Type (Pharmacy, Grocery, and more) that sensibly pre-selects these switches — always adjustable afterwards.',
+      ],
+    },
+    ar: {
+      title: 'مكان واحد لتفعيل الميزات وإيقافها',
+      points: [
+        'صفحة جديدة: الإعدادات ← الإمكانيات تجمع ميزات متجرك الاختيارية الكبيرة في مكان واحد: البيع بوحدات متعددة، وتتبّع الصلاحية / التشغيلات، والبيع بالوزن (قريباً).',
+        'لكل مفتاح زر «؟» يشرح بلغة بسيطة ما يفعله بالضبط قبل تفعيله.',
+        'إيقاف أي ميزة لا يحذف شيئاً أبداً — يخفيها فقط، مع تأكيد واضح يخبرك بما سيتأثر. أعد التفعيل وتعود بياناتك.',
+        'المتاجر الجديدة تختار الآن «نوع المتجر» (صيدلية، بقالة، وغيرها) يضبط هذه المفاتيح مبدئياً بشكل منطقي — ويمكن تعديلها دائماً لاحقاً.',
+      ],
+    },
+  },
+  {
     version: '1.2.1',
     date: '2026-06-19',
     tag: 'Improved',

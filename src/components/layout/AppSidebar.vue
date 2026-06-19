@@ -221,6 +221,7 @@ const groups = computed(() => [
   ] },
   { id: 'settings', title: t('nav.groups.settings'), icon: Settings, items: [
     { label: t('nav.items.store_settings'),  to: '/settings',                icon: Store },
+    { label: t('nav.items.capabilities'),    to: '/settings/capabilities',   icon: SlidersHorizontal },
     { label: t('nav.items.taxes'),           to: '/settings/taxes',          icon: Percent },
     { label: t('nav.items.notifications'),   to: '/settings/notifications',  icon: Bell },
     { label: t('nav.items.billing'),         to: '/settings/billing',        icon: CreditCard, ownerOnly: true },

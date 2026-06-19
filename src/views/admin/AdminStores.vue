@@ -231,6 +231,19 @@
           <label class="form-label">Store Name <span class="req">*</span></label>
           <input v-model="form.store.name" class="form-input" placeholder="Trenda Fashion" />
         </div>
+        <div>
+          <label class="form-label">Store Type</label>
+          <select v-model="form.store.store_type" class="form-input">
+            <option value="GENERAL">General Retail</option>
+            <option value="PHARMACY">Pharmacy</option>
+            <option value="GROCERY">Grocery / Supermarket</option>
+            <option value="ELECTRONICS">Electronics / Devices</option>
+            <option value="CLOTHING">Clothing / Fashion</option>
+          </select>
+          <p class="form-hint" style="margin-top:5px;font-size:11.5px;color:var(--text-muted);">
+            Pre-selects starting capability switches (Pharmacy → expiry; Grocery → weight). The owner can change them anytime in Settings → Capabilities.
+          </p>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
             <label class="form-label">Plan</label>
@@ -510,7 +523,7 @@ const createErrors = ref([])
 
 const form = reactive({
   owner:  { first_name: '', last_name: '', email: '', username: '', password: '', password_confirm: '', phone_number: '', whatsapp_number: '' },
-  store:  { name: '', plan: 'FREE', currency: '', default_language: 'ar', timezone: 'Africa/Cairo', phone_number: '', whatsapp_number: '', city: '', country: 'Egypt' },
+  store:  { name: '', store_type: 'GENERAL', plan: 'FREE', currency: '', default_language: 'ar', timezone: 'Africa/Cairo', phone_number: '', whatsapp_number: '', city: '', country: 'Egypt' },
   branch: { name: 'Main Branch', street_1: '', city: '', country: 'Egypt', phone_number: '', whatsapp_number: '', email: '' },
 })
 
@@ -520,7 +533,7 @@ function openCreate() {
   step.value = 0
   createErrors.value = []
   Object.assign(form.owner,  { first_name: '', last_name: '', email: '', username: '', password: '', password_confirm: '', phone_number: '', whatsapp_number: '' })
-  Object.assign(form.store,  { name: '', plan: 'FREE', currency: defaultCurrencyId(), default_language: 'ar', timezone: 'Africa/Cairo', phone_number: '', whatsapp_number: '', city: '', country: 'Egypt' })
+  Object.assign(form.store,  { name: '', store_type: 'GENERAL', plan: 'FREE', currency: defaultCurrencyId(), default_language: 'ar', timezone: 'Africa/Cairo', phone_number: '', whatsapp_number: '', city: '', country: 'Egypt' })
   Object.assign(form.branch, { name: 'Main Branch', street_1: '', city: '', country: 'Egypt', phone_number: '', whatsapp_number: '', email: '' })
   createModal.open = true
 }
