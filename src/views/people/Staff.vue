@@ -186,12 +186,19 @@ const modal = reactive({ open: false, id: null, username: '', first_name: '', la
 watch(() => modal.open, (val) => { if (!val) staffExpanded.value = false })
 
 function openNew() {
-  Object.assign(modal, { open: true, id: null, username: '', first_name: '', last_name: '', email: '', role: 'CASHIER', password: '', is_active: true, phone_number: '', whatsapp_number: '' })
+  modal.id = null; modal.username = ''; modal.first_name = ''; modal.last_name = ''
+  modal.email = ''; modal.role = 'CASHIER'; modal.password = ''; modal.is_active = true
+  modal.phone_number = ''; modal.whatsapp_number = ''
   staffExpanded.value = false
+  modal.open = true
 }
 function openEdit(s) {
-  Object.assign(modal, { open: true, id: s.id, username: s.username, first_name: s.first_name, last_name: s.last_name, email: s.email || '', role: s.role, password: '', is_active: s.is_active, phone_number: s.phone_number || '', whatsapp_number: s.whatsapp_number || '' })
+  modal.id = s.id; modal.username = s.username; modal.first_name = s.first_name
+  modal.last_name = s.last_name; modal.email = s.email || ''; modal.role = s.role
+  modal.password = ''; modal.is_active = s.is_active
+  modal.phone_number = s.phone_number || ''; modal.whatsapp_number = s.whatsapp_number || ''
   staffExpanded.value = false
+  modal.open = true
 }
 function closeModal() { modal.open = false }
 
