@@ -41,7 +41,7 @@ export const changelog = [
     en: {
       title: 'One place to switch features on and off',
       points: [
-        ‘New Settings → Capabilities page gathers your store’s big optional features in one spot: Multi-Unit Selling, Expiry / Batch Tracking, and Weight-Based Selling.’,
+        "New Settings → Capabilities page gathers your store’s big optional features in one spot: Multi-Unit Selling, Expiry / Batch Tracking, and Weight-Based Selling.",
         'Each switch has a plain-language “?” explaining exactly what it does before you flip it.',
         'Turning a feature off never deletes anything — it just hides it, and a clear confirmation tells you what will be affected. Switch it back on and your data returns.',
         'New stores now pick a Store Type (Pharmacy, Grocery, and more) that sensibly pre-selects these switches — always adjustable afterwards.',
