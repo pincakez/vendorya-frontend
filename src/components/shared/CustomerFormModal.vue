@@ -1,5 +1,5 @@
 <template>
-  <AppModal :open="open" :title="customerId ? t('people.customer_form.title_edit') : t('people.customer_form.title_new')" @close="$emit('close')">
+  <AppModal :open="open" :title="customerId ? t('people.customer_form.title_edit') : t('people.customer_form.title_new')" width="900px" @close="$emit('close')">
     <div class="pfm-form">
 
       <!-- ── Simple fields (always visible) ── -->

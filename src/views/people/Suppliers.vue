@@ -171,7 +171,7 @@
     </AppModal>
 
     <!-- NEW SUPPLIER MODAL -->
-    <AppModal :open="newModal.open" :title="t('people.suppliers.new_modal.title')" @close="closeNew">
+    <AppModal :open="newModal.open" :title="t('people.suppliers.new_modal.title')" width="900px" @close="closeNew">
       <div class="pfm-form">
         <div class="pfm-row">
           <label class="form-label">{{ t('people.suppliers.new_modal.name_label') }} <span class="req">*</span></label>
@@ -265,7 +265,7 @@
     </AppModal>
 
     <!-- EDIT SUPPLIER MODAL -->
-    <AppModal :open="editModal.open" :title="t('people.suppliers.edit_modal.title')" @close="closeEdit">
+    <AppModal :open="editModal.open" :title="t('people.suppliers.edit_modal.title')" width="900px" @close="closeEdit">
       <div class="pfm-form">
         <div class="pfm-row">
           <label class="form-label">{{ t('people.suppliers.edit_modal.name_label') }} <span class="req">*</span></label>

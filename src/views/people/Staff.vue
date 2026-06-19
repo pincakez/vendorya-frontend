@@ -62,7 +62,7 @@
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchStaff" />
 
     <!-- MODAL: Add / Edit -->
-    <AppModal :open="modal.open" :title="modal.id ? t('people.staff.edit_title') : t('people.staff.new_title')" no-backdrop-close @close="closeModal">
+    <AppModal :open="modal.open" :title="modal.id ? t('people.staff.edit_title') : t('people.staff.new_title')" width="900px" no-backdrop-close @close="closeModal">
       <div class="pfm-form">
         <!-- Simple fields -->
         <div class="pfm-2col">
