@@ -148,7 +148,7 @@ import {
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
-  BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive,
+  BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -226,6 +226,7 @@ const groups = computed(() => [
     { label: t('nav.items.pos_settings'),    to: '/settings/pos',            icon: Keyboard },
     { label: t('nav.items.profile'),         to: '/settings/profile',        icon: User },
     { label: t('nav.items.security'),        to: '/settings/security',       icon: Lock },
+    { label: t('nav.items.whats_new'),       to: '/settings/changelog',      icon: Sparkles },
   ] },
 ])
 

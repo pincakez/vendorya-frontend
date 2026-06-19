@@ -60,6 +60,7 @@ const router = createRouter({
         { path: 'settings/taxes',       component: () => import('@/views/settings/Taxes.vue'),             meta: { store: true } },
         { path: 'settings/profile',     component: () => import('@/views/settings/Profile.vue'),           meta: { store: true } },
         { path: 'settings/security',    component: () => import('@/views/settings/Security.vue'),          meta: { store: true } },
+        { path: 'settings/changelog',   component: () => import('@/views/settings/Changelog.vue'),         meta: { store: true } },
         { path: 'settings/billing',     component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
         { path: 'settings/billing/invoices/:id',   component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
         { path: 'settings/notifications',         component: () => import('@/views/settings/NotificationPrefs.vue'), meta: { store: true } },

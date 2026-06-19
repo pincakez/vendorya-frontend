@@ -157,7 +157,7 @@ import {
   Bell, Sun, Moon, Search, ChevronDown, Check, ArrowLeft, Bot, Eye,
   LayoutDashboard, Package, ShoppingCart, SlidersHorizontal, Tag, List, FileBarChart,
   FileText, CornerDownLeft, Receipt, Clock, Wallet, Users, Truck, Briefcase,
-  LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator,
+  LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator, Sparkles,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
@@ -239,6 +239,7 @@ const PAGES = computed(() => [
   { label: t('nav.items.store_settings'), path: '/settings', group: t('nav.groups.settings'), icon: Settings },
   { label: t('nav.items.taxes'), path: '/settings/taxes', group: t('nav.groups.settings'), icon: Percent },
   { label: t('nav.items.security'), path: '/settings/security', group: t('nav.groups.settings'), icon: Lock },
+  { label: t('nav.items.whats_new'), path: '/settings/changelog', group: t('nav.groups.settings'), icon: Sparkles },
   { label: t('core.header.pos'), path: '/pos', group: t('nav.groups.general'), icon: Calculator },
 ])
 

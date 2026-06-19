@@ -1,0 +1,87 @@
+<template>
+  <div>
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('settings.changelog.title') }}</h1>
+        <p class="page-sub">{{ t('settings.changelog.sub') }}</p>
+      </div>
+    </div>
+
+    <div class="cl-timeline">
+      <div v-for="(entry, i) in entries" :key="i" class="cl-entry">
+        <div class="cl-rail">
+          <span class="cl-dot" :class="`cl-dot--${entry.tag.toLowerCase()}`"></span>
+          <span v-if="i < entries.length - 1" class="cl-line"></span>
+        </div>
+
+        <div class="settings-card cl-card">
+          <div class="cl-head">
+            <span class="cl-tag" :class="`cl-tag--${entry.tag.toLowerCase()}`">{{ tagLabel(entry.tag) }}</span>
+            <span class="cl-date">{{ fmtDate(entry.date) }}</span>
+          </div>
+          <h2 class="cl-entry-title" dir="auto">{{ pick(entry).title }}</h2>
+          <ul class="cl-points">
+            <li v-for="(p, pi) in pick(entry).points" :key="pi" dir="auto">{{ p }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div v-if="!entries.length" class="cl-empty">{{ t('settings.changelog.empty') }}</div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { changelog } from '@/data/changelog'
+
+const { t, locale } = useI18n()
+
+const entries = computed(() => changelog)
+
+// Active language → the right half of each entry; fall back to English.
+function pick(entry) {
+  return (locale.value === 'ar' && entry.ar) ? entry.ar : entry.en
+}
+
+function tagLabel(tag) {
+  return t(`settings.changelog.tag.${tag.toLowerCase()}`)
+}
+
+// Western numerals everywhere (localization rule), so format with en-GB regardless of locale.
+function fmtDate(d) {
+  try {
+    return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  } catch { return d }
+}
+</script>
+
+<style scoped>
+.cl-timeline { max-width: 760px; }
+.cl-entry { display: flex; gap: 14px; }
+
+.cl-rail { display: flex; flex-direction: column; align-items: center; padding-top: 6px; }
+.cl-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; background: var(--accent); }
+.cl-dot--new      { background: var(--accent); }
+.cl-dot--improved { background: #3b82f6; }
+.cl-dot--fixed    { background: #22c55e; }
+.cl-line { flex: 1; width: 2px; background: var(--border); margin: 6px 0; }
+
+.cl-card { flex: 1; margin-bottom: 18px; }
+.cl-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.cl-tag {
+  font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  padding: 2px 9px; border-radius: 999px; text-transform: uppercase;
+}
+.cl-tag--new      { background: color-mix(in oklab, var(--accent) 16%, transparent); color: var(--accent); }
+.cl-tag--improved { background: rgba(59,130,246,.14); color: #3b82f6; }
+.cl-tag--fixed    { background: rgba(34,197,94,.14); color: #16a34a; }
+.cl-date { font-size: 12px; color: var(--text-muted); }
+
+.cl-entry-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 10px; }
+.cl-points { margin: 0; padding-inline-start: 18px; display: flex; flex-direction: column; gap: 7px; }
+.cl-points li { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); }
+
+.cl-empty { color: var(--text-muted); padding: 30px 0; text-align: center; }
+</style>

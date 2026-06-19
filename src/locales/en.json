@@ -79,7 +79,8 @@
    "storage_aging": "Storage Aging",
    "storage_value": "Storage Value",
    "storage_movements": "Storage Movements",
-   "storage_recon": "Storage Reconciliation"
+   "storage_recon": "Storage Reconciliation",
+   "whats_new": "What's New"
   }
  },
  "common": {
@@ -2018,6 +2019,16 @@
    "confirm_delete_pm": "Delete this payment method?",
    "confirm_delete_preset": "Delete this label preset?",
    "save_service": "Save Service Settings"
+  },
+  "changelog": {
+   "title": "What's New",
+   "sub": "The latest features and improvements in Vendorya.",
+   "empty": "No updates yet.",
+   "tag": {
+    "new": "New",
+    "improved": "Improved",
+    "fixed": "Fixed"
+   }
   }
  },
  "core": {

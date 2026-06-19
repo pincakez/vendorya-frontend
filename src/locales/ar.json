@@ -78,7 +78,8 @@
    "storage_aging": "فترة التخزين",
    "storage_value": "قيمة المخزن",
    "storage_movements": "حركات المخزن",
-   "storage_recon": "تسوية المخزن"
+   "storage_recon": "تسوية المخزن",
+   "whats_new": "الجديد"
   }
  },
  "common": {
@@ -1988,6 +1989,16 @@
    "confirm_delete_pm": "حذف طريقة الدفع هذه؟",
    "confirm_delete_preset": "حذف قالب الملصق هذا؟",
    "save_service": "حفظ إعدادات الخدمات"
+  },
+  "changelog": {
+   "title": "الجديد",
+   "sub": "أحدث الميزات والتحسينات في Vendorya.",
+   "empty": "لا توجد تحديثات بعد.",
+   "tag": {
+    "new": "جديد",
+    "improved": "تحسين",
+    "fixed": "إصلاح"
+   }
   }
  },
  "core": {
