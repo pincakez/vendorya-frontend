@@ -50,7 +50,7 @@ import { useAuthStore } from '@/stores/auth'
 const { t } = useI18n()
 const emit = defineEmits(['close'])
 
-// context: 'invoice' (default) or { variantId, lineTotal } for a single cart line
+// context: 'invoice' (default) or { key, lineTotal } for a single cart line
 const props = defineProps({
   context: { type: [String, Object], default: 'invoice' },
 })
@@ -60,7 +60,7 @@ const auth = useAuthStore()
 const currSymbol = computed(() => auth.currencySymbol || 'EGP')
 
 const isLine    = computed(() => typeof props.context === 'object' && props.context !== null)
-const lineItem  = computed(() => isLine.value ? cart.items.find(i => i.variant_id === props.context.variantId) : null)
+const lineItem  = computed(() => isLine.value ? cart.items.find(i => i.key === props.context.key) : null)
 // percent is taken on the invoice's discount base (shield-aware); a fixed amount caps at the discounted subtotal
 const pctBase   = computed(() => isLine.value ? (props.context.lineTotal || 0) : cart.invoiceDiscountBase)
 const fixedBase = computed(() => isLine.value ? (props.context.lineTotal || 0) : cart.discountedSubtotal)
@@ -95,18 +95,18 @@ const preview = computed(() => {
 
 function apply() {
   if (mode.value === 'free') {
-    cart.setLineDiscount(props.context.variantId, 'free', 0)
+    cart.setLineDiscount(props.context.key, 'free', 0)
     emit('close'); return
   }
   const n = parseFloat(amount.value)
   if (isNaN(n) || n <= 0) { clear(); return }
-  if (isLine.value) cart.setLineDiscount(props.context.variantId, mode.value, n)
+  if (isLine.value) cart.setLineDiscount(props.context.key, mode.value, n)
   else              cart.setInvoiceDiscount(mode.value, n)
   emit('close')
 }
 
 function clear() {
-  if (isLine.value) cart.setLineDiscount(props.context.variantId, null)
+  if (isLine.value) cart.setLineDiscount(props.context.key, null)
   else              cart.setInvoiceDiscount(null)
   emit('close')
 }

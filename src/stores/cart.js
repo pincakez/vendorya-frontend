@@ -86,12 +86,21 @@ export const useCartStore = defineStore('cart', {
     },
     addItem(variant) {
       this._snapshot()
-      const existing = this.items.find(i => i.variant_id === variant.id)
+      // A line is identified by variant + chosen unit, so the same product sold
+      // as a Pack and as a single Tablet sit on separate lines. unit_id null =
+      // the base unit (factor 1) — i.e. exactly how every product behaved before.
+      const unitId = variant.unit_id || null
+      const key = `${variant.id}|${unitId || 'base'}`
+      const existing = this.items.find(i => i.key === key)
       if (existing) {
         existing.qty++
       } else {
         this.items.push({
+          key,
           variant_id: variant.id,
+          unit_id: unitId,
+          unit_factor: parseFloat(variant.unit_factor) || 1,
+          unit_name: variant.unit_name || '',
           name: variant.name,
           price: parseFloat(variant.price) || 0,
           qty: 1,
@@ -106,21 +115,21 @@ export const useCartStore = defineStore('cart', {
         setTimeout(() => { item._flash = false }, 600)
       }
     },
-    removeItem(variantId) {
+    removeItem(key) {
       this._snapshot()
-      this.items = this.items.filter(i => i.variant_id !== variantId)
+      this.items = this.items.filter(i => i.key !== key)
     },
-    updateQty(variantId, qty) {
+    updateQty(key, qty) {
       this._snapshot()
-      const item = this.items.find(i => i.variant_id === variantId)
+      const item = this.items.find(i => i.key === key)
       if (item) {
-        if (qty <= 0) this.items = this.items.filter(i => i.variant_id !== variantId)
+        if (qty <= 0) this.items = this.items.filter(i => i.key !== key)
         else item.qty = qty
       }
     },
-    setLineDiscount(variantId, type, value) {
+    setLineDiscount(key, type, value) {
       this._snapshot()
-      const item = this.items.find(i => i.variant_id === variantId)
+      const item = this.items.find(i => i.key === key)
       if (!item) return
       if (!type) { item.discType = null; item.discValue = 0; return }
       item.discType = type

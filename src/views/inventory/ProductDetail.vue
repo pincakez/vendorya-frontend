@@ -227,6 +227,38 @@
           </div>
         </div>
       </div>
+
+      <!-- ══ Selling units (opt-in multi-UoM) ══ -->
+      <div class="prod-units-section">
+        <div class="prod-units-head">
+          <div>
+            <div class="form-label" style="margin-bottom:2px;">{{ t('inventory.product_detail.selling_units') }}</div>
+            <div class="prod-units-hint">{{ t('inventory.product_detail.selling_units_hint', { unit: editModal.unit || 'pcs' }) }}</div>
+          </div>
+          <button class="btn-ghost btn-sm" type="button" @click="addUnitRow">+ {{ t('inventory.product_detail.add_unit') }}</button>
+        </div>
+        <table v-if="editModal.units.length" class="prod-units-table">
+          <thead>
+            <tr>
+              <th>{{ t('inventory.product_detail.unit_name') }}</th>
+              <th>{{ t('inventory.product_detail.unit_factor', { unit: editModal.unit || 'pcs' }) }}</th>
+              <th>{{ t('inventory.product_detail.sell_price_col') }}</th>
+              <th>{{ t('inventory.product_detail.barcode') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(u, i) in editModal.units" :key="i">
+              <td><input v-model="u.name" class="form-input" placeholder="Strip" /></td>
+              <td><input v-model.number="u.factor" class="form-input" type="number" min="0" step="0.001" placeholder="10" /></td>
+              <td><input v-model.number="u.sell_price" class="form-input" type="number" min="0" step="0.01" /></td>
+              <td><input v-model="u.barcode" class="form-input" :placeholder="t('common.optional')" /></td>
+              <td><button class="pcr-del-sm" type="button" @click="removeUnitRow(i)"><X :size="13" /></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <p v-if="editModal.error" class="form-label" style="color:var(--danger,#dc2626);margin-top:4px;">{{ editModal.error }}</p>
       <template #footer>
         <span style="font-size:11.5px;color:var(--text-muted);margin-right:auto;">{{ t('inventory.product_detail.alt_s_hint') }}</span>
@@ -316,8 +348,13 @@ async function removeImage() {
 const editModal = reactive({
   open: false, name: '', description: '', category: '',
   supplierName: '', base_price: 0, cost_price: 0, sell_price: 0,
-  reorder_level: 0, attrs: {}, saving: false, error: '',
+  reorder_level: 0, attrs: {}, unit: 'pcs', units: [], saving: false, error: '',
 })
+
+function addUnitRow() {
+  editModal.units.push({ id: null, name: '', factor: null, sell_price: 0, barcode: '' })
+}
+function removeUnitRow(i) { editModal.units.splice(i, 1) }
 const editCategories = ref([])
 const editAttributes = ref([])
 
@@ -350,6 +387,12 @@ async function openEditModal() {
   editModal.cost_price = v ? Number(v.cost_price || 0) : 0
   editModal.sell_price = v ? Number(v.sell_price || 0) : 0
   editModal.reorder_level = v ? Number(v.reorder_level ?? 0) : 0
+  editModal.unit = p.unit || 'pcs'
+  // Opt-in alternate units come back in selling_units; the base unit (is_base)
+  // is implicit and excluded from the editable rows.
+  editModal.units = (p.selling_units || [])
+    .filter(u => !u.is_base)
+    .map(u => ({ id: u.id, name: u.name, factor: Number(u.factor), sell_price: Number(u.price), barcode: u.barcode || '' }))
 
   // Build attrs map
   const a = {}
@@ -375,6 +418,12 @@ async function saveEdit() {
     sell_price: editModal.sell_price || 0,
     reorder_level: editModal.reorder_level ?? 0,
     attributes: attributes_payload,
+    // Only send rows that have a name + a positive factor; backend reconciles
+    // (creates new, updates by id, soft-deletes any the user removed).
+    selling_units: editModal.units
+      .filter(u => (u.name || '').trim() && Number(u.factor) > 0)
+      .map(u => ({ id: u.id || undefined, name: u.name.trim(), factor: u.factor,
+                   sell_price: u.sell_price || 0, barcode: u.barcode || '' })),
   }
   try {
     await api.patch(`/api/inventory/products/${props.id}/`, payload)
@@ -556,4 +605,25 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 .prod-prices-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 .prod-attrs-section { border-top: 1px solid var(--border); padding-top: 12px; }
 .prod-attrs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Selling units (opt-in multi-UoM) */
+.prod-units-section { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 14px; }
+.prod-units-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.prod-units-hint { font-size: 11.5px; color: var(--text-muted); max-width: 560px; line-height: 1.45; }
+.btn-sm { font-size: 12px; padding: 5px 10px; white-space: nowrap; }
+.prod-units-table { width: 100%; border-collapse: collapse; }
+.prod-units-table th {
+  font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: left;
+  padding: 4px 8px 6px; white-space: nowrap;
+}
+.prod-units-table td { padding: 3px 8px; vertical-align: middle; }
+.prod-units-table td:nth-child(2) { width: 130px; }
+.prod-units-table td:nth-child(3) { width: 120px; }
+.prod-units-table td:last-child { width: 34px; text-align: center; }
+.pcr-del-sm {
+  width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text-muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.pcr-del-sm:hover { color: var(--danger, #dc2626); border-color: var(--danger, #dc2626); }
 </style>

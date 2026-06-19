@@ -324,7 +324,13 @@
    "alt_s_hint": "Alt+S to save",
    "product_fallback": "Product",
    "err_save": "Save failed.",
-   "toast_saved": "✓ Product saved"
+   "toast_saved": "✓ Product saved",
+   "selling_units": "Selling Units",
+   "selling_units_hint": "Sell this product in bigger units (e.g. a Strip = 10, a Pack = 30). Stock stays counted in {unit}. Leave empty for a single-unit product.",
+   "add_unit": "Add unit",
+   "unit_name": "Unit name",
+   "unit_factor": "= how many {unit}",
+   "barcode": "Barcode"
   },
   "categories": {
    "title": "Categories",
@@ -936,7 +942,8 @@
    "err_stock": "Insufficient stock: ",
    "err_stock_item": "{name} (have {have}, need {need})",
    "err_failed": "Payment failed. Please try again."
-  }
+  },
+  "choose_unit": "Choose a unit"
  },
  "people": {
   "customers": {

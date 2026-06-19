@@ -149,20 +149,20 @@
         <div class="pos-cart-body">
           <TransitionGroup name="cart-row" tag="div" class="pcr-list">
             <div
-              v-for="(item, idx) in cart.items" :key="item.variant_id"
+              v-for="(item, idx) in cart.items" :key="item.key"
               :class="['pos-cart-row', { 'pcr-selected': idx === selectedRow, 'pcr-flash': item._flash }]"
               @click="selectedRow = idx"
             >
               <div class="pcr-main">
-                <span class="pcr-name">{{ item.name }}</span>
+                <span class="pcr-name">{{ item.name }}<span v-if="item.unit_name" class="pcr-unit"> · {{ item.unit_name }}</span></span>
                 <div v-if="lineTags(item).length" class="pcr-tags">
                   <span v-for="(tg, ti) in lineTags(item)" :key="ti" class="pcr-tag">{{ tg }}</span>
                 </div>
               </div>
               <div class="pcr-qty-ctrl">
-                <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.variant_id, item.qty - 1)">−</button>
+                <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.key, item.qty - 1)">−</button>
                 <span class="pcr-qty-val">{{ item.qty }}</span>
-                <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.variant_id, item.qty + 1)">+</button>
+                <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.key, item.qty + 1)">+</button>
               </div>
               <button class="pcr-disc" :class="{ 'pcr-disc--set': item.discType }" @click.stop="openLineDiscount(item)">
                 {{ lineDiscLabel(item) }}
@@ -171,7 +171,7 @@
                 <template v-if="item.discType"><s>{{ fmtNum(item.price * item.qty) }}</s> {{ fmtNum(item.price * item.qty - cart.lineDiscount(item)) }}</template>
                 <template v-else>{{ fmtNum(item.price * item.qty) }}</template>
               </span>
-              <button class="pcr-del" @click.stop="removeItem(item.variant_id)"><X :size="13" /></button>
+              <button class="pcr-del" @click.stop="removeItem(item.key)"><X :size="13" /></button>
             </div>
           </TransitionGroup>
           <div v-if="cart.isEmpty" class="pos-cart-empty">
@@ -253,6 +253,25 @@
     <BranchPickerModal v-if="showBranchPicker" @selected="onBranchSelected" />
     <PaymentModal      v-if="showPayment"   @close="showPayment = false"   @success="onPaymentSuccess" />
     <DiscountModal     v-if="showDiscount"  :context="discountCtx" @close="showDiscount = false" />
+
+    <!-- Unit picker: choose Pack / Strip / Tablet for a multi-unit product -->
+    <div v-if="unitPicker" class="pos-unit-overlay" @click.self="unitPicker = null">
+      <div class="pos-unit-card">
+        <div class="pos-unit-head">{{ unitPicker.product.name }}</div>
+        <div class="pos-unit-sub">{{ t('pos.choose_unit') }}</div>
+        <div class="pos-unit-list">
+          <button
+            v-for="u in unitPicker.units" :key="u.id || 'base'"
+            class="pos-unit-btn"
+            @click="addToCart(unitPicker.product, u)"
+          >
+            <span class="pub-name">{{ u.name }}</span>
+            <span class="pub-meta">×{{ fmtNum(u.factor) }} · {{ fmtNum(u.price) }}</span>
+          </button>
+        </div>
+        <button class="pos-unit-cancel" @click="unitPicker = null">{{ t('common.cancel') }}</button>
+      </div>
+    </div>
     <CustomerFormModal
       :open="showAddCustomer"
       :prefill-name="addCustomerPrefill.name"
@@ -486,7 +505,7 @@ function lineTags(item) {
   return out
 }
 
-async function addToCart(product) {
+async function addToCart(product, unit = null) {
   if (!pos.branchId) return
   // Guard: a product with no sellable variant would poison the draft invoice
   // (backend rejects the bad pk, the error gets swallowed, and Pay silently dies).
@@ -494,14 +513,27 @@ async function addToCart(product) {
     alert(t('pos.alert_no_variant', { name: product.name || t('pos.alert_no_variant_fallback') }))
     return
   }
+  const units = Array.isArray(product.selling_units) ? product.selling_units : []
+  // Multiple sellable units and none chosen yet → ask which (Pack/Strip/Tablet).
+  // Single-unit products skip this entirely and add silently, exactly as before.
+  if (!unit && units.length > 1) {
+    unitPicker.value = { product, units }
+    return
+  }
+  const chosen = unit || units[0] || null
+  const isBase = !chosen || chosen.is_base
   cart.addItem({
     id:    product.default_variant_id,
     name:  product.name,
-    price: product.default_variant_price,
+    price: chosen ? chosen.price : product.default_variant_price,
     stock: product.default_variant_stock,
+    unit_id:     isBase ? null : chosen.id,
+    unit_factor: chosen ? chosen.factor : 1,
+    unit_name:   isBase ? '' : chosen.name,
     attributes: product.attributes_summary || null,
     category:   product.category_name || '',
   })
+  unitPicker.value = null
   searchQuery.value = ''
   searchResults.value = []
   pos.triggerScan()
@@ -517,7 +549,7 @@ async function addToCart(product) {
 function removeLast() {
   if (cart.isEmpty) return
   const last = cart.items[cart.items.length - 1]
-  cart.removeItem(last.variant_id)
+  cart.removeItem(last.key)
   schedulePatch()
 }
 
@@ -547,6 +579,7 @@ async function syncInvoice() {
     discount: cart.invoiceDiscountAmount,
     items:    cart.items.map(i => ({
       variant: i.variant_id,
+      unit: i.unit_id,            // null = base unit; backend freezes the factor
       quantity: i.qty,
       unit_price: i.price,
       discount_amount: cart.lineDiscount(i),
@@ -562,12 +595,12 @@ async function syncInvoice() {
   } catch { /* best-effort */ }
 }
 
-watch(() => cart.items.map(i => `${i.variant_id}:${i.qty}:${i.discType || ''}:${i.discValue || 0}`).join(), schedulePatch)
+watch(() => cart.items.map(i => `${i.key}:${i.qty}:${i.discType || ''}:${i.discValue || 0}`).join(), schedulePatch)
 watch(() => cart.customerId, schedulePatch)
 watch(() => `${cart.invDiscType || ''}:${cart.invDiscValue}:${cart.additive}`, schedulePatch)
 
-function removeItem(variantId) {
-  cart.removeItem(variantId)
+function removeItem(key) {
+  cart.removeItem(key)
   if (selectedRow.value >= cart.items.length) selectedRow.value = cart.items.length - 1
   schedulePatch()
 }
@@ -684,7 +717,10 @@ async function resumeHeld(i) {
 // ── Payment ──────────────────────────────────────────────────
 const showPayment    = ref(false)
 const showDiscount   = ref(false)
-const discountCtx    = ref('invoice')   // 'invoice' or { variantId, lineTotal }
+const discountCtx    = ref('invoice')   // 'invoice' or { key, lineTotal }
+// Unit picker: set to { product, units } when a multi-unit product needs a
+// Pack/Strip/Tablet choice before it can be added to the cart.
+const unitPicker     = ref(null)
 const successInvoice = ref(null)
 
 // ── Numpad / calculator ──────────────────────────────────────
@@ -705,7 +741,7 @@ function openInvoiceDiscount() {
   showDiscount.value = true
 }
 function openLineDiscount(item) {
-  discountCtx.value = { variantId: item.variant_id, lineTotal: item.price * item.qty }
+  discountCtx.value = { key: item.key, lineTotal: item.price * item.qty }
   showDiscount.value = true
 }
 function lineDiscLabel(item) {
@@ -849,7 +885,7 @@ function onGlobalKey(e) {
   if (k === 'ArrowUp')   { e.preventDefault(); selectedRow.value = Math.max(selectedRow.value - 1, 0); return }
   if ((k === 'Delete' || k === 'Backspace') && selectedRow.value >= 0 && cart.items[selectedRow.value]) {
     e.preventDefault()
-    removeItem(cart.items[selectedRow.value].variant_id)
+    removeItem(cart.items[selectedRow.value].key)
     return
   }
 
@@ -882,6 +918,36 @@ function fmtNum(n) {
 .pos-view {
   height: 100%;
   background: var(--bg-app); outline: none; position: relative; overflow: hidden;
+}
+
+/* ── Unit picker overlay ─────────────────────────────────────── */
+.pos-unit-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+}
+.pos-unit-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px; width: 320px; max-width: 90vw;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+.pos-unit-head { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.pos-unit-sub  { font-size: 12px; color: var(--text-secondary); margin: 2px 0 12px; }
+.pos-unit-list { display: flex; flex-direction: column; gap: 8px; }
+.pos-unit-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 14px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg-app);
+  cursor: pointer; transition: transform .08s ease, border-color .12s ease;
+}
+.pos-unit-btn:hover  { border-color: var(--accent); }
+.pos-unit-btn:active { transform: scale(0.97); }
+.pub-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.pub-meta { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.pos-unit-cancel {
+  width: 100%; margin-top: 12px; padding: 9px; border-radius: 9px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-secondary); font-weight: 600; cursor: pointer;
 }
 
 /* Compact wrapper: render at 1/0.78 size then scale down to 0.78 → ~22% smaller
@@ -1064,6 +1130,7 @@ function fmtNum(n) {
 }
 .pcr-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .pcr-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcr-unit { font-size: 11px; font-weight: 700; color: var(--accent); }
 .pcr-tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .pcr-tag {
   font-size: 10px; font-weight: 700; color: var(--text-secondary);
