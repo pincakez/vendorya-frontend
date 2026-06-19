@@ -185,6 +185,18 @@
               <input v-else v-model="row._attrs[def.id]" class="form-input" :placeholder="def.name" />
             </div>
           </div>
+
+          <!-- Expiry / batch capture — only for expiry-tracked products -->
+          <div v-if="row.track_expiry && !readOnly" class="item-extra item-expiry">
+            <div class="ie-field">
+              <label class="ie-label">{{ t('inventory.purchases.expiry_date') }}</label>
+              <input v-model="row.expiry_date" type="date" class="form-input" />
+            </div>
+            <div class="ie-field">
+              <label class="ie-label">{{ t('inventory.purchases.batch_number') }}</label>
+              <input v-model="row.batch_number" class="form-input" :placeholder="t('common.optional')" />
+            </div>
+          </div>
         </div>
 
         <button v-if="!readOnly" class="btn-ghost" style="margin-top:10px;" @click="addRow">
@@ -378,6 +390,7 @@ const modalTotal = computed(() =>
 
 function blankRow() {
   return { kind: 'new', variant: '', sku: '', name: '', quantity: 1, base_price: '', retail_price: '',
+           track_expiry: false, expiry_date: '', batch_number: '',
            category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null }
 }
 
@@ -398,6 +411,7 @@ function loadModal(p) {
   for (const it of (p.items || [])) {
     rows.push({ kind: 'existing', variant: it.variant, sku: it.sku, name: it.product_name,
                 quantity: Number(it.quantity), base_price: it.unit_cost, retail_price: it.retail_price,
+                track_expiry: !!it.track_expiry, expiry_date: it.expiry_date || '', batch_number: it.batch_number || '',
                 category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null })
   }
   for (const d of (p.draft_items || [])) {
@@ -456,6 +470,7 @@ function pickProduct(row, r) {
   row.variant = r.default_variant_id
   row.sku = r.sku_display
   row.name = r.name
+  row.track_expiry = !!r.track_expiry   // drives the expiry capture row below
   if (row.retail_price === '' || row.retail_price == null) row.retail_price = r.default_variant_price
   row._open = false
   row._results = []
@@ -475,6 +490,10 @@ function rowsToLines() {
     .map(r => {
       const base = { quantity: Number(r.quantity) || 1, base_price: Number(r.base_price) || 0,
                      retail_price: r.retail_price === '' || r.retail_price == null ? null : Number(r.retail_price) }
+      if (r.track_expiry) {
+        base.expiry_date = r.expiry_date || null
+        base.batch_number = r.batch_number || ''
+      }
       if (r.variant) return { variant: r.variant, ...base }
       const attributes = Object.entries(r._attrs || {})
         .filter(([, v]) => v !== '' && v != null)

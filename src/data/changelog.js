@@ -12,6 +12,30 @@ export const changelog = [
     date: '2026-06-19',
     tag: 'New',
     en: {
+      title: 'Track expiry dates and sell oldest stock first',
+      points: [
+        'Perfect for pharmacies and anything with a shelf life: each delivery of a product is now kept as its own batch with its own expiry date.',
+        'When you sell, the register automatically takes from the batch that expires soonest — so older stock leaves first and waste goes down.',
+        'A new Expiry & Batches report shows what is expired and what is expiring soon, with the money value of each. A “Scan now” button alerts you on demand.',
+        'You can warn the cashier — or fully block the sale — when stock has already expired.',
+        'Completely optional: turn it on in Settings, then switch it on for the products that need it. Stores that do not use it (like a laptop shop) see nothing change.',
+      ],
+    },
+    ar: {
+      title: 'تتبّع تواريخ الصلاحية وبيع الأقدم أولاً',
+      points: [
+        'مثالية للصيدليات وكل ما له مدة صلاحية: تُحفظ كل دفعة واردة من المنتج كدفعة مستقلة بتاريخ انتهائها الخاص.',
+        'عند البيع، يأخذ النظام تلقائياً من الدفعة الأقرب انتهاءً — فيخرج المخزون الأقدم أولاً ويقل الهدر.',
+        'تقرير جديد «الصلاحية والدفعات» يعرض المنتهي والقريب من الانتهاء مع قيمته بالمال، وزر «فحص الآن» ينبّهك عند الطلب.',
+        'يمكنك تحذير الكاشير — أو منع البيع تماماً — عندما يكون المخزون منتهي الصلاحية.',
+        'اختيارية بالكامل: فعّلها من الإعدادات ثم شغّلها للمنتجات التي تحتاجها. المتاجر التي لا تستخدمها (كمحل لابتوبات) لن يتغير لديها شيء.',
+      ],
+    },
+  },
+  {
+    date: '2026-06-19',
+    tag: 'New',
+    en: {
       title: 'Sell by piece, strip, or full pack',
       points: [
         'A product can now be sold in more than one size from the same stock — for example, a medicine box sold as a single tablet, a strip, or a whole pack.',

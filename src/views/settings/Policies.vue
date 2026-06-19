@@ -27,6 +27,40 @@
         </div>
       </div>
 
+      <!-- Expiry / Batch Tracking -->
+      <div class="policy-card">
+        <div class="policy-icon" style="background:#fef3c7;color:#d97706;"><CalendarClock :size="20" /></div>
+        <div class="policy-body">
+          <div class="policy-title">{{ t('settings.policies.expiry_title') }}</div>
+          <div class="policy-desc">{{ t('settings.policies.expiry_desc') }}</div>
+          <div class="policy-footer">
+            <span class="policy-status" :class="form.expiry_tracking_enabled ? 'status-on' : 'status-off'">
+              {{ form.expiry_tracking_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.expiry_tracking_enabled }" @click="toggle('expiry_tracking_enabled')">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+          <!-- Sub-options only when tracking is on -->
+          <template v-if="form.expiry_tracking_enabled">
+            <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px;">
+              <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">{{ t('settings.policies.expiry_sale_policy') }}</div>
+              <div class="policy-footer" style="gap:8px;flex-wrap:wrap;justify-content:flex-start;">
+                <button v-for="opt in expiredPolicyOptions" :key="opt.value"
+                  class="mode-btn" :class="{ active: form.expired_sale_policy === opt.value }"
+                  @click="form.expired_sale_policy = opt.value"
+                >{{ opt.label }}</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:14px;">
+                <span style="font-size:13px;color:var(--text-muted);">{{ t('settings.policies.expiry_alert_days') }}</span>
+                <input v-model.number="form.expiry_alert_days" type="number" min="1" max="365" step="1" class="num-input" style="width:90px;" />
+                <span style="font-size:12px;color:var(--text-muted);">{{ t('settings.policies.days') }}</span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
       <!-- Credit Policy -->
       <div class="policy-card">
         <div class="policy-icon" style="background:var(--success-soft);color:var(--success);"><CreditCard :size="20" /></div>
@@ -150,7 +184,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Package, CreditCard, Percent, CheckCircle, Clock, Globe, Hash, AlertCircle } from 'lucide-vue-next'
+import { Package, CreditCard, Percent, CheckCircle, Clock, Globe, Hash, AlertCircle, CalendarClock } from 'lucide-vue-next'
 import api from '@/api/axios'
 
 const { t } = useI18n()
@@ -161,6 +195,7 @@ const saved   = ref(false)
 const taxes   = ref([])
 const form    = reactive({
   allow_negative_stock: false, enable_agel_selling: true, default_tax: '',
+  expiry_tracking_enabled: false, expired_sale_policy: 'WARN', expiry_alert_days: 60,
   credit_policy: 'ALLOW', default_credit_limit: null,
   product_numbering_mode: 'PROGRESSIVE',
   force_2fa_managers: false, session_timeout_minutes: 0, login_ip_allowlist: '',
@@ -170,6 +205,12 @@ const creditPolicyOptions = computed(() => [
   { value: 'ALLOW', label: t('settings.policies.allow') },
   { value: 'WARN',  label: t('settings.policies.warn') },
   { value: 'BLOCK', label: t('settings.policies.block') },
+])
+
+const expiredPolicyOptions = computed(() => [
+  { value: 'ALLOW', label: t('settings.policies.exp_allow') },
+  { value: 'WARN',  label: t('settings.policies.exp_warn') },
+  { value: 'BLOCK', label: t('settings.policies.exp_block') },
 ])
 
 function toggle(field) { form[field] = !form[field] }
@@ -184,6 +225,9 @@ async function load() {
     Object.assign(form, {
       allow_negative_stock:    settingsRes.data.allow_negative_stock,
       enable_agel_selling:     settingsRes.data.enable_agel_selling,
+      expiry_tracking_enabled: settingsRes.data.expiry_tracking_enabled ?? false,
+      expired_sale_policy:     settingsRes.data.expired_sale_policy || 'WARN',
+      expiry_alert_days:       settingsRes.data.expiry_alert_days ?? 60,
       credit_policy:           settingsRes.data.credit_policy || 'ALLOW',
       default_credit_limit:    settingsRes.data.default_credit_limit ?? null,
       default_tax:             settingsRes.data.default_tax || '',
@@ -203,6 +247,9 @@ async function save() {
     await api.patch('/api/core/settings/', {
       allow_negative_stock:    form.allow_negative_stock,
       enable_agel_selling:     form.enable_agel_selling,
+      expiry_tracking_enabled: form.expiry_tracking_enabled,
+      expired_sale_policy:     form.expired_sale_policy,
+      expiry_alert_days:       form.expiry_alert_days || 60,
       credit_policy:           form.credit_policy,
       default_credit_limit:    (form.credit_policy !== 'ALLOW' && form.default_credit_limit) ? form.default_credit_limit : null,
       default_tax:             form.default_tax || null,

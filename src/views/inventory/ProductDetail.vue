@@ -173,6 +173,43 @@
       </div>
     </div>
 
+    <!-- ══ EXPIRY BATCHES (FEFO) ══ -->
+    <div v-if="product && product.track_expiry" class="variants-card">
+      <div class="section-header">
+        <h2 class="section-title">{{ t('inventory.product_detail.batches_section') }}</h2>
+        <span class="count-badge">{{ (product.batches || []).length }}</span>
+      </div>
+      <div class="dt-xscroll">
+        <table class="dt">
+          <thead>
+            <tr>
+              <th class="dt-th">{{ t('inventory.product_detail.batch_expiry') }}</th>
+              <th class="dt-th">{{ t('inventory.product_detail.batch_no') }}</th>
+              <th class="dt-th">{{ t('inventory.product_detail.batch_branch') }}</th>
+              <th class="dt-th">{{ t('inventory.product_detail.batch_qty') }}</th>
+              <th class="dt-th">{{ t('inventory.product_detail.batch_status') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="!(product.batches || []).length">
+              <td colspan="5" class="dt-empty">{{ t('inventory.product_detail.no_batches') }}</td>
+            </tr>
+            <tr v-for="b in (product.batches || [])" :key="b.id" class="dt-row">
+              <td class="fw6">{{ b.expiry_date || '—' }}</td>
+              <td class="mono">{{ b.batch_number || '—' }}</td>
+              <td class="text-muted">{{ b.branch }}</td>
+              <td class="fw6">{{ b.quantity_remaining }}</td>
+              <td>
+                <span v-if="b.is_expired" class="batch-pill batch-expired">{{ t('inventory.product_detail.batch_expired') }}</span>
+                <span v-else-if="b.days_left != null && b.days_left <= 60" class="batch-pill batch-soon">{{ t('inventory.product_detail.batch_days_left', { n: b.days_left }) }}</span>
+                <span v-else class="batch-pill batch-ok">{{ t('inventory.product_detail.batch_ok') }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- ══ EDIT PRODUCT MODAL ══ -->
     <AppModal v-if="product" :open="editModal.open" :title="t('inventory.product_detail.edit_product_btn')" width="900px" :noBackdropClose="true" @close="editModal.open = false">
       <div class="prod-modal-grid">
@@ -226,6 +263,17 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- ══ Expiry / batch tracking (opt-in, gated by store switch) ══ -->
+      <div v-if="expiryEnabled" class="prod-expiry-row">
+        <label class="prod-expiry-toggle">
+          <input type="checkbox" v-model="editModal.track_expiry" />
+          <span>
+            <span class="form-label" style="margin-bottom:2px;">{{ t('inventory.product_detail.track_expiry') }}</span>
+            <span class="prod-units-hint">{{ t('inventory.product_detail.track_expiry_hint') }}</span>
+          </span>
+        </label>
       </div>
 
       <!-- ══ Selling units (opt-in multi-UoM) ══ -->
@@ -348,8 +396,12 @@ async function removeImage() {
 const editModal = reactive({
   open: false, name: '', description: '', category: '',
   supplierName: '', base_price: 0, cost_price: 0, sell_price: 0,
-  reorder_level: 0, attrs: {}, unit: 'pcs', units: [], saving: false, error: '',
+  reorder_level: 0, attrs: {}, unit: 'pcs', units: [], track_expiry: false, saving: false, error: '',
 })
+
+// Store master switch — gates the per-product expiry checkbox + batch panel so
+// non-pharmacy stores never see the option.
+const expiryEnabled = ref(false)
 
 function addUnitRow() {
   editModal.units.push({ id: null, name: '', factor: null, sell_price: 0, barcode: '' })
@@ -376,6 +428,10 @@ async function openEditModal() {
       editAttributes.value = attrRes.data.results ?? attrRes.data
     } catch { /* noop */ }
   }
+  try {
+    const s = await api.get('/api/core/settings/')
+    expiryEnabled.value = !!s.data.expiry_tracking_enabled
+  } catch { /* noop */ }
 
   const p = product.value
   const v = p.variants?.[0]
@@ -388,6 +444,7 @@ async function openEditModal() {
   editModal.sell_price = v ? Number(v.sell_price || 0) : 0
   editModal.reorder_level = v ? Number(v.reorder_level ?? 0) : 0
   editModal.unit = p.unit || 'pcs'
+  editModal.track_expiry = !!p.track_expiry
   // Opt-in alternate units come back in selling_units; the base unit (is_base)
   // is implicit and excluded from the editable rows.
   editModal.units = (p.selling_units || [])
@@ -417,6 +474,7 @@ async function saveEdit() {
     cost_price: editModal.cost_price || 0,
     sell_price: editModal.sell_price || 0,
     reorder_level: editModal.reorder_level ?? 0,
+    track_expiry: editModal.track_expiry,
     attributes: attributes_payload,
     // Only send rows that have a name + a positive factor; backend reconciles
     // (creates new, updates by id, soft-deletes any the user removed).
@@ -597,6 +655,15 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 .attr-tag { display:inline-block; padding:2px 8px; border-radius:20px; background:var(--accent-soft,rgba(247,143,30,0.10)); color:var(--accent); font-size:11px; font-weight:600; margin:1px 3px 1px 0; }
 .branch-stock { display:flex; flex-wrap:wrap; gap:4px; }
 .branch-chip { display:inline-block; padding:2px 8px; border-radius:6px; background:var(--border); color:var(--text-secondary); font-size:11.5px; font-weight:500; }
+
+.batch-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; }
+.batch-expired { background:#fee2e2; color:#dc2626; }
+.batch-soon { background:#fef3c7; color:#d97706; }
+.batch-ok { background:#dcfce7; color:#16a34a; }
+.prod-expiry-row { border-top:1px solid var(--border); padding-top:14px; margin-top:4px; }
+.prod-expiry-toggle { display:flex; gap:10px; align-items:flex-start; cursor:pointer; }
+.prod-expiry-toggle input { margin-top:3px; width:16px; height:16px; accent-color:var(--accent); }
+.prod-expiry-toggle > span { display:flex; flex-direction:column; }
 
 /* ── Edit modal shared styles ── */
 .prod-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }

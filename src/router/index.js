@@ -48,6 +48,7 @@ const router = createRouter({
         { path: 'reports/storage-value',          component: () => import('@/views/reports/StorageValue.vue'),          meta: { store: true } },
         { path: 'reports/storage-movements',      component: () => import('@/views/reports/StorageMovements.vue'),      meta: { store: true } },
         { path: 'reports/storage-reconciliation', component: () => import('@/views/reports/StorageReconciliation.vue'), meta: { store: true } },
+        { path: 'reports/expiry',           component: () => import('@/views/reports/ExpiryReport.vue'),       meta: { store: true } },
         { path: 'people/customers',         component: () => import('@/views/people/Customers.vue'),          meta: { store: true } },
         { path: 'people/customers/:id',     component: () => import('@/views/people/CustomerDetail.vue'),   meta: { store: true }, props: true },
         { path: 'people/suppliers',         component: () => import('@/views/people/Suppliers.vue'),          meta: { store: true } },

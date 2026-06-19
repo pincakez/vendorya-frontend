@@ -158,10 +158,14 @@ async function confirm() {
       copies: doublePrint.value ? 2 : 1,
     })
   } catch (e) {
-    const detail = e?.response?.data?.detail
-    if (typeof detail === 'string') error.value = detail
-    else if (e?.response?.data?.shortages) {
-      const s = e.response.data.shortages
+    const data = e?.response?.data
+    if (data?.expired) {
+      const names = data.expired.map(x => x.name).join(', ')
+      error.value = t('pos.payment.err_expired', { names })
+    } else if (typeof data?.detail === 'string') {
+      error.value = data.detail
+    } else if (data?.shortages) {
+      const s = data.shortages
       error.value = t('pos.payment.err_stock') + s.map(x => t('pos.payment.err_stock_item', { name: x.name, have: x.available, need: x.requested })).join(', ')
     } else {
       error.value = t('pos.payment.err_failed')

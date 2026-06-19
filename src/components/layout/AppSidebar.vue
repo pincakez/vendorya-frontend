@@ -148,7 +148,7 @@ import {
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
-  BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles,
+  BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles, CalendarClock,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -205,6 +205,7 @@ const groups = computed(() => [
     { label: t('nav.items.storage_value'), to: '/reports/storage-value', icon: Wallet },
     { label: t('nav.items.storage_movements'), to: '/reports/storage-movements', icon: ArrowDownUp },
     { label: t('nav.items.storage_recon'), to: '/reports/storage-reconciliation', icon: ShieldCheck },
+    { label: t('nav.items.expiry'),        to: '/reports/expiry',       icon: CalendarClock },
   ] },
   { id: 'people', title: t('nav.groups.people'), icon: Users, items: [
     { label: t('nav.items.customers'), to: '/people/customers', icon: Users },
