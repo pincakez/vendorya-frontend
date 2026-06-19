@@ -352,12 +352,11 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
   background: linear-gradient(155deg, #34d399 0%, #059669 100%);
   color: #fff; border: none; border-radius: 12px;
   font-size: 13px; font-weight: 800; letter-spacing: .06em; cursor: pointer;
-  box-shadow: 0 4px 14px rgba(16,185,129,.38), inset 0 1px 0 rgba(255,255,255,.22);
   text-shadow: 0 1px 2px rgba(0,0,0,.18);
-  transition: box-shadow 160ms, filter 160ms, transform 100ms;
+  transition: filter 160ms, transform 100ms;
 }
-.nsb-srv-btn:hover  { filter: brightness(1.07); box-shadow: 0 6px 20px rgba(16,185,129,.5), inset 0 1px 0 rgba(255,255,255,.28); }
-.nsb-srv-btn:active { transform: scale(0.94); box-shadow: 0 2px 8px rgba(16,185,129,.3); }
+.nsb-srv-btn:hover  { filter: brightness(1.07); }
+.nsb-srv-btn:active { transform: scale(0.94); }
 
 /* Collapsed POS/SRV row */
 .nsb-pos-collapsed-row { display: flex; flex-direction: column; gap: 6px; align-items: center; }
@@ -366,11 +365,10 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
   background: linear-gradient(155deg, #34d399 0%, #059669 100%);
   color: #fff; border: none; border-radius: 10px;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
-  box-shadow: 0 4px 12px rgba(16,185,129,.35), inset 0 1px 0 rgba(255,255,255,.2);
-  transition: box-shadow 160ms, filter 160ms, transform 100ms;
+  transition: filter 160ms, transform 100ms;
 }
-.nsb-srv-btn-col:hover  { filter: brightness(1.07); box-shadow: 0 5px 16px rgba(16,185,129,.48); }
-.nsb-srv-btn-col:active { transform: scale(0.94); box-shadow: 0 2px 6px rgba(16,185,129,.28); }
+.nsb-srv-btn-col:hover  { filter: brightness(1.07); }
+.nsb-srv-btn-col:active { transform: scale(0.94); }
 
 .nsb-solo { margin-bottom: 0; }
 
