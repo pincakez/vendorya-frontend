@@ -5,8 +5,8 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/package.json": {
-    "mtime": 1781492482.9351277,
-    "ast_hash": "75ce14c35a4bda0a08df63719cde6f0d",
+    "mtime": 1781914367.2326167,
+    "ast_hash": "f9bab9ce3c67d02d4bffdf1aaa1cc994",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/main.js": {
@@ -25,13 +25,13 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/components/layout/AppHeader.vue": {
-    "mtime": 1781874307.9275806,
-    "ast_hash": "22c8748b763e7cb06b3deadd7859d0f2",
+    "mtime": 1781909550.3900192,
+    "ast_hash": "1e69fd30e6aaac2a877d9ce9e5ce3e0a",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/components/layout/AppSidebar.vue": {
-    "mtime": 1781892763.8773043,
-    "ast_hash": "efa762e82a1bb40d11563e97bd3fcfd2",
+    "mtime": 1781909493.464624,
+    "ast_hash": "90274b87be7b4d6161e32d8b3cab8915",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/components/layout/AppFooter.vue": {
@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/components/shared/CustomerFormModal.vue": {
-    "mtime": 1781419576.1521509,
-    "ast_hash": "30426e44bf34deef850d32bf498e12a8",
+    "mtime": 1781915282.2939112,
+    "ast_hash": "b0f9c3130ae332f0c64c012de4f2a5cd",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/layouts/POSLayout.vue": {
@@ -210,8 +210,8 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/WidgetGallery.vue": {
-    "mtime": 1781149821.5403068,
-    "ast_hash": "b1161e0ba318482f5c89d301bf1e73ac",
+    "mtime": 1781915344.3899071,
+    "ast_hash": "601091ad08cf78177358e55f91e90626",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/admin/AdminAlerts.vue": {
@@ -260,8 +260,8 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/people/Staff.vue": {
-    "mtime": 1781497569.8144972,
-    "ast_hash": "15ddaa6b526d311d0132e02985186e9e",
+    "mtime": 1781913297.707783,
+    "ast_hash": "bf96a969bf638fea8a62b7af7c87b9f5",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/people/SupplierDetail.vue": {
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/people/Suppliers.vue": {
-    "mtime": 1781497569.8144972,
-    "ast_hash": "10dba22976d747bebfee4e0c12d208ed",
+    "mtime": 1781912042.7299626,
+    "ast_hash": "34aeae1bd70f1bd47cf5bc96f0337695",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/people/CustomerDetail.vue": {
@@ -280,13 +280,13 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/people/Customers.vue": {
-    "mtime": 1781497569.8144972,
-    "ast_hash": "d766dab6a3c313edafc603a830af14e0",
+    "mtime": 1781913287.36195,
+    "ast_hash": "bca717b657fde65dc7293a624039c13b",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/NotificationPrefs.vue": {
-    "mtime": 1781421677.6306427,
-    "ast_hash": "37115d66e4dae95140bff267111cf7fb",
+    "mtime": 1781918805.737189,
+    "ast_hash": "f866ab2c5e093e4a7b8e04cc7a58817e",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/PaymentMethods.vue": {
@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/StoreSettings.vue": {
-    "mtime": 1781422443.6089008,
-    "ast_hash": "78f2dbc7c9b756e52ec790aa1d5f51c7",
+    "mtime": 1781909614.3048456,
+    "ast_hash": "358014aa68481f224bb5ef7bb37feeff",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/Taxes.vue": {
@@ -390,8 +390,8 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/services/Services.vue": {
-    "mtime": 1781497569.8252585,
-    "ast_hash": "312561a252ab046d9fbb0ea1c5de7705",
+    "mtime": 1781909766.6168125,
+    "ast_hash": "34e59a969cbb35ad099eb2768b296a0d",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/finance/Shifts.vue": {
@@ -415,8 +415,8 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/Products.vue": {
-    "mtime": 1781497573.464091,
-    "ast_hash": "a3e88c1ab34a8419562b6a73e95aaedf",
+    "mtime": 1781909665.198649,
+    "ast_hash": "534af9a4c3aacef4ee27cc16d6b133a9",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/inventory/Categories.vue": {
@@ -680,13 +680,13 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/locales/en.json": {
-    "mtime": 1781895033.7325993,
-    "ast_hash": "dbb1a94367a436e703468f84e1d57d28",
+    "mtime": 1781918830.5896335,
+    "ast_hash": "4ee27e937191b18415d16707d657e8b5",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/locales/ar.json": {
-    "mtime": 1781895066.8248816,
-    "ast_hash": "8914e042f855d43366bf3230b9a7455f",
+    "mtime": 1781918849.0042484,
+    "ast_hash": "dfab8a0b415c50144eed42bc41c5a947",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/skills-lock.json": {
@@ -699,19 +699,9 @@
     "ast_hash": "39fcaa6fd7f6d4d670500978ca977562",
     "semantic_hash": ""
   },
-  "/home/ubuntu/vendorya/backups/db_20260619_2102.sql": {
-    "mtime": 1781892161.6187272,
-    "ast_hash": "cfa082ad2d107e2f1ad7188e5ed6a918",
-    "semantic_hash": ""
-  },
   "/home/ubuntu/vendorya/backups/db_20260619_2154.sql": {
     "mtime": 1781895280.7107365,
     "ast_hash": "47b5d60860b93514c28ecd9dee062368",
-    "semantic_hash": ""
-  },
-  "/home/ubuntu/vendorya/backups/db_20260619_2124.sql": {
-    "mtime": 1781893496.7605138,
-    "ast_hash": "4d5e26e542ddbbc517f6e8a2878804fa",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/backups/db_20260620_0136.sql": {
@@ -719,44 +709,14 @@
     "ast_hash": "2fcff91f567c5308956fe91850ae82f4",
     "semantic_hash": ""
   },
-  "/home/ubuntu/vendorya/backups/db_20260619_2146.sql": {
-    "mtime": 1781894776.056428,
-    "ast_hash": "99c49ea4468dc6f0238fe76a8fc177f8",
-    "semantic_hash": ""
-  },
   "/home/ubuntu/vendorya/backups/backup_vendorya_db_PROD.sh": {
     "mtime": 1781103064.3289874,
     "ast_hash": "efb93354d5e95652af2081ef13c978dc",
     "semantic_hash": ""
   },
-  "/home/ubuntu/vendorya/backups/db_20260619_1558.sql": {
-    "mtime": 1781873938.7277534,
-    "ast_hash": "f1fd250c71bd2b70bedd00946ae082e0",
-    "semantic_hash": ""
-  },
-  "/home/ubuntu/vendorya/backups/db_20260619_1633.sql": {
-    "mtime": 1781876005.0831437,
-    "ast_hash": "22e9b1a64bd8b4e7695d45db59f013b7",
-    "semantic_hash": ""
-  },
-  "/home/ubuntu/vendorya/backups/db_20260619_1548.sql": {
-    "mtime": 1781873298.7087336,
-    "ast_hash": "d8b11dc1d49bf55692100739053a0468",
-    "semantic_hash": ""
-  },
   "/home/ubuntu/vendorya/backups/backup_db.sh": {
     "mtime": 1779869635.8377333,
     "ast_hash": "705bbcaa487ad85ee509f5fc554e179f",
-    "semantic_hash": ""
-  },
-  "/home/ubuntu/vendorya/backups/db_20260619_2108.sql": {
-    "mtime": 1781892525.205363,
-    "ast_hash": "85845fe5555f7c4edb12f648c6878f52",
-    "semantic_hash": ""
-  },
-  "/home/ubuntu/vendorya/backups/db_20260619_2031.sql": {
-    "mtime": 1781890282.292318,
-    "ast_hash": "b1ec83c14121c9a7e89d3439d5d8f661",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-backend/create_roles.py": {
@@ -1995,13 +1955,13 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/Changelog.vue": {
-    "mtime": 1781891191.7197526,
-    "ast_hash": "9c2aa59111bbb87ebb0f1ae9065c1b7b",
+    "mtime": 1781916658.4266324,
+    "ast_hash": "494e7ce1f207f35b9b34ebb546a9b107",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/PosCartDisplay.vue": {
-    "mtime": 1781480316.8291545,
-    "ast_hash": "622cd34d80b25d332c9bf4fcb7946cc7",
+    "mtime": 1781909456.8372226,
+    "ast_hash": "be3ccec28f7b529f7e02fef3e342d218",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/views/settings/PosSettings.vue": {
@@ -2055,8 +2015,8 @@
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/vendorya-frontend/src/data/changelog.js": {
-    "mtime": 1781908739.1202757,
-    "ast_hash": "ec349e336b35f5b689fe25eacbbc1113",
+    "mtime": 1781941615.4419901,
+    "ast_hash": "3be4ff1df75c77bbe4106f383895c0a0",
     "semantic_hash": ""
   },
   "/home/ubuntu/vendorya/.claude/settings.json": {
@@ -2292,6 +2252,121 @@
   "/home/ubuntu/vendorya/vendorya-backend/static/img/logo.png": {
     "mtime": 1771798200.9885385,
     "ast_hash": "ad3d5fd07aec3ad43cd1afcd75720d46",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/scripts/convert-sounds.sh": {
+    "mtime": 1781918254.0582623,
+    "ast_hash": "3987e829f0d09566627758ad60144431",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/scripts/gen-placeholder-sounds.sh": {
+    "mtime": 1781918306.359686,
+    "ast_hash": "95e8b25b18786090cdd818ea06924a68",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/scripts/check-i18n-at.mjs": {
+    "mtime": 1781914352.3042839,
+    "ast_hash": "04e7a61278fbd813db3fe9941ededcfd",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/ogg/s02.ogg": {
+    "mtime": 1781918362.0613685,
+    "ast_hash": "2b07f234040ebb0347c816d46929dcd8",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/ogg/s06.ogg": {
+    "mtime": 1781918362.9388685,
+    "ast_hash": "4b416a1bcd5191009d151832f8c3e2ad",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/ogg/s03.ogg": {
+    "mtime": 1781918362.2563684,
+    "ast_hash": "8b6807a15590a91e9333618ea15ba7b0",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/ogg/s01.ogg": {
+    "mtime": 1781918361.9097018,
+    "ast_hash": "cbcc36c3c8cc7bdb3a9df0698c0ff6e7",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/ogg/s05.ogg": {
+    "mtime": 1781918362.7113683,
+    "ast_hash": "6757e8cf25a8767b7963ba9157b21dc1",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/ogg/s10.ogg": {
+    "mtime": 1781918363.6972017,
+    "ast_hash": "7e92e50ed4783687103c3fe6db15ada3",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/ogg/s08.ogg": {
+    "mtime": 1781918363.3180351,
+    "ast_hash": "2309735f243be8462ae070f10973c327",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/ogg/s09.ogg": {
+    "mtime": 1781918363.5022018,
+    "ast_hash": "e82aa77531e5756530229cd7528d865b",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/ogg/s04.ogg": {
+    "mtime": 1781918362.4838684,
+    "ast_hash": "30967593c16f737d48aebecbc6f2b4a8",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/ogg/s07.ogg": {
+    "mtime": 1781918363.1338685,
+    "ast_hash": "f89236aaac2dcc4ec246b555d039651f",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/mp3/s03.mp3": {
+    "mtime": 1781918362.3647017,
+    "ast_hash": "c69556af7a48f151c84b01a73fe0bcd9",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/mp3/s10.mp3": {
+    "mtime": 1781918363.773035,
+    "ast_hash": "1506529052a405bf7fb59d553f5d5935",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/mp3/s07.mp3": {
+    "mtime": 1781918363.2422018,
+    "ast_hash": "807b0080f58c3d24c6d0dd4040255b7f",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/mp3/s04.mp3": {
+    "mtime": 1781918362.5813684,
+    "ast_hash": "71c0377343a650ae0fedc21166a784d6",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/mp3/s05.mp3": {
+    "mtime": 1781918362.8522017,
+    "ast_hash": "45b01eccb7608cca7386378681df3ad4",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/mp3/s06.mp3": {
+    "mtime": 1781918363.0038683,
+    "ast_hash": "ebbf2bbe9c8f151c20c3b6c76234fa65",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/mp3/s01.mp3": {
+    "mtime": 1781918361.9855351,
+    "ast_hash": "9b229347d5af52be9a1c47eb825b49f8",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/mp3/s02.mp3": {
+    "mtime": 1781918362.1263685,
+    "ast_hash": "6dd028173751fa37d1ef85bb5090897c",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/mp3/s08.mp3": {
+    "mtime": 1781918363.3938684,
+    "ast_hash": "17c99c11493a44e8b00cb3f21be3fbc2",
+    "semantic_hash": ""
+  },
+  "/home/ubuntu/vendorya/vendorya-frontend/public/sounds/mp3/s09.mp3": {
+    "mtime": 1781918363.5997016,
+    "ast_hash": "1252589131d9543f75a5f5aa18254135",
     "semantic_hash": ""
   }
 }

@@ -1,16 +1,16 @@
-# Graph Report - vendorya-frontend  (2026-06-13)
+# Graph Report - vendorya-frontend  (2026-06-20)
 
 ## Corpus Check
-- 121 files · ~132,564 words
+- 141 files · ~171,522 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1412 nodes · 1370 edges · 154 communities (139 shown, 15 thin omitted)
+- 1705 nodes · 1654 edges · 170 communities (151 shown, 19 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 11 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6396c4c7`
+- Built from commit: `048709b8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -60,7 +60,14 @@
 - [[_COMMUNITY_Community 46|Community 46]]
 - [[_COMMUNITY_Community 47|Community 47]]
 - [[_COMMUNITY_Community 48|Community 48]]
+- [[_COMMUNITY_Community 82|Community 82]]
+- [[_COMMUNITY_Community 83|Community 83]]
+- [[_COMMUNITY_Community 84|Community 84]]
+- [[_COMMUNITY_Community 85|Community 85]]
+- [[_COMMUNITY_Community 90|Community 90]]
+- [[_COMMUNITY_Community 91|Community 91]]
 - [[_COMMUNITY_Community 94|Community 94]]
+- [[_COMMUNITY_Community 96|Community 96]]
 - [[_COMMUNITY_Community 101|Community 101]]
 - [[_COMMUNITY_Community 102|Community 102]]
 - [[_COMMUNITY_Community 103|Community 103]]
@@ -99,7 +106,6 @@
 - [[_COMMUNITY_Community 136|Community 136]]
 - [[_COMMUNITY_Community 137|Community 137]]
 - [[_COMMUNITY_Community 138|Community 138]]
-- [[_COMMUNITY_Community 139|Community 139]]
 - [[_COMMUNITY_Community 140|Community 140]]
 - [[_COMMUNITY_Community 141|Community 141]]
 - [[_COMMUNITY_Community 142|Community 142]]
@@ -114,58 +120,58 @@
 - [[_COMMUNITY_Community 151|Community 151]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `purchases` - 44 edges
-2. `purchases` - 44 edges
-3. `categories` - 43 edges
-4. `categories` - 43 edges
-5. `product_detail` - 40 edges
-6. `product_detail` - 40 edges
+1. `purchases` - 76 edges
+2. `purchases` - 76 edges
+3. `product_detail` - 65 edges
+4. `product_detail` - 59 edges
+5. `categories` - 43 edges
+6. `categories` - 43 edges
 7. `import_export` - 34 edges
 8. `import_export` - 34 edges
 9. `adjustments` - 29 edges
 10. `adjustments` - 29 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `apply()` --calls--> `emit`  [INFERRED]
-  src/components/pos/DiscountModal.vue → src/components/pos/BranchPickerModal.vue
-- `confirm()` --calls--> `emit`  [INFERRED]
-  src/components/pos/PaymentModal.vue → src/components/pos/BranchPickerModal.vue
 - `useDataTable()` --calls--> `useAuthStore`  [INFERRED]
   src/composables/useDataTable.js → src/stores/auth.js
 - `useIdleTimeout()` --calls--> `useAuthStore`  [INFERRED]
   src/composables/useIdleTimeout.js → src/stores/auth.js
+- `apply()` --calls--> `emit`  [INFERRED]
+  src/components/pos/DiscountModal.vue → src/components/pos/BranchPickerModal.vue
+- `confirm()` --calls--> `emit`  [INFERRED]
+  src/components/pos/PaymentModal.vue → src/components/pos/BranchPickerModal.vue
 - `resolveTz()` --calls--> `useAuthStore`  [INFERRED]
   src/utils/date.js → src/stores/auth.js
 
-## Communities (154 total, 15 thin omitted)
+## Communities (170 total, 19 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.06
-Nodes (35): dependencies, axios, date-fns, flyonui, @headlessui/vue, jsbarcode, jspdf, jspdf-autotable (+27 more)
+Cohesion: 0.05
+Nodes (40): dependencies, apexcharts, axios, date-fns, flyonui, @headlessui/vue, jsbarcode, jspdf (+32 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.09
-Nodes (21): applyUiPrefs(), clamp(), UI_DEFAULTS, useDataTable(), ACTIVITY_EVENTS, useIdleTimeout(), auth, router (+13 more)
+Cohesion: 0.05
+Nodes (35): applyUiPrefs(), clamp(), UI_DEFAULTS, useDataTable(), displayValue(), exportCSV(), triggerDownload(), ACTIVITY_EVENTS (+27 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.08
 Nodes (23): 1 — Backend, 2 — Frontend, 3 — Database, ✦ AI Co-Admin (V-Pilot), ✦ API Surface, ✦ Architecture, code:block1 (┌──────────────────────────────┐), code:block2 (~/vendorya/) (+15 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.06
-Nodes (31): branches, confirm(), emit, loading, selected, setDefault, amount, apply() (+23 more)
+Cohesion: 0.05
+Nodes (34): branches, confirm(), emit, loading, selected, setDefault, amount, apply() (+26 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.11
 Nodes (20): balance, buildInvoiceESCPOS(), copies, doPrint(), error, esc_dashes(), esc_line(), esc_money() (+12 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.18
-Nodes (10): displayValue(), exportCSV(), triggerDownload(), formatDate(), formatDateTime(), resolveTz(), formatCurrency(), formatNumber() (+2 more)
+Cohesion: 0.22
+Nodes (7): FIX, fixed, here, lines, LOCALES, raw, short
 
 ### Community 6 - "Community 6"
-Cohesion: 0.04
-Nodes (51): activity_log, admin_users, ai_profiles, alerts_center, ap_aging, ar_aging, attributes, auth_settings (+43 more)
+Cohesion: 0.03
+Nodes (60): activity_log, admin_users, ai_profiles, alerts_center, ap_aging, ar_aging, attributes, auth_settings (+52 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.12
@@ -181,11 +187,11 @@ Nodes (13): apply(), form, lastRunAt, lastRunDisplay, load(), loading, runCycle(
 
 ### Community 10 - "Community 10"
 Cohesion: 0.09
-Nodes (14): auth, avatarColor, COLORS, CURRENCY_PRESETS, fmt, form, photoFile, photoPreview (+6 more)
+Nodes (15): auth, avatarColor, COLORS, CURRENCY_PRESETS, fd, fmt, form, photoFile (+7 more)
 
 ### Community 11 - "Community 11"
-Cohesion: 0.25
-Nodes (5): chatOpen, chatWidth, sidebarCollapsed, matchesKey(), onGlobalKey()
+Cohesion: 0.15
+Nodes (9): chatOpen, chatWidth, sidebarCollapsed, matchesKey(), onGlobalKey(), posKey, srvKey, transitionName (+1 more)
 
 ### Community 12 - "Community 12"
 Cohesion: 0.25
@@ -196,8 +202,8 @@ Cohesion: 0.28
 Nodes (7): angleFrom(), btn, onDown(), onMove(), pressed, props, tilt
 
 ### Community 14 - "Community 14"
-Cohesion: 0.22
-Nodes (5): balanceDue, data, loading, props, router
+Cohesion: 0.20
+Nodes (6): balanceDue, data, key, loading, props, router
 
 ### Community 15 - "Community 15"
 Cohesion: 0.25
@@ -212,8 +218,8 @@ Cohesion: 0.29
 Nodes (3): api, storeId, token
 
 ### Community 18 - "Community 18"
-Cohesion: 0.29
-Nodes (6): ctx, gain, looksLikePhone, osc, payload, q
+Cohesion: 0.18
+Nodes (8): ctx, gain, kg, looksLikePhone, name, osc, payload, q
 
 ### Community 19 - "Community 19"
 Cohesion: 0.29
@@ -248,7 +254,7 @@ Cohesion: 0.67
 Nodes (3): fetchData(), onFilters(), periodTotals
 
 ### Community 29 - "Community 29"
-Cohesion: 0.50
+Cohesion: 0.40
 Nodes (3): col, now, params
 
 ### Community 31 - "Community 31"
@@ -260,28 +266,56 @@ Cohesion: 0.67
 Nodes (3): cache, canPlayOgg(), playSound()
 
 ### Community 33 - "Community 33"
-Cohesion: 0.18
-Nodes (10): a, arr, d, existingKeys, newAttrCols, payload, rect, s (+2 more)
+Cohesion: 0.08
+Nodes (24): a, arr, attributes_payload, byReason, cfg, col, conflicts, d (+16 more)
+
+### Community 34 - "Community 34"
+Cohesion: 0.22
+Nodes (8): adhoc, arr, col, i, known, ordered, params, rect
+
+### Community 35 - "Community 35"
+Cohesion: 0.32
+Nodes (7): breakdownCols, columns, fetchData(), meta, onFilters(), periodCols, setTab()
+
+### Community 36 - "Community 36"
+Cohesion: 0.20
+Nodes (9): adhoc, arr, col, i, known, ordered, params, payload (+1 more)
+
+### Community 48 - "Community 48"
+Cohesion: 0.29
+Nodes (6): from, pages, props, { t }, to, totalPages
+
+### Community 84 - "Community 84"
+Cohesion: 0.40
+Nodes (5): err_add, new_option_label, placeholder, title, add_option_modal
+
+### Community 90 - "Community 90"
+Cohesion: 0.50
+Nodes (3): params, payload, statuses
+
+### Community 96 - "Community 96"
+Cohesion: 0.29
+Nodes (6): attributes, base, copies, expanded, preset, q
 
 ### Community 101 - "Community 101"
-Cohesion: 0.04
-Nodes (51): activity_log, admin_users, ai_profiles, alerts_center, ap_aging, ar_aging, attributes, auth_settings (+43 more)
+Cohesion: 0.03
+Nodes (61): activity_log, admin_users, ai_profiles, alerts_center, ap_aging, ar_aging, attributes, auth_settings (+53 more)
 
 ### Community 102 - "Community 102"
-Cohesion: 0.04
-Nodes (45): add_attribute, add_option, create_attribute, display_name, display_name_placeholder, empty_sub, empty_title, input_type (+37 more)
+Cohesion: 0.08
+Nodes (26): add_attribute, add_option, create_attribute, display_name, display_name_placeholder, empty_sub, empty_title, input_type (+18 more)
 
 ### Community 103 - "Community 103"
-Cohesion: 0.05
-Nodes (44): purchases, add_item, confirm_delete_draft, confirm_receive, cost_placeholder, empty, err_label_data, err_save (+36 more)
+Cohesion: 0.03
+Nodes (76): purchases, add_item, batch_number, category_none, clear_filters, col_base, col_category, col_item (+68 more)
 
 ### Community 104 - "Community 104"
-Cohesion: 0.05
-Nodes (42): ai, billing, communication, design, finance, general, inventory, people (+34 more)
+Cohesion: 0.04
+Nodes (44): ai, billing, communication, design, finance, general, inventory, people (+36 more)
 
 ### Community 105 - "Community 105"
-Cohesion: 0.05
-Nodes (44): purchases, add_item, confirm_delete_draft, confirm_receive, cost_placeholder, empty, err_label_data, err_save (+36 more)
+Cohesion: 0.03
+Nodes (76): purchases, add_item, batch_number, category_none, clear_filters, col_base, col_category, col_item (+68 more)
 
 ### Community 106 - "Community 106"
 Cohesion: 0.05
@@ -292,12 +326,12 @@ Cohesion: 0.05
 Nodes (43): add_category, add_category_btn, add_sub, confirm_delete, confirm_delete_simple, delete_all_sub, delete_all_title, delete_with_items (+35 more)
 
 ### Community 108 - "Community 108"
-Cohesion: 0.05
-Nodes (40): product_detail, alt_s_hint, attributes, attrs_col, base_price, base_price_label, category, category_none (+32 more)
+Cohesion: 0.03
+Nodes (59): product_detail, alt_s_hint, attributes, attrs_col, base_price, base_price_label, batch_branch, batch_days_left (+51 more)
 
 ### Community 109 - "Community 109"
-Cohesion: 0.05
-Nodes (40): product_detail, alt_s_hint, attributes, attrs_col, base_price, base_price_label, category, category_none (+32 more)
+Cohesion: 0.03
+Nodes (65): product_detail, add_unit, alt_s_hint, attributes, attrs_col, barcode, base_price, base_price_label (+57 more)
 
 ### Community 110 - "Community 110"
 Cohesion: 0.06
@@ -308,8 +342,8 @@ Cohesion: 0.06
 Nodes (34): check_file, checking, choose_file_hint, clear, errors_title, export_btn, exporting, format_card_title (+26 more)
 
 ### Community 112 - "Community 112"
-Cohesion: 0.07
-Nodes (29): empty, form_branch, form_product_label, form_product_placeholder, modal_title, notes_label, notes_placeholder, qty_change (+21 more)
+Cohesion: 0.04
+Nodes (48): empty, form_branch, form_product_label, form_product_placeholder, modal_title, notes_label, notes_placeholder, qty_change (+40 more)
 
 ### Community 113 - "Community 113"
 Cohesion: 0.07
@@ -328,16 +362,12 @@ Cohesion: 0.08
 Nodes (24): add_option_hint, alt_s_hint, attributes_label, base_price, category_label, category_none, cost_price, default_hint (+16 more)
 
 ### Community 117 - "Community 117"
-Cohesion: 0.09
-Nodes (22): ai, billing, communication, design, finance, general, inventory, people (+14 more)
-
-### Community 118 - "Community 118"
-Cohesion: 0.11
-Nodes (18): reports, empty, kpi_stock_value, kpi_total_products, kpi_total_stock, kpi_total_variants, search_placeholder, sub (+10 more)
+Cohesion: 0.08
+Nodes (24): ai, billing, communication, design, finance, general, inventory, people (+16 more)
 
 ### Community 119 - "Community 119"
-Cohesion: 0.11
-Nodes (18): common, actions, add, back, cancel, clear, close, date (+10 more)
+Cohesion: 0.05
+Nodes (47): conflict_cant_see, conflict_suffix, default_option, no_staff, title, common, actions, add (+39 more)
 
 ### Community 120 - "Community 120"
 Cohesion: 0.17
@@ -348,8 +378,8 @@ Cohesion: 0.17
 Nodes (12): cat1, cat2, cat3, cat4, in_stock, product, profit, retail (+4 more)
 
 ### Community 122 - "Community 122"
-Cohesion: 0.18
-Nodes (11): err_add, new_option_label, placeholder, title, products, add_option_modal, reports_tab, sub (+3 more)
+Cohesion: 0.20
+Nodes (10): products, reports_tab, sub, tabs, title, coming_soon, title, products (+2 more)
 
 ### Community 123 - "Community 123"
 Cohesion: 0.20
@@ -404,8 +434,8 @@ Cohesion: 0.25
 Nodes (8): toolbar, add_product, assign_layouts, bulk, customize, filter, reset_layout, search_placeholder
 
 ### Community 136 - "Community 136"
-Cohesion: 0.33
-Nodes (6): conflict_cant_see, conflict_suffix, default_option, no_staff, title, assign_modal
+Cohesion: 0.05
+Nodes (47): conflict_cant_see, conflict_suffix, default_option, no_staff, title, common, actions, add (+39 more)
 
 ### Community 137 - "Community 137"
 Cohesion: 0.33
@@ -414,10 +444,6 @@ Nodes (6): edit_title, name_placeholder, new_title, parent_label, parent_none, c
 ### Community 138 - "Community 138"
 Cohesion: 0.33
 Nodes (6): suppliers_tab, code_col, confirm_delete, contact_col, empty, name_col
-
-### Community 139 - "Community 139"
-Cohesion: 0.33
-Nodes (6): conflict_cant_see, conflict_suffix, default_option, no_staff, title, assign_modal
 
 ### Community 140 - "Community 140"
 Cohesion: 0.33
@@ -443,10 +469,6 @@ Nodes (5): confirm_delete, empty, name_col, parent_col, categories_tab
 Cohesion: 0.40
 Nodes (5): discontinued, duplicate, mistake, other, delete_reasons
 
-### Community 146 - "Community 146"
-Cohesion: 0.40
-Nodes (5): save_preset_modal, is_default_label, name_label, name_placeholder, title
-
 ### Community 147 - "Community 147"
 Cohesion: 0.40
 Nodes (5): exit_hint, ghost, n_selected, unghost, bulk_bar
@@ -459,33 +481,25 @@ Nodes (5): confirm_delete, empty, name_col, parent_col, categories_tab
 Cohesion: 0.40
 Nodes (5): discontinued, duplicate, mistake, other, delete_reasons
 
-### Community 150 - "Community 150"
-Cohesion: 0.40
-Nodes (5): save_preset_modal, is_default_label, name_label, name_placeholder, title
-
-### Community 151 - "Community 151"
-Cohesion: 0.50
-Nodes (4): tabs, products, reports, suppliers
-
 ## Knowledge Gaps
-- **1093 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+1088 more)
+- **1323 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+1318 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **15 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `inventory` connect `Community 112` to `Community 102`, `Community 103`, `Community 106`, `Community 108`, `Community 110`, `Community 123`?**
+  _High betweenness centrality (0.231) - this node is a cross-community bridge._
 - **Why does `inventory` connect `Community 104` to `Community 105`, `Community 107`, `Community 109`, `Community 111`, `Community 113`, `Community 114`, `Community 122`?**
-  _High betweenness centrality (0.272) - this node is a cross-community bridge._
-- **Why does `inventory` connect `Community 102` to `Community 103`, `Community 106`, `Community 108`, `Community 110`, `Community 112`, `Community 118`, `Community 123`?**
-  _High betweenness centrality (0.244) - this node is a cross-community bridge._
-- **Why does `products` connect `Community 122` to `Community 131`, `Community 132`, `Community 133`, `Community 134`, `Community 135`, `Community 104`, `Community 139`, `Community 140`, `Community 141`, `Community 147`, `Community 148`, `Community 149`, `Community 116`, `Community 150`, `Community 151`, `Community 121`, `Community 125`?**
-  _High betweenness centrality (0.128) - this node is a cross-community bridge._
+  _High betweenness centrality (0.230) - this node is a cross-community bridge._
+- **Why does `products` connect `Community 122` to `Community 131`, `Community 132`, `Community 133`, `Community 134`, `Community 135`, `Community 104`, `Community 140`, `Community 141`, `Community 147`, `Community 84`, `Community 148`, `Community 149`, `Community 119`, `Community 116`, `Community 121`, `Community 125`?**
+  _High betweenness centrality (0.099) - this node is a cross-community bridge._
 - **What connects `name`, `private`, `version` to the rest of the system?**
-  _1093 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1323 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.05555555555555555 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.04878048780487805 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.08712121212121213 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05389610389610389 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.08333333333333333 - nodes in this community are weakly interconnected._
