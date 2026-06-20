@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/check-i18n-at.mjs",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "i18n:check": "node scripts/check-i18n-at.mjs",
+    "i18n:fix": "node scripts/check-i18n-at.mjs --fix"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",

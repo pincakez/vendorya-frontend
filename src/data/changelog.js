@@ -12,6 +12,25 @@
 
 export const changelog = [
   {
+    version: '1.5.1',
+    date: '2026-06-20',
+    tag: 'Fixed',
+    en: {
+      title: 'Add Customer and Add Staff buttons now work',
+      points: [
+        'Clicking "Add" on the Customers and Staff pages now opens the form as it should — previously the button did nothing on the live site.',
+        'The cause was a small formatting issue in the email example text inside those forms. It is fixed, and we added a safeguard so this kind of slip can never reach the live site again.',
+      ],
+    },
+    ar: {
+      title: 'زرّا إضافة عميل وإضافة موظف يعملان الآن',
+      points: [
+        'الضغط على "إضافة" في صفحتي العملاء والموظفين يفتح النموذج كما ينبغي — في السابق لم يكن الزر يستجيب على الموقع المباشر.',
+        'كان السبب مشكلة تنسيق بسيطة في نص مثال البريد الإلكتروني داخل النموذجين. تم إصلاحها، وأضفنا حماية تمنع وصول هذا النوع من الأخطاء إلى الموقع المباشر مرة أخرى.',
+      ],
+    },
+  },
+  {
     version: '1.5.0',
     date: '2026-06-20',
     tag: 'New',

@@ -1136,7 +1136,7 @@
       "username_auto_hint": "يُولَّد تلقائيًا إن تُرك فارغًا",
       "password_auto_hint": "يُولَّد تلقائيًا إن تُرك فارغًا",
       "email_label": "البريد الإلكتروني (اختياري)",
-      "email_ph": "email@example.com",
+      "email_ph": "email{'@'}example.com",
       "role_label": "الصلاحية",
       "roles": {
         "cashier": "كاشير",
@@ -1183,7 +1183,7 @@
       "phone_label": "رقم الهاتف",
       "phone_ph": "مثال: 01012345678",
       "email_label": "البريد الإلكتروني",
-      "email_ph": "مثال: ahmed@example.com",
+      "email_ph": "مثال: ahmed{'@'}example.com",
       "credit_limit_label": "حد الائتمان",
       "credit_limit_ph": "فارغ = افتراضي المتجر",
       "credit_limit_hint": "أقصى رصيد غير مدفوع. فارغ = افتراضي المتجر.",

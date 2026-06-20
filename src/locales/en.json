@@ -1143,7 +1143,7 @@
       "username_auto_hint": "auto-generated if left blank",
       "password_auto_hint": "auto-generated if left blank",
       "email_label": "Email (optional)",
-      "email_ph": "email@example.com",
+      "email_ph": "email{'@'}example.com",
       "role_label": "Role",
       "roles": {
         "cashier": "Cashier",
@@ -1190,7 +1190,7 @@
       "phone_label": "Phone Number",
       "phone_ph": "e.g. 01012345678",
       "email_label": "Email",
-      "email_ph": "e.g. ahmed@example.com",
+      "email_ph": "e.g. ahmed{'@'}example.com",
       "credit_limit_label": "Credit Limit",
       "credit_limit_ph": "Blank = store default",
       "credit_limit_hint": "Max unpaid balance. Blank = store default.",
