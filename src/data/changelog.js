@@ -12,6 +12,25 @@
 
 export const changelog = [
   {
+    version: '1.6.1',
+    date: '2026-06-20',
+    tag: 'Improved',
+    en: {
+      title: 'POS search now finds products by category',
+      points: [
+        'Type any part of a category name in the POS search bar and it will show all matching products — for example, typing "ele" will bring up every product under Electronics.',
+        'Search still works as before for product name and SKU.',
+      ],
+    },
+    ar: {
+      title: 'بحث نقطة البيع يجد المنتجات بالتصنيف أيضاً',
+      points: [
+        'اكتب أي جزء من اسم تصنيف في شريط البحث وستظهر جميع المنتجات التابعة له — مثلاً، كتابة "إلك" ستعرض كل منتجات الإلكترونيات.',
+        'البحث بالاسم والرمز (SKU) يعمل كما كان.',
+      ],
+    },
+  },
+  {
     version: '1.6.0',
     date: '2026-06-20',
     tag: 'New',
