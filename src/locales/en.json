@@ -1664,12 +1664,13 @@
       "not_found": "Branch not found."
     },
     "notif_prefs": {
-      "title": "Notifications",
+      "title": "Sounds & Notifications",
       "sub": "Control which alerts you see and which sounds they play",
       "loading": "Loading preferences...",
       "alert_type": "Alert type",
       "enable": "Enable",
       "sound": "Sound",
+      "preview": "Preview sound",
       "info_label": "Information",
       "info_hint": "Low-priority updates — payment received, general system messages",
       "warning_label": "Warning",
@@ -1678,11 +1679,18 @@
       "alert_hint": "Action required — invoice voided, access denied",
       "admin_label": "Admin Notes",
       "admin_hint": "Messages sent directly from Vendorya admin — always shown",
+      "admin_managed": "Messages from Vendorya admin — the sound is set by the platform and can't be changed here",
       "always_on": "Always on",
       "save_btn": "Save preferences",
       "saved": "Saved",
       "mute": "Mute",
-      "sound_n": "Sound {n}"
+      "sound_n": "Sound {n}",
+      "defaults_title": "Store default sounds",
+      "defaults_sub": "New staff members start with these sounds. Everyone can still change their own above.",
+      "save_defaults": "Save store defaults",
+      "sudo_title": "Admin message sound (platform-wide)",
+      "sudo_sub": "The sound that plays for everyone when you send an admin message. Stores can't change this.",
+      "save_admin": "Save admin sound"
     },
     "profile": {
       "title": "My Profile",

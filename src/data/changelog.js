@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.6.0',
+    date: '2026-06-20',
+    tag: 'New',
+    en: {
+      title: 'Notification sounds — choose, preview, and play',
+      points: [
+        'Your notifications now actually make a sound. Go to Settings → Sounds & Notifications, pick a sound for each alert type, and press the ▶ button to hear it before you choose.',
+        'Every person on your team can set their own sounds — what the cashier hears is up to them.',
+        'Store owners and admins can set the default sounds new staff start with, all from the same page.',
+      ],
+    },
+    ar: {
+      title: 'أصوات الإشعارات — اختر، جرّب، وشغّل',
+      points: [
+        'أصبحت إشعاراتك تصدر صوتاً فعلاً. من الإعدادات ← الأصوات والإشعارات، اختر صوتاً لكل نوع تنبيه، واضغط زر ▶ لتسمعه قبل أن تختاره.',
+        'كل فرد في فريقك يستطيع ضبط أصواته الخاصة — ما يسمعه الكاشير من اختياره هو.',
+        'يستطيع مالك المتجر والمدير ضبط الأصوات الافتراضية التي يبدأ بها الموظفون الجدد، من الصفحة نفسها.',
+      ],
+    },
+  },
+  {
     version: '1.5.3',
     date: '2026-06-20',
     tag: 'Improved',
