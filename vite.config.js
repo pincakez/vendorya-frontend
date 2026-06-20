@@ -6,12 +6,12 @@ import { fileURLToPath, URL } from 'node:url'
 export default defineConfig({
   server: {
     host: true,
-    port: 5173,
+    port: parseInt(process.env.VITE_DEV_PORT || '5173'),
     strictPort: true,
     allowedHosts: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: process.env.VITE_DEV_API_TARGET || 'http://localhost:8000',
         changeOrigin: true,
       },
     },
