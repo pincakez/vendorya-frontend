@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { getAccessToken, setAccessToken } from './token'
 
-// Dev: fallback to localhost:8000 (Vite on 5173, Django on 8000).
-// Prod: empty string = same-origin relative URLs (Django serves both).
-const BASE = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8000' : '')
+// Vite proxy handles /api in dev — always use relative URLs so any dev machine works.
+// Prod: empty string = same-origin (Django serves both).
+const BASE = import.meta.env.VITE_API_BASE_URL || ''
 
 // Set true the moment an intentional logout starts. While true the response
 // interceptor must NOT try to refresh a dead token — otherwise an in-flight 401
