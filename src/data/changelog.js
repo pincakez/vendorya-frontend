@@ -12,6 +12,42 @@
 
 export const changelog = [
   {
+    version: '1.5.3',
+    date: '2026-06-20',
+    tag: 'Improved',
+    en: {
+      title: "Color-coded What's New page",
+      points: [
+        "Every update on this page is now color-tagged at a glance: new features in green, fixes in red, and improvements in grey — so you can quickly see what kind of change each one is.",
+      ],
+    },
+    ar: {
+      title: 'صفحة "ما الجديد" بألوان حسب النوع',
+      points: [
+        'كل تحديث في هذه الصفحة أصبح ملوّناً بحسب نوعه: الميزات الجديدة بالأخضر، الإصلاحات بالأحمر، والتحسينات بالرمادي — لتعرف بنظرة سريعة نوع كل تغيير.',
+      ],
+    },
+  },
+  {
+    version: '1.5.2',
+    date: '2026-06-20',
+    tag: 'Improved',
+    en: {
+      title: 'A cleaner, more compact Add Customer form',
+      points: [
+        'The Add Customer form now lays its fields out side by side instead of one long stacked column — so it fits the screen better and you do less scrolling.',
+        'Same information, same fields — just a tidier, faster layout that matches the rest of the app.',
+      ],
+    },
+    ar: {
+      title: 'نموذج إضافة عميل أنظف وأكثر تنظيماً',
+      points: [
+        'أصبح نموذج إضافة عميل يعرض الحقول جنباً إلى جنب بدلاً من عمود واحد طويل — فيتناسب مع الشاشة بشكل أفضل ويقلّل التمرير.',
+        'نفس المعلومات ونفس الحقول — فقط تنسيق أنظف وأسرع يتماشى مع باقي التطبيق.',
+      ],
+    },
+  },
+  {
     version: '1.5.1',
     date: '2026-06-20',
     tag: 'Fixed',

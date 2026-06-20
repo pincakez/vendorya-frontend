@@ -64,9 +64,9 @@ function fmtDate(d) {
 
 .cl-rail { display: flex; flex-direction: column; align-items: center; padding-top: 6px; }
 .cl-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; background: var(--accent); }
-.cl-dot--new      { background: var(--accent); }
-.cl-dot--improved { background: #3b82f6; }
-.cl-dot--fixed    { background: #22c55e; }
+.cl-dot--new      { background: #15803d; }   /* dark green */
+.cl-dot--fixed    { background: #dc2626; }   /* red */
+.cl-dot--improved { background: #52525b; }   /* dark grey */
 .cl-line { flex: 1; width: 2px; background: var(--border); margin: 6px 0; }
 
 .cl-card { flex: 1; margin-bottom: 18px; }
@@ -75,9 +75,13 @@ function fmtDate(d) {
   font-size: 11px; font-weight: 700; letter-spacing: .02em;
   padding: 2px 9px; border-radius: 999px; text-transform: uppercase;
 }
-.cl-tag--new      { background: color-mix(in oklab, var(--accent) 16%, transparent); color: var(--accent); }
-.cl-tag--improved { background: rgba(59,130,246,.14); color: #3b82f6; }
-.cl-tag--fixed    { background: rgba(34,197,94,.14); color: #16a34a; }
+/* Tag scheme: New = dark green · Fixed = red · Improved (edit) = dark grey */
+.cl-tag--new      { background: rgba(21,128,61,.14);  color: #15803d; }
+.cl-tag--fixed    { background: rgba(220,38,38,.14);  color: #dc2626; }
+.cl-tag--improved { background: rgba(82,82,91,.14);   color: #52525b; }
+.dark .cl-tag--new      { color: #22c55e; }   /* lift for dark-mode legibility */
+.dark .cl-tag--fixed    { color: #f87171; }
+.dark .cl-tag--improved { color: #a1a1aa; }
 .cl-version {
   font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
   padding: 2px 8px; border-radius: 999px;

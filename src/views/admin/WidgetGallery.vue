@@ -15,9 +15,58 @@
       <button class="g-tab" :class="{ active: tab === 'widgets' }" @click="tab = 'widgets'">
         <LayoutGrid :size="15" /> Widgets
       </button>
+      <button class="g-tab" :class="{ active: tab === 'modals' }" @click="tab = 'modals'">
+        <LayoutTemplate :size="15" /> Modal Layouts
+      </button>
     </div>
 
-    <ComponentGallery v-if="tab === 'components'" />
+    <!-- ── Modal Layout presets ───────────────────────────── -->
+    <template v-if="tab === 'modals'">
+      <section class="wg-section">
+        <div class="wg-section-label">
+          <span class="wg-size-badge">Form modal layouts · 900px wide</span>
+        </div>
+        <p class="ml-intro">
+          Named layouts every form modal is built from — so each one reads like the Add Product modal:
+          compact, two-column, fills the width. Reference a preset by name (e.g. “use the <b>TwoCol</b> preset here”).
+          They map to shared classes in <code>main.css</code>.
+        </p>
+        <div class="wg-row wg-row--wrap">
+          <div v-for="p in modalPresets" :key="p.id" class="wg-card wg-card--modal">
+            <div class="wg-preview wg-preview--modal">
+              <!-- split: two stacked columns -->
+              <div v-if="p.layout === 'split'" class="ml-skel ml-skel--split">
+                <div class="ml-skel-col"><span class="ml-cell" /><span class="ml-cell" /><span class="ml-cell" /></div>
+                <div class="ml-skel-col"><span class="ml-cell" /><span class="ml-cell" /><span class="ml-cell" /></div>
+              </div>
+              <!-- rows -->
+              <div v-else class="ml-skel">
+                <template v-for="(row, i) in p.rows" :key="i">
+                  <div v-if="row === 'hr'" class="ml-hr" />
+                  <div v-else class="ml-skel-row">
+                    <span v-for="(w, j) in row" :key="j" class="ml-cell" :style="{ flex: w }" />
+                  </div>
+                </template>
+              </div>
+            </div>
+            <div class="wg-meta">
+              <div class="wg-meta-left">
+                <span class="wg-name">{{ p.name }}</span>
+                <span class="wg-desc">{{ p.desc }}</span>
+              </div>
+              <div class="wg-meta-right">
+                <span class="wg-dim">{{ p.cls }}</span>
+                <span class="wg-status" :class="p.ready ? 'status-ready' : 'status-draft'">
+                  {{ p.ready ? '● Live' : '○ Draft' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <ComponentGallery v-else-if="tab === 'components'" />
 
     <template v-else>
     <!-- Full Width (30 cols) -->
@@ -134,10 +183,24 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Component, LayoutGrid } from 'lucide-vue-next'
+import { Component, LayoutGrid, LayoutTemplate } from 'lucide-vue-next'
 import ComponentGallery from './ComponentGallery.vue'
 
 const tab = ref('components')
+
+/* ─ Modal layout presets ─ map to shared classes in main.css ─ */
+const modalPresets = [
+  { id: 'twocol',  name: 'TwoCol',     cls: '.modal-2col',   ready: true, layout: 'rows',  rows: [[1,1],[1,1],[1]],
+    desc: 'Two fields per row. The default for every form modal (Customer, Supplier, Staff).' },
+  { id: 'threecol',name: 'ThreeCol',   cls: '.modal-3col',   ready: true, layout: 'rows',  rows: [[1,1,1]],
+    desc: 'Three fields across one row — e.g. the price triplet (Base / Cost / Sell).' },
+  { id: 'single',  name: 'SingleCol',  cls: '.modal-form',   ready: true, layout: 'rows',  rows: [[1],[1],[1]],
+    desc: 'Stacked single column. For short, simple modals (rename, confirm, one input).' },
+  { id: 'split',   name: 'Split',      cls: '.modal-split',  ready: true, layout: 'split',
+    desc: 'Two independent stacked columns side by side — the Add Product shape.' },
+  { id: 'section', name: 'Sectioned',  cls: '.modal-section',ready: true, layout: 'rows',  rows: [[1,1],'hr',[1,1]],
+    desc: 'Grouped block under a labelled divider — like the Attributes section.' },
+]
 
 const widgets = [
   /* ─ Full Width ─────────────────────────────────────────── */
@@ -259,4 +322,17 @@ function bySize(size) {
 .wg-status { font-size: 10.5px; font-weight: 700; white-space: nowrap; }
 .status-ready { color: var(--success); }
 .status-draft { color: var(--text-muted); }
+
+/* ── Modal layout presets ── */
+.ml-intro { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; max-width: 720px; margin: 0 0 18px; }
+.ml-intro code { font-family: monospace; font-size: 11.5px; background: var(--bg-app); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+.wg-card--modal { width: 240px; }
+.wg-preview--modal { height: 130px; padding: 16px; }
+.ml-skel { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.ml-skel-row { display: flex; gap: 8px; }
+.ml-cell { height: 16px; border-radius: 5px; background: var(--accent-soft); border: 1px solid rgba(247,143,30,.25); }
+.ml-skel-row .ml-cell { flex: 1; }
+.ml-hr { height: 1px; background: var(--border); margin: 2px 0; }
+.ml-skel--split { flex-direction: row; gap: 10px; }
+.ml-skel-col { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 </style>
