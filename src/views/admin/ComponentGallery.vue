@@ -206,6 +206,76 @@
       </div>
     </section>
 
+    <!-- ─── BASESELECT COMPONENT ─────────────────────────────── -->
+    <section class="cg-section">
+      <div class="cg-head">
+        <h2 class="cg-h">BaseSelect</h2>
+        <span class="cg-tag cg-tag--global">component · components/base/BaseSelect.vue</span>
+      </div>
+      <p class="cg-ref-note">
+        Canonical dropdown. Props: <code>modelValue</code> (v-model) · <code>options</code> <code>[{value, label}]</code> ·
+        <code>label</code> · <code>placeholder</code> · <code>error</code> · <code>disabled</code>.
+        Extra attributes pass through via <code>$attrs</code>.
+      </p>
+      <div class="cg-grid">
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseSelect
+              label="Category"
+              model-value="electronics"
+              :options="[{value:'electronics',label:'Electronics'},{value:'clothing',label:'Clothing'},{value:'food',label:'Food & Beverages'}]"
+            />
+          </div>
+          <code class="cg-code">label + options</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseSelect
+              label="Tax rule"
+              model-value=""
+              placeholder="Select a tax…"
+              :options="[{value:'vat14',label:'VAT 14%'},{value:'vat5',label:'VAT 5%'},{value:'exempt',label:'Exempt'}]"
+            />
+          </div>
+          <code class="cg-code">placeholder (unselected)</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseSelect
+              label="Branch"
+              model-value=""
+              placeholder="Choose branch…"
+              error="Branch is required"
+              :options="[{value:'main',label:'Main Branch'},{value:'cairo',label:'Cairo Branch'}]"
+            />
+          </div>
+          <code class="cg-code">error="…"</code>
+          <span class="cg-note">Red border + message below.</span>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseSelect
+              label="Store type"
+              model-value="pharmacy"
+              :disabled="true"
+              :options="[{value:'general',label:'General'},{value:'pharmacy',label:'Pharmacy'},{value:'grocery',label:'Grocery'}]"
+            />
+          </div>
+          <code class="cg-code">:disabled="true"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseSelect
+              label="Role"
+              model-value="cashier"
+              :options="[{value:'cashier',label:'Cashier'},{value:'manager',label:'Manager'},{value:'admin',label:'Admin'},{value:'owner',label:'Owner'}]"
+            />
+          </div>
+          <code class="cg-code">pre-selected value</code>
+        </div>
+      </div>
+    </section>
+
     <!-- ─── STATUS BADGES ───────────────────────────────────── -->
     <section class="cg-section">
       <div class="cg-head">
@@ -369,6 +439,7 @@ import { Plus, RefreshCw } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput  from '@/components/base/BaseInput.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
 
 const showModal = ref(false)
 const switchOn  = ref(true)
