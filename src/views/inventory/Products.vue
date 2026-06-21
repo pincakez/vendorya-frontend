@@ -328,150 +328,194 @@
 
     <!-- ═══════════ PRODUCT ADD / EDIT ═══════════ -->
     <AppModal :open="prodModal.open" :title="prodModal.id ? t('inventory.products.product_modal.edit_title') : t('inventory.products.product_modal.new_title')" width="900px" :noBackdropClose="true" @close="prodModal.open = false">
-      <div class="prod-modal-grid">
-        <!-- LEFT COLUMN: Name + Description -->
-        <div class="prod-modal-col">
-          <div>
-            <div class="prod-modal-field-head">
-              <label class="form-label">{{ fmtStore.itemLabel }}</label>
-              <label class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
-                <input type="checkbox" v-model="prodDefaults.name_enabled" @change="saveDefaults" />
-                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
-              </label>
+      <div class="pm2-grid">
+
+        <!-- ── LEFT: Identity + Pricing + Units ── -->
+        <div class="pm2-col">
+
+          <div class="pm2-section">{{ fmtStore.itemLabel }}</div>
+
+          <div class="pm2-field">
+            <div class="pm2-fh">
+              <label class="pm2-label">Name</label>
+              <button type="button" class="pm2-pin" :class="{ on: prodDefaults.name_enabled }"
+                      :title="t('inventory.products.product_modal.default_hint')"
+                      @click="prodDefaults.name_enabled = !prodDefaults.name_enabled; saveDefaults()">★</button>
             </div>
-            <input v-model="prodModal.name" class="form-input" :placeholder="`${fmtStore.itemLabel} name`" />
+            <input v-model="prodModal.name" class="pm2-input" :placeholder="`${fmtStore.itemLabel} name`" />
           </div>
 
-          <div>
-            <label class="form-label">{{ t('common.description') }}</label>
-            <textarea v-model="prodModal.description" class="form-input" rows="3" :placeholder="t('inventory.products.product_modal.description_placeholder')" />
+          <div class="pm2-field">
+            <label class="pm2-label">{{ t('common.description') }}</label>
+            <textarea v-model="prodModal.description" class="pm2-input pm2-textarea" rows="3"
+                      :placeholder="t('inventory.products.product_modal.description_placeholder')" />
           </div>
 
-          <!-- Prices row -->
-          <div class="prod-prices-row">
-            <div><label class="form-label">{{ t('inventory.products.product_modal.base_price') }}</label><input v-model.number="prodModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
-            <div><label class="form-label">{{ t('inventory.products.product_modal.cost_price') }}</label><input v-model.number="prodModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
-            <div><label class="form-label">{{ t('inventory.products.product_modal.sell_price') }}</label><input v-model.number="prodModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
-          </div>
+          <div class="pm2-section">Pricing</div>
 
-          <!-- Selling Units block (multi-unit, new products only) -->
-          <div v-if="storeSettings.multi_unit_enabled && !prodModal.id" class="prod-unit-section">
-            <div class="form-label" style="margin-bottom:8px;">Selling Units</div>
-            <div class="prod-modal-field-head" style="margin-bottom:10px;">
-              <label class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
-                <input type="checkbox" v-model="prodDefaults.unit_sell_base_enabled" @change="saveDefaults" />
-                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
-              </label>
-              <label class="prod-unit-sell-base-label">
-                <input type="checkbox" v-model="prodModal.sell_base_unit" @change="prodDefaults.unit_sell_base_enabled && saveDefaults()" />
-                <span>Sell by {{ storeSettings.base_unit_name }} (individually)</span>
-              </label>
+          <div class="pm2-price-band">
+            <div class="pm2-price-cell">
+              <label class="pm2-label">{{ t('inventory.products.product_modal.base_price') }}</label>
+              <div class="pm2-adorn">
+                <span class="pm2-sym">$</span>
+                <input v-model.number="prodModal.base_price" type="number" min="0" step="0.01"
+                       placeholder="0.00" class="pm2-price-in" />
+              </div>
             </div>
-            <div class="prod-unit-row">
-              <div class="prod-unit-cell">
-                <div class="prod-unit-sublabel">{{ storeSettings.unit_tier_names[1] }} contains</div>
-                <input v-model.number="prodModal.unit_strips_per_pack" type="number" min="1" step="1" class="form-input prod-unit-input" placeholder="—" @input="onUnitFieldChange('a')" />
-                <div class="prod-unit-sub">{{ storeSettings.unit_tier_names[0] }}s</div>
-                <label class="prod-default-cb prod-unit-default-cb" :title="t('inventory.products.product_modal.default_hint')">
-                  <input type="checkbox" v-model="prodDefaults.unit_spp_enabled" @change="saveDefaults" />
-                  <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
-                </label>
+            <div class="pm2-price-cell">
+              <label class="pm2-label">{{ t('inventory.products.product_modal.cost_price') }}</label>
+              <div class="pm2-adorn">
+                <span class="pm2-sym">$</span>
+                <input v-model.number="prodModal.cost_price" type="number" min="0" step="0.01"
+                       placeholder="0.00" class="pm2-price-in" />
               </div>
-              <span class="prod-unit-op">×</span>
-              <div class="prod-unit-cell">
-                <div class="prod-unit-sublabel">{{ storeSettings.unit_tier_names[0] }} contains</div>
-                <input v-model.number="prodModal.unit_pills_per_strip" type="number" min="1" step="1" class="form-input prod-unit-input" placeholder="—" @input="onUnitFieldChange('b')" />
-                <div class="prod-unit-sub">{{ storeSettings.base_unit_name }}s</div>
-                <label class="prod-default-cb prod-unit-default-cb" :title="t('inventory.products.product_modal.default_hint')">
-                  <input type="checkbox" v-model="prodDefaults.unit_pps_enabled" @change="saveDefaults" />
-                  <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
-                </label>
+            </div>
+            <div class="pm2-price-cell">
+              <label class="pm2-label">{{ t('inventory.products.product_modal.sell_price') }}</label>
+              <div class="pm2-adorn">
+                <span class="pm2-sym">$</span>
+                <input v-model.number="prodModal.sell_price" type="number" min="0" step="0.01"
+                       placeholder="0.00" class="pm2-price-in" />
               </div>
-              <span class="prod-unit-op">=</span>
-              <div class="prod-unit-cell">
-                <div class="prod-unit-sublabel">{{ storeSettings.unit_tier_names[1] }} total</div>
-                <input v-model.number="prodModal.unit_pills_per_pack" type="number" min="1" step="1" class="form-input prod-unit-input" placeholder="—" @input="onUnitFieldChange('c')" />
-                <div class="prod-unit-sub">{{ storeSettings.base_unit_name }}s</div>
+            </div>
+          </div>
+
+          <!-- Selling Units (new products + multi-unit stores only) -->
+          <div v-if="storeSettings.multi_unit_enabled && !prodModal.id" class="pm2-units">
+            <div class="pm2-section">Selling Units</div>
+            <div class="pm2-toggle">
+              <label style="display:flex;align-items:center;gap:7px;flex:1;cursor:pointer;font-size:13px;color:var(--text-primary)">
+                <input type="checkbox" class="pm2-check" v-model="prodModal.sell_base_unit"
+                       @change="prodDefaults.unit_sell_base_enabled && saveDefaults()" />
+                Sell by {{ storeSettings.base_unit_name }} (individually)
+              </label>
+              <button type="button" class="pm2-pin pm2-pin-sm" :class="{ on: prodDefaults.unit_sell_base_enabled }"
+                      :title="t('inventory.products.product_modal.default_hint')"
+                      @click="prodDefaults.unit_sell_base_enabled = !prodDefaults.unit_sell_base_enabled; saveDefaults()">★</button>
+            </div>
+            <div class="pm2-eq">
+              <span class="pm2-eq-lhs">1 {{ storeSettings.unit_tier_names[1] }} =</span>
+              <div class="pm2-eq-field">
+                <input v-model.number="prodModal.unit_strips_per_pack" type="number" min="1" step="1"
+                       class="pm2-input pm2-eq-in" placeholder="—" @input="onUnitFieldChange('a')" />
+                <span class="pm2-eq-sub">{{ storeSettings.unit_tier_names[0] }}s</span>
+                <button type="button" class="pm2-pin pm2-pin-xs" :class="{ on: prodDefaults.unit_spp_enabled }"
+                        :title="t('inventory.products.product_modal.default_hint')"
+                        @click="prodDefaults.unit_spp_enabled = !prodDefaults.unit_spp_enabled; saveDefaults()">★</button>
+              </div>
+              <span class="pm2-eq-op">×</span>
+              <div class="pm2-eq-field">
+                <input v-model.number="prodModal.unit_pills_per_strip" type="number" min="1" step="1"
+                       class="pm2-input pm2-eq-in" placeholder="—" @input="onUnitFieldChange('b')" />
+                <span class="pm2-eq-sub">{{ storeSettings.base_unit_name }} / {{ storeSettings.unit_tier_names[0] }}</span>
+                <button type="button" class="pm2-pin pm2-pin-xs" :class="{ on: prodDefaults.unit_pps_enabled }"
+                        :title="t('inventory.products.product_modal.default_hint')"
+                        @click="prodDefaults.unit_pps_enabled = !prodDefaults.unit_pps_enabled; saveDefaults()">★</button>
+              </div>
+              <span class="pm2-eq-op">=</span>
+              <div class="pm2-eq-field pm2-eq-result">
+                <input v-model.number="prodModal.unit_pills_per_pack" type="number" min="1" step="1"
+                       class="pm2-input pm2-eq-in" placeholder="—" @input="onUnitFieldChange('c')" />
+                <span class="pm2-eq-sub">{{ storeSettings.base_unit_name }} / {{ storeSettings.unit_tier_names[1] }}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- RIGHT COLUMN: Category + Supplier + Reorder + Attrs -->
-        <div class="prod-modal-col">
-          <div>
-            <div class="prod-modal-field-head">
-              <label class="form-label">{{ t('inventory.products.product_modal.category_label') }}</label>
-              <label class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
-                <input type="checkbox" v-model="prodDefaults.category_enabled" @change="saveDefaults" />
-                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
-              </label>
+        <!-- ── RIGHT: Organization + Stock + Attributes ── -->
+        <div class="pm2-col">
+
+          <div class="pm2-section">Organization</div>
+
+          <div class="pm2-field">
+            <div class="pm2-fh">
+              <label class="pm2-label">{{ t('inventory.products.product_modal.category_label') }}</label>
+              <button type="button" class="pm2-pin" :class="{ on: prodDefaults.category_enabled }"
+                      :title="t('inventory.products.product_modal.default_hint')"
+                      @click="prodDefaults.category_enabled = !prodDefaults.category_enabled; saveDefaults()">★</button>
             </div>
-            <select v-model="prodModal.category" class="form-input" @change="prodDefaults.category_enabled && saveDefaults()">
-              <option value="">{{ t('inventory.products.product_modal.category_none') }}</option>
-              <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
-            </select>
+            <div class="pm2-sel-wrap">
+              <select v-model="prodModal.category" class="pm2-input pm2-sel"
+                      @change="prodDefaults.category_enabled && saveDefaults()">
+                <option value="">{{ t('inventory.products.product_modal.category_none') }}</option>
+                <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+              </select>
+            </div>
           </div>
 
-          <div>
-            <div class="prod-modal-field-head">
-              <label class="form-label" style="display:flex;align-items:center;gap:5px;">
-                {{ t('inventory.products.product_modal.supplier_label') }} <Lock v-if="prodModal.id" :size="11" />
+          <div class="pm2-field">
+            <div class="pm2-fh">
+              <label class="pm2-label" style="display:flex;align-items:center;gap:5px;">
+                {{ t('inventory.products.product_modal.supplier_label') }}
+                <Lock v-if="prodModal.id" :size="11" />
               </label>
-              <label v-if="!prodModal.id" class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
-                <input type="checkbox" v-model="prodDefaults.supplier_enabled" @change="saveDefaults" />
-                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
-              </label>
+              <button v-if="!prodModal.id" type="button" class="pm2-pin" :class="{ on: prodDefaults.supplier_enabled }"
+                      :title="t('inventory.products.product_modal.default_hint')"
+                      @click="prodDefaults.supplier_enabled = !prodDefaults.supplier_enabled; saveDefaults()">★</button>
             </div>
-            <select v-if="!prodModal.id" v-model="prodModal.supplier" class="form-input" @change="prodDefaults.supplier_enabled && saveDefaults()">
-              <option value="">{{ t('inventory.products.product_modal.select_supplier') }}</option>
-              <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }} ({{ s.code_prefix }})</option>
-            </select>
-            <input v-else class="form-input" :value="prodModal.supplierName" disabled :title="t('inventory.products.product_modal.supplier_locked')" />
+            <div class="pm2-sel-wrap">
+              <select v-if="!prodModal.id" v-model="prodModal.supplier" class="pm2-input pm2-sel"
+                      @change="prodDefaults.supplier_enabled && saveDefaults()">
+                <option value="">{{ t('inventory.products.product_modal.select_supplier') }}</option>
+                <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }} ({{ s.code_prefix }})</option>
+              </select>
+              <input v-else class="pm2-input" :value="prodModal.supplierName" disabled
+                     :title="t('inventory.products.product_modal.supplier_locked')"
+                     style="opacity:.6;cursor:not-allowed" />
+            </div>
           </div>
 
-          <div>
-            <div class="prod-modal-field-head">
-              <label class="form-label">{{ t('inventory.products.product_modal.reorder_label') }}</label>
-              <label class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
-                <input type="checkbox" v-model="prodDefaults.reorder_enabled" @change="saveDefaults" />
-                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
-              </label>
-            </div>
-            <input v-model.number="prodModal.reorder_level" class="form-input" type="number" min="0" step="1" :title="t('inventory.products.product_modal.reorder_hint')" />
-          </div>
+          <div class="pm2-section">Stock</div>
 
-          <div v-if="!prodModal.id">
-            <div class="prod-modal-field-head">
-              <label class="form-label">{{ t('inventory.products.product_modal.initial_stock_label') }}</label>
-              <label class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
-                <input type="checkbox" v-model="prodDefaults.stock_enabled" @change="saveDefaults" />
-                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
-              </label>
+          <div class="pm2-stock-row">
+            <div class="pm2-field">
+              <div class="pm2-fh">
+                <label class="pm2-label">{{ t('inventory.products.product_modal.reorder_label') }}</label>
+                <button type="button" class="pm2-pin" :class="{ on: prodDefaults.reorder_enabled }"
+                        :title="t('inventory.products.product_modal.default_hint')"
+                        @click="prodDefaults.reorder_enabled = !prodDefaults.reorder_enabled; saveDefaults()">★</button>
+              </div>
+              <input v-model.number="prodModal.reorder_level" class="pm2-input" type="number" min="0" step="1"
+                     placeholder="0" :title="t('inventory.products.product_modal.reorder_hint')" />
             </div>
-            <input v-model.number="prodModal.initial_stock" class="form-input" type="number" min="0" step="1" :title="t('inventory.products.product_modal.initial_stock_hint')" />
+            <div v-if="!prodModal.id" class="pm2-field">
+              <div class="pm2-fh">
+                <label class="pm2-label">{{ t('inventory.products.product_modal.initial_stock_label') }}</label>
+                <button type="button" class="pm2-pin" :class="{ on: prodDefaults.stock_enabled }"
+                        :title="t('inventory.products.product_modal.default_hint')"
+                        @click="prodDefaults.stock_enabled = !prodDefaults.stock_enabled; saveDefaults()">★</button>
+              </div>
+              <input v-model.number="prodModal.initial_stock" class="pm2-input" type="number" min="0" step="1"
+                     placeholder="1" :title="t('inventory.products.product_modal.initial_stock_hint')" />
+            </div>
           </div>
 
           <!-- Attributes -->
-          <div v-if="attributes.length" class="prod-attrs-section">
-            <div class="form-label" style="margin-bottom:8px;">{{ t('inventory.products.product_modal.attributes_label') }}</div>
-            <div class="prod-attrs-grid">
-              <div v-for="def in attributes" :key="def.id">
-                <label class="form-label">{{ def.name }}</label>
-                <div v-if="def.options && def.options.length" class="prod-attr-select-wrap">
-                  <select v-model="prodModal.attrs[def.id]" class="form-input">
-                    <option value="">—</option>
-                    <option v-for="(o, i) in def.options" :key="i" :value="optText(o)">{{ optText(o) }}</option>
-                  </select>
-                  <button class="prod-attr-add-btn" :title="t('inventory.products.product_modal.add_option_hint')" @click.stop="openAddOption(def)"><Plus :size="13" /></button>
+          <div v-if="attributes.length" class="pm2-attrs">
+            <div class="pm2-section">{{ t('inventory.products.product_modal.attributes_label') }}</div>
+            <div class="pm2-attrs-grid">
+              <div v-for="def in attributes" :key="def.id" class="pm2-field">
+                <label class="pm2-label">{{ def.name }}</label>
+                <div v-if="def.options && def.options.length" class="pm2-attr-row">
+                  <div class="pm2-sel-wrap" style="flex:1">
+                    <select v-model="prodModal.attrs[def.id]" class="pm2-input pm2-sel">
+                      <option value="">—</option>
+                      <option v-for="(o, i) in def.options" :key="i" :value="optText(o)">{{ optText(o) }}</option>
+                    </select>
+                  </div>
+                  <button class="pm2-attr-add" :title="t('inventory.products.product_modal.add_option_hint')"
+                          @click.stop="openAddOption(def)">
+                    <Plus :size="13" />
+                  </button>
                 </div>
-                <input v-else v-model="prodModal.attrs[def.id]" class="form-input" :placeholder="def.name" />
+                <input v-else v-model="prodModal.attrs[def.id]" class="pm2-input" :placeholder="def.name" />
               </div>
             </div>
           </div>
+
         </div>
       </div>
-      <p v-if="prodModal.error" class="form-label" style="color:var(--danger,#dc2626);margin-top:4px;">{{ prodModal.error }}</p>
+      <p v-if="prodModal.error" style="font-size:12.5px;color:var(--danger);margin-top:4px;">{{ prodModal.error }}</p>
       <template #footer>
         <span style="font-size:11.5px;color:var(--text-muted);margin-right:auto;">{{ t('inventory.products.product_modal.alt_s_hint') }}</span>
         <button class="btn-ghost" @click="prodModal.open = false">{{ t('common.cancel') }}</button>
@@ -1061,7 +1105,7 @@ function saveDefaults() {
 /* ── product add / edit ── */
 const prodModal = reactive({
   open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
-  base_price: 0, cost_price: 0, sell_price: 0, reorder_level: 0, initial_stock: 1, attrs: {}, saving: false, error: '',
+  base_price: null, cost_price: null, sell_price: null, reorder_level: null, initial_stock: 1, attrs: {}, saving: false, error: '',
   sell_base_unit: false, unit_strips_per_pack: null, unit_pills_per_strip: null, unit_pills_per_pack: null,
 })
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
@@ -1075,8 +1119,8 @@ function openAddProduct() {
     category: prodDefaults.category_enabled ? prodDefaults.category_value : '',
     supplier: prodDefaults.supplier_enabled ? prodDefaults.supplier_value : '',
     supplierName: '',
-    base_price: 0, cost_price: 0, sell_price: 0,
-    reorder_level: prodDefaults.reorder_enabled ? prodDefaults.reorder_value : 0,
+    base_price: null, cost_price: null, sell_price: null,
+    reorder_level: prodDefaults.reorder_enabled ? prodDefaults.reorder_value : null,
     initial_stock: prodDefaults.stock_enabled ? prodDefaults.stock_value : 1,
     sell_base_unit: prodDefaults.unit_sell_base_enabled ? prodDefaults.unit_sell_base_value : false,
     unit_strips_per_pack: spp, unit_pills_per_strip: pps,
@@ -1472,31 +1516,105 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .row-action.danger:hover { background: var(--danger-soft); color: var(--danger); }
 
 /* ── Product add/edit wide modal ── */
-.prod-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-@media (max-width: 640px) { .prod-modal-grid { grid-template-columns: 1fr; } }
-.prod-modal-col { display: flex; flex-direction: column; gap: 14px; }
-.prod-modal-field-head { display: flex; align-items: center; flex-direction: row-reverse; justify-content: space-between; margin-bottom: 5px; }
-.prod-modal-field-head .form-label { margin-bottom: 0; }
-.prod-default-cb { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer; user-select: none; }
-.prod-default-cb input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
-.prod-default-cb:hover span { color: var(--accent); }
-.prod-prices-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-.prod-attrs-section { border-top: 1px solid var(--border); padding-top: 12px; }
-.prod-unit-section { border-top: 1px solid var(--border); padding-top: 12px; }
-.prod-unit-sell-base-label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary); cursor: pointer; }
-.prod-unit-sell-base-label input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
-.prod-unit-row { display: flex; align-items: flex-start; gap: 8px; }
-.prod-unit-op { font-size: 16px; color: var(--text-muted); margin-top: 26px; flex-shrink: 0; }
-.prod-unit-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
-.prod-unit-sublabel { font-size: 10.5px; color: var(--text-muted); white-space: nowrap; text-align: center; }
-.prod-unit-input { text-align: center; padding-left: 4px !important; padding-right: 4px !important; }
-.prod-unit-sub { font-size: 10.5px; color: var(--text-muted); text-align: center; white-space: nowrap; }
-.prod-unit-default-cb { margin-top: 2px; font-size: 11px !important; }
-.prod-attrs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.prod-attr-select-wrap { display: flex; gap: 6px; align-items: center; }
-.prod-attr-select-wrap .form-input { flex: 1; }
-.prod-attr-add-btn { flex-shrink: 0; width: 32px; height: 34px; border: 1px solid var(--border); background: none; border-radius: 8px; cursor: pointer; color: var(--accent); display: flex; align-items: center; justify-content: center; transition: background 100ms; }
-.prod-attr-add-btn:hover { background: var(--accent-soft); }
+/* ── PM2: Add / Edit Product Modal ──────────────────────── */
+.pm2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 640px) { .pm2-grid { grid-template-columns: 1fr; } }
+.pm2-col { display: flex; flex-direction: column; gap: 12px; }
+
+/* Section labels */
+.pm2-section {
+  font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em;
+  color: var(--text-muted); padding-bottom: 7px; border-bottom: 1px solid var(--border);
+  margin-top: 4px;
+}
+.pm2-col > .pm2-section:first-child { margin-top: 0; }
+
+/* Field */
+.pm2-field { display: flex; flex-direction: column; gap: 5px; }
+.pm2-fh { display: flex; align-items: center; justify-content: space-between; }
+.pm2-label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+
+/* Input */
+.pm2-input {
+  width: 100%; background: var(--bg-app); border: 1.5px solid var(--border);
+  border-radius: 9px; padding: 9px 13px; font-size: 14px; color: var(--text-primary);
+  outline: none; font-family: inherit; font-variant-numeric: tabular-nums;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.pm2-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.pm2-input::placeholder { color: var(--text-muted); opacity: .65; }
+.pm2-textarea { resize: vertical; min-height: 78px; }
+
+/* Select */
+.pm2-sel-wrap { position: relative; }
+.pm2-sel { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 32px; }
+.pm2-sel-wrap::after {
+  content: ''; position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+  border-left: 4.5px solid transparent; border-right: 4.5px solid transparent;
+  border-top: 5.5px solid var(--text-muted); pointer-events: none;
+}
+
+/* Star pin button — replaces the old "Default" checkbox */
+.pm2-pin {
+  border: none; background: none; cursor: pointer; padding: 2px 4px;
+  font-size: 15px; color: var(--text-muted); line-height: 1; border-radius: 5px;
+  transition: color 130ms, background 130ms, transform var(--press-back) var(--ease-spring);
+  flex-shrink: 0;
+}
+.pm2-pin:hover { color: var(--accent); background: var(--accent-soft); }
+.pm2-pin:active { transform: scale(0.82); transition-duration: var(--press-down); }
+.pm2-pin.on { color: var(--accent); }
+.pm2-pin-sm { font-size: 13px; }
+.pm2-pin-xs { font-size: 11px; margin-top: 2px; }
+
+/* Price band — unified 3-cell card */
+.pm2-price-band {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden;
+}
+.pm2-price-cell {
+  display: flex; flex-direction: column; padding: 9px 12px 8px;
+  border-right: 1px solid var(--border); transition: background 130ms;
+}
+.pm2-price-cell:last-child { border-right: none; }
+.pm2-price-cell:has(.pm2-price-in:focus) { background: var(--accent-soft); }
+.pm2-price-cell .pm2-label { font-size: 10.5px; letter-spacing: .01em; margin-bottom: 4px; }
+.pm2-adorn { display: flex; align-items: baseline; gap: 2px; }
+.pm2-sym { font-size: 12px; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
+.pm2-price-in {
+  background: none; border: none; outline: none; padding: 0;
+  font-size: 16px; font-weight: 600; color: var(--text-primary); width: 100%;
+  font-family: inherit; font-variant-numeric: tabular-nums;
+}
+.pm2-price-in::placeholder { color: var(--text-muted); opacity: .45; font-weight: 400; font-size: 13px; }
+
+/* Reorder + Opening Stock side-by-side */
+.pm2-stock-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Units section */
+.pm2-units { display: flex; flex-direction: column; gap: 10px; }
+.pm2-toggle { display: flex; align-items: center; gap: 6px; }
+.pm2-check { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
+.pm2-eq { display: flex; align-items: flex-start; gap: 6px; }
+.pm2-eq-lhs { font-size: 12px; color: var(--text-muted); white-space: nowrap; margin-top: 9px; flex-shrink: 0; }
+.pm2-eq-op { font-size: 15px; color: var(--text-muted); margin-top: 8px; flex-shrink: 0; }
+.pm2-eq-field { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+.pm2-eq-result { opacity: .75; }
+.pm2-eq-in { text-align: center; padding: 7px 4px !important; font-size: 13px !important; }
+.pm2-eq-sub { font-size: 10.5px; color: var(--text-muted); text-align: center; white-space: nowrap; }
+
+/* Attributes */
+.pm2-attrs { display: flex; flex-direction: column; gap: 10px; }
+.pm2-attrs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pm2-attr-row { display: flex; gap: 6px; align-items: center; }
+.pm2-attr-add {
+  flex-shrink: 0; width: 36px; height: 36px;
+  border: 1.5px solid var(--border); background: none; border-radius: 9px;
+  cursor: pointer; color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 100ms, border-color 100ms;
+}
+.pm2-attr-add:hover { background: var(--accent-soft); border-color: var(--accent); }
 
 /* row page transition */
 .slide-left-enter-active, .slide-left-leave-active, .slide-right-enter-active, .slide-right-leave-active { transition: all 0.35s cubic-bezier(0.25,0.8,0.25,1); }

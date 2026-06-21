@@ -18,6 +18,9 @@
       <button class="g-tab" :class="{ active: tab === 'modals' }" @click="tab = 'modals'">
         <LayoutTemplate :size="15" /> Modal Layouts
       </button>
+      <button class="g-tab" :class="{ active: tab === 'designs' }" @click="tab = 'designs'">
+        <Sparkles :size="15" /> Modal Designs
+      </button>
     </div>
 
     <!-- ── Modal Layout presets ───────────────────────────── -->
@@ -178,12 +181,198 @@
     </section>
     </template>
 
+    <!-- ── Modal Designs — 3 design concepts for Add Product ── -->
+    <template v-if="tab === 'designs'">
+      <section class="wg-section">
+        <div class="wg-section-label">
+          <span class="wg-size-badge">Add Product Modal · 3 Design Concepts</span>
+        </div>
+        <p class="ml-intro">
+          Three distinct visual directions for the Add Product modal. <b>Structured</b> is the shipped design —
+          the other two are parked alternatives. Each is a real rendered preview, not a skeleton.
+        </p>
+
+        <div class="gd-grid">
+
+          <!-- ── Design A: Structured (shipped) ── -->
+          <div class="gd-card">
+            <div class="gd-badge gd-badge--live">● Live</div>
+            <div class="gd-preview">
+              <div class="gd-mock">
+                <div class="gd-split">
+                  <!-- Left column -->
+                  <div class="gd-col">
+                    <div class="gd-sec">Product</div>
+                    <div class="gd-field">
+                      <div class="gd-fh"><span class="gd-lbl">Name</span><span class="gd-star on">★</span></div>
+                      <div class="gd-inp"></div>
+                    </div>
+                    <div class="gd-field">
+                      <span class="gd-lbl">Description</span>
+                      <div class="gd-inp gd-inp--tall"></div>
+                    </div>
+                    <div class="gd-sec">Pricing</div>
+                    <div class="gd-band">
+                      <div class="gd-cell"><span class="gd-lbl gd-lbl--xs">Base</span><span class="gd-price">$ <b>—</b></span></div>
+                      <div class="gd-cell"><span class="gd-lbl gd-lbl--xs">Cost</span><span class="gd-price">$ <b>—</b></span></div>
+                      <div class="gd-cell"><span class="gd-lbl gd-lbl--xs">Sell</span><span class="gd-price">$ <b>—</b></span></div>
+                    </div>
+                  </div>
+                  <!-- Right column -->
+                  <div class="gd-col">
+                    <div class="gd-sec">Organization</div>
+                    <div class="gd-field">
+                      <div class="gd-fh"><span class="gd-lbl">Category</span><span class="gd-star">★</span></div>
+                      <div class="gd-inp gd-inp--sel"></div>
+                    </div>
+                    <div class="gd-field">
+                      <div class="gd-fh"><span class="gd-lbl">Supplier</span><span class="gd-star on">★</span></div>
+                      <div class="gd-inp gd-inp--sel"></div>
+                    </div>
+                    <div class="gd-sec">Stock</div>
+                    <div class="gd-row2">
+                      <div class="gd-field"><span class="gd-lbl">Reorder</span><div class="gd-inp"></div></div>
+                      <div class="gd-field"><span class="gd-lbl">Opening</span><div class="gd-inp"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="gd-meta">
+              <span class="gd-name">Structured</span>
+              <span class="gd-desc">ALL-CAPS section labels, unified price band, star pin toggles. Shipped in Products.</span>
+            </div>
+          </div>
+
+          <!-- ── Design B: Panelled ── -->
+          <div class="gd-card">
+            <div class="gd-badge gd-badge--draft">○ Concept</div>
+            <div class="gd-preview gd-preview--b">
+              <div class="gd-mock">
+                <div class="gd-split">
+                  <div class="gd-col">
+                    <div class="gdB-panel">
+                      <div class="gdB-head">Product Identity</div>
+                      <div class="gdB-body">
+                        <div class="gd-field">
+                          <div class="gd-fh"><span class="gd-lbl">Name</span><span class="gdB-star">📌</span></div>
+                          <div class="gdB-inp"></div>
+                        </div>
+                        <div class="gd-field">
+                          <span class="gd-lbl">Description</span>
+                          <div class="gdB-inp gdB-inp--tall"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="gdB-panel">
+                      <div class="gdB-head">Pricing</div>
+                      <div class="gdB-body gdB-price-row">
+                        <div class="gd-field"><span class="gd-lbl">Base</span><div class="gdB-inp"></div></div>
+                        <div class="gd-field"><span class="gd-lbl">Cost</span><div class="gdB-inp"></div></div>
+                        <div class="gd-field"><span class="gd-lbl">Sell</span><div class="gdB-inp"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="gd-col">
+                    <div class="gdB-panel">
+                      <div class="gdB-head">Organization</div>
+                      <div class="gdB-body">
+                        <div class="gd-field">
+                          <div class="gd-fh"><span class="gd-lbl">Category</span><span class="gdB-star">📌</span></div>
+                          <div class="gdB-inp gdB-inp--sel"></div>
+                        </div>
+                        <div class="gd-field">
+                          <div class="gd-fh"><span class="gd-lbl">Supplier</span><span class="gdB-star">📌</span></div>
+                          <div class="gdB-inp gdB-inp--sel"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="gdB-panel">
+                      <div class="gdB-head">Stock</div>
+                      <div class="gdB-body gd-row2">
+                        <div class="gd-field"><span class="gd-lbl">Reorder</span><div class="gdB-inp"></div></div>
+                        <div class="gd-field"><span class="gd-lbl">Opening</span><div class="gdB-inp"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="gd-meta">
+              <span class="gd-name">Panelled</span>
+              <span class="gd-desc">Each group is a bordered card with an orange accent header. Heavier structure, enterprise feel.</span>
+            </div>
+          </div>
+
+          <!-- ── Design C: Minimal ── -->
+          <div class="gd-card">
+            <div class="gd-badge gd-badge--draft">○ Concept</div>
+            <div class="gd-preview gd-preview--c">
+              <div class="gd-mock">
+                <div class="gd-split">
+                  <div class="gd-col">
+                    <div class="gdC-field">
+                      <span class="gdC-lbl">PRODUCT NAME</span>
+                      <div class="gdC-inp"></div>
+                    </div>
+                    <div class="gdC-field">
+                      <span class="gdC-lbl">DESCRIPTION</span>
+                      <div class="gdC-inp gdC-inp--tall"></div>
+                    </div>
+                    <div class="gdC-price-row">
+                      <div class="gdC-price-item">
+                        <span class="gdC-lbl">BASE</span>
+                        <span class="gdC-price-val">—</span>
+                      </div>
+                      <div class="gdC-price-item">
+                        <span class="gdC-lbl">COST</span>
+                        <span class="gdC-price-val">—</span>
+                      </div>
+                      <div class="gdC-price-item">
+                        <span class="gdC-lbl">SELL</span>
+                        <span class="gdC-price-val">—</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="gd-col">
+                    <div class="gdC-field">
+                      <span class="gdC-lbl">CATEGORY</span>
+                      <div class="gdC-inp"></div>
+                    </div>
+                    <div class="gdC-field">
+                      <span class="gdC-lbl">SUPPLIER</span>
+                      <div class="gdC-inp"></div>
+                    </div>
+                    <div class="gdC-row2">
+                      <div class="gdC-field">
+                        <span class="gdC-lbl">REORDER AT</span>
+                        <div class="gdC-inp"></div>
+                      </div>
+                      <div class="gdC-field">
+                        <span class="gdC-lbl">OPENING STOCK</span>
+                        <div class="gdC-inp"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="gd-meta">
+              <span class="gd-name">Minimal</span>
+              <span class="gd-desc">No section cards — just spacing. Bottom-border-only inputs. Labels in tracked uppercase. Linear / Stripe vibe.</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </template>
+
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { Component, LayoutGrid, LayoutTemplate } from 'lucide-vue-next'
+import { Component, LayoutGrid, LayoutTemplate, Sparkles } from 'lucide-vue-next'
 import ComponentGallery from './ComponentGallery.vue'
 
 const tab = ref('components')
@@ -335,4 +524,107 @@ function bySize(size) {
 .ml-hr { height: 1px; background: var(--border); margin: 2px 0; }
 .ml-skel--split { flex-direction: row; gap: 10px; }
 .ml-skel-col { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+/* ── Modal Designs tab ──────────────────────────────────── */
+.gd-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+/* Card shell */
+.gd-card {
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: 16px; overflow: hidden; position: relative;
+  transition: box-shadow 160ms, transform 160ms;
+}
+.gd-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,.12); transform: translateY(-2px); }
+.dark .gd-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,.4); }
+
+/* Live/Draft badge */
+.gd-badge {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  font-size: 9.5px; font-weight: 800; padding: 3px 8px;
+  border-radius: 999px; letter-spacing: .04em;
+}
+.gd-badge--live  { background: var(--success-soft); color: var(--success); border: 1px solid rgba(34,197,94,.2); }
+.gd-badge--draft { background: var(--bg-app); color: var(--text-muted); border: 1px solid var(--border); }
+
+/* Preview area */
+.gd-preview {
+  background: var(--bg-app); border-bottom: 1.5px solid var(--border);
+  padding: 16px; height: 280px; overflow: hidden;
+}
+
+/* Mock container */
+.gd-mock { width: 100%; height: 100%; }
+.gd-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; height: 100%; }
+.gd-col { display: flex; flex-direction: column; gap: 7px; }
+
+/* Shared field primitives */
+.gd-field { display: flex; flex-direction: column; gap: 3px; }
+.gd-fh { display: flex; align-items: center; justify-content: space-between; }
+.gd-lbl { font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: .01em; }
+.gd-lbl--xs { font-size: 8.5px; }
+.gd-inp {
+  height: 22px; border-radius: 6px;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+}
+.gd-inp--tall { height: 40px; }
+.gd-inp--sel { background: var(--bg-card); position: relative; }
+.gd-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+/* Design A — Structured */
+.gd-sec {
+  font-size: 7.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-muted); padding-bottom: 4px; border-bottom: 1px solid var(--border);
+}
+.gd-star { font-size: 10px; color: var(--text-muted); line-height: 1; }
+.gd-star.on { color: var(--accent); }
+.gd-band {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  border: 1.5px solid var(--border); border-radius: 7px; overflow: hidden;
+}
+.gd-cell {
+  padding: 5px 6px 4px; border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.gd-cell:last-child { border-right: none; }
+.gd-price { font-size: 10px; font-weight: 700; color: var(--text-primary); }
+
+/* Design B — Panelled */
+.gd-preview--b { background: var(--bg-app); }
+.gdB-panel {
+  border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 0;
+}
+.gdB-head {
+  background: var(--accent-soft); border-bottom: 1px solid rgba(247,143,30,.2);
+  padding: 4px 8px;
+  font-size: 7.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--accent);
+}
+.gdB-body { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.gdB-price-row { flex-direction: row; gap: 6px; }
+.gdB-inp {
+  height: 20px; border-radius: 5px;
+  background: var(--bg-app); border: 1.5px solid var(--border);
+}
+.gdB-inp--tall { height: 36px; }
+.gdB-inp--sel { background: var(--bg-app); }
+.gdB-star { font-size: 9px; color: var(--text-muted); }
+
+/* Design C — Minimal */
+.gd-preview--c { background: var(--bg-card); }
+.gdC-field { display: flex; flex-direction: column; gap: 3px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.gdC-lbl { font-size: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: .14em; color: var(--text-muted); }
+.gdC-inp {
+  height: 20px; border: none; border-bottom: 1.5px solid var(--border);
+  background: transparent; border-radius: 0;
+}
+.gdC-inp--tall { height: 36px; }
+.gdC-price-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.gdC-price-item { display: flex; flex-direction: column; gap: 3px; }
+.gdC-price-val { font-size: 14px; font-weight: 700; color: var(--text-muted); border-bottom: 1.5px solid var(--border); padding-bottom: 2px; }
+.gdC-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* Card meta */
+.gd-meta { padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.gd-name { font-size: 13.5px; font-weight: 800; color: var(--text-primary); }
+.gd-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.5; }
 </style>
