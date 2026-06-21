@@ -276,6 +276,72 @@
       </div>
     </section>
 
+    <!-- ─── BASECARD COMPONENT ──────────────────────────────── -->
+    <section class="cg-section">
+      <div class="cg-head">
+        <h2 class="cg-h">BaseCard</h2>
+        <span class="cg-tag cg-tag--global">component · components/base/BaseCard.vue</span>
+      </div>
+      <p class="cg-ref-note">
+        Surface wrapper with rounded corners, card background, and border. Props:
+        <code>padding</code> <code>sm · md · lg</code> ·
+        <code>shadow</code> <code>default · none · strong</code>.
+        Content via default slot.
+      </p>
+      <div class="cg-grid">
+        <div class="cg-item">
+          <div class="cg-demo cg-demo--col" style="width:200px">
+            <BaseCard padding="sm">
+              <span style="font-size:12px;color:var(--text-secondary)">Small padding — 12px</span>
+            </BaseCard>
+          </div>
+          <code class="cg-code">padding="sm"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo cg-demo--col" style="width:200px">
+            <BaseCard padding="md">
+              <span style="font-size:12px;color:var(--text-secondary)">Medium padding — 20px</span>
+            </BaseCard>
+          </div>
+          <code class="cg-code">padding="md" (default)</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo cg-demo--col" style="width:200px">
+            <BaseCard padding="lg">
+              <span style="font-size:12px;color:var(--text-secondary)">Large padding — 32px</span>
+            </BaseCard>
+          </div>
+          <code class="cg-code">padding="lg"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo cg-demo--col" style="width:200px">
+            <BaseCard shadow="default">
+              <span style="font-size:12px;color:var(--text-secondary)">Default shadow</span>
+            </BaseCard>
+          </div>
+          <code class="cg-code">shadow="default"</code>
+          <span class="cg-note">Uses <code>--shadow-card</code>.</span>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo cg-demo--col" style="width:200px">
+            <BaseCard shadow="none">
+              <span style="font-size:12px;color:var(--text-secondary)">No shadow — flat</span>
+            </BaseCard>
+          </div>
+          <code class="cg-code">shadow="none"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo cg-demo--col" style="width:200px">
+            <BaseCard shadow="strong">
+              <span style="font-size:12px;color:var(--text-secondary)">Strong shadow — elevated</span>
+            </BaseCard>
+          </div>
+          <code class="cg-code">shadow="strong"</code>
+          <span class="cg-note">Uses <code>--shadow-strong</code>.</span>
+        </div>
+      </div>
+    </section>
+
     <!-- ─── STATUS BADGES ───────────────────────────────────── -->
     <section class="cg-section">
       <div class="cg-head">
@@ -440,6 +506,7 @@ import AppModal from '@/components/ui/AppModal.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput  from '@/components/base/BaseInput.vue'
 import BaseSelect from '@/components/base/BaseSelect.vue'
+import BaseCard   from '@/components/base/BaseCard.vue'
 
 const showModal = ref(false)
 const switchOn  = ref(true)

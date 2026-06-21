@@ -87,6 +87,7 @@
   --shadow-header: 0 2px 10px rgba(0,0,0,0.07);
   --shadow-card:   0 2px 10px rgba(0,0,0,0.07);
   --shadow-active: 0 2px 8px rgba(0,0,0,0.10);
+  --shadow-strong: 0 8px 24px rgba(0,0,0,0.14);
 
   /* ── Motion system (s59) ──────────────────────────────────
      Base rule: ease in AND out, interactive feedback > hover.
@@ -158,6 +159,7 @@
   --shadow-header: 0 2px 12px rgba(0,0,0,0.30);
   --shadow-card:   0 2px 12px rgba(0,0,0,0.25);
   --shadow-active: 0 2px 10px rgba(0,0,0,0.40);
+  --shadow-strong: 0 8px 24px rgba(0,0,0,0.55);
 }
 
 /* ── ADMIN LAYOUT (super-admin shell) ──────────────────── */
@@ -1155,6 +1157,15 @@ textarea.form-input:focus {
 .select-wrap .form-input { appearance: none; padding-right: 36px; cursor: pointer; }
 .select-wrap .form-input:disabled { cursor: default; opacity: 0.5; }
 .select-chevron    { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted); display: flex; align-items: center; }
+
+/* ── BASE CARD (BaseCard — surface wrapper) */
+.base-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; }
+.base-card--pad-sm  { padding: 12px; }
+.base-card--pad-md  { padding: 20px; }
+.base-card--pad-lg  { padding: 32px; }
+.base-card--shadow-default { box-shadow: var(--shadow-card); }
+.base-card--shadow-none    { box-shadow: none; }
+.base-card--shadow-strong  { box-shadow: var(--shadow-strong); }
 
 /* ── PAGE & FORM PRIMITIVES ────────────────────────────── */
 /* Promoted to global from ~50 duplicated view copies (UI cleanup Step 4, s60).
