@@ -153,6 +153,59 @@
       </div>
     </section>
 
+    <!-- ─── BASEINPUT COMPONENT ──────────────────────────────── -->
+    <section class="cg-section">
+      <div class="cg-head">
+        <h2 class="cg-h">BaseInput</h2>
+        <span class="cg-tag cg-tag--global">component · components/base/BaseInput.vue</span>
+      </div>
+      <p class="cg-ref-note">
+        Canonical text input. Props: <code>modelValue</code> (v-model) · <code>label</code> ·
+        <code>type</code> · <code>placeholder</code> · <code>prefix</code> · <code>suffix</code> ·
+        <code>error</code> · <code>disabled</code>.
+        Extra attributes (e.g. <code>maxlength</code>, <code>min</code>) pass through via <code>$attrs</code>.
+      </p>
+      <div class="cg-grid">
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseInput label="Product name" placeholder="e.g. Paracetamol 500mg" model-value="" />
+          </div>
+          <code class="cg-code">label + placeholder</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseInput label="Price" prefix="EGP" placeholder="0.00" model-value="" />
+          </div>
+          <code class="cg-code">prefix="EGP"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseInput label="Discount" suffix="%" placeholder="0" model-value="" />
+          </div>
+          <code class="cg-code">suffix="%"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseInput label="Weight" prefix="kg" suffix="g" placeholder="0.000" model-value="" />
+          </div>
+          <code class="cg-code">prefix + suffix</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseInput label="Email" type="email" placeholder="user@example.com" error="Invalid email address" model-value="bad@@email" />
+          </div>
+          <code class="cg-code">error="…"</code>
+          <span class="cg-note">Red border + message below.</span>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseInput label="Store name" placeholder="Locked" model-value="Gates Technology" :disabled="true" />
+          </div>
+          <code class="cg-code">:disabled="true"</code>
+        </div>
+      </div>
+    </section>
+
     <!-- ─── STATUS BADGES ───────────────────────────────────── -->
     <section class="cg-section">
       <div class="cg-head">
@@ -315,6 +368,7 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { Plus, RefreshCw } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseInput  from '@/components/base/BaseInput.vue'
 
 const showModal = ref(false)
 const switchOn  = ref(true)

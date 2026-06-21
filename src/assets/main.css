@@ -1137,6 +1137,18 @@ textarea.form-input:focus {
   color: var(--text-muted);
 }
 
+/* ── BASE INPUT WRAPPER (BaseInput — prefix / suffix / error) */
+.base-input-root { display: flex; flex-direction: column; gap: 5px; }
+.input-wrap      { position: relative; display: flex; align-items: center; }
+.input-affix     { position: absolute; pointer-events: none; font-size: 13px; color: var(--text-muted); user-select: none; line-height: 1; }
+.input-prefix    { left: 12px; }
+.input-suffix    { right: 12px; }
+.form-input.has-prefix  { padding-left: 34px; }
+.form-input.has-suffix  { padding-right: 34px; }
+.form-input.input-error { border-color: var(--danger) !important; }
+.form-input.input-error:focus { box-shadow: 0 0 0 3px var(--danger-soft); }
+.input-error-msg { font-size: 12px; color: var(--danger); }
+
 /* ── PAGE & FORM PRIMITIVES ────────────────────────────── */
 /* Promoted to global from ~50 duplicated view copies (UI cleanup Step 4, s60).
    Scoped view styles still override these (higher specificity), so the few
