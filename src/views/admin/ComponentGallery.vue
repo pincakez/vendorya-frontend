@@ -68,6 +68,88 @@
           <code class="cg-code">:disabled</code>
           <span class="cg-note">0.5 opacity, no press, default cursor.</span>
         </div>
+        <div class="cg-item">
+          <div class="cg-demo"><button class="btn-admin">Admin action</button></div>
+          <code class="cg-code">.btn-admin</code>
+          <span class="cg-note">Sudo/admin surfaces — red accent, no ripple group.</span>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo">
+            <button class="btn-refresh"><RefreshCw :size="15" /></button>
+          </div>
+          <code class="cg-code">.btn-refresh</code>
+          <span class="cg-note">34×34 square icon-only button for reload controls.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── BASEBUTTON COMPONENT ──────────────────────────────── -->
+    <section class="cg-section">
+      <div class="cg-head">
+        <h2 class="cg-h">BaseButton</h2>
+        <span class="cg-tag cg-tag--global">component · components/base/BaseButton.vue</span>
+      </div>
+      <p class="cg-ref-note">
+        Canonical button component — all views use <code>&lt;BaseButton&gt;</code>,
+        never raw <code>&lt;button class="btn-*"&gt;</code>.
+        Props: <code>variant</code> · <code>size</code> · <code>loading</code> · <code>disabled</code> · <code>type</code>.
+        Icon goes in the default slot.
+      </p>
+      <div class="cg-grid">
+        <div class="cg-item">
+          <div class="cg-demo"><BaseButton variant="primary">Save changes</BaseButton></div>
+          <code class="cg-code">variant="primary"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo"><BaseButton variant="ghost">Cancel</BaseButton></div>
+          <code class="cg-code">variant="ghost"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo"><BaseButton variant="secondary">Export</BaseButton></div>
+          <code class="cg-code">variant="secondary"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo"><BaseButton variant="danger">Delete</BaseButton></div>
+          <code class="cg-code">variant="danger"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo"><BaseButton variant="admin">Admin action</BaseButton></div>
+          <code class="cg-code">variant="admin"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo"><BaseButton variant="refresh"><RefreshCw :size="15" /></BaseButton></div>
+          <code class="cg-code">variant="refresh"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo">
+            <BaseButton variant="primary" size="sm">Small</BaseButton>
+            <BaseButton variant="ghost" size="sm">Small</BaseButton>
+          </div>
+          <code class="cg-code">size="sm"</code>
+          <span class="cg-note">Pairs with any variant.</span>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo">
+            <BaseButton variant="primary" :loading="true">Saving…</BaseButton>
+            <BaseButton variant="refresh" :loading="true"><RefreshCw :size="15" /></BaseButton>
+          </div>
+          <code class="cg-code">:loading="true"</code>
+          <span class="cg-note">Disables + shows spinner. Slot hidden while loading.</span>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo">
+            <BaseButton variant="primary" :disabled="true">Disabled</BaseButton>
+            <BaseButton variant="ghost" :disabled="true">Disabled</BaseButton>
+          </div>
+          <code class="cg-code">:disabled="true"</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo">
+            <BaseButton variant="primary"><Plus :size="15" /> New product</BaseButton>
+          </div>
+          <code class="cg-code">icon via slot</code>
+          <span class="cg-note">Lucide icon as first child in slot, 14–15px.</span>
+        </div>
       </div>
     </section>
 
@@ -230,8 +312,9 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
-import { Plus } from 'lucide-vue-next'
+import { Plus, RefreshCw } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 const showModal = ref(false)
 const switchOn  = ref(true)
