@@ -12,6 +12,29 @@
 
 export const changelog = [
   {
+    version: '1.7.0',
+    date: '2026-06-21',
+    tag: 'New',
+    en: {
+      title: 'See your stock in packs and strips, not just single pieces',
+      points: [
+        'If a product is sold in bigger units — like a pack or a strip — your inventory now shows the count that way (for example "11 packs") instead of one big number of loose pieces. Hover over it to see the full picture: 11 packs · 1 strip · 4 pieces.',
+        'Open any product to see a clear Stock Breakdown — how the units fit together ("1 pack = 2 strips = 20 pieces") and exactly what you have on the shelf right now.',
+        'You can rename what a single unit is called (Pill, Tablet, Piece…) under Settings → Business Rules, and set default names for the bigger units (Strip, Pack) when you turn on multi-unit selling in Capabilities.',
+        'Nothing changed for products sold as single items — they still show a plain number.',
+      ],
+    },
+    ar: {
+      title: 'شاهد مخزونك بالعبوات والشرائط، لا بالقطع المفردة فقط',
+      points: [
+        'إذا كان المنتج يُباع بوحدات أكبر — مثل عبوة أو شريط — أصبح المخزون يعرض العدد بهذه الطريقة (مثلاً "11 عبوة") بدلاً من رقم كبير من القطع المفردة. مرّر فوقه لترى الصورة الكاملة: 11 عبوة · 1 شريط · 4 قطع.',
+        'افتح أي منتج لترى تفصيل المخزون بوضوح — كيف تتركب الوحدات ("1 عبوة = 2 شريط = 20 قطعة") وما لديك على الرف الآن بالضبط.',
+        'يمكنك تغيير اسم الوحدة المفردة (قرص، حبة، قطعة…) من الإعدادات ← قواعد العمل، وضبط الأسماء الافتراضية للوحدات الأكبر (شريط، عبوة) عند تفعيل البيع متعدد الوحدات في القدرات.',
+        'لم يتغير شيء للمنتجات التي تُباع كقطعة واحدة — تظل تعرض رقماً عادياً.',
+      ],
+    },
+  },
+  {
     version: '1.6.1',
     date: '2026-06-20',
     tag: 'Improved',

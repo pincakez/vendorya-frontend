@@ -50,7 +50,9 @@
         <div class="quick-stats">
           <div class="quick-stat">
             <div class="qs-label">{{ t('inventory.product_detail.total_stock') }}</div>
-            <div class="qs-val">{{ totalStock }}</div>
+            <div class="qs-val" :title="stockBreakdown.hasTiers ? formatBreakdown(stockBreakdown.parts) : ''">
+              {{ stockBreakdown.hasTiers ? headlineLabel(stockBreakdown.headline) : totalStock }}
+            </div>
           </div>
           <div class="quick-stat">
             <div class="qs-label">{{ t('inventory.product_detail.variants_label') }}</div>
@@ -126,6 +128,29 @@
 
     </div><!-- /showcase-layout -->
 
+    <!-- ══ STOCK BREAKDOWN (only for multi-tier products) ══ -->
+    <div v-if="product && stockBreakdown.hasTiers" class="variants-card stock-units-card">
+      <div class="section-header">
+        <h2 class="section-title">{{ t('inventory.product_detail.stock_breakdown_section') }}</h2>
+      </div>
+      <div class="su-body">
+        <div v-if="conversionLine" class="su-conversion">
+          <Layers :size="15" />
+          <span class="su-conversion-label">{{ t('inventory.product_detail.pack_contents') }}:</span>
+          <span class="su-conversion-line">{{ conversionLine }}</span>
+        </div>
+        <div class="su-stock">
+          <span class="su-stock-label">{{ t('inventory.product_detail.in_stock_label') }}</span>
+          <span class="su-parts">
+            <span v-for="(part, i) in stockBreakdown.parts" :key="i" class="su-part">
+              <span class="su-part-count">{{ part.count.toLocaleString('en-US') }}</span>
+              <span class="su-part-name">{{ part.name }}</span>
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ VARIANTS TABLE (full width) ══ -->
     <div v-if="product" class="variants-card">
       <div class="section-header">
@@ -158,7 +183,7 @@
               <td class="text-muted"><Money :value="v.cost_price" /></td>
               <td class="fw6"><Money :value="v.sell_price" /></td>
               <td class="text-muted">{{ v.reorder_level ?? 0 }}</td>
-              <td class="fw6">{{ v.total_stock }}</td>
+              <td class="fw6" :title="variantStock(v).title">{{ variantStock(v).label }}</td>
               <td>
                 <div class="branch-stock">
                   <span v-for="sl in v.stock_levels" :key="sl.id" class="branch-chip">
@@ -337,11 +362,12 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronLeft, Eye, X, Camera, Image as ImageIcon, Pencil, Lock } from 'lucide-vue-next'
+import { ChevronLeft, Eye, X, Camera, Image as ImageIcon, Pencil, Lock, Layers } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { showSuccessToast } from '@/utils/toast'
+import { decomposeStock, headlineLabel, formatBreakdown, unitConversionLine } from '@/utils/units'
 
 const { t } = useI18n()
 const props = defineProps({ id: String })
@@ -355,6 +381,20 @@ const totalStock = computed(() => {
   if (!product.value) return 0
   return product.value.variants.reduce((s, v) => s + (v.total_stock || 0), 0)
 })
+
+// Unit ladder for this product (base + any pack/strip tiers, from the API).
+const sellingUnits = computed(() => product.value?.selling_units || [])
+// Whole-product stock broken into packs · strips · pills.
+const stockBreakdown = computed(() => decomposeStock(totalStock.value, sellingUnits.value))
+// "1 pack = 2 strips = 20 pills" — empty when the product has no extra tiers.
+const conversionLine = computed(() => unitConversionLine(sellingUnits.value))
+// Per-variant breakdown for the variants table (reuses the product ladder).
+function variantStock(v) {
+  const d = decomposeStock(v.total_stock || 0, sellingUnits.value)
+  return d.hasTiers
+    ? { label: headlineLabel(d.headline), title: formatBreakdown(d.parts) }
+    : { label: String(v.total_stock ?? 0), title: '' }
+}
 
 const primaryVariant = computed(() =>
   product.value?.variants?.[0] ?? null
@@ -668,6 +708,21 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 .section-header { display:flex; align-items:center; gap:10px; padding:14px 18px; border-bottom:1px solid var(--border); }
 .section-title { font-size:15px; font-weight:600; color:var(--text-primary); margin:0; }
 .count-badge { padding:2px 8px; border-radius:20px; background:var(--border); font-size:12px; font-weight:600; color:var(--text-muted); }
+
+/* Stock breakdown (multi-tier products) */
+.su-body { display:flex; flex-direction:column; gap:14px; padding:16px 18px; }
+.su-conversion { display:flex; align-items:center; gap:8px; flex-wrap:wrap; color:var(--text-secondary); font-size:13px; }
+.su-conversion svg { color:var(--accent); flex-shrink:0; }
+.su-conversion-label { font-weight:600; color:var(--text-muted); }
+.su-conversion-line { font-weight:600; color:var(--text-primary); }
+.su-stock { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.su-stock-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
+.su-parts { display:flex; gap:8px; flex-wrap:wrap; }
+.su-part { display:inline-flex; align-items:baseline; gap:5px; padding:5px 12px; border-radius:10px; background:var(--accent-soft,rgba(247,143,30,0.10)); }
+.su-part-count { font-size:18px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
+.su-part-name { font-size:12px; font-weight:600; color:var(--accent); }
+.su-part:not(:first-child) { background:var(--border); }
+.su-part:not(:first-child) .su-part-name { color:var(--text-secondary); }
 
 .mono { font-family:ui-monospace,monospace; font-size:12px; }
 .text-muted { color:var(--text-muted); }

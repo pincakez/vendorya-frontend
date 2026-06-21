@@ -229,6 +229,17 @@
             />
             <p class="form-hint">{{ t('settings.store.item_noun_hint') }} {{ t('settings.store.item_noun_rules') }}</p>
           </div>
+          <div class="form-group">
+            <label class="form-label">{{ t('settings.store.base_unit_name') }}</label>
+            <input
+              v-model="settingsForm.base_unit_name"
+              class="form-input"
+              style="width:160px;"
+              maxlength="20"
+              :placeholder="t('settings.store.base_unit_name_ph')"
+            />
+            <p class="form-hint">{{ t('settings.store.base_unit_name_hint') }}</p>
+          </div>
           <div class="form-group" style="grid-column:1/-1;">
             <label class="form-label">{{ t('settings.store.cat_levels') }}</label>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -1065,6 +1076,7 @@ const storeForm    = reactive({
 const settingsForm = reactive({
   allow_negative_stock: false, enable_agel_selling: true,
   decimals: 2, thousands_separator: false, item_noun: 'NAME',
+  base_unit_name: 'pcs', unit_tier_names: ['Strip', 'Pack'],
   category_level_names: ['Category', 'Sub-category', 'Sub-category 2', 'Sub-category 3'],
   default_tax: '', tax_id: '', commercial_reg: '', print_tax_id: true,
   receipt_header: '', receipt_footer: '',
@@ -1161,6 +1173,7 @@ async function saveRules() {
       decimals:             settingsForm.decimals,
       thousands_separator:  settingsForm.thousands_separator,
       item_noun:            settingsForm.item_noun,
+      base_unit_name:       (settingsForm.base_unit_name || 'pcs').trim() || 'pcs',
       category_level_names: settingsForm.category_level_names,
     })
     fmt.apply({ decimals: settingsForm.decimals, thousands_separator: settingsForm.thousands_separator, item_noun: settingsForm.item_noun, category_level_names: settingsForm.category_level_names })

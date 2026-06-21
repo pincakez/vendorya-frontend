@@ -39,6 +39,19 @@
               <span class="toggle-knob" />
             </button>
           </div>
+          <!-- Default tier names, used to seed new products -->
+          <template v-if="form.multi_unit_enabled">
+            <div class="sub-block">
+              <div class="sub-label">{{ t('settings.capabilities.tier_names_label') }}</div>
+              <div class="tier-names-row">
+                <input v-model="form.unit_tier_names[0]" type="text" maxlength="20" class="num-input tier-input"
+                  :placeholder="t('settings.capabilities.tier1_ph')" />
+                <input v-model="form.unit_tier_names[1]" type="text" maxlength="20" class="num-input tier-input"
+                  :placeholder="t('settings.capabilities.tier2_ph')" />
+              </div>
+              <div class="sub-muted">{{ t('settings.capabilities.tier_names_hint') }}</div>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -140,6 +153,7 @@ const storeType = ref('GENERAL')
 
 const form = reactive({
   multi_unit_enabled:      true,
+  unit_tier_names:         ['Strip', 'Pack'],
   expiry_tracking_enabled: false,
   expired_sale_policy:     'WARN',
   expiry_alert_days:       60,
@@ -187,6 +201,7 @@ async function load() {
     storeType.value = storeRes.data.store_type || 'GENERAL'
     Object.assign(form, {
       multi_unit_enabled:      settingsRes.data.multi_unit_enabled ?? true,
+      unit_tier_names:         settingsRes.data.unit_tier_names || ['Strip', 'Pack'],
       expiry_tracking_enabled: settingsRes.data.expiry_tracking_enabled ?? false,
       expired_sale_policy:     settingsRes.data.expired_sale_policy || 'WARN',
       expiry_alert_days:       settingsRes.data.expiry_alert_days ?? 60,
@@ -201,6 +216,7 @@ async function save() {
   try {
     await api.patch('/api/core/settings/', {
       multi_unit_enabled:      form.multi_unit_enabled,
+      unit_tier_names:         form.unit_tier_names,
       expiry_tracking_enabled: form.expiry_tracking_enabled,
       expired_sale_policy:     form.expired_sale_policy,
       expiry_alert_days:       form.expiry_alert_days || 60,
@@ -259,6 +275,8 @@ onMounted(load)
 .sub-label { font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:8px; }
 .mode-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .days-row { display:flex; align-items:center; gap:8px; margin-top:14px; }
+.tier-names-row { display:flex; gap:8px; margin:10px 0 6px; flex-wrap:wrap; }
+.tier-input { width:150px; }
 .sub-muted { font-size:12px; color:var(--text-muted); }
 .num-input { padding:7px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; transition:border-color 120ms; }
 .num-input:focus { border-color:var(--accent); }

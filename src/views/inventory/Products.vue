@@ -163,7 +163,7 @@
                     <input type="checkbox" class="dt-cb" :checked="isSelected(p.id)" @change="toggleSelect(p.id)" />
                   </td>
                   <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '', col.key === 'product' ? 'col-frozen' : '']" :title="cellText(col, p)">
-                    <span v-if="col.badge" class="stock-badge">{{ formatQty(p.total_stock) }}</span>
+                    <span v-if="col.badge" class="stock-badge" :title="stockTitle(p)">{{ stockBadge(p) }}</span>
                     <template v-else-if="col.money && p[col.field] !== undefined && p[col.field] !== null && p[col.field] !== ''"><span v-if="col.plus">+</span><Money :value="p[col.field]" /></template>
                     <template v-else>
                       <span v-if="col.key === 'product' && p.hide_from_pos" class="ghost-tag" :title="t('inventory.products.table.ghost_hint')"><EyeOff :size="11" /></span>{{ cellText(col, p) }}
@@ -513,10 +513,22 @@ import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
 import { formatQty } from '@/utils/format'
+import { decomposeStock, headlineLabel, formatBreakdown } from '@/utils/units'
 import { showSuccessToast } from '@/utils/toast'
 import { useFormDirty } from '@/composables/useFormDirty'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openAddProduct)
+
+// Stock badge: lead with the biggest unit (packs) for tiered products; plain
+// base number for everything else. Full ladder shows on hover.
+function stockBadge(p) {
+  const d = decomposeStock(p.total_stock, p.selling_units)
+  return d.hasTiers ? headlineLabel(d.headline) : formatQty(p.total_stock)
+}
+function stockTitle(p) {
+  const d = decomposeStock(p.total_stock, p.selling_units)
+  return d.hasTiers ? formatBreakdown(d.parts) : ''
+}
 import AppModal from '@/components/ui/AppModal.vue'
 import ReasonModal from '@/components/ui/ReasonModal.vue'
 
