@@ -504,7 +504,7 @@ const badges = [
 
 .cg-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+  gap: 20px;
 }
 .cg-item {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
@@ -559,7 +559,7 @@ const badges = [
 .cg-ref-note {
   font-size: 12.5px; color: var(--text-secondary); line-height: 1.6;
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
-  padding: 14px 16px; margin: 0;
+  padding: 14px 16px; margin: 0 0 16px 0;
 }
 
 /* Typography controls */
