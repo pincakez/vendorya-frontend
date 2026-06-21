@@ -539,7 +539,9 @@ async function addToCart(product, unit = null) {
     alert(t('pos.alert_no_variant', { name: product.name || t('pos.alert_no_variant_fallback') }))
     return
   }
-  const units = Array.isArray(product.selling_units) ? product.selling_units : []
+  const units = Array.isArray(product.selling_units)
+    ? product.selling_units.filter(u => u.sellable !== false)
+    : []
   // Multiple sellable units and none chosen yet → ask which (Pack/Strip/Tablet).
   // Single-unit products skip this entirely and add silently, exactly as before.
   if (!unit && units.length > 1) {

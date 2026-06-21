@@ -353,6 +353,48 @@
             <div><label class="form-label">{{ t('inventory.products.product_modal.cost_price') }}</label><input v-model.number="prodModal.cost_price" class="form-input" type="number" min="0" step="0.01" /></div>
             <div><label class="form-label">{{ t('inventory.products.product_modal.sell_price') }}</label><input v-model.number="prodModal.sell_price" class="form-input" type="number" min="0" step="0.01" /></div>
           </div>
+
+          <!-- Selling Units block (multi-unit, new products only) -->
+          <div v-if="storeSettings.multi_unit_enabled && !prodModal.id" class="prod-unit-section">
+            <div class="form-label" style="margin-bottom:8px;">Selling Units</div>
+            <div class="prod-modal-field-head" style="margin-bottom:10px;">
+              <label class="prod-default-cb" :title="t('inventory.products.product_modal.default_hint')">
+                <input type="checkbox" v-model="prodDefaults.unit_sell_base_enabled" @change="saveDefaults" />
+                <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
+              </label>
+              <label class="prod-unit-sell-base-label">
+                <input type="checkbox" v-model="prodModal.sell_base_unit" @change="prodDefaults.unit_sell_base_enabled && saveDefaults()" />
+                <span>Sell by {{ storeSettings.base_unit_name }} (individually)</span>
+              </label>
+            </div>
+            <div class="prod-unit-row">
+              <div class="prod-unit-cell">
+                <div class="prod-unit-sublabel">{{ storeSettings.unit_tier_names[1] }} contains</div>
+                <input v-model.number="prodModal.unit_strips_per_pack" type="number" min="1" step="1" class="form-input prod-unit-input" placeholder="—" @input="onUnitFieldChange('a')" />
+                <div class="prod-unit-sub">{{ storeSettings.unit_tier_names[0] }}s</div>
+                <label class="prod-default-cb prod-unit-default-cb" :title="t('inventory.products.product_modal.default_hint')">
+                  <input type="checkbox" v-model="prodDefaults.unit_spp_enabled" @change="saveDefaults" />
+                  <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
+                </label>
+              </div>
+              <span class="prod-unit-op">×</span>
+              <div class="prod-unit-cell">
+                <div class="prod-unit-sublabel">{{ storeSettings.unit_tier_names[0] }} contains</div>
+                <input v-model.number="prodModal.unit_pills_per_strip" type="number" min="1" step="1" class="form-input prod-unit-input" placeholder="—" @input="onUnitFieldChange('b')" />
+                <div class="prod-unit-sub">{{ storeSettings.base_unit_name }}s</div>
+                <label class="prod-default-cb prod-unit-default-cb" :title="t('inventory.products.product_modal.default_hint')">
+                  <input type="checkbox" v-model="prodDefaults.unit_pps_enabled" @change="saveDefaults" />
+                  <span>{{ t('inventory.products.product_modal.default_toggle') }}</span>
+                </label>
+              </div>
+              <span class="prod-unit-op">=</span>
+              <div class="prod-unit-cell">
+                <div class="prod-unit-sublabel">{{ storeSettings.unit_tier_names[1] }} total</div>
+                <input v-model.number="prodModal.unit_pills_per_pack" type="number" min="1" step="1" class="form-input prod-unit-input" placeholder="—" @input="onUnitFieldChange('c')" />
+                <div class="prod-unit-sub">{{ storeSettings.base_unit_name }}s</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- RIGHT COLUMN: Category + Supplier + Reorder + Attrs -->
@@ -976,6 +1018,17 @@ async function saveSupplier() {
 }
 async function deleteSupplier(id) { if (!confirm(t('inventory.products.suppliers_tab.confirm_delete'))) return; await api.delete(`/api/inventory/suppliers/${id}/`); fetchSuppliers() }
 
+/* ── store settings (for multi-unit gate) ── */
+const storeSettings = reactive({ multi_unit_enabled: false, base_unit_name: 'pcs', unit_tier_names: ['Strip', 'Pack'] })
+async function fetchStoreSettings() {
+  try {
+    const { data } = await api.get('/api/core/settings/')
+    storeSettings.multi_unit_enabled = data.multi_unit_enabled ?? false
+    storeSettings.base_unit_name = data.base_unit_name || 'pcs'
+    storeSettings.unit_tier_names = data.unit_tier_names || ['Strip', 'Pack']
+  } catch { /* noop */ }
+}
+
 /* ── product defaults (persisted in localStorage) ── */
 const PROD_DEFAULTS_KEY = 'prod_field_defaults'
 const prodDefaults = reactive({
@@ -984,6 +1037,9 @@ const prodDefaults = reactive({
   supplier_enabled: false, supplier_value: '',
   reorder_enabled: false, reorder_value: 0,
   stock_enabled: false, stock_value: 1,
+  unit_sell_base_enabled: false, unit_sell_base_value: false,
+  unit_spp_enabled: false, unit_spp_value: null,
+  unit_pps_enabled: false, unit_pps_value: null,
 })
 function loadDefaults() {
   try {
@@ -996,6 +1052,9 @@ function saveDefaults() {
   if (prodDefaults.supplier_enabled) prodDefaults.supplier_value = prodModal.supplier
   if (prodDefaults.reorder_enabled)  prodDefaults.reorder_value  = prodModal.reorder_level
   if (prodDefaults.stock_enabled)    prodDefaults.stock_value    = prodModal.initial_stock
+  if (prodDefaults.unit_sell_base_enabled) prodDefaults.unit_sell_base_value = prodModal.sell_base_unit
+  if (prodDefaults.unit_spp_enabled) prodDefaults.unit_spp_value = prodModal.unit_strips_per_pack
+  if (prodDefaults.unit_pps_enabled) prodDefaults.unit_pps_value = prodModal.unit_pills_per_strip
   localStorage.setItem(PROD_DEFAULTS_KEY, JSON.stringify({ ...prodDefaults }))
 }
 
@@ -1003,11 +1062,14 @@ function saveDefaults() {
 const prodModal = reactive({
   open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
   base_price: 0, cost_price: 0, sell_price: 0, reorder_level: 0, initial_stock: 1, attrs: {}, saving: false, error: '',
+  sell_base_unit: false, unit_strips_per_pack: null, unit_pills_per_strip: null, unit_pills_per_pack: null,
 })
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
 function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
 
 function openAddProduct() {
+  const spp = prodDefaults.unit_spp_enabled ? (prodDefaults.unit_spp_value || null) : null
+  const pps = prodDefaults.unit_pps_enabled ? (prodDefaults.unit_pps_value || null) : null
   Object.assign(prodModal, {
     open: true, id: null, name: '', description: '',
     category: prodDefaults.category_enabled ? prodDefaults.category_value : '',
@@ -1016,9 +1078,24 @@ function openAddProduct() {
     base_price: 0, cost_price: 0, sell_price: 0,
     reorder_level: prodDefaults.reorder_enabled ? prodDefaults.reorder_value : 0,
     initial_stock: prodDefaults.stock_enabled ? prodDefaults.stock_value : 1,
+    sell_base_unit: prodDefaults.unit_sell_base_enabled ? prodDefaults.unit_sell_base_value : false,
+    unit_strips_per_pack: spp, unit_pills_per_strip: pps,
+    unit_pills_per_pack: (spp > 0 && pps > 0) ? spp * pps : null,
     saving: false, error: '',
   })
   resetAttrs()
+}
+
+function onUnitFieldChange(field) {
+  const a = Number(prodModal.unit_strips_per_pack) || 0
+  const b = Number(prodModal.unit_pills_per_strip) || 0
+  const c = Number(prodModal.unit_pills_per_pack) || 0
+  if (field !== 'c' && a > 0 && b > 0) {
+    prodModal.unit_pills_per_pack = a * b
+  } else if (field === 'c' && c > 0) {
+    if (b > 0) prodModal.unit_strips_per_pack = Math.round(c / b)
+    else if (a > 0) prodModal.unit_pills_per_strip = Math.round(c / a)
+  }
 }
 
 /* ── add-option mini modal ── */
@@ -1081,7 +1158,18 @@ async function saveProduct() {
     reorder_level: prodModal.reorder_level ?? 0,
     attributes: attributes_payload,
   }
-  if (!prodModal.id) payload.supplier = prodModal.supplier   // supplier locked on edit
+  if (!prodModal.id) {
+    payload.supplier = prodModal.supplier   // supplier locked on edit
+    if (storeSettings.multi_unit_enabled) {
+      payload.sell_base_unit = prodModal.sell_base_unit
+      const units = []
+      const b = Number(prodModal.unit_pills_per_strip) || 0
+      const c = Number(prodModal.unit_pills_per_pack) || 0
+      if (b > 0) units.push({ name: storeSettings.unit_tier_names[0], factor: b, sell_price: 0 })
+      if (c > 0) units.push({ name: storeSettings.unit_tier_names[1], factor: c, sell_price: 0 })
+      if (units.length) payload.selling_units = units
+    }
+  }
   try {
     if (prodModal.id) {
       await api.patch(`/api/inventory/products/${prodModal.id}/`, payload)
@@ -1266,7 +1354,7 @@ async function executeBulkDelete() {
   } finally { bulkBusy.value = false }
 }
 
-onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppliers(); loadDefaults() })
+onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppliers(); loadDefaults(); fetchStoreSettings() })
 </script>
 
 <style scoped>
@@ -1394,6 +1482,16 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .prod-default-cb:hover span { color: var(--accent); }
 .prod-prices-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 .prod-attrs-section { border-top: 1px solid var(--border); padding-top: 12px; }
+.prod-unit-section { border-top: 1px solid var(--border); padding-top: 12px; }
+.prod-unit-sell-base-label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary); cursor: pointer; }
+.prod-unit-sell-base-label input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+.prod-unit-row { display: flex; align-items: flex-start; gap: 8px; }
+.prod-unit-op { font-size: 16px; color: var(--text-muted); margin-top: 26px; flex-shrink: 0; }
+.prod-unit-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+.prod-unit-sublabel { font-size: 10.5px; color: var(--text-muted); white-space: nowrap; text-align: center; }
+.prod-unit-input { text-align: center; padding-left: 4px !important; padding-right: 4px !important; }
+.prod-unit-sub { font-size: 10.5px; color: var(--text-muted); text-align: center; white-space: nowrap; }
+.prod-unit-default-cb { margin-top: 2px; font-size: 11px !important; }
 .prod-attrs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .prod-attr-select-wrap { display: flex; gap: 6px; align-items: center; }
 .prod-attr-select-wrap .form-input { flex: 1; }
