@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.9.0',
+    date: '2026-06-21',
+    tag: 'New',
+    en: {
+      title: 'Add Pack and Strip columns to your products table',
+      points: [
+        'If your store sells in packs and strips, you can now add a column for each one to the products table — open Customize and tick them. Each row shows how many full packs and strips that product holds, right next to the piece count.',
+        'These columns only appear when multi-unit selling is turned on. Switch it off in Settings → Capabilities and they disappear on their own, along with the pack/strip options in the Add Product window.',
+        'The "In Stock" heading now lines up neatly with the rest of the table.',
+      ],
+    },
+    ar: {
+      title: 'أضف أعمدة العبوة والشريط إلى جدول منتجاتك',
+      points: [
+        'إذا كان متجرك يبيع بالعبوة والشريط، يمكنك الآن إضافة عمود لكل منهما إلى جدول المنتجات — افتح خيار التخصيص وفعّلها. يعرض كل صف عدد العبوات والشرائط الكاملة لذلك المنتج، بجانب عدد القطع.',
+        'تظهر هذه الأعمدة فقط عند تفعيل البيع متعدد الوحدات. أوقفه من الإعدادات ← الإمكانيات وتختفي تلقائياً، مع خيارات العبوة والشريط في نافذة إضافة منتج.',
+        'أصبح عنوان "في المخزون" متناسقاً الآن مع بقية الجدول.',
+      ],
+    },
+  },
+  {
     version: '1.8.0',
     date: '2026-06-21',
     tag: 'New',

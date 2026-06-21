@@ -78,7 +78,7 @@
         <p class="edit-hint">{{ t('inventory.products.customize.hint') }}</p>
         <div class="chooser">
           <div
-            v-for="key in working.order" :key="key" class="chooser-row"
+            v-for="key in chooserOrder" :key="key" class="chooser-row"
             :class="{ disabled: !permittedKeys.includes(key), 'drag-over': dragOver === key && dragKey !== key }"
             @pointerenter="dragOver = key"
           >
@@ -146,9 +146,8 @@
                   @pointerenter="colDragKey && (colDragOver = col.key)"
                 >
                   <span class="dt-th-inner" :class="{ jend: col.align === 'right' }">
-                    <component v-if="col.align === 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
                     {{ headerLabel(col.key, col.label) }}
-                    <component v-if="col.align !== 'right'" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
+                    <component v-if="col.sort" :is="arrowFor(col)" :size="13" class="dt-arrow" :class="{ on: sortKey === col.key }" />
                   </span>
                   <span class="dt-resize" @mousedown.stop.prevent="startResize(col.key, $event)" @click.stop></span>
                 </th>
@@ -164,6 +163,7 @@
                   </td>
                   <td v-for="col in displayColumns" :key="col.key" :class="[col.cls, col.align === 'right' ? 'ta-right' : '', col.key === 'product' ? 'col-frozen' : '']" :title="cellText(col, p)">
                     <span v-if="col.badge" class="stock-badge" :title="stockTitle(p)">{{ stockBadge(p) }}</span>
+                    <span v-else-if="col.isTier" class="tier-cell">{{ tierCell(p, col) }}</span>
                     <template v-else-if="col.money && p[col.field] !== undefined && p[col.field] !== null && p[col.field] !== ''"><span v-if="col.plus">+</span><Money :value="p[col.field]" /></template>
                     <template v-else>
                       <span v-if="col.key === 'product' && p.hide_from_pos" class="ghost-tag" :title="t('inventory.products.table.ghost_hint')"><EyeOff :size="11" /></span>{{ cellText(col, p) }}
@@ -615,6 +615,14 @@ function stockTitle(p) {
   const d = decomposeStock(p.total_stock, p.selling_units)
   return d.hasTiers ? formatBreakdown(d.parts) : ''
 }
+// One tier column's value = that tier's slice of the stock ladder. Products that
+// don't carry the tier (e.g. a laptop in a pharmacy) show a dash.
+function tierCell(p, col) {
+  const d = decomposeStock(p.total_stock, p.selling_units)
+  if (!d.hasTiers) return '—'
+  const part = d.parts.find(pt => pt.name === col.tierName)
+  return part ? formatQty(part.count) : '—'
+}
 import AppModal from '@/components/ui/AppModal.vue'
 import ReasonModal from '@/components/ui/ReasonModal.vue'
 
@@ -643,8 +651,9 @@ function headerLabel(key, fallback) {
     const lvl = fmtStore.categoryLevels[_CAT_IDX[key]]
     return (lvl || t('inventory.products.columns.' + key)).toUpperCase()
   }
-  // Attribute columns have no i18n key — use the dynamic attribute label.
-  if (key.startsWith('attr_')) return fallback
+  // Attribute + tier columns have no i18n key — use the dynamic label
+  // (attribute name / store tier name), which relabels live on rename.
+  if (key.startsWith('attr_') || key.startsWith('tier_')) return fallback
   const tk = 'inventory.products.columns.' + (_COL_KEY_MAP[key] || key)
   const translated = t(tk)
   return translated === tk ? fallback : translated
@@ -673,7 +682,23 @@ const BASE_COLUMNS = [
   { key: 'inStock',   label: 'IN STOCK',  sort: 'o_stock',        align: 'right', field: 'total_stock',   cls: '', badge: true },
 ]
 const attrCols = ref([])  // dynamically built from loaded attribute definitions
-const columns = computed(() => [...BASE_COLUMNS, ...attrCols.value])
+
+// Selling-unit tier columns: one per named tier (e.g. Strip, Pack), shown beside
+// the base IN STOCK quantity. Only exist when the store has multi-unit selling
+// enabled — flip the capability off and they vanish from table + Customize.
+// Each cell is the tier's slice of the stock ladder (decomposeStock parts),
+// matching the breakdown shown on the product page.
+const tierCols = computed(() => {
+  if (!storeSettings.multi_unit_enabled) return []
+  return (storeSettings.unit_tier_names || [])
+    .map((name, i) => ({
+      key: `tier_${i}`, label: (name || '').toUpperCase(),
+      align: 'right', cls: 'c-mono', isTier: true, tierName: name,
+    }))
+    .filter(c => c.tierName)
+})
+
+const columns = computed(() => [...BASE_COLUMNS, ...tierCols.value, ...attrCols.value])
 
 const DEFAULT_WIDTHS = { sku: 130, product: 300, supplier: 170, cat1: 150, cat2: 150, cat3: 150, cat4: 150, wholesale: 120, retail: 120, profit: 120, inStock: 110 }
 const colWidths = reactive({ ...DEFAULT_WIDTHS })
@@ -710,10 +735,14 @@ const displayColumns = computed(() =>
     .map(k => colByKey.value[k])
     .filter(Boolean)
 )
+// Customize chooser rows: skip any order key with no live column (e.g. a tier
+// key left over after the multi-unit capability was switched off).
+const chooserOrder = computed(() => working.order.filter(k => colByKey.value[k]))
 const tableMin = computed(() => displayColumns.value.reduce((a, c) => a + colWidths[c.key], 0))
 const canEdit = computed(() => ['OWNER', 'ADMIN'].includes(auth.userRole) || auth.isSuperadmin)
 
 function cellText(col, p) {
+  if (col.isTier) return tierCell(p, col)
   if (col.isAttr) {
     const vals = p.attributes_summary?.[col.attrKey]
     return vals?.length ? vals.join(', ') : '—'
@@ -1073,6 +1102,27 @@ async function fetchStoreSettings() {
   } catch { /* noop */ }
 }
 
+// Keep tier columns wired into the layout as the capability / tier names change:
+// give each a default width, drop any tier keys that no longer exist (capability
+// turned off, or a tier renamed away), and slot new ones in right after IN STOCK,
+// hidden by default so the user opts in via Customize. Declared after
+// storeSettings so the immediate run can read it (no temporal-dead-zone).
+watch(tierCols, (cols) => {
+  const keys = cols.map(c => c.key)
+  for (const c of cols) if (!colWidths[c.key]) colWidths[c.key] = 100
+  const keep = (k) => !k.startsWith('tier_') || keys.includes(k)
+  colOrder.value  = colOrder.value.filter(keep)
+  colHidden.value = colHidden.value.filter(keep)
+  const missing = keys.filter(k => !colOrder.value.includes(k))
+  if (missing.length) {
+    const arr = [...colOrder.value]
+    const idx = arr.indexOf('inStock')
+    arr.splice(idx >= 0 ? idx + 1 : arr.length, 0, ...missing)
+    colOrder.value  = arr
+    colHidden.value = [...colHidden.value, ...missing]
+  }
+}, { immediate: true })
+
 /* ── product defaults (persisted in localStorage) ── */
 const PROD_DEFAULTS_KEY = 'prod_field_defaults'
 const prodDefaults = reactive({
@@ -1112,6 +1162,7 @@ function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?
 function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
 
 function openAddProduct() {
+  fetchStoreSettings()   // refresh the multi-unit gate so a just-changed capability is respected
   const spp = prodDefaults.unit_spp_enabled ? (prodDefaults.unit_spp_value || null) : null
   const pps = prodDefaults.unit_pps_enabled ? (prodDefaults.unit_pps_value || null) : null
   Object.assign(prodModal, {
@@ -1488,6 +1539,7 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .dark .c-retail, .dark .c-profit { color: #4ade80; }
 
 .stock-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; padding: 3px 9px; border-radius: 8px; background: var(--text-primary); color: var(--bg-card); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tier-cell { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-primary); }
 
 /* empty/loading states + pagination are global — see src/assets/main.css */
 
