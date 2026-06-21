@@ -1,7 +1,6 @@
 <template>
-  <div class="bpm-overlay">
-    <div class="bpm-card">
-      <div class="bpm-title">{{ t('pos.branch_picker.title') }}</div>
+  <AppModal :open="true" :title="t('pos.branch_picker.title')" :noBackdropClose="true" :hideClose="true" width="480px">
+    <div class="bpm-body">
       <div class="bpm-subtitle">{{ t('pos.branch_picker.subtitle') }}</div>
 
       <div v-if="loading" class="bpm-loading">{{ t('pos.branch_picker.loading') }}</div>
@@ -25,7 +24,7 @@
         {{ t('pos.branch_picker.open') }}
       </button>
     </div>
-  </div>
+  </AppModal>
 </template>
 
 <script setup>
@@ -33,6 +32,7 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Building2 } from 'lucide-vue-next'
 import api from '@/api/axios'
+import AppModal from '@/components/ui/AppModal.vue'
 
 const { t } = useI18n()
 const emit = defineEmits(['selected'])
@@ -65,17 +65,10 @@ async function confirm() {
 </script>
 
 <style scoped>
-.bpm-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-  display: flex; align-items: center; justify-content: center; z-index: 9999;
+.bpm-body {
+  display: flex; flex-direction: column; gap: 16px;
 }
-.bpm-card {
-  background: var(--bg-card); border-radius: 20px; padding: 36px 40px;
-  min-width: 360px; max-width: 480px; display: flex; flex-direction: column; gap: 16px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.3);
-}
-.bpm-title { font-size: 20px; font-weight: 800; color: var(--text-primary); }
-.bpm-subtitle { font-size: 13px; color: var(--text-muted); margin-top: -8px; }
+.bpm-subtitle { font-size: 13px; color: var(--text-muted); }
 .bpm-loading { color: var(--text-muted); text-align: center; padding: 24px; }
 .bpm-list { display: flex; flex-direction: column; gap: 8px; }
 .bpm-branch {
@@ -93,7 +86,7 @@ async function confirm() {
 .bpm-confirm {
   background: var(--accent); color: #fff; border: none; border-radius: 12px;
   padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer;
-  transition: opacity 150ms;
+  transition: opacity 150ms; width: 100%;
 }
 .bpm-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
 .bpm-confirm:not(:disabled):hover { opacity: 0.9; }

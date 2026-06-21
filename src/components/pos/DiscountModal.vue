@@ -1,11 +1,6 @@
 <template>
-  <div class="dm-overlay" @click.self="$emit('close')">
-    <div class="dm-card">
-      <div class="dm-header">
-        <span class="dm-title">{{ isLine ? t('pos.discount_modal.title_line') : t('pos.discount_modal.title') }}</span>
-        <button class="dm-close" @click="$emit('close')"><X :size="18" /></button>
-      </div>
-
+  <AppModal :open="true" :title="isLine ? t('pos.discount_modal.title_line') : t('pos.discount_modal.title')" width="440px" @close="$emit('close')">
+    <div class="dm-body">
       <div class="dm-tabs">
         <button :class="['dm-tab', { active: mode === 'percent' }]" @click="setMode('percent')">%</button>
         <button :class="['dm-tab', { active: mode === 'fixed'   }]" @click="setMode('fixed')">{{ t('pos.discount_modal.tab_fixed') }}</button>
@@ -37,20 +32,19 @@
         <button class="dm-apply" @click="apply">{{ t('pos.discount_modal.apply') }}</button>
       </div>
     </div>
-  </div>
+  </AppModal>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { X } from 'lucide-vue-next'
 import { useCartStore } from '@/stores/cart'
 import { useAuthStore } from '@/stores/auth'
+import AppModal from '@/components/ui/AppModal.vue'
 
 const { t } = useI18n()
 const emit = defineEmits(['close'])
 
-// context: 'invoice' (default) or { key, lineTotal } for a single cart line
 const props = defineProps({
   context: { type: [String, Object], default: 'invoice' },
 })
@@ -61,7 +55,6 @@ const currSymbol = computed(() => auth.currencySymbol || 'EGP')
 
 const isLine    = computed(() => typeof props.context === 'object' && props.context !== null)
 const lineItem  = computed(() => isLine.value ? cart.items.find(i => i.key === props.context.key) : null)
-// percent is taken on the invoice's discount base (shield-aware); a fixed amount caps at the discounted subtotal
 const pctBase   = computed(() => isLine.value ? (props.context.lineTotal || 0) : cart.invoiceDiscountBase)
 const fixedBase = computed(() => isLine.value ? (props.context.lineTotal || 0) : cart.discountedSubtotal)
 
@@ -69,7 +62,6 @@ const mode   = ref('percent')
 const amount = ref('')
 const inp    = ref(null)
 
-// preload existing discount so the modal edits rather than resets
 onMounted(() => {
   const existing = isLine.value ? lineItem.value : { discType: cart.invDiscType, discValue: cart.invDiscValue }
   if (existing?.discType) {
@@ -113,19 +105,7 @@ function clear() {
 </script>
 
 <style scoped>
-.dm-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center; z-index: 9998;
-}
-.dm-card {
-  background: var(--bg-card); border-radius: 20px; padding: 28px 32px;
-  min-width: 340px; display: flex; flex-direction: column; gap: 18px;
-  box-shadow: 0 16px 60px rgba(0,0,0,0.25);
-}
-.dm-header { display: flex; align-items: center; justify-content: space-between; }
-.dm-title { font-size: 18px; font-weight: 800; color: var(--text-primary); }
-.dm-close { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 8px; }
-.dm-close:hover { background: var(--border); }
+.dm-body { display: flex; flex-direction: column; gap: 18px; }
 .dm-tabs { display: flex; gap: 8px; }
 .dm-tab {
   flex: 1; padding: 10px; border-radius: 10px; border: 2px solid var(--border);

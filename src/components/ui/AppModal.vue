@@ -5,7 +5,7 @@
         <div class="modal-box" :style="{ maxWidth: width }">
           <div class="modal-header">
             <span class="modal-title">{{ title }}</span>
-            <button class="modal-close" @click="$emit('close')">
+            <button v-if="!hideClose" class="modal-close" @click="$emit('close')">
               <X :size="16" />
             </button>
           </div>
@@ -23,7 +23,7 @@
 
 <script setup>
 import { X } from 'lucide-vue-next'
-defineProps({ open: Boolean, title: String, width: { type: String, default: '480px' }, noBackdropClose: { type: Boolean, default: false } })
+defineProps({ open: Boolean, title: String, width: { type: String, default: '480px' }, noBackdropClose: { type: Boolean, default: false }, hideClose: { type: Boolean, default: false } })
 defineEmits(['close'])
 </script>
 

@@ -1,11 +1,6 @@
 <template>
-  <div class="pm-overlay" @click.self="$emit('close')">
-    <div class="pm-card">
-      <div class="pm-header">
-        <span class="pm-title">{{ t('pos.payment.title') }}</span>
-        <button class="pm-close" @click="$emit('close')"><X :size="20" /></button>
-      </div>
-
+  <AppModal :open="true" :title="t('pos.payment.title')" width="520px" @close="$emit('close')">
+    <div class="pm-body">
       <div class="pm-total">
         <span class="pm-total-label">{{ t('pos.payment.total_due') }}</span>
         <span class="pm-total-amount">{{ currSymbol }} {{ fmtNum(cart.grandTotal) }}</span>
@@ -69,17 +64,18 @@
         <span v-else>{{ t('pos.payment.confirm') }}</span>
       </button>
     </div>
-  </div>
+  </AppModal>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { X, AlertTriangle } from 'lucide-vue-next'
+import { AlertTriangle } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useCartStore } from '@/stores/cart'
 import { usePosStore } from '@/stores/pos'
 import { useAuthStore } from '@/stores/auth'
+import AppModal from '@/components/ui/AppModal.vue'
 
 const { t } = useI18n()
 const emit = defineEmits(['close', 'success'])
@@ -95,7 +91,6 @@ const loading        = ref(false)
 const error          = ref('')
 const cashInput      = ref(null)
 
-// Print options — pre-checked from the store's saved defaults (Settings → Printers).
 const printReceipt = ref(true)
 const doublePrint  = ref(false)
 
@@ -136,7 +131,6 @@ async function confirm() {
   error.value = ''
   loading.value = true
   try {
-    // 1. Checkout (DRAFT → POSTED)
     const idempotencyKey = crypto.randomUUID()
     const checkoutRes = await api.post(
       `/api/finance/invoices/${pos.currentInvoiceId}/checkout/`,
@@ -146,7 +140,6 @@ async function confirm() {
     const invoiceId = pos.currentInvoiceId
     pos.lastPostedInvoiceId = invoiceId
 
-    // 2. Record payment
     await api.post('/api/finance/payments/', {
       invoice: invoiceId,
       method: selectedMethod.value.id,
@@ -177,19 +170,7 @@ async function confirm() {
 </script>
 
 <style scoped>
-.pm-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-  display: flex; align-items: center; justify-content: center; z-index: 9999;
-}
-.pm-card {
-  background: var(--bg-card); border-radius: 20px; padding: 28px 32px;
-  min-width: 400px; max-width: 520px; display: flex; flex-direction: column; gap: 20px;
-  box-shadow: 0 20px 80px rgba(0,0,0,0.3);
-}
-.pm-header { display: flex; align-items: center; justify-content: space-between; }
-.pm-title { font-size: 20px; font-weight: 800; color: var(--text-primary); }
-.pm-close { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 8px; }
-.pm-close:hover { background: var(--border); }
+.pm-body { display: flex; flex-direction: column; gap: 20px; }
 
 .pm-total {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -244,7 +225,7 @@ async function confirm() {
 }
 
 .pm-confirm {
-  padding: 16px; border-radius: 14px; border: none;
+  padding: 16px; border-radius: 14px; border: none; width: 100%;
   background: var(--success); color: #fff; cursor: pointer;
   font-size: 16px; font-weight: 800; transition: opacity 150ms;
 }
