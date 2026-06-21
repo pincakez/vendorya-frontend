@@ -50,9 +50,9 @@
         </div>
       </div>
 
-      <!-- Weekly Revenue morphing chart -->
+      <!-- Weekly Revenue — real last-7-days store revenue -->
       <div class="dash-card intersect:motion-preset-slide-left intersect:motion-delay-[120ms] intersect:motion-ease-spring-bouncier intersect-once">
-        <DemoWeekChart />
+        <WeekRevenueChart :data="data.weekly_revenue" />
       </div>
 
       <!-- Upcoming Services -->
@@ -224,7 +224,7 @@ import { useI18n } from 'vue-i18n'
 import { RefreshCw, ShoppingBag, CheckCircle, Briefcase, BarChart3, Clock, Users, TrendingUp, PieChart } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
-import DemoWeekChart from '@/components/dashboard/DemoWeekChart.vue'
+import WeekRevenueChart from '@/components/dashboard/WeekRevenueChart.vue'
 import BestOfMonth from '@/components/dashboard/BestOfMonth.vue'
 import { formatQty } from '@/utils/format'
 
@@ -242,6 +242,7 @@ const data = ref({
   low_stock_items:          [],
   inventory_value_total:    0,
   inventory_value_storage:  0,
+  weekly_revenue:           [],
   recent_sales:             [],
   upcoming_services:        [],
   top_sellers:              [],

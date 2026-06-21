@@ -12,6 +12,25 @@
 
 export const changelog = [
   {
+    version: '1.9.1',
+    date: '2026-06-21',
+    tag: 'Fixed',
+    en: {
+      title: 'Your dashboard now shows your real weekly revenue',
+      points: [
+        'The Weekly Revenue chart on your dashboard used to show sample numbers. It now shows your store\'s actual revenue for the last 7 days, day by day, in your own currency.',
+        'The total and the chart line follow your real sales, so a glance tells you how the week is going.',
+      ],
+    },
+    ar: {
+      title: 'لوحتك الآن تعرض إيراداتك الأسبوعية الحقيقية',
+      points: [
+        'كان مخطط الإيرادات الأسبوعية في لوحتك يعرض أرقاماً تجريبية. أصبح الآن يعرض إيرادات متجرك الفعلية لآخر 7 أيام، يوماً بيوم، بعملتك الخاصة.',
+        'يتبع الإجمالي وخط المخطط مبيعاتك الحقيقية، فتعرف بنظرة واحدة كيف يسير أسبوعك.',
+      ],
+    },
+  },
+  {
     version: '1.9.0',
     date: '2026-06-21',
     tag: 'New',
