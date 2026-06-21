@@ -1585,8 +1585,16 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
   background: none; border: none; outline: none; padding: 0;
   font-size: 16px; font-weight: 600; color: var(--text-primary); width: 100%;
   font-family: inherit; font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield; appearance: textfield;
 }
-.pm2-price-in::placeholder { color: var(--text-muted); opacity: .45; font-weight: 400; font-size: 13px; }
+.pm2-price-in::-webkit-outer-spin-button,
+.pm2-price-in::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pm2-price-in::placeholder { color: var(--text-muted); opacity: .28; font-weight: 400; font-size: 13px; }
+
+/* Hide spinners on all pm2 number inputs */
+.pm2-input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.pm2-input[type="number"]::-webkit-outer-spin-button,
+.pm2-input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
 /* Reorder + Opening Stock side-by-side */
 .pm2-stock-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
