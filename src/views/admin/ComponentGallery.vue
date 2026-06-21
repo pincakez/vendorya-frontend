@@ -440,6 +440,35 @@
         Wrapping both into <code>&lt;AppTable&gt;</code> / <code>&lt;DataTable&gt;</code>
         components is tracked in TODO §10.
       </p>
+      <p class="cg-ref-note" style="margin-top:14px;">
+        <strong>ReportTable</strong> (data-driven Fixed table) now has <strong>built-in column sorting</strong> —
+        click any header to cycle <code>asc → desc → off</code>. Numeric / currency / qty columns sort numerically,
+        dates as dates, text locale-aware; blanks always sink to the bottom and the totals row stays pinned.
+        Per-column opt-out via <code>column.sortable = false</code>; disable entirely with <code>:sortable="false"</code>.
+      </p>
+      <div style="max-width:640px;margin-top:6px;">
+        <ReportTable
+          title="Top Sellers (demo)"
+          filename="demo"
+          :columns="demoCols"
+          :rows="demoRows"
+          :totals="demoTotals"
+        />
+      </div>
+
+      <p class="cg-ref-note" style="margin-top:22px;">
+        <strong>BaseTable</strong> <span class="cg-tag cg-tag--global">component · components/base/BaseTable.vue</span><br>
+        The canonical <strong>Fixed</strong> (data-driven) table — hand it <code>:columns</code> + <code>:rows</code>
+        and it draws header, skeleton, empty state, and built-in sorting. Custom cells via
+        <code>#cell-&lt;key&gt;</code> slots. Client-side sort by default; <code>:serverSort</code> +
+        <code>@sort</code> for paginated lists. First adopter: Stock Adjustments.
+        Sort choice persists across refresh via <code>storage-key</code> (localStorage, 0 server bytes);
+        <code>default-sort</code> sets the initial column.
+      </p>
+      <div style="max-width:560px;margin-top:6px;">
+        <BaseTable :columns="demoCols" :rows="demoRows"
+                   storage-key="gallery_basetable" :default-sort="{ key: 'date', dir: 'desc' }" />
+      </div>
     </section>
 
     <AppModal :open="showModal" title="Example modal" @close="showModal = false">
@@ -507,9 +536,26 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput  from '@/components/base/BaseInput.vue'
 import BaseSelect from '@/components/base/BaseSelect.vue'
 import BaseCard   from '@/components/base/BaseCard.vue'
+import ReportTable from '@/components/ui/ReportTable.vue'
+import BaseTable   from '@/components/base/BaseTable.vue'
 
 const showModal = ref(false)
 const switchOn  = ref(true)
+
+/* ── ReportTable sort demo (static data) ─────────────────── */
+const demoCols = [
+  { key: 'product', label: 'Product',   type: 'text' },
+  { key: 'qty',     label: 'Qty Sold',  type: 'qty' },
+  { key: 'revenue', label: 'Revenue',   type: 'currency' },
+  { key: 'date',    label: 'Last Sold', type: 'date' },
+]
+const demoRows = [
+  { product: 'Laptop Stand',   qty: 12, revenue: 2400, date: '2026-06-10' },
+  { product: 'USB-C Cable',    qty: 48, revenue: 960,  date: '2026-06-18' },
+  { product: 'Wireless Mouse', qty: 7,  revenue: 1050, date: '2026-06-02' },
+  { product: 'Keyboard',       qty: 21, revenue: 3675, date: '2026-06-15' },
+]
+const demoTotals = { qty: 88, revenue: 8085 }
 
 /* ── Typography controls ─────────────────────────────────── */
 const TYPO_KEY = 'vya_typography'

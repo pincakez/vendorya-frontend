@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.8.0',
+    date: '2026-06-21',
+    tag: 'New',
+    en: {
+      title: 'Sort your tables by clicking a column heading',
+      points: [
+        'On your reports and the Stock Adjustments page, click any column heading to sort by it — click again to reverse the order, and once more to clear it. A small arrow shows you which column is sorted.',
+        'The system remembers your choice, even after you refresh the page. It all happens instantly in your browser — nothing is sent to the server, so it stays fast.',
+        'Tables open sorted by date, newest first, unless you choose otherwise.',
+      ],
+    },
+    ar: {
+      title: 'رتّب جداولك بالضغط على عنوان أي عمود',
+      points: [
+        'في تقاريرك وصفحة تسويات المخزون، اضغط على عنوان أي عمود لترتيب الجدول حسبه — اضغط مرة أخرى لعكس الترتيب، ومرة ثالثة لإلغائه. يظهر سهم صغير يوضح العمود المُرتَّب.',
+        'يتذكر النظام اختيارك حتى بعد تحديث الصفحة. ويتم كل ذلك فوراً داخل متصفحك — لا يُرسَل أي شيء إلى الخادم، فيبقى سريعاً.',
+        'تفتح الجداول مرتبة حسب التاريخ، الأحدث أولاً، ما لم تختر غير ذلك.',
+      ],
+    },
+  },
+  {
     version: '1.7.0',
     date: '2026-06-21',
     tag: 'New',

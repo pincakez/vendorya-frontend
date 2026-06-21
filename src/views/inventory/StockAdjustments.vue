@@ -7,47 +7,39 @@
       </div>
     </div>
 
-    <div class="table-wrap">
-      <div v-if="loading" class="table-skeleton">
-        <div v-for="i in 6" :key="i" class="skeleton-row" />
-      </div>
-      <table v-else class="data-table">
-        <thead>
-          <tr>
-            <th>{{ t('inventory.adjustments.table_date') }}</th>
-            <th>{{ t('inventory.adjustments.table_product') }}</th>
-            <th>{{ t('inventory.adjustments.table_sku') }}</th>
-            <th>{{ t('inventory.adjustments.table_branch') }}</th>
-            <th>{{ t('inventory.adjustments.table_change') }}</th>
-            <th>{{ t('inventory.adjustments.table_reason') }}</th>
-            <th>{{ t('inventory.adjustments.table_notes') }}</th>
-            <th>{{ t('inventory.adjustments.table_by') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="adjustments.length === 0">
-            <td colspan="8" class="table-empty">
-              <PackageSearch :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>{{ t('inventory.adjustments.empty') }}</div>
-            </td>
-          </tr>
-          <tr v-for="a in adjustments" :key="a.id" class="table-row">
-            <td class="col-date">{{ fmtDate(a.created_at) }}</td>
-            <td class="col-name">{{ a.product_name }}</td>
-            <td class="col-ref">{{ a.variant_sku }}</td>
-            <td class="col-muted">{{ a.branch_name }}</td>
-            <td>
-              <span class="qty-badge" :class="Number(a.quantity_change) >= 0 ? 'qty-pos' : 'qty-neg'">
-                {{ Number(a.quantity_change) >= 0 ? '+' : '' }}{{ a.quantity_change }}
-              </span>
-            </td>
-            <td><span class="reason-badge" :class="`reason-${a.reason.toLowerCase()}`">{{ reasonLabel(a.reason) }}</span></td>
-            <td class="col-notes">{{ a.notes || '—' }}</td>
-            <td class="col-muted">{{ a.adjusted_by_name }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <BaseTable :columns="columns" :rows="adjustments" :loading="loading"
+               storage-key="adjustments" :default-sort="{ key: 'created_at', dir: 'desc' }">
+      <template #empty>
+        <PackageSearch :size="32" style="opacity:.3;margin-bottom:8px;" />
+        <div>{{ t('inventory.adjustments.empty') }}</div>
+      </template>
+      <template #cell-created_at="{ row }">
+        <span class="col-date">{{ fmtDate(row.created_at) }}</span>
+      </template>
+      <template #cell-product_name="{ row }">
+        <span class="col-name">{{ row.product_name }}</span>
+      </template>
+      <template #cell-variant_sku="{ row }">
+        <span class="col-ref">{{ row.variant_sku }}</span>
+      </template>
+      <template #cell-branch_name="{ row }">
+        <span class="col-muted">{{ row.branch_name }}</span>
+      </template>
+      <template #cell-quantity_change="{ row }">
+        <span class="qty-badge" :class="Number(row.quantity_change) >= 0 ? 'qty-pos' : 'qty-neg'">
+          {{ Number(row.quantity_change) >= 0 ? '+' : '' }}{{ row.quantity_change }}
+        </span>
+      </template>
+      <template #cell-reason="{ row }">
+        <span class="reason-badge" :class="`reason-${row.reason.toLowerCase()}`">{{ reasonLabel(row.reason) }}</span>
+      </template>
+      <template #cell-notes="{ row }">
+        <span class="col-notes">{{ row.notes || '—' }}</span>
+      </template>
+      <template #cell-adjusted_by_name="{ row }">
+        <span class="col-muted">{{ row.adjusted_by_name }}</span>
+      </template>
+    </BaseTable>
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="p => { page = p; fetchAdjustments() }" />
 
     <!-- New Adjustment Modal -->
@@ -127,9 +119,21 @@ useCtrlN(openModal)
 import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
+import BaseTable from '@/components/base/BaseTable.vue'
 
 const { t } = useI18n()
 const qab = useQABStore()
+
+const columns = computed(() => [
+  { key: 'created_at',       label: t('inventory.adjustments.table_date'),    type: 'date' },
+  { key: 'product_name',     label: t('inventory.adjustments.table_product'), type: 'text' },
+  { key: 'variant_sku',      label: t('inventory.adjustments.table_sku'),     type: 'text' },
+  { key: 'branch_name',      label: t('inventory.adjustments.table_branch'),  type: 'text' },
+  { key: 'quantity_change',  label: t('inventory.adjustments.table_change'),  type: 'number', align: 'left' },
+  { key: 'reason',           label: t('inventory.adjustments.table_reason'),  type: 'text' },
+  { key: 'notes',            label: t('inventory.adjustments.table_notes'),   type: 'text', sortable: false },
+  { key: 'adjusted_by_name', label: t('inventory.adjustments.table_by'),      type: 'text' },
+])
 
 const adjustments   = ref([])
 const branches      = ref([])
@@ -243,18 +247,6 @@ onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
-
-.table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.data-table { width:100%; border-collapse:collapse; font-size:13px; }
-.data-table thead th { padding:10px 14px; text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); }
-.data-table tbody tr.table-row { border-bottom:1px solid var(--border); transition:background 100ms; }
-.data-table tbody tr.table-row:last-child { border-bottom:none; }
-.data-table tbody tr.table-row:hover { background:var(--bg-app); }
-.data-table tbody td { padding:10px 14px; color:var(--text-primary); }
-.table-empty { text-align:center; padding:48px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
-.table-skeleton { padding:8px 0; }
-.skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:var(--border); animation:shimmer 1.4s ease-in-out infinite; }
-@keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
 
 .col-date  { font-size:12px; color:var(--text-muted); white-space:nowrap; }
 .col-name  { font-weight:500; }
