@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.10.0',
+    date: '2026-06-22',
+    tag: 'Improved',
+    en: {
+      title: 'A cleaner, refreshed dashboard',
+      points: [
+        'Your dashboard cards now share one tidy, consistent size and gently animate into place when the page opens.',
+        'On smaller screens the cards reflow neatly instead of stretching, so it stays easy to read on any device.',
+        'The set of cards shown is now curated centrally — more dashboard options are on the way.',
+      ],
+    },
+    ar: {
+      title: 'لوحة تحكم أنظف ومجددة',
+      points: [
+        'أصبحت بطاقات لوحتك بحجم واحد منسق وأنيق، وتظهر بحركة لطيفة عند فتح الصفحة.',
+        'على الشاشات الأصغر تترتب البطاقات تلقائياً بدل أن تتمدد، فتبقى سهلة القراءة على أي جهاز.',
+        'مجموعة البطاقات المعروضة تُدار الآن مركزياً — والمزيد من خيارات اللوحة قادم قريباً.',
+      ],
+    },
+  },
+  {
     version: '1.9.1',
     date: '2026-06-21',
     tag: 'Fixed',
