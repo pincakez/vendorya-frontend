@@ -11,6 +11,11 @@
         </div>
         <div v-else class="page-title">{{ t('people.supplier_detail.supplier') }}</div>
       </div>
+      <div v-if="supplier" class="header-right">
+        <BaseButton variant="primary" @click="openPay">
+          <Plus :size="15" /> {{ t('people.supplier_detail.record_payment') }}
+        </BaseButton>
+      </div>
     </div>
 
     <div v-if="loading" class="skeleton-block" />
@@ -26,6 +31,14 @@
           <div class="info-item">
             <div class="info-label">{{ t('people.supplier_detail.info.code_prefix') }}</div>
             <div class="info-value mono">{{ supplier.code_prefix }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">{{ t('people.supplier_detail.info.total_purchased') }}</div>
+            <div class="info-value"><Money :value="supplier.received_total || 0" /></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">{{ t('people.supplier_detail.info.total_paid') }}</div>
+            <div class="info-value"><Money :value="supplier.payments_total || 0" /></div>
           </div>
           <div class="info-item">
             <div class="info-label">{{ t('people.supplier_detail.info.outstanding') }}</div>
@@ -77,20 +90,87 @@
       </div><!-- dt-xscroll -->
         <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchPurchases" />
       </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">{{ t('people.supplier_detail.payments_history') }}</h2>
+          <span class="count-badge">{{ payments.length }}</span>
+        </div>
+        <div v-if="payLoading" class="table-skeleton"><div v-for="i in 4" :key="i" class="skeleton-row" /></div>
+        <div v-else class="dt-xscroll">
+          <table class="dt">
+            <thead>
+              <tr>
+                <th class="dt-th">{{ t('people.supplier_detail.pay_cols.date') }}</th>
+                <th class="dt-th">{{ t('people.supplier_detail.pay_cols.amount') }}</th>
+                <th class="dt-th">{{ t('people.supplier_detail.pay_cols.method') }}</th>
+                <th class="dt-th">{{ t('people.supplier_detail.pay_cols.by') }}</th>
+                <th class="dt-th">{{ t('people.supplier_detail.pay_cols.note') }}</th>
+                <th class="dt-th" style="text-align:right">{{ t('people.supplier_detail.pay_cols.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="payments.length === 0">
+                <td colspan="6" class="dt-empty">{{ t('people.supplier_detail.no_payments') }}</td>
+              </tr>
+              <tr v-for="p in payments" :key="p.id" class="dt-row">
+                <td class="text-muted">{{ fmtDate(p.date) }}</td>
+                <td><Money :value="p.amount" /></td>
+                <td>{{ p.method_display }}</td>
+                <td class="text-muted">{{ p.created_by_name || '—' }}</td>
+                <td class="text-muted">{{ p.note || '—' }}</td>
+                <td style="text-align:right">
+                  <button class="del-btn" :title="t('people.supplier_detail.pay_form.delete')" @click="deletePay(p)">
+                    <Trash2 :size="14" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+
+    <AppModal :open="payOpen" :title="t('people.supplier_detail.record_payment')" width="480px" @close="payOpen = false">
+      <div class="pay-form">
+        <BaseInput v-model="payForm.amount" type="number" min="0" step="0.01"
+                   :label="t('people.supplier_detail.pay_form.amount')"
+                   :placeholder="'0.00'" :error="payErr" />
+        <BaseInput v-model="payForm.date" type="date"
+                   :label="t('people.supplier_detail.pay_form.date')" />
+        <BaseSelect v-model="payForm.method" :options="methodOptions"
+                    :label="t('people.supplier_detail.pay_form.method')" />
+        <BaseInput v-model="payForm.note"
+                   :label="t('people.supplier_detail.pay_form.note')"
+                   :placeholder="t('people.supplier_detail.pay_form.note_ph')" />
+      </div>
+      <template #footer>
+        <BaseButton variant="ghost" @click="payOpen = false">{{ t('common.cancel') }}</BaseButton>
+        <BaseButton variant="primary" :loading="paySaving" @click="savePay">{{ t('people.supplier_detail.pay_form.save') }}</BaseButton>
+      </template>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronLeft, Lock } from 'lucide-vue-next'
+import { ChevronLeft, Lock, Plus, Trash2 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
+import AppModal from '@/components/ui/AppModal.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
+import { showSuccessToast, showErrorToast } from '@/utils/toast'
 
 const { t } = useI18n()
 const props = defineProps({ id: String })
+
+const methodOptions = computed(() => ['CASH', 'BANK', 'CARD', 'OTHER'].map(v => ({
+  value: v, label: t('people.supplier_detail.methods.' + v.toLowerCase()),
+})))
 
 function purStatusLabel(s) {
   const key = (s || '').toLowerCase()
@@ -126,16 +206,74 @@ async function fetchPurchases(p = 1) {
   finally { purLoading.value = false }
 }
 
+// ── Supplier payments (running account) ──────────────────────────────────
+const payments = ref([])
+const payLoading = ref(false)
+const payOpen = ref(false)
+const paySaving = ref(false)
+const payErr = ref('')
+const payForm = ref({ amount: '', date: '', method: 'CASH', note: '' })
+
+async function fetchPayments() {
+  payLoading.value = true
+  try {
+    const r = await api.get('/api/finance/supplier-payments/', { params: { supplier: props.id, page_size: 100 } })
+    payments.value = r.data.results || r.data || []
+  } catch { payments.value = [] }
+  finally { payLoading.value = false }
+}
+
+function openPay() {
+  payErr.value = ''
+  payForm.value = { amount: '', date: new Date().toISOString().slice(0, 10), method: 'CASH', note: '' }
+  payOpen.value = true
+}
+
+async function savePay() {
+  payErr.value = ''
+  const amt = Number(payForm.value.amount)
+  if (!amt || amt <= 0) { payErr.value = t('people.supplier_detail.pay_form.amount_required'); return }
+  paySaving.value = true
+  try {
+    await api.post('/api/finance/supplier-payments/', {
+      supplier: props.id,
+      amount: amt,
+      date: payForm.value.date ? new Date(payForm.value.date).toISOString() : undefined,
+      method: payForm.value.method,
+      note: payForm.value.note || '',
+    })
+    payOpen.value = false
+    showSuccessToast(t('people.supplier_detail.pay_form.recorded'))
+    await Promise.all([fetchPayments(), fetchSupplier()])  // refresh history + outstanding
+  } catch (e) {
+    showErrorToast(e?.response?.data?.amount?.[0] || t('people.supplier_detail.pay_form.save_failed'))
+  } finally { paySaving.value = false }
+}
+
+async function deletePay(p) {
+  if (!confirm(t('people.supplier_detail.pay_form.delete_confirm'))) return
+  try {
+    await api.delete(`/api/finance/supplier-payments/${p.id}/`)
+    await Promise.all([fetchPayments(), fetchSupplier()])
+    showSuccessToast(t('people.supplier_detail.pay_form.deleted'))
+  } catch { showErrorToast(t('people.supplier_detail.pay_form.delete_failed')) }
+}
+
 function fmtDate(iso) {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-onMounted(() => { fetchSupplier(); fetchPurchases() })
+onMounted(() => { fetchSupplier(); fetchPurchases(); fetchPayments() })
 </script>
 
 <style scoped>
+.page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
 .header-left { display:flex; align-items:flex-start; gap:12px; }
+.header-right { flex-shrink:0; }
+.pay-form { display:flex; flex-direction:column; gap:14px; }
+.del-btn { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:7px; border:none; background:none; color:var(--text-muted); cursor:pointer; transition:background 100ms, color 100ms; }
+.del-btn:hover { background:rgba(220,38,38,0.10); color:var(--danger); }
 .back-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 10px; border-radius:8px; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; font-size:13px; font-weight:500; transition:background 100ms; margin-top:2px; }
 .back-btn:hover { background:var(--border); }
 .page-sub { font-size:13px; color:var(--text-muted); margin:2px 0 0; display:flex; align-items:center; gap:6px; }

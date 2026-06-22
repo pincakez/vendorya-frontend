@@ -1101,6 +1101,8 @@
       "info": {
         "contact": "Contact",
         "code_prefix": "Code Prefix",
+        "total_purchased": "Total Purchased",
+        "total_paid": "Total Paid",
         "outstanding": "Outstanding Balance",
         "settled": "Settled"
       },
@@ -1119,6 +1121,38 @@
         "received": "Received",
         "draft": "Draft",
         "void": "Void"
+      },
+      "record_payment": "Record Payment",
+      "payments_history": "Payments",
+      "no_payments": "No payments recorded yet.",
+      "pay_cols": {
+        "date": "Date",
+        "amount": "Amount",
+        "method": "Method",
+        "by": "Recorded By",
+        "note": "Note",
+        "actions": "Actions"
+      },
+      "methods": {
+        "cash": "Cash",
+        "bank": "Bank Transfer",
+        "card": "Card",
+        "other": "Other"
+      },
+      "pay_form": {
+        "amount": "Amount",
+        "date": "Date",
+        "method": "Method",
+        "note": "Note",
+        "note_ph": "e.g. cheque no., reference",
+        "save": "Save Payment",
+        "recorded": "Payment recorded.",
+        "save_failed": "Could not record the payment.",
+        "amount_required": "Enter an amount greater than zero.",
+        "delete": "Delete",
+        "delete_confirm": "Delete this payment? The supplier's balance will go back up.",
+        "deleted": "Payment deleted.",
+        "delete_failed": "Could not delete the payment."
       }
     },
     "staff": {
