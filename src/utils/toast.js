@@ -18,3 +18,7 @@ export function showSuccessToast(message, duration = 2000) {
 export function showErrorToast(message, duration = 2500) {
   showToast(message, 'error', duration)
 }
+
+export function showWarningToast(message, duration = 3500) {
+  showToast(message, 'warning', duration)
+}

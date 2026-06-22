@@ -600,7 +600,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
 import { formatQty } from '@/utils/format'
 import { decomposeStock, headlineLabel, formatBreakdown } from '@/utils/units'
-import { showSuccessToast } from '@/utils/toast'
+import { showSuccessToast, showWarningToast } from '@/utils/toast'
 import { useFormDirty } from '@/composables/useFormDirty'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openAddProduct)
@@ -1265,12 +1265,15 @@ async function saveProduct() {
       if (units.length) payload.selling_units = units
     }
   }
+  let stockWarning = false
   try {
     if (prodModal.id) {
       await api.patch(`/api/inventory/products/${prodModal.id}/`, payload)
     } else {
       const { data: created } = await api.post('/api/inventory/products/', payload)
-      // Set initial stock via StockAdjustment if > 0
+      // Opening stock is NEVER a direct quantity write — it posts a ledgered
+      // StockAdjustment (reason OPENING). If that entry can't be posted, the
+      // product still exists but with 0 stock, so we warn instead of lying "saved".
       if (prodModal.initial_stock > 0) {
         try {
           const [detailRes, branchRes] = await Promise.all([
@@ -1284,14 +1287,20 @@ async function saveProduct() {
               variant: firstVariant.id,
               branch: branches[0].id,
               quantity_change: prodModal.initial_stock,
-              reason: 'CORRECTION',
+              reason: 'OPENING',
               notes: 'Initial stock on creation',
             })
+          } else {
+            stockWarning = true   // no variant or no branch to receive the stock
           }
-        } catch { /* stock adjustment failed silently — product still created */ }
+        } catch { stockWarning = true }
       }
     }
-    showSuccessToast(t('inventory.products.product_modal.toast_saved'))
+    if (stockWarning) {
+      showWarningToast(t('inventory.products.product_modal.toast_stock_failed'))
+    } else {
+      showSuccessToast(t('inventory.products.product_modal.toast_saved'))
+    }
     setDirty(false)
     prodModal.open = false
     fetchProducts(prodModal.id ? page.value : 1)

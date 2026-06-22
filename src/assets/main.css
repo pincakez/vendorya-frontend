@@ -1286,3 +1286,8 @@ html.pos-mode .route-view  { flex: 1; min-height: 0; display: flex; flex-directi
   background: var(--danger);
   color: white;
 }
+
+.app-toast-warning {
+  background: var(--warning);
+  color: white;
+}

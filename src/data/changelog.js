@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.10.1',
+    date: '2026-06-22',
+    tag: 'Improved',
+    en: {
+      title: 'More accurate, more honest stock records',
+      points: [
+        'Branch-to-branch transfers now show up in the Stock Movement Ledger, so the history of where your stock went is complete.',
+        'When you add a new product with a starting count, it is now recorded as "Opening / Initial Stock" instead of a "Count Correction" — clearer in your records.',
+        'If a new product is saved but its starting stock could not be set, the system now tells you plainly instead of quietly leaving it at zero.',
+      ],
+    },
+    ar: {
+      title: 'سجلات مخزون أدق وأكثر صدقاً',
+      points: [
+        'تظهر الآن عمليات النقل بين الفروع في سجل حركة المخزون، فيكتمل تاريخ تنقل مخزونك.',
+        'عند إضافة منتج جديد برصيد بداية، يُسجَّل الآن باسم "رصيد افتتاحي" بدل "تصحيح جرد" — أوضح في سجلاتك.',
+        'إذا حُفظ منتج جديد ولم يتمكن النظام من ضبط رصيد البداية، ينبهك الآن بوضوح بدل تركه صفراً بصمت.',
+      ],
+    },
+  },
+  {
     version: '1.10.0',
     date: '2026-06-22',
     tag: 'Improved',

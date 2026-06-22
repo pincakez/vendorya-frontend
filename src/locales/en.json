@@ -258,7 +258,8 @@
         "add_option_hint": "Add new option",
         "err_save": "Save failed. Make sure the supplier prefix is confirmed (locked).",
         "err_load": "Failed to load product details.",
-        "toast_saved": "✓ Product saved"
+        "toast_saved": "✓ Product saved",
+        "toast_stock_failed": "Product saved, but the initial stock wasn't set. Add it from Inventory → Stock Adjustments."
       },
       "add_option_modal": {
         "new_option_label": "New option value",
