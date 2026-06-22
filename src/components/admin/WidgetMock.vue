@@ -19,6 +19,18 @@ const heatCells = [0,1,2,1,3,2,0, 1,2,3,2,1,0,1, 2,1,0,3,2,1,2, 0,2,1,2,3,1,0]
     <span class="wm-dots"><i class="on" /><i /><i /><i /></span>
   </div>
 
+  <!-- Weekly Revenue — area chart -->
+  <div v-else-if="id === 'weekly-revenue'" class="wm wm-area">
+    <div class="wm-area-head">
+      <span class="wm-area-tag">Weekly Revenue</span>
+      <span class="wm-area-total">12,480 <small>EGP</small></span>
+    </div>
+    <svg class="wm-area-svg" viewBox="0 0 100 34" preserveAspectRatio="none">
+      <path class="wm-area-fill" d="M0,28 L14,21 L28,24 L42,12 L56,17 L70,6 L84,15 L100,9 L100,34 L0,34 Z" />
+      <path class="wm-area-line" d="M0,28 L14,21 L28,24 L42,12 L56,17 L70,6 L84,15 L100,9" fill="none" />
+    </svg>
+  </div>
+
   <!-- Sales Chart — full-width bars -->
   <div v-else-if="id === 'sales-chart'" class="wm wm-bars">
     <span v-for="(h, i) in [40, 62, 48, 80, 55, 92, 70]" :key="i" class="wm-bar" :style="{ height: h + '%' }" />
@@ -140,6 +152,16 @@ const heatCells = [0,1,2,1,3,2,0, 1,2,3,2,1,0,1, 2,1,0,3,2,1,2, 0,2,1,2,3,1,0]
 .wm-dots { display: flex; gap: 5px; }
 .wm-dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--border); }
 .wm-dots i.on { background: var(--accent); }
+
+/* Weekly Revenue area */
+.wm-area { flex-direction: column; gap: 6px; }
+.wm-area-head { display: flex; align-items: flex-start; justify-content: space-between; }
+.wm-area-tag { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); }
+.wm-area-total { font-size: 18px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+.wm-area-total small { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+.wm-area-svg { flex: 1; width: 100%; min-height: 0; }
+.wm-area-fill { fill: var(--accent); opacity: .14; }
+.wm-area-line { stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
 
 /* Sales Chart bars */
 .wm-bars { align-items: flex-end; justify-content: space-between; gap: 8px; padding: 14px; }

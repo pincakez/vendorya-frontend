@@ -3,203 +3,189 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">Widget Gallery</h1>
-        <p class="page-sub">Every dashboard widget, shown live with sample data. The catalog for what can go on a store dashboard.</p>
+        <p class="page-sub">Tick a widget to put it on every store's dashboard. Up to {{ max }} at a time.</p>
+      </div>
+      <div class="wg-counter" :class="{ full: atCap }">
+        <LayoutGrid :size="15" />
+        <span><b>{{ selected.length }}</b> / {{ max }} on the dashboard</span>
+        <span v-if="saving" class="wg-saving">saving…</span>
       </div>
     </div>
 
-    <!-- Full Width (30 cols) -->
-    <section class="wg-section">
-      <div class="wg-section-label">
-        <span class="wg-size-badge">30 columns · Full Width</span>
-      </div>
-      <div class="wg-row">
-        <div v-for="w in bySize('full')" :key="w.id" class="wg-card wg-card--full">
-          <div class="wg-preview wg-preview--full"><WidgetMock :id="w.id" /></div>
-          <div class="wg-meta">
-            <div class="wg-meta-left">
-              <span class="wg-name">{{ w.name }}</span>
-              <span class="wg-desc">{{ w.desc }}</span>
-            </div>
-            <div class="wg-meta-right">
-              <span class="wg-dim">{{ w.cols }}×{{ w.rows }}</span>
-              <span class="wg-status" :class="w.ready ? 'status-ready' : 'status-draft'">
-                {{ w.ready ? '● Ready' : '○ Draft' }}
-              </span>
-            </div>
-          </div>
+    <div v-if="loading" class="wg-grid">
+      <div v-for="i in 9" :key="i" class="wg-card wg-card--skel" />
+    </div>
+
+    <div v-else class="wg-grid">
+      <div
+        v-for="w in widgets" :key="w.id"
+        class="wg-card"
+        :class="{
+          selected: isSelected(w.id),
+          draft: w.draft,
+          locked: !w.draft && atCap && !isSelected(w.id),
+        }"
+        @click="toggle(w)"
+      >
+        <!-- select control -->
+        <div v-if="!w.draft" class="wg-check" :class="{ on: isSelected(w.id) }">
+          <Check v-if="isSelected(w.id)" :size="13" />
+        </div>
+        <div v-else class="wg-lock"><Lock :size="11" /> Draft</div>
+
+        <div class="wg-preview"><WidgetMock :id="w.id" /></div>
+
+        <div class="wg-meta">
+          <span class="wg-name">{{ w.name }}</span>
+          <span class="wg-desc">{{ w.desc }}</span>
         </div>
       </div>
-    </section>
-
-    <!-- Wide Left (15 cols) -->
-    <section class="wg-section">
-      <div class="wg-section-label">
-        <span class="wg-size-badge">15 columns · Wide</span>
-      </div>
-      <div class="wg-row wg-row--wrap">
-        <div v-for="w in bySize('wide')" :key="w.id" class="wg-card wg-card--wide">
-          <div class="wg-preview wg-preview--wide"><WidgetMock :id="w.id" /></div>
-          <div class="wg-meta">
-            <div class="wg-meta-left">
-              <span class="wg-name">{{ w.name }}</span>
-              <span class="wg-desc">{{ w.desc }}</span>
-            </div>
-            <div class="wg-meta-right">
-              <span class="wg-dim">{{ w.cols }}×{{ w.rows }}</span>
-              <span class="wg-status" :class="w.ready ? 'status-ready' : 'status-draft'">
-                {{ w.ready ? '● Ready' : '○ Draft' }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Medium (10 cols) -->
-    <section class="wg-section">
-      <div class="wg-section-label">
-        <span class="wg-size-badge">10 columns · Medium</span>
-      </div>
-      <div class="wg-row wg-row--wrap">
-        <div v-for="w in bySize('medium')" :key="w.id" class="wg-card wg-card--medium">
-          <div class="wg-preview wg-preview--medium"><WidgetMock :id="w.id" /></div>
-          <div class="wg-meta">
-            <div class="wg-meta-left">
-              <span class="wg-name">{{ w.name }}</span>
-              <span class="wg-desc">{{ w.desc }}</span>
-            </div>
-            <div class="wg-meta-right">
-              <span class="wg-dim">{{ w.cols }}×{{ w.rows }}</span>
-              <span class="wg-status" :class="w.ready ? 'status-ready' : 'status-draft'">
-                {{ w.ready ? '● Ready' : '○ Draft' }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Small (5 cols) -->
-    <section class="wg-section">
-      <div class="wg-section-label">
-        <span class="wg-size-badge">5 columns · Small</span>
-      </div>
-      <div class="wg-row wg-row--wrap">
-        <div v-for="w in bySize('small')" :key="w.id" class="wg-card wg-card--small">
-          <div class="wg-preview wg-preview--small"><WidgetMock :id="w.id" /></div>
-          <div class="wg-meta">
-            <div class="wg-meta-left">
-              <span class="wg-name">{{ w.name }}</span>
-              <span class="wg-desc">{{ w.desc }}</span>
-            </div>
-            <div class="wg-meta-right">
-              <span class="wg-dim">{{ w.cols }}×{{ w.rows }}</span>
-              <span class="wg-status" :class="w.ready ? 'status-ready' : 'status-draft'">
-                {{ w.ready ? '● Ready' : '○ Draft' }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
+    </div>
   </div>
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
+import { LayoutGrid, Check, Lock } from 'lucide-vue-next'
 import WidgetMock from '@/components/admin/WidgetMock.vue'
+import api from '@/api/axios'
 
+// Catalog widgets (selectable) first, then drafts (catalogued, not yet selectable).
 const widgets = [
-  /* ─ Full Width ─────────────────────────────────────────── */
-  { id: 'at-a-glance',    size: 'full',   cols: 30, rows: 4,  ready: true,  name: 'At a Glance',       desc: 'Animated sentence ticker — surfaces daily insights from live store data.' },
-  { id: 'sales-chart',    size: 'full',   cols: 30, rows: 18, ready: false, name: 'Sales Chart',        desc: 'Full-width bar or line chart — revenue over time, configurable period.' },
-
-  /* ─ Wide ───────────────────────────────────────────────── */
-  { id: 'stock-health',   size: 'wide',   cols: 15, rows: 9,  ready: true,  name: 'Stock Health',       desc: 'Color-coded stock status strip — shows low-stock items as chips.' },
-  { id: 'top-products',   size: 'wide',   cols: 15, rows: 9,  ready: false, name: 'Top Products',       desc: 'Horizontal carousel of best-selling products with images and ranks.' },
-
-  /* ─ Medium ─────────────────────────────────────────────── */
-  { id: 'today-sales',    size: 'medium', cols: 10, rows: 9,  ready: true,  name: "Today's Sales",      desc: 'Big KPI number — daily revenue total with invoice count.' },
-  { id: 'items-shift',    size: 'medium', cols: 10, rows: 9,  ready: true,  name: 'Items & Shift',      desc: 'Split panel — units sold today plus active shift status with pulse dot.' },
-  { id: 'recent-sales',   size: 'medium', cols: 30, rows: 18, ready: true,  name: 'Recent Sales',       desc: 'Full-width table of today\'s invoices — scrollable, live data.' },
-  { id: 'services',       size: 'medium', cols: 10, rows: 16, ready: true,  name: 'Upcoming Services',  desc: 'List of services with client name and ETA, sorted by due date.' },
-  { id: 'low-stock-list', size: 'medium', cols: 10, rows: 16, ready: true,  name: 'Low Stock Items',    desc: 'Detailed list of items below threshold — chips color-coded by severity.' },
-  { id: 'ai-insights',    size: 'medium', cols: 10, rows: 16, ready: false, name: 'AI Insights',        desc: 'Rotating AI-generated recommendations based on sales and stock patterns.' },
-  { id: 'activity-feed',  size: 'medium', cols: 10, rows: 16, ready: false, name: 'Activity Feed',      desc: 'Live ticker of recent store events — sales, adjustments, logins.' },
-  { id: 'revenue-ring',   size: 'medium', cols: 10, rows: 16, ready: false, name: 'Revenue Ring',       desc: 'Animated circular gauge — today\'s revenue vs daily average.' },
-
-  /* ─ Small ──────────────────────────────────────────────── */
-  { id: 'kpi-tile',       size: 'small',  cols: 5,  rows: 9,  ready: true,  name: 'KPI Tile',           desc: 'Minimal single-metric tile — configurable label, value, and color.' },
-  { id: 'heat-calendar',  size: 'small',  cols: 5,  rows: 9,  ready: false, name: 'Heat Calendar',      desc: 'GitHub-style daily sales heatmap for the current month.' },
+  { id: 'today-sales',    name: "Today's Sales",     desc: 'Daily revenue total with invoice count.' },
+  { id: 'weekly-revenue', name: 'Weekly Revenue',    desc: 'Last 7 days of revenue as a smooth area chart.' },
+  { id: 'recent-sales',   name: 'Recent Sales',      desc: 'A table of the latest invoices — customer and amount.' },
+  { id: 'low-stock-list', name: 'Low Stock Items',   desc: 'Items below their reorder level, colored by severity.' },
+  { id: 'services',       name: 'Upcoming Services', desc: 'Next services with client name and ETA.' },
+  { id: 'stock-health',   name: 'Stock Health',      desc: 'Stock status at a glance — healthy / low / out chips.' },
+  { id: 'revenue-ring',   name: 'Revenue Ring',      desc: "Circular gauge — today's revenue vs daily average." },
+  { id: 'activity-feed',  name: 'Activity Feed',     desc: 'Live ticker of recent store events.' },
+  { id: 'heat-calendar',  name: 'Heat Calendar',     desc: 'Daily sales heatmap for the current month.' },
+  // ── drafts (not selectable yet) ──
+  { id: 'at-a-glance', draft: true, name: 'At a Glance',  desc: 'Animated sentence ticker of daily insights.' },
+  { id: 'sales-chart', draft: true, name: 'Sales Chart',  desc: 'Full bar chart — revenue over a chosen period.' },
+  { id: 'top-products',draft: true, name: 'Top Products', desc: 'Carousel of best sellers with ranks.' },
+  { id: 'items-shift', draft: true, name: 'Items & Shift',desc: 'Units sold today plus live shift status.' },
+  { id: 'ai-insights', draft: true, name: 'AI Insights',  desc: 'Rotating AI recommendations from your data.' },
+  { id: 'kpi-tile',    draft: true, name: 'KPI Tile',     desc: 'Minimal single-metric tile.' },
 ]
 
-function bySize(size) {
-  return widgets.filter(w => w.size === size)
+const loading  = ref(true)
+const saving   = ref(false)
+const selected = ref([])
+const catalog  = ref([])
+const max      = ref(9)
+
+const atCap = computed(() => selected.value.length >= max.value)
+const isSelected   = (id) => selected.value.includes(id)
+const isSelectable = (id) => catalog.value.includes(id)
+
+async function load() {
+  loading.value = true
+  try {
+    const res = await api.get('/api/core/dashboard-widgets/')
+    selected.value = res.data.selected || []
+    catalog.value  = res.data.catalog  || []
+    max.value      = res.data.max ?? 9
+  } catch { /* sudo-only; non-sudo never reaches this page */ } finally {
+    loading.value = false
+  }
 }
+
+async function toggle(w) {
+  if (w.draft || !isSelectable(w.id)) return
+  const on = isSelected(w.id)
+  if (!on && atCap.value) return                 // 9-cap: can't add a 10th
+
+  const prev = selected.value
+  selected.value = on ? prev.filter(x => x !== w.id) : [...prev, w.id]
+  saving.value = true
+  try {
+    const res = await api.put('/api/core/dashboard-widgets/', { selected: selected.value })
+    selected.value = res.data.selected           // trust the server's sanitized order
+  } catch {
+    selected.value = prev                         // revert on failure
+  } finally {
+    saving.value = false
+  }
+}
+
+onMounted(load)
 </script>
 
 <style scoped>
-.page-header { margin-bottom: 32px; }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
 .page-title  { font-size: 28px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -.4px; }
 .page-sub    { font-size: 13px; color: var(--text-muted); margin: 4px 0 0; font-weight: 500; }
 
-/* Section */
-.wg-section { margin-bottom: 40px; }
-.wg-section-label { margin-bottom: 14px; }
-.wg-size-badge {
-  display: inline-flex;
-  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
-  padding: 4px 12px; border-radius: 9999px;
+/* Selection counter */
+.wg-counter {
+  display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+  padding: 8px 14px; border-radius: 11px;
   background: var(--accent-soft); color: var(--accent);
-  border: 1px solid rgba(247,143,30,.2);
+  border: 1px solid rgba(247,143,30,.25);
+  font-size: 12.5px; font-weight: 600;
 }
+.wg-counter b { font-size: 14px; font-weight: 800; }
+.wg-counter.full { background: var(--success-soft); color: var(--success); border-color: rgba(34,197,94,.25); }
+.wg-saving { font-size: 11px; opacity: .8; font-style: italic; }
 
-/* Row */
-.wg-row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 4px; }
-.wg-row--wrap { flex-wrap: wrap; overflow-x: visible; }
+/* Uniform grid — reflows on shrink, never stretches */
+.wg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
 
 /* Card */
 .wg-card {
+  position: relative;
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
-  flex-shrink: 0;
-  transition: box-shadow 150ms, transform 150ms;
+  cursor: pointer;
+  transition: box-shadow 150ms var(--ease-out), transform 150ms var(--ease-out), border-color 150ms var(--ease-out);
 }
-.wg-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); transform: translateY(-2px); }
-.dark .wg-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-.wg-card--full   { width: 100%; }
-.wg-card--wide   { width: 380px; }
-.wg-card--medium { width: 280px; }
-.wg-card--small  { width: 200px; }
+.wg-card:hover:not(.draft) { box-shadow: 0 4px 20px rgba(0,0,0,.1); transform: translateY(-2px); }
+.dark .wg-card:hover:not(.draft) { box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+.wg-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.wg-card.draft   { cursor: not-allowed; opacity: .55; }
+.wg-card.locked  { cursor: not-allowed; }
+.wg-card.locked:hover { transform: none; box-shadow: none; }
+.wg-card--skel { height: 240px; background: var(--bg-card); animation: wg-pulse 1.4s ease-in-out infinite; }
+@keyframes wg-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
 
-/* Preview area */
+/* Select check (top-right) */
+.wg-check {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  width: 22px; height: 22px; border-radius: 7px;
+  border: 1.5px solid var(--border); background: var(--bg-card);
+  display: flex; align-items: center; justify-content: center; color: #fff;
+  transition: background 140ms var(--ease-out), border-color 140ms var(--ease-out);
+}
+.wg-check.on { background: var(--accent); border-color: var(--accent); }
+.wg-card.locked .wg-check { opacity: .4; }
+
+/* Draft lock badge */
+.wg-lock {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 9.5px; font-weight: 800; letter-spacing: .04em;
+  padding: 3px 8px; border-radius: 999px;
+  background: var(--bg-app); color: var(--text-muted); border: 1px solid var(--border);
+}
+
+/* Preview — uniform height for every widget */
 .wg-preview {
+  height: 160px;
   background: var(--bg-app);
-  border-bottom: 1px solid var(--border);
-  position: relative;
-  overflow: hidden;
+  border-bottom: 1.5px solid var(--border);
+  position: relative; overflow: hidden;
 }
-.wg-preview--full   { height: 120px; }
-.wg-preview--wide   { height: 150px; }
-.wg-preview--medium { height: 160px; }
-.wg-preview--small  { height: 120px; }
 
-/* Meta row */
-.wg-meta {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px 14px;
-}
-.wg-meta-left  { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.wg-meta-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-.wg-name  { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-.wg-desc  { font-size: 11.5px; color: var(--text-muted); line-height: 1.4; }
-.wg-dim   { font-size: 10px; font-weight: 700; font-family: monospace; color: var(--text-muted); background: var(--bg-app); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
-.wg-status { font-size: 10.5px; font-weight: 700; white-space: nowrap; }
-.status-ready { color: var(--success); }
-.status-draft { color: var(--text-muted); }
+/* Meta */
+.wg-meta { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px 14px; }
+.wg-name { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+.wg-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.45; }
 </style>
