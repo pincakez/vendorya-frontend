@@ -12,6 +12,46 @@
 
 export const changelog = [
   {
+    version: '1.11.0',
+    date: '2026-06-22',
+    tag: 'New',
+    en: {
+      title: 'Track what you owe each supplier',
+      points: [
+        'You can now record a payment to a supplier directly from their page — choose the amount, date, and payment method (cash, bank transfer, card, or other).',
+        'Each supplier now shows a clear summary: total purchased, total paid, and outstanding balance.',
+        'A full payment history is listed under each supplier so you can see every payment you have ever made.',
+      ],
+    },
+    ar: {
+      title: 'تتبع ما تدين به لكل مورد',
+      points: [
+        'يمكنك الآن تسجيل دفعة لأي مورد مباشرة من صفحته — حدد المبلغ والتاريخ وطريقة الدفع (نقداً أو تحويل بنكي أو بطاقة أو غير ذلك).',
+        'يعرض كل مورد الآن ملخصاً واضحاً: إجمالي المشتريات وإجمالي المدفوعات والرصيد المستحق.',
+        'يمكنك الاطلاع على كامل سجل الدفعات لكل مورد لمتابعة كل دفعة سددتها.',
+      ],
+    },
+  },
+  {
+    version: '1.10.2',
+    date: '2026-06-22',
+    tag: 'Fixed',
+    en: {
+      title: 'Stock ledger now shows correct quantities for strip and pack products',
+      points: [
+        'When you receive products in strips or packs, the Stock Movement Ledger now shows the correct number of base units added — for example, receiving 10 strips of a 20-tablet strip now correctly shows +200 tablets.',
+        'The running balance in the ledger now always matches your actual stock on hand.',
+      ],
+    },
+    ar: {
+      title: 'سجل الحركة يعرض الآن كميات صحيحة للمنتجات التي تُشترى بالشريط أو العبوة',
+      points: [
+        'عند استلام منتجات بالشريط أو العبوة، يعرض سجل حركة المخزون الآن العدد الصحيح من الوحدات الأساسية — مثلاً: استلام 10 أشرطة من شريط 20 حبة يُظهر الآن +200 حبة.',
+        'الرصيد الجاري في السجل يتطابق الآن دائماً مع المخزون الفعلي.',
+      ],
+    },
+  },
+  {
     version: '1.10.1',
     date: '2026-06-22',
     tag: 'Improved',
