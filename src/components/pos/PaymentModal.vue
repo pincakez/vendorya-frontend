@@ -1,5 +1,5 @@
 <template>
-  <AppModal :open="true" :title="t('pos.payment.title')" width="520px" @close="$emit('close')">
+  <AppModal :open="true" :large-close="true" anim="drop" :title="t('pos.payment.title')" width="520px" @close="$emit('close')">
     <div class="pm-body">
       <div class="pm-total">
         <span class="pm-total-label">{{ t('pos.payment.total_due') }}</span>

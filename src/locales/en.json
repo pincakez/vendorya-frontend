@@ -1,4 +1,8 @@
 {
+  "update": {
+    "available": "A new version is ready",
+    "refresh": "Refresh"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "overview": "Overview",

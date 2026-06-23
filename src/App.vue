@@ -1,10 +1,12 @@
 <template>
+  <UpdateBanner />
   <RouterView />
 </template>
 
 <script setup>
 import { RouterView } from 'vue-router'
 import { onMounted, onUnmounted } from 'vue'
+import UpdateBanner from './components/UpdateBanner.vue'
 
 function blockBrowserShortcuts(e) {
   const k = (e.ctrlKey || e.metaKey)

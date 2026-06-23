@@ -1,5 +1,5 @@
 <template>
-  <AppModal :open="true" :title="isLine ? t('pos.discount_modal.title_line') : t('pos.discount_modal.title')" width="440px" @close="$emit('close')">
+  <AppModal :open="true" :large-close="true" :title="isLine ? t('pos.discount_modal.title_line') : t('pos.discount_modal.title')" width="440px" @close="$emit('close')">
     <div class="dm-body">
       <div class="dm-tabs">
         <button :class="['dm-tab', { active: mode === 'percent' }]" @click="setMode('percent')">%</button>
@@ -28,7 +28,6 @@
 
       <div class="dm-actions">
         <button v-if="hasExisting" class="dm-clear" @click="clear">{{ t('common.clear') }}</button>
-        <button class="dm-cancel" @click="$emit('close')">{{ t('common.cancel') }}</button>
         <button class="dm-apply" @click="apply">{{ t('pos.discount_modal.apply') }}</button>
       </div>
     </div>
@@ -130,10 +129,6 @@ function clear() {
 .dm-clear {
   flex: 1; padding: 12px; border-radius: 12px; border: 2px solid var(--danger, #dc2626);
   background: none; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--danger, #dc2626);
-}
-.dm-cancel {
-  flex: 1; padding: 12px; border-radius: 12px; border: 2px solid var(--border);
-  background: none; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--text-secondary);
 }
 .dm-apply {
   flex: 2; padding: 12px; border-radius: 12px; border: none;

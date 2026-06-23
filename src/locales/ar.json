@@ -1,4 +1,8 @@
 {
+  "update": {
+    "available": "يوجد إصدار جديد جاهز",
+    "refresh": "تحديث"
+  },
   "nav": {
     "dashboard": "لوحة التحكم",
     "overview": "نظرة عامة",

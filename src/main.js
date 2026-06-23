@@ -10,6 +10,9 @@ import VueApexCharts from 'vue3-apexcharts'
 
 const app = createApp(App)
 const pinia = createPinia()
+// Keep the POS cart in localStorage so a reload never empties a sale in progress.
+import { cartPersist } from './stores/cartPersist'
+pinia.use(cartPersist)
 app.use(pinia)
 app.use(router)
 app.use(i18n)
@@ -59,14 +62,11 @@ Observer.start()
 // Restart on every route change so newly mounted elements are observed
 router.afterEach(() => Observer.restart())
 
-// When a new Service Worker takes control (after an update + autoUpdate activation),
-// reload the page so stale hash-named JS chunks are replaced with the new ones.
-// Without this, dynamic imports fail (404) and pages appear blank.
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload()
-  })
-}
+// NOTE: the old `controllerchange → reload` handler was removed. Under the
+// previous 'autoUpdate' SW it silently reloaded the page the moment a new build
+// activated — which blinked the screen and wiped the in-progress POS cart. The
+// SW is now 'prompt' and UpdateBanner.vue drives the reload only when the user
+// clicks "Refresh" (via updateServiceWorker(true), which reloads itself).
 // Fallback: Vite's dynamic import failed (chunk not found in SW cache).
 // This catches the gap window between SW activation and page reload.
 window.addEventListener('vite:preloadError', () => {

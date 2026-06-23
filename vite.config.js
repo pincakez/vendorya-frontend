@@ -27,7 +27,10 @@ export default defineConfig(({ mode }) => {
   plugins: [
     vue(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' (not 'autoUpdate'): never silently reload the page on a new
+      // build — that blinked the screen and wiped the in-progress cart. The
+      // UpdateBanner lets the cashier choose when to refresh.
+      registerType: 'prompt',
       // App shell only — no offline data caching (Vendorya is online-first).
       // This just makes the app installable (Install button in Chrome/Edge).
       includeAssets: ['favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png'],

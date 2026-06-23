@@ -175,7 +175,16 @@
                 </button>
                 <template v-else>
                   <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.key, item.qty - 1)">−</button>
-                  <span class="pcr-qty-val">{{ item.qty }}</span>
+                  <input
+                    :ref="el => { if (el) qtyInputs[item.key] = el; else delete qtyInputs[item.key] }"
+                    class="pcr-qty-val pcr-qty-input"
+                    :value="item.qty"
+                    inputmode="numeric"
+                    @click.stop
+                    @focus="$event.target.select()"
+                    @keydown="onQtyKeydown($event, item)"
+                    @blur="commitQty($event, item)"
+                  />
                   <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.key, item.qty + 1)">+</button>
                 </template>
               </div>
@@ -270,27 +279,36 @@
     <DiscountModal     v-if="showDiscount"  :context="discountCtx" @close="showDiscount = false" />
 
     <!-- Unit picker: choose Pack / Strip / Tablet for a multi-unit product -->
-    <div v-if="unitPicker" class="pos-unit-overlay" @click.self="unitPicker = null">
-      <div class="pos-unit-card">
-        <div class="pos-unit-head">{{ unitPicker.product.name }}</div>
-        <div class="pos-unit-sub">{{ unitPicker.replaceKey ? t('pos.change_unit') : t('pos.choose_unit') }}</div>
-        <div class="pos-unit-list">
-          <button
-            v-for="u in unitPicker.units" :key="u.id || 'base'"
-            class="pos-unit-btn"
-            :class="{ 'pos-unit-btn--current': unitPicker.replaceKey && (u.id || null) === unitPicker.currentUnitId }"
-            @click="pickUnit(u)"
-          >
-            <span class="pub-name">{{ u.name }}</span>
-            <span class="pub-meta">×{{ fmtNum(u.factor) }} · {{ fmtNum(u.price) }}</span>
-          </button>
+    <Transition name="posfade">
+      <div
+        v-if="unitPicker" class="pos-unit-overlay"
+        @click.self="closeUnitPicker"
+        @keydown.esc.stop.prevent="closeUnitPicker"
+        @keydown.down.stop.prevent="moveUnitFocus(1)"
+        @keydown.up.stop.prevent="moveUnitFocus(-1)"
+      >
+        <div ref="unitCardEl" class="pos-unit-card pos-unit-card--drop">
+          <button class="pos-modal-x" tabindex="-1" :aria-label="t('common.close')" @click="closeUnitPicker"><X :size="20" /></button>
+          <div class="pos-unit-head">{{ unitPicker.product.name }}</div>
+          <div class="pos-unit-sub">{{ unitPicker.replaceKey ? t('pos.change_unit') : t('pos.choose_unit') }}</div>
+          <div class="pos-unit-list">
+            <button
+              v-for="u in unitPicker.units" :key="u.id || 'base'"
+              class="pos-unit-btn"
+              :class="{ 'pos-unit-btn--current': unitPicker.replaceKey && (u.id || null) === unitPicker.currentUnitId }"
+              @click="pickUnit(u)"
+            >
+              <span class="pub-name">{{ u.name }}</span>
+              <span class="pub-meta">×{{ fmtNum(u.factor) }} · {{ fmtNum(u.price) }}</span>
+            </button>
+          </div>
         </div>
-        <button class="pos-unit-cancel" @click="unitPicker = null">{{ t('common.cancel') }}</button>
       </div>
-    </div>
+    </Transition>
     <!-- Weight entry: type the kg off the scale for a per-kg product -->
-    <div v-if="weightEntry" class="pos-unit-overlay" @click.self="confirmWeightEntry">
+    <div v-if="weightEntry" class="pos-unit-overlay" @click.self="confirmWeightEntry" @keydown.esc.stop.prevent="confirmWeightEntry">
       <div class="pos-unit-card pos-weight-card">
+        <button class="pos-modal-x" tabindex="-1" :aria-label="t('common.close')" @click="confirmWeightEntry"><X :size="20" /></button>
         <div class="pos-unit-head">{{ weightEntry.name }}</div>
         <div class="pos-unit-sub">{{ t('pos.weight.enter') }} · {{ fmtNum(weightEntry.price) }}{{ t('pos.weight.per_kg') }}</div>
         <div class="pos-weight-display">
@@ -483,6 +501,7 @@ const searchFocused = ref(false)
 
 let searchTimer = null
 function onSearchInput() {
+  if (anyModalOpen.value) return   // background is dead while a modal is open
   clearTimeout(searchTimer)
   if (searchQuery.value.length < 2) { searchResults.value = []; return }
   searchTimer = setTimeout(runSearch, 200)
@@ -499,6 +518,7 @@ async function runSearch() {
 }
 
 function onSearchKeydown(e) {
+  if (anyModalOpen.value) return   // background is dead while a modal is open
   const len = searchResults.value.length
   if (e.key === 'ArrowDown') {
     e.preventDefault(); searchIndex.value = Math.min(searchIndex.value + 1, len - 1)
@@ -513,6 +533,9 @@ function onSearchKeydown(e) {
     }
   } else if (e.key === 'Enter' && searchIndex.value >= 0) {
     e.preventDefault(); addToCart(searchResults.value[searchIndex.value])
+  } else if (e.key === '*') {
+    // Fast quantity: jump focus to the last cart line's qty box (scanner-first flow)
+    e.preventDefault(); focusLastQty()
   } else if (e.key === 'Escape') {
     searchResults.value = []; searchQuery.value = ''
   }
@@ -611,7 +634,6 @@ function openUnitChange(item) {
     },
     units,
     replaceKey:    item.key,
-    replaceQty:    item.qty,
     currentUnitId: item.unit_id || null,
   }
 }
@@ -621,11 +643,8 @@ function pickUnit(u) {
   const p = unitPicker.value
   if (!p) return
   if (p.replaceKey) {
-    const qty = p.replaceQty
     cart.removeItem(p.replaceKey)
-    addToCart(p.product, u)            // re-adds at qty 1 (closes the picker)
-    const newKey = `${p.product.default_variant_id}|${u.id || 'base'}`
-    if (qty > 1 && !u.is_weight) cart.updateQty(newKey, qty)   // keep the count across the unit swap
+    addToCart(p.product, u)            // re-adds at qty 1 — a unit change always resets the count
   } else {
     addToCart(p.product, u)
   }
@@ -635,6 +654,35 @@ function removeLast() {
   if (cart.isEmpty) return
   const last = cart.items[cart.items.length - 1]
   cart.removeItem(last.key)
+  schedulePatch()
+}
+
+// ── Fast quantity entry (scanner-first) ──────────────────────
+// `*` from the search bar jumps focus to the LAST line's qty box: type → Enter
+// → focus snaps back to search. Normal items are integer-only; weight lines reuse
+// the decimal weight pad instead.
+const qtyInputs = {}   // { [item.key]: <input> } — populated by the template :ref
+function focusLastQty() {
+  if (cart.isEmpty) return
+  const last = cart.items[cart.items.length - 1]
+  selectedRow.value = cart.items.length - 1
+  if (last.is_weight) { openWeightEntry(last.key); return }
+  nextTick(() => {
+    const el = qtyInputs[last.key]
+    if (el) { el.focus(); el.select() }
+  })
+}
+function onQtyKeydown(e, item) {
+  if (e.key === 'Enter') { e.preventDefault(); commitQty(e, item); searchInputEl.value?.focus(); return }
+  if (e.key === 'Escape') { e.target.value = item.qty; searchInputEl.value?.focus(); return }
+  // Integer-only for normal/unit items — block decimals, signs, exponent
+  if (['.', 'e', 'E', '+', '-'].includes(e.key)) e.preventDefault()
+}
+function commitQty(e, item) {
+  const n = parseInt(e.target.value, 10)
+  if (Number.isNaN(n)) { e.target.value = item.qty; return }   // gibberish → revert
+  if (n === item.qty) return                                   // no-op (also dedupes Enter+blur)
+  cart.updateQty(item.key, Math.max(0, n))                     // 0 removes the line, like the − stepper
   schedulePatch()
 }
 
@@ -808,6 +856,42 @@ const discountCtx    = ref('invoice')   // 'invoice' or { key, lineTotal }
 const unitPicker     = ref(null)
 const successInvoice = ref(null)
 
+// True while ANY POS modal/overlay is open — used to make the background go
+// completely dead (no search typing, no shortcuts, no cart nav behind a modal).
+const anyModalOpen = computed(() =>
+  showPayment.value || showDiscount.value || showBranchPicker.value ||
+  !!unitPicker.value || !!weightEntry.value || showAddCustomer.value ||
+  showServiceModal.value || !!successInvoice.value
+)
+
+// ── Unit picker keyboard nav ─────────────────────────────────
+// Opens with the top tier focused (search · Enter · Enter sells it); ↑/↓ and Tab
+// walk the tiers; Space/Enter pick (native button behaviour); ESC closes with the
+// item NOT added (clean no-op). The X is a mouse-only affordance (tabindex -1).
+const unitCardEl = ref(null)
+// Close without picking — true "nothing happened": drop the picker, clear the
+// leftover search query, and put focus back in the search bar (scanner-first).
+function closeUnitPicker() {
+  unitPicker.value = null
+  searchQuery.value = ''
+  searchResults.value = []
+  nextTick(() => searchInputEl.value?.focus())
+}
+function focusUnitPicker() {
+  const card = unitCardEl.value
+  if (!card) return
+  const current = card.querySelector('.pos-unit-btn--current')
+  ;(current || card.querySelector('.pos-unit-btn'))?.focus()
+}
+function moveUnitFocus(dir) {
+  const btns = [...(unitCardEl.value?.querySelectorAll('.pos-unit-btn') || [])]
+  if (!btns.length) return
+  let i = btns.indexOf(document.activeElement)
+  i = (i + dir + btns.length) % btns.length
+  btns[i]?.focus()
+}
+watch(unitPicker, v => { if (v) nextTick(focusUnitPicker) })
+
 // Weight entry: set to { key, name, price, value } when a weight product (sold
 // per kg, decimal qty) needs the cashier to type the weight off the scale.
 const weightEntry = ref(null)
@@ -946,6 +1030,10 @@ function buildKeyStr(e) {
 }
 
 function onGlobalKey(e) {
+  // Background fully dead while a modal/overlay is open — each modal owns its own
+  // keys (ESC, arrows, Enter). Without this the cart/search reacted behind them.
+  if (anyModalOpen.value) return
+
   const tag = document.activeElement?.tagName
   const inInput = tag === 'INPUT' || tag === 'TEXTAREA'
 
@@ -963,6 +1051,10 @@ function onGlobalKey(e) {
       || ek === 'Enter' || ek === '=' || ek === 'Backspace' || ek === 'Escape'
     if (isCalc) { e.preventDefault(); numpadRef.value?.feedKey(ek); return }
   }
+
+  // `*` = fast quantity jump (when not in an input — the search bar handles its own
+  // `*` in onSearchKeydown; the calculator's multiply above takes priority).
+  if (e.key === '*' && !inInput) { e.preventDefault(); focusLastQty(); return }
 
   // Function-key shortcuts work even while the search input is focused
   const isFKey = /^F\d+$/.test(k)
@@ -1057,6 +1149,35 @@ function fmtQty(n) {
 .pos-unit-btn:hover  { border-color: var(--accent); }
 .pos-unit-btn:active { transform: scale(0.97); }
 .pos-unit-btn--current { border-color: var(--accent); background: var(--accent-soft); }
+/* Visible keyboard focus while walking the tiers with arrows / Tab */
+.pos-unit-btn:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+/* Card is the positioning context for the X; reserve room so the title clears it */
+.pos-unit-card { position: relative; }
+.pos-unit-card .pos-unit-head { padding-right: 30px; }
+
+/* Bigger, mouse-friendly X — every POS modal carries one (no Cancel button) */
+.pos-modal-x {
+  position: absolute; top: 10px; right: 10px;
+  width: 36px; height: 36px; border-radius: 9px;
+  border: none; background: none; cursor: pointer; color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 100ms, color 100ms;
+}
+.pos-modal-x:hover { background: var(--border); color: var(--text-primary); }
+
+/* Heavy-drop: card starts at 2× and drops to size (opacity 0→1 in 0.5s,
+   scale 2→1 in 1s, heavy ease-out landing). Backdrop just fades (posfade). */
+.pos-unit-card--drop { animation: posdrop 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes posdrop {
+  0%   { opacity: 0; transform: scale(2); }
+  50%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); }
+}
+.posfade-enter-active { transition: opacity 0.3s ease; }
+.posfade-leave-active { transition: opacity 0.2s ease; }
+.posfade-enter-from,
+.posfade-leave-to     { opacity: 0; }
 .pub-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
 .pub-meta { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
 .pos-unit-cancel {
@@ -1300,6 +1421,16 @@ function fmtQty(n) {
 .pcr-qty-btn:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 .pcr-qty-btn:active { transform: scale(0.88); transition-duration: var(--press-down); }
 .pcr-qty-val { font-size: 13px; font-weight: 800; min-width: 20px; text-align: center; }
+.pcr-qty-input {
+  width: 34px; padding: 2px 0; border-radius: 6px;
+  border: 1px solid transparent; background: transparent; color: var(--text-primary);
+  font: inherit; font-size: 13px; font-weight: 800; text-align: center;
+  -moz-appearance: textfield; transition: border-color 120ms var(--ease-out), background 120ms var(--ease-out);
+}
+.pcr-qty-input::-webkit-outer-spin-button,
+.pcr-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pcr-qty-input:hover { border-color: var(--border); }
+.pcr-qty-input:focus { outline: none; border-color: var(--accent); background: var(--bg-card); }
 .pcr-disc {
   justify-self: center; min-width: 44px; padding: 2px 6px; border-radius: 7px;
   border: 1px dashed var(--border); background: var(--bg-app); cursor: pointer;
