@@ -897,6 +897,10 @@
   },
   "pos": {
     "brand": "POS",
+    "stock": {
+      "block": "Not enough stock — can't sell more than what's available",
+      "warn": "Selling more than what's in stock"
+    },
     "numpad": {
       "title": "Keypad",
       "calculator": "Calculator",

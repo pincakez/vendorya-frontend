@@ -150,7 +150,7 @@
           <TransitionGroup name="cart-row" tag="div" class="pcr-list">
             <div
               v-for="(item, idx) in cart.items" :key="item.key"
-              :class="['pos-cart-row', { 'pcr-selected': idx === selectedRow, 'pcr-flash': item._flash, 'pcr-row--unit': (item.units?.length || 0) > 1 }]"
+              :class="['pos-cart-row', { 'pcr-selected': idx === selectedRow, 'pcr-flash': item._flash, 'pcr-row--unit': (item.units?.length || 0) > 1, 'pcr-over': lineOver(item) }]"
               @click="onRowClick(item, idx)"
             >
               <div class="pcr-main">
@@ -256,7 +256,12 @@
             <span>{{ t('pos.additive_label') }}</span>
           </label>
 
-          <button class="pos-pay-btn" :disabled="cart.isEmpty" @click="openPayment">
+          <div v-if="anyOver" class="pos-stock-warn" :class="{ 'pos-stock-warn--block': hardBlock }">
+            <AlertTriangle :size="14" />
+            <span>{{ hardBlock ? t('pos.stock.block') : t('pos.stock.warn') }}</span>
+          </div>
+
+          <button class="pos-pay-btn" :class="{ 'pos-pay-btn--block': hardBlock }" :disabled="cart.isEmpty || hardBlock" @click="openPayment">
             <span>{{ t('pos.pay') }}</span>
             <span class="pos-pay-amount">{{ auth.currencySymbol }} {{ fmtNum(cart.grandTotal) }}</span>
           </button>
@@ -378,7 +383,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
   Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
-  Printer, FileText, ShoppingCart, CheckCircle2, ArrowLeft, ChevronDown,
+  Printer, FileText, ShoppingCart, CheckCircle2, ArrowLeft, ChevronDown, AlertTriangle,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore }  from '@/stores/auth'
@@ -449,6 +454,7 @@ async function init() {
     api.get('/api/pos/favorites/').then(r => { pos.favorites = r.data.results || r.data }).catch(() => {}),
     api.get('/api/core/settings/').then(r => {
       posServiceTypes.value  = r.data.service_types ?? []
+      allowNegativeStock.value = !!r.data.allow_negative_stock
       cartDisplayFields.value = Array.isArray(r.data.pos_cart_display_fields) ? r.data.pos_cart_display_fields : []
     }).catch(() => {}),
   ])
@@ -546,6 +552,18 @@ const selectedRow = ref(-1)
 // Fields the cashier chose (in POS Settings → Cart Display) to show under each
 // cart line. Tokens: 'category' or 'attr:<attribute_key>'.
 const cartDisplayFields = ref([])
+
+// Store negative-stock policy (false = overselling forbidden → hard-block PAY).
+const allowNegativeStock = ref(false)
+// A line oversells when the base units it needs exceed what's on hand. Compare in
+// base units (qty × unit_factor) so it's correct for Strip/Pack/kg lines too.
+function lineOver(item) {
+  const stock = parseFloat(item.stock)
+  if (!Number.isFinite(stock)) return false        // unknown stock (e.g. favorites) → don't guard
+  return item.qty * (Number(item.unit_factor) || 1) > stock + 1e-9
+}
+const anyOver   = computed(() => cart.items.some(lineOver))
+const hardBlock = computed(() => anyOver.value && !allowNegativeStock.value)
 function lineTags(item) {
   const out = []
   for (const tok of cartDisplayFields.value) {
@@ -1420,6 +1438,19 @@ function fmtQty(n) {
 .pos-cart-row:hover    { border-color: var(--accent); }
 .pos-cart-row.pcr-selected { background: var(--accent-soft); border-color: var(--accent); }
 .pos-cart-row.pcr-flash { animation: pos-flash 0.5s var(--ease-out); }
+/* Over-stock line — red box (defined after selected/hover so it wins) */
+.pos-cart-row.pcr-over { border-color: var(--danger); background: var(--danger-soft); }
+
+/* Over-stock reason, shown just above PAY (near the discount/additive area) */
+.pos-stock-warn {
+  display: flex; align-items: center; gap: 7px;
+  margin: 0 0 8px; padding: 7px 11px; border-radius: 9px;
+  font-size: 12.5px; font-weight: 700;
+  color: var(--warning); background: var(--warning-soft); border: 1px solid var(--warning);
+}
+.pos-stock-warn--block { color: var(--danger); background: var(--danger-soft); border-color: var(--danger); }
+/* Hard-blocked PAY: solid red + un-pressable (overrides the disabled dim) */
+.pos-pay-btn--block { background: var(--danger) !important; opacity: 1 !important; cursor: not-allowed !important; }
 @keyframes pos-flash {
   0%   { background: var(--accent-soft); }
   100% { background: var(--bg-card); }
