@@ -12,6 +12,88 @@
 
 export const changelog = [
   {
+    version: '1.14.0',
+    date: '2026-06-23',
+    tag: 'New',
+    en: {
+      title: 'A heads-up before you oversell',
+      points: [
+        'If a cart line is for more than you have in stock, that line now turns red so you notice right away.',
+        'If your store does not allow selling below zero, the Pay button is held back until you fix the quantity — so you can’t accidentally sell stock you don’t have.',
+        'If your store does allow it, you’ll just see a friendly warning and can still take the payment.',
+      ],
+    },
+    ar: {
+      title: 'تنبيه قبل البيع بأكثر من المتاح',
+      points: [
+        'إذا كان سطر في السلة بكمية أكبر من المتاح في المخزون، يتحول هذا السطر الآن إلى اللون الأحمر لتلاحظه فوراً.',
+        'إذا كان متجرك لا يسمح بالبيع تحت الصفر، يتم تعطيل زر الدفع حتى تصحّح الكمية — حتى لا تبيع مخزوناً لا تملكه عن طريق الخطأ.',
+        'إذا كان متجرك يسمح بذلك، فسترى تحذيراً فقط ويمكنك إتمام الدفع.',
+      ],
+    },
+  },
+  {
+    version: '1.13.1',
+    date: '2026-06-23',
+    tag: 'Improved',
+    en: {
+      title: 'Cleaner, faster pop-ups at the register',
+      points: [
+        'Every register pop-up now closes with the Esc key or by clicking outside it, and has one clear close (✕) button.',
+        'You can move through the choices with the keyboard — arrows, Tab, and Space or Enter to pick — handy for fast, keyboard-only selling.',
+        'The selected unit (like Strip or Pack) now shows as a clear badge on the cart line.',
+      ],
+    },
+    ar: {
+      title: 'نوافذ منبثقة أوضح وأسرع في نقطة البيع',
+      points: [
+        'تُغلق الآن كل نافذة منبثقة في نقطة البيع بمفتاح Esc أو بالنقر خارجها، ولها زر إغلاق (✕) واضح واحد.',
+        'يمكنك التنقّل بين الخيارات بلوحة المفاتيح — الأسهم وTab ومسافة أو Enter للاختيار — وهو مفيد للبيع السريع بلوحة المفاتيح فقط.',
+        'تظهر الوحدة المختارة (مثل Strip أو Pack) الآن كشارة واضحة على سطر السلة.',
+      ],
+    },
+  },
+  {
+    version: '1.13.0',
+    date: '2026-06-23',
+    tag: 'New',
+    en: {
+      title: 'Set quantities in a flash',
+      points: [
+        'Press the * key to jump straight to the last item’s quantity, type the number, and press Enter — no more clicking + over and over.',
+        'You can also click a quantity and type it directly.',
+        'Selling loose units that add up to a full pack? The line rolls up automatically — for example, 20 tablets becomes 1 strip.',
+      ],
+    },
+    ar: {
+      title: 'أدخل الكميات بسرعة',
+      points: [
+        'اضغط مفتاح * للانتقال مباشرة إلى كمية آخر صنف، اكتب الرقم ثم اضغط Enter — دون النقر على + مراراً وتكراراً.',
+        'يمكنك أيضاً النقر على الكمية وكتابتها مباشرة.',
+        'تبيع وحدات مفردة تُكوّن عبوة كاملة؟ يتجمّع السطر تلقائياً — مثلاً، 20 قرصاً تصبح شريطاً واحداً.',
+      ],
+    },
+  },
+  {
+    version: '1.12.0',
+    date: '2026-06-23',
+    tag: 'New',
+    en: {
+      title: 'Your sale is no longer lost if the screen reloads',
+      points: [
+        'Your in-progress cart is now saved on the device, so if the page refreshes or you minimize and come back, your sale is still there.',
+        'When a new version of Vendorya is ready, you’ll see a notice at the top to refresh when it suits you — the screen no longer reloads on its own in the middle of a sale.',
+      ],
+    },
+    ar: {
+      title: 'لن تفقد عملية البيع إذا أُعيد تحميل الشاشة',
+      points: [
+        'يتم الآن حفظ سلة البيع الجارية على الجهاز، فإذا أُعيد تحميل الصفحة أو صغّرت النافذة ثم عدت، تبقى عمليتك كما هي.',
+        'عند توفّر إصدار جديد من Vendorya، سيظهر تنبيه في الأعلى لتحديثه في الوقت المناسب لك — لن تُعيد الشاشة تحميل نفسها أثناء عملية البيع.',
+      ],
+    },
+  },
+  {
     version: '1.11.2',
     date: '2026-06-23',
     tag: 'Improved',
