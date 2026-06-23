@@ -150,20 +150,15 @@
           <TransitionGroup name="cart-row" tag="div" class="pcr-list">
             <div
               v-for="(item, idx) in cart.items" :key="item.key"
-              :class="['pos-cart-row', { 'pcr-selected': idx === selectedRow, 'pcr-flash': item._flash }]"
-              @click="selectedRow = idx"
+              :class="['pos-cart-row', { 'pcr-selected': idx === selectedRow, 'pcr-flash': item._flash, 'pcr-row--unit': (item.units?.length || 0) > 1 }]"
+              @click="onRowClick(item, idx)"
             >
               <div class="pcr-main">
-                <button
-                  v-if="(item.units?.length || 0) > 1"
-                  class="pcr-name pcr-name-btn"
-                  :title="t('pos.change_unit')"
-                  @click.stop="openUnitChange(item)"
-                >
-                  <span class="pcr-name-txt">{{ item.name }}<span v-if="item.unit_name" class="pcr-unit"> · {{ item.unit_name }}</span></span>
-                  <ChevronDown :size="11" class="pcr-name-caret" />
-                </button>
-                <span v-else class="pcr-name">{{ item.name }}<span v-if="item.unit_name" class="pcr-unit"> · {{ item.unit_name }}</span></span>
+                <span class="pcr-name">
+                  <span class="pcr-name-txt">{{ item.name }}</span>
+                  <span v-if="item.unit_name" class="pcr-unit-badge">{{ item.unit_name }}</span>
+                  <ChevronDown v-if="(item.units?.length || 0) > 1" :size="12" class="pcr-name-caret" />
+                </span>
                 <div v-if="lineTags(item).length" class="pcr-tags">
                   <span v-for="(tg, ti) in lineTags(item)" :key="ti" class="pcr-tag">{{ tg }}</span>
                 </div>
@@ -684,6 +679,41 @@ function commitQty(e, item) {
   if (n === item.qty) return                                   // no-op (also dedupes Enter+blur)
   cart.updateQty(item.key, Math.max(0, n))                     // 0 removes the line, like the − stepper
   schedulePatch()
+  if (n > 0) maybeRollup(item)                                 // 20 pills → 1 strip, etc.
+}
+
+// Whole multi-unit row opens the unit picker; single-unit rows just select.
+function onRowClick(item, idx) {
+  selectedRow.value = idx
+  if ((item.units?.length || 0) > 1) openUnitChange(item)
+}
+
+// Auto-rollup: when a typed qty fills a whole higher tier exactly, fold it up
+// (20 tablets → 1 strip, 2 strips → 1 pack). Picks the LARGEST unit that divides
+// evenly; re-adding the line carries the add-flash so the row pulses on rollup.
+function maybeRollup(item) {
+  if (item.is_weight) return
+  const units = Array.isArray(item.units) ? item.units.filter(u => u.sellable !== false) : []
+  if (units.length < 2) return
+  const curFactor = Number(item.unit_factor) || 1
+  const baseQty = item.qty * curFactor
+  const target = units
+    .filter(u => Number(u.factor) > curFactor && baseQty % Number(u.factor) === 0)
+    .sort((a, b) => Number(b.factor) - Number(a.factor))[0]
+  if (!target) return
+  const newQty = baseQty / Number(target.factor)
+  const product = {
+    default_variant_id:    item.variant_id,
+    name:                  item.name,
+    default_variant_price: item.price,
+    default_variant_stock: item.stock,
+    selling_units:         item.units,
+    attributes_summary:    item.attributes,
+    category_name:         item.category,
+  }
+  cart.removeItem(item.key)
+  addToCart(product, target)                  // re-adds at qty 1 (+ flash)
+  if (newQty > 1) cart.updateQty(`${item.variant_id}|${target.id || 'base'}`, newQty)
 }
 
 function addToCartFromFav(fav) {
@@ -1395,14 +1425,18 @@ function fmtQty(n) {
   100% { background: var(--bg-card); }
 }
 .pcr-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.pcr-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pcr-name-btn { display: inline-flex; align-items: center; gap: 3px; min-width: 0; max-width: 100%; background: none; border: none; padding: 0; margin: 0; font: inherit; text-align: left; cursor: pointer; }
-.pcr-name-btn .pcr-name-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pcr-name-caret { flex-shrink: 0; color: var(--accent); opacity: 0.5; transition: opacity 0.12s ease; }
-.pcr-name-btn:hover { color: var(--accent); }
-.pcr-name-btn:hover .pcr-name-caret { opacity: 1; }
-.pcr-name-btn:active { transform: scale(0.97); transition-duration: var(--press-down); }
-.pcr-unit { font-size: 11px; font-weight: 700; color: var(--accent); }
+.pcr-name { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.pcr-name-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pcr-name-caret { flex-shrink: 0; color: var(--accent); opacity: 0.45; transition: opacity 0.12s ease; }
+/* Dark unit badge — same text size as the item name, small gap; multi-unit lines only */
+.pcr-unit-badge {
+  flex-shrink: 0; padding: 1px 8px; border-radius: 6px;
+  background: var(--text-primary); color: var(--bg-card);
+  font-size: 13px; font-weight: 700; line-height: 1.5; white-space: nowrap;
+}
+/* The whole multi-unit row is the hit target for the unit picker */
+.pos-cart-row.pcr-row--unit { cursor: pointer; }
+.pos-cart-row.pcr-row--unit:hover .pcr-name-caret { opacity: 1; }
 .pcr-tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .pcr-tag {
   font-size: 10px; font-weight: 700; color: var(--text-secondary);
