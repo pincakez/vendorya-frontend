@@ -113,6 +113,8 @@ export const useCartStore = defineStore('cart', {
           stock: variant.stock,
           attributes: variant.attributes || null,  // { key: [values] } from attributes_summary
           category: variant.category || '',
+          units: variant.units || null,            // sellable selling_units for this product — lets the line re-open the unit picker
+
           discType: null,   // null | 'percent' | 'fixed' | 'free'
           discValue: 0,
           _flash: true,

@@ -154,7 +154,16 @@
               @click="selectedRow = idx"
             >
               <div class="pcr-main">
-                <span class="pcr-name">{{ item.name }}<span v-if="item.unit_name" class="pcr-unit"> · {{ item.unit_name }}</span></span>
+                <button
+                  v-if="(item.units?.length || 0) > 1"
+                  class="pcr-name pcr-name-btn"
+                  :title="t('pos.change_unit')"
+                  @click.stop="openUnitChange(item)"
+                >
+                  <span class="pcr-name-txt">{{ item.name }}<span v-if="item.unit_name" class="pcr-unit"> · {{ item.unit_name }}</span></span>
+                  <ChevronDown :size="11" class="pcr-name-caret" />
+                </button>
+                <span v-else class="pcr-name">{{ item.name }}<span v-if="item.unit_name" class="pcr-unit"> · {{ item.unit_name }}</span></span>
                 <div v-if="lineTags(item).length" class="pcr-tags">
                   <span v-for="(tg, ti) in lineTags(item)" :key="ti" class="pcr-tag">{{ tg }}</span>
                 </div>
@@ -264,12 +273,13 @@
     <div v-if="unitPicker" class="pos-unit-overlay" @click.self="unitPicker = null">
       <div class="pos-unit-card">
         <div class="pos-unit-head">{{ unitPicker.product.name }}</div>
-        <div class="pos-unit-sub">{{ t('pos.choose_unit') }}</div>
+        <div class="pos-unit-sub">{{ unitPicker.replaceKey ? t('pos.change_unit') : t('pos.choose_unit') }}</div>
         <div class="pos-unit-list">
           <button
             v-for="u in unitPicker.units" :key="u.id || 'base'"
             class="pos-unit-btn"
-            @click="addToCart(unitPicker.product, u)"
+            :class="{ 'pos-unit-btn--current': unitPicker.replaceKey && (u.id || null) === unitPicker.currentUnitId }"
+            @click="pickUnit(u)"
           >
             <span class="pub-name">{{ u.name }}</span>
             <span class="pub-meta">×{{ fmtNum(u.factor) }} · {{ fmtNum(u.price) }}</span>
@@ -355,7 +365,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
   Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
-  Printer, FileText, ShoppingCart, CheckCircle2, ArrowLeft,
+  Printer, FileText, ShoppingCart, CheckCircle2, ArrowLeft, ChevronDown,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore }  from '@/stores/auth'
@@ -560,6 +570,7 @@ async function addToCart(product, unit = null) {
     unit_factor: chosen ? chosen.factor : 1,
     unit_name:   isWeight ? 'kg' : (isBase ? '' : chosen.name),
     is_weight:   isWeight,
+    units,       // keep the sellable unit list on the line so it can be re-picked
     attributes: product.attributes_summary || null,
     category:   product.category_name || '',
   })
@@ -579,6 +590,45 @@ async function addToCart(product, unit = null) {
     searchFocused.value = true  // calling .focus() on an already-focused input won't re-fire @focus, so we set this explicitly
   })
   schedulePatch()
+}
+
+// Re-open the unit picker for a line already in the cart so the cashier can
+// flip its selling unit (Tablet ↔ Strip ↔ Pack) without deleting + re-adding.
+// Rebuilds a product-shaped object from the line so addToCart can replay it.
+function openUnitChange(item) {
+  const units = Array.isArray(item.units) ? item.units.filter(u => u.sellable !== false) : []
+  if (units.length < 2) return
+  const base = units.find(u => u.is_base)
+  unitPicker.value = {
+    product: {
+      default_variant_id:    item.variant_id,
+      name:                  item.name,
+      default_variant_price: base ? base.price : item.price,
+      default_variant_stock: item.stock,
+      selling_units:         item.units,
+      attributes_summary:    item.attributes,
+      category_name:         item.category,
+    },
+    units,
+    replaceKey:    item.key,
+    replaceQty:    item.qty,
+    currentUnitId: item.unit_id || null,
+  }
+}
+
+// Unit-picker tap handler — branches add (default) vs replace (re-pick on a line).
+function pickUnit(u) {
+  const p = unitPicker.value
+  if (!p) return
+  if (p.replaceKey) {
+    const qty = p.replaceQty
+    cart.removeItem(p.replaceKey)
+    addToCart(p.product, u)            // re-adds at qty 1 (closes the picker)
+    const newKey = `${p.product.default_variant_id}|${u.id || 'base'}`
+    if (qty > 1 && !u.is_weight) cart.updateQty(newKey, qty)   // keep the count across the unit swap
+  } else {
+    addToCart(p.product, u)
+  }
 }
 
 function removeLast() {
@@ -1006,6 +1056,7 @@ function fmtQty(n) {
 }
 .pos-unit-btn:hover  { border-color: var(--accent); }
 .pos-unit-btn:active { transform: scale(0.97); }
+.pos-unit-btn--current { border-color: var(--accent); background: var(--accent-soft); }
 .pub-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
 .pub-meta { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
 .pos-unit-cancel {
@@ -1224,6 +1275,12 @@ function fmtQty(n) {
 }
 .pcr-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .pcr-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcr-name-btn { display: inline-flex; align-items: center; gap: 3px; min-width: 0; max-width: 100%; background: none; border: none; padding: 0; margin: 0; font: inherit; text-align: left; cursor: pointer; }
+.pcr-name-btn .pcr-name-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pcr-name-caret { flex-shrink: 0; color: var(--accent); opacity: 0.5; transition: opacity 0.12s ease; }
+.pcr-name-btn:hover { color: var(--accent); }
+.pcr-name-btn:hover .pcr-name-caret { opacity: 1; }
+.pcr-name-btn:active { transform: scale(0.97); transition-duration: var(--press-down); }
 .pcr-unit { font-size: 11px; font-weight: 700; color: var(--accent); }
 .pcr-tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .pcr-tag {

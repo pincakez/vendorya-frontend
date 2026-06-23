@@ -63,25 +63,18 @@
               <th class="dt-th">{{ t('people.supplier_detail.pur_cols.ref') }}</th>
               <th class="dt-th">{{ t('people.supplier_detail.pur_cols.date') }}</th>
               <th class="dt-th">{{ t('people.supplier_detail.pur_cols.total') }}</th>
-              <th class="dt-th">{{ t('people.supplier_detail.pur_cols.paid') }}</th>
-              <th class="dt-th">{{ t('people.supplier_detail.pur_cols.outstanding') }}</th>
               <th class="dt-th">{{ t('people.supplier_detail.pur_cols.status') }}</th>
               <th class="dt-th">{{ t('people.supplier_detail.pur_cols.notes') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="purchases.length === 0">
-              <td colspan="7" class="dt-empty">{{ t('people.supplier_detail.no_purchases') }}</td>
+              <td colspan="5" class="dt-empty">{{ t('people.supplier_detail.no_purchases') }}</td>
             </tr>
             <tr v-for="p in purchases" :key="p.id" class="dt-row">
               <td class="mono">{{ p.vendor_reference || '—' }}</td>
               <td class="text-muted">{{ fmtDate(p.date) }}</td>
               <td><Money :value="p.total_amount" /></td>
-              <td><Money :value="p.paid_amount" /></td>
-              <td>
-                <span v-if="Number(p.total_amount) - Number(p.paid_amount) > 0" class="badge-owe"><Money :value="Number(p.total_amount) - Number(p.paid_amount)" /></span>
-                <span v-else class="badge-paid">{{ t('people.supplier_detail.info.settled') }}</span>
-              </td>
               <td><span class="status-pill" :class="'s-' + p.status.toLowerCase()">{{ purStatusLabel(p.status) }}</span></td>
               <td class="text-muted">{{ p.notes || '—' }}</td>
             </tr>

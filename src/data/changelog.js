@@ -12,6 +12,44 @@
 
 export const changelog = [
   {
+    version: '1.11.2',
+    date: '2026-06-23',
+    tag: 'Improved',
+    en: {
+      title: 'Cleaner supplier purchase history',
+      points: [
+        'Each supplier’s purchase history now shows just the essentials — reference, date, total, and status.',
+        'We removed the per-invoice paid/owed columns that could be misleading; your real balance with a supplier (total purchased, total paid, and outstanding) is shown clearly at the top of their page.',
+      ],
+    },
+    ar: {
+      title: 'سجل مشتريات المورد أصبح أوضح',
+      points: [
+        'يعرض سجل مشتريات كل مورد الآن الأساسيات فقط — المرجع والتاريخ والإجمالي والحالة.',
+        'أزلنا عمودي المدفوع/المستحق لكل فاتورة لأنهما قد يكونان مضللين؛ رصيدك الفعلي مع المورد (إجمالي المشتريات والمدفوعات والمستحق) يظهر بوضوح أعلى صفحته.',
+      ],
+    },
+  },
+  {
+    version: '1.11.1',
+    date: '2026-06-23',
+    tag: 'Improved',
+    en: {
+      title: 'Change a product’s unit right from the cart',
+      points: [
+        'Selling a product that comes in different units (like tablet, strip, or pack)? Just tap its line in the cart to switch the unit — no need to delete it and add it again.',
+        'The receipt now prints the unit you sold (for example “Bi Profenid · Strip”), so it is clear exactly what the customer bought.',
+      ],
+    },
+    ar: {
+      title: 'غيّر وحدة المنتج مباشرة من سلة البيع',
+      points: [
+        'تبيع منتجاً يأتي بوحدات مختلفة (مثل حبة أو شريط أو عبوة)؟ اضغط على سطره في السلة لتغيير الوحدة — دون الحاجة لحذفه وإضافته من جديد.',
+        'يطبع الإيصال الآن الوحدة التي بعتها (مثل «Bi Profenid · Strip») ليتضح تماماً ما اشتراه العميل.',
+      ],
+    },
+  },
+  {
     version: '1.11.0',
     date: '2026-06-22',
     tag: 'New',

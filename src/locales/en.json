@@ -978,6 +978,7 @@
       "err_expired": "Blocked: this sale would draw from expired stock ({names}). Adjust or remove the expired batch."
     },
     "choose_unit": "Choose a unit",
+    "change_unit": "Change unit",
     "weight": {
       "enter": "Enter weight",
       "per_kg": " / kg",

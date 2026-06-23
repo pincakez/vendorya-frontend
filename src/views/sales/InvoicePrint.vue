@@ -56,7 +56,7 @@
         <tbody>
           <tr v-for="(it, i) in inv.items" :key="i">
             <td>
-              <div class="it-name">{{ it.name }}</div>
+              <div class="it-name">{{ it.name }}<span v-if="it.unit_name"> · {{ it.unit_name }}</span></div>
               <div class="it-sku">{{ it.sku }}</div>
               <div v-if="Number(it.discount_amount) > 0" class="it-disc">Disc: − <Money :value="it.discount_amount" /></div>
             </td>
