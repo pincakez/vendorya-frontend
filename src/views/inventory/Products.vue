@@ -342,7 +342,23 @@
                       :title="t('inventory.products.product_modal.default_hint')"
                       @click="prodDefaults.name_enabled = !prodDefaults.name_enabled; saveDefaults()">★</button>
             </div>
-            <input v-model="prodModal.name" class="pm2-input" :placeholder="`${fmtStore.itemLabel} name`" />
+            <!-- Memory Base autocomplete: typing a name suggests reference-pool
+                 entries; picking one autofills the attributes (active ingredient,
+                 brand, manufacturer…). Only when creating, never when editing. -->
+            <div class="pm2-name-ac">
+              <input v-model="prodModal.name" class="pm2-input" :placeholder="`${fmtStore.itemLabel} name`"
+                     autocomplete="off"
+                     @input="onProdNameInput"
+                     @focus="nameAC.open = nameAC.results.length > 0"
+                     @blur="closeNameAcSoon" />
+              <div v-if="nameAC.open && nameAC.results.length" class="ac-dropdown">
+                <button v-for="r in nameAC.results" :key="r.id" type="button" class="ac-item"
+                        @mousedown.prevent="pickFromMemory(r)">
+                  <span class="ac-name">{{ r.name }}</span>
+                  <span v-if="acIngredient(r)" class="ac-meta">{{ acIngredient(r) }}</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="pm2-field">
@@ -1161,6 +1177,43 @@ const prodModal = reactive({
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
 function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
 
+// ── Memory Base autocomplete (New Product) ───────────────────────────────────
+// Reuses the shared products endpoint with ?source=all so it searches both real
+// inventory AND the Memory Base reference pool (the seeded catalog the items list
+// now hides). Picking a suggestion fills the name + maps its attributes onto the
+// new product. Price/cost/stock stay hand-entered. Never runs while editing.
+const nameAC = reactive({ results: [], open: false })
+let nameAcTimer = null
+function acIngredient(r) {
+  const v = r?.attributes_summary?.active_ing
+  return Array.isArray(v) && v.length ? v[0] : ''
+}
+function onProdNameInput() {
+  clearTimeout(nameAcTimer)
+  const q = (prodModal.name || '').trim()
+  if (prodModal.id || q.length < 2) { nameAC.results = []; nameAC.open = false; return }
+  nameAcTimer = setTimeout(async () => {
+    try {
+      const { data } = await api.get('/api/inventory/products/', { params: { search: q, page_size: 8, source: 'all' } })
+      nameAC.results = data.results ?? data
+      nameAC.open = nameAC.results.length > 0
+    } catch { nameAC.results = []; nameAC.open = false }
+  }, 250)
+}
+function pickFromMemory(r) {
+  prodModal.name = r.name
+  const summary = r.attributes_summary || {}
+  // attributes_summary is keyed by the attribute KEY (e.g. active_ing); prodModal.attrs
+  // is keyed by definition id — map across via each definition's key.
+  for (const def of attributes.value) {
+    const vals = summary[def.key]
+    if (Array.isArray(vals) && vals.length) prodModal.attrs[def.id] = vals[0]
+  }
+  nameAC.open = false
+  nameAC.results = []
+}
+function closeNameAcSoon() { setTimeout(() => { nameAC.open = false }, 150) }
+
 function openAddProduct() {
   fetchStoreSettings()   // refresh the multi-unit gate so a just-changed capability is respected
   const spp = prodDefaults.unit_spp_enabled ? (prodDefaults.unit_spp_value || null) : null
@@ -1179,6 +1232,7 @@ function openAddProduct() {
     saving: false, error: '',
   })
   resetAttrs()
+  nameAC.results = []; nameAC.open = false
 }
 
 function onUnitFieldChange(field) {
@@ -1594,6 +1648,22 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .pm2-field { display: flex; flex-direction: column; gap: 5px; }
 .pm2-fh { display: flex; align-items: center; justify-content: space-between; }
 .pm2-label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+
+/* Memory Base name autocomplete */
+.pm2-name-ac { position: relative; }
+.pm2-name-ac .ac-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 30; margin-top: 4px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: var(--shadow-card, 0 6px 20px rgba(0,0,0,.12));
+  overflow: hidden; max-height: 240px; overflow-y: auto;
+}
+.pm2-name-ac .ac-item {
+  display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left;
+  padding: 8px 10px; border: none; background: none; cursor: pointer; transition: background 100ms;
+}
+.pm2-name-ac .ac-item:hover { background: var(--bg-app); }
+.pm2-name-ac .ac-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.pm2-name-ac .ac-meta { font-size: 11px; color: var(--text-muted); }
 
 /* Input */
 .pm2-input {
