@@ -12,6 +12,31 @@
 
 export const changelog = [
   {
+    version: '1.17.0',
+    date: '2026-06-27',
+    tag: 'Improved',
+    en: {
+      title: 'Searching for a drug in New Purchase is now fast and accurate',
+      points: [
+        'Type 3 characters and the system instantly shows up to 20 matching drugs — names that start with what you typed appear first, then others that contain it.',
+        'If the drug\'s trade name does not match, the system also searches by active ingredient so you can find "Conventin" by typing "gabapentin".',
+        'The search now also shows the active ingredient under each trade name, so you can quickly confirm you have the right drug.',
+        'Speed: the previous 3–4 second lag is gone. A database index was added, and category lookups that were slowing things down were removed.',
+        'Stale results are no longer possible: if you type quickly and delete a character, the list always reflects your latest input — never a previous one.',
+      ],
+    },
+    ar: {
+      title: 'البحث عن دواء في فاتورة الشراء أصبح سريعاً ودقيقاً',
+      points: [
+        'اكتب 3 أحرف ويعرض النظام فوراً حتى 20 دواءً مطابقاً — الأسماء التي تبدأ بما كتبته تظهر أولاً، ثم الأسماء التي تحتويه.',
+        'إذا لم يتطابق الاسم التجاري، يبحث النظام أيضاً في المادة الفعّالة حتى تجد "Conventin" بكتابة "gabapentin".',
+        'يظهر الآن اسم المادة الفعّالة أسفل كل اسم تجاري لتتأكد بسرعة من اختيار الدواء الصحيح.',
+        'السرعة: اختفى التأخير السابق (3-4 ثوانٍ) بعد إضافة فهرس لقاعدة البيانات وإزالة بحث الفئات الذي كان يبطئ النتائج.',
+        'النتائج دائماً محدّثة: إذا كتبت بسرعة أو حذفت حرفاً، تعكس القائمة آخر ما كتبته دائماً.',
+      ],
+    },
+  },
+  {
     version: '1.16.2',
     date: '2026-06-27',
     tag: 'Improved',
