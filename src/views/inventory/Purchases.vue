@@ -491,6 +491,23 @@ function onNameInput(row) {
   }, 250)
 }
 function pickProduct(row, r) {
+  // Memory Base entries are reference-only (supplier-less, SKU-less, hidden from
+  // POS). Picking one must NOT stock the MB variant — route it through the
+  // NEW-product path so receiving materializes a real STORE product, with the
+  // entry's attributes carried over (superfix §2.4 / Step 4b).
+  if (r.source === 'MEMORY_BASE') {
+    row.kind = 'new'
+    row.name = r.name
+    row.variant = ''; row.sku = ''; row.unit = ''; row._units = []
+    const summary = r.attributes_summary || {}
+    for (const def of attrDefs.value) {
+      const v = summary[def.key]
+      if (Array.isArray(v) && v.length) row._attrs[def.id] = v[0]
+    }
+    row._open = false
+    row._results = []
+    return
+  }
   row.kind = 'existing'
   row.variant = r.default_variant_id
   row.sku = r.sku_display
