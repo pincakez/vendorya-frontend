@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.16.2',
+    date: '2026-06-27',
+    tag: 'Improved',
+    en: {
+      title: 'Your changes are safe when closing a form',
+      points: [
+        'If you have typed anything in a form and accidentally press Escape or click the X, the system now asks before discarding your work.',
+        'A small card appears with two options: Cancel (which keeps the form open so you can continue) or Discard & close (which closes without saving).',
+        'Cancel is highlighted by default — so pressing Enter stays in the form, and you have to deliberately choose to discard.',
+      ],
+    },
+    ar: {
+      title: 'بياناتك محفوظة عند إغلاق النموذج',
+      points: [
+        'إذا كتبت أي شيء في نموذج ثم ضغطت Escape أو النقر على X بالخطأ، سيسألك النظام قبل حذف ما كتبته.',
+        'تظهر بطاقة صغيرة بخيارين: إلغاء (يبقي النموذج مفتوحاً لتكمل عملك) أو تجاهل وإغلاق (يغلق دون حفظ).',
+        'إلغاء مُحدَّد افتراضياً — فالضغط على Enter يبقيك في النموذج، وعليك اختيار التجاهل بشكل متعمد.',
+      ],
+    },
+  },
+  {
     version: '1.16.1',
     date: '2026-06-27',
     tag: 'Fixed',
