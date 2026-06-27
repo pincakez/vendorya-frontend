@@ -425,7 +425,13 @@
       "import_title": "Import Memory Base from CSV",
       "import_hint": "Upload a CSV file with a \"name\" column (required). Any other column whose heading matches one of your attributes (e.g. active_ing, brand_ar, manufacturer) is imported too. Names that already exist are skipped.",
       "import_done": "Imported {created} new entries ({skipped} already existed).",
-      "import_error": "Could not import the file."
+      "import_error": "Could not import the file.",
+      "dedup_btn": "Remove duplicates",
+      "dedup_title": "Remove duplicate entries",
+      "dedup_confirm": "This finds Memory Base entries that share the same name and keeps just one of each (the richest), removing the rest. Removed entries are recoverable from the admin Trash.",
+      "dedup_done": "Removed {removed} duplicate entries.",
+      "dedup_none": "No duplicates found — your Memory Base is already clean.",
+      "dedup_error": "Could not remove duplicates."
     },
     "attributes": {
       "title": "Attributes",

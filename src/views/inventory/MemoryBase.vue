@@ -6,6 +6,9 @@
         <p class="page-sub">{{ t('inventory.memory_base.sub') }}</p>
       </div>
       <div class="mb-head-actions">
+        <BaseButton variant="ghost" size="sm" @click="openDedup">
+          <CopyX :size="15" /> {{ t('inventory.memory_base.dedup_btn') }}
+        </BaseButton>
         <BaseButton variant="secondary" size="sm" @click="openImport">
           <Upload :size="15" /> {{ t('inventory.memory_base.import_btn') }}
         </BaseButton>
@@ -52,6 +55,17 @@
 
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="p => { page = p; fetchEntries() }" />
 
+    <!-- Remove duplicates -->
+    <AppModal :open="dedupModal.open" :title="t('inventory.memory_base.dedup_title')" width="520px" @close="dedupModal.open = false">
+      <p class="mb-import-hint">{{ t('inventory.memory_base.dedup_confirm') }}</p>
+      <template #footer>
+        <BaseButton variant="ghost" @click="dedupModal.open = false">{{ t('common.cancel') }}</BaseButton>
+        <BaseButton variant="primary" :loading="dedupModal.busy" @click="doDedup">
+          {{ t('inventory.memory_base.dedup_btn') }}
+        </BaseButton>
+      </template>
+    </AppModal>
+
     <!-- CSV import (rough stub) -->
     <AppModal :open="importModal.open" :title="t('inventory.memory_base.import_title')" width="560px" @close="closeImport">
       <div class="mb-import">
@@ -82,7 +96,7 @@
  */
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, X, Library, Upload } from 'lucide-vue-next'
+import { Search, X, Library, Upload, CopyX } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { formatNumber } from '@/utils/format'
 import { showSuccessToast } from '@/utils/toast'
@@ -164,6 +178,26 @@ async function doImport() {
     importModal.error = err?.response?.data?.detail || t('inventory.memory_base.import_error')
   } finally {
     importModal.busy = false
+  }
+}
+
+// ── Remove duplicates ────────────────────────────────────────────────────────
+const dedupModal = reactive({ open: false, busy: false })
+function openDedup() { dedupModal.open = true }
+async function doDedup() {
+  dedupModal.busy = true
+  try {
+    const { data } = await api.post('/api/inventory/products/dedup-memory-base/')
+    showSuccessToast(data.removed
+      ? t('inventory.memory_base.dedup_done', { removed: data.removed })
+      : t('inventory.memory_base.dedup_none'))
+    dedupModal.open = false
+    page.value = 1
+    fetchEntries()
+  } catch {
+    showSuccessToast(t('inventory.memory_base.dedup_error'))
+  } finally {
+    dedupModal.busy = false
   }
 }
 
