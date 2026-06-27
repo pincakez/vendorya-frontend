@@ -524,6 +524,8 @@
       "col_category": "الفئة",
       "col_subcategory": "الفئة الفرعية",
       "category_none": "— بدون —",
+      "add_category": "إضافة فئة",
+      "add_option": "إضافة خيار",
       "item_search_placeholder": "اكتب للبحث، أو أدخل اسم منتج جديد…",
       "sku_needs_supplier": "يظهر SKU بعد تعيين مورّد",
       "print_now": "اطبع الملصقات الآن",

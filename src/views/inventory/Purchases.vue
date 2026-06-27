@@ -78,33 +78,30 @@
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchPurchases" />
 
     <!-- MODAL: New / View Purchase -->
-    <AppModal :open="modal.open" :title="modalTitle" width="860px" :no-backdrop-close="true" @close="tryClose">
+    <AppModal :open="modal.open" :title="modalTitle" width="1100px" :no-backdrop-close="true" @close="tryClose">
       <div class="form-grid">
         <div>
           <label class="form-label">
             {{ t('inventory.purchases.form_supplier') }}
             <span v-if="!modal.supplier" class="draft-hint">{{ t('inventory.purchases.draft_only_hint') }}</span>
           </label>
-          <select v-model="modal.supplier" class="form-input" :disabled="!supplierEditable">
-            <option value="">{{ t('inventory.purchases.select_supplier') }}</option>
-            <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
-          </select>
+          <BaseSelect v-model="modal.supplier" :options="supplierOptions" :disabled="!supplierEditable" />
         </div>
         <div>
           <label class="form-label">{{ t('inventory.purchases.form_number') }}</label>
-          <input v-model="modal.purchase_number" class="form-input" :placeholder="t('inventory.purchases.form_number_placeholder')" :disabled="readOnly" />
+          <BaseInput v-model="modal.purchase_number" :placeholder="t('inventory.purchases.form_number_placeholder')" :disabled="readOnly" />
         </div>
         <div>
           <label class="form-label">{{ t('inventory.purchases.form_date') }}</label>
-          <input v-model="modal.date" type="datetime-local" class="form-input" :disabled="readOnly" />
+          <BaseInput v-model="modal.date" type="datetime-local" :disabled="readOnly" />
         </div>
         <div>
           <label class="form-label">{{ t('inventory.purchases.form_vendor_ref') }}</label>
-          <input v-model="modal.vendor_reference" class="form-input" :placeholder="t('inventory.purchases.form_vendor_ref_placeholder')" :disabled="readOnly" />
+          <BaseInput v-model="modal.vendor_reference" :placeholder="t('inventory.purchases.form_vendor_ref_placeholder')" :disabled="readOnly" />
         </div>
         <div style="grid-column:1 / -1;">
           <label class="form-label">{{ t('inventory.purchases.form_notes') }}</label>
-          <input v-model="modal.notes" class="form-input" :placeholder="t('inventory.purchases.form_notes_placeholder')" :disabled="readOnly" />
+          <BaseInput v-model="modal.notes" :placeholder="t('inventory.purchases.form_notes_placeholder')" :disabled="readOnly" />
         </div>
       </div>
 
@@ -131,13 +128,12 @@
 
             <!-- Name autocomplete -->
             <div class="cell-name">
-              <input
-                v-model="row.name"
-                class="form-input"
+              <BaseInput
+                :model-value="row.name"
                 :placeholder="t('inventory.purchases.item_search_placeholder')"
                 :disabled="readOnly"
                 autocomplete="off"
-                @input="onNameInput(row)"
+                @update:model-value="v => { row.name = v; onNameInput(row) }"
                 @focus="row._open = (row._results && row._results.length > 0)"
                 @blur="closeRowSoon(row)"
               />
@@ -153,70 +149,69 @@
               </div>
             </div>
 
-            <input v-model="row.quantity" type="number" min="1" step="1" class="form-input cell-qty" :disabled="readOnly" />
-            <input v-model="row.base_price" type="number" min="0" step="0.01" class="form-input cell-num" :placeholder="t('inventory.purchases.col_base')" :disabled="readOnly" />
-            <input v-model="row.retail_price" type="number" min="0" step="0.01" class="form-input cell-num" :placeholder="t('inventory.purchases.col_retail')" :disabled="readOnly" />
+            <BaseInput v-model="row.quantity" type="number" min="1" step="1" class="cell-qty" :disabled="readOnly" />
+            <BaseInput v-model="row.base_price" type="number" min="0" step="0.01" class="cell-num" :placeholder="t('inventory.purchases.col_base')" :disabled="readOnly" />
+            <BaseInput v-model="row.retail_price" type="number" min="0" step="0.01" class="cell-num" :placeholder="t('inventory.purchases.col_retail')" :disabled="readOnly" />
 
             <button v-if="!readOnly" class="row-action danger cell-del" @click="modal.rows.splice(i, 1)"><Trash2 :size="13" /></button>
           </div>
 
           <!-- NEW product extra fields -->
-          <div v-if="row.kind === 'new' && (row.name||'').trim() && !readOnly" class="item-extra">
-            <div class="ie-field">
-              <label class="ie-label">{{ t('inventory.purchases.col_category') }}</label>
-              <select v-model="row.category" class="form-input" @change="row.subcategory = ''">
-                <option value="">{{ t('inventory.purchases.category_none') }}</option>
-                <option v-for="c in topCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
-              </select>
+          <Transition name="expand">
+            <div v-if="row.kind === 'new' && (row.name||'').trim() && !readOnly" class="item-extra">
+              <div class="ie-field" :class="{ 'flash-fill': row._justFilled }">
+                <label class="ie-label">{{ t('inventory.purchases.col_category') }}</label>
+                <div class="ie-input-row">
+                  <BaseSelect :model-value="row.category" :options="categoryOptions" @update:model-value="v => { row.category = v; row.subcategory = '' }" />
+                  <button type="button" class="ie-add-btn" :title="t('inventory.purchases.add_category')" @click="openInlineAdd('category', row)"><Plus :size="14" /></button>
+                </div>
+              </div>
+              <div class="ie-field" v-if="row.category && subCategories(row.category).length">
+                <label class="ie-label">{{ t('inventory.purchases.col_subcategory') }}</label>
+                <BaseSelect v-model="row.subcategory" :options="subCategoryOptions(row.category)" />
+              </div>
+              <div class="ie-field" v-for="def in attrDefs" :key="def.id" :class="{ 'flash-fill': row._justFilled }">
+                <label class="ie-label">{{ def.name }}</label>
+                <div v-if="def.input_type === 'SELECT'" class="ie-input-row">
+                  <BaseSelect v-model="row._attrs[def.id]" :options="attrOptions(def)" />
+                  <button type="button" class="ie-add-btn" :title="t('inventory.purchases.add_option')" @click="openInlineAdd('attr', row, def)"><Plus :size="14" /></button>
+                </div>
+                <BaseInput v-else v-model="row._attrs[def.id]" :placeholder="def.name" />
+              </div>
+              <!-- Onboard a brand-new product as expiry/batch-tracked on first receipt -->
+              <div v-if="expiryEnabled" class="ie-field ie-track-expiry">
+                <label class="ie-check">
+                  <input type="checkbox" v-model="row.track_expiry" />
+                  <span>{{ t('inventory.purchases.track_expiry_new') }}</span>
+                </label>
+              </div>
             </div>
-            <div class="ie-field" v-if="row.category && subCategories(row.category).length">
-              <label class="ie-label">{{ t('inventory.purchases.col_subcategory') }}</label>
-              <select v-model="row.subcategory" class="form-input">
-                <option value="">{{ t('inventory.purchases.category_none') }}</option>
-                <option v-for="c in subCategories(row.category)" :key="c.id" :value="c.id">{{ c.name }}</option>
-              </select>
-            </div>
-            <div class="ie-field" v-for="def in attrDefs" :key="def.id">
-              <label class="ie-label">{{ def.name }}</label>
-              <select v-if="def.input_type === 'SELECT'" v-model="row._attrs[def.id]" class="form-input">
-                <option value="">—</option>
-                <option v-for="opt in (def.options || [])" :key="opt" :value="opt">{{ opt }}</option>
-              </select>
-              <input v-else v-model="row._attrs[def.id]" class="form-input" :placeholder="def.name" />
-            </div>
-            <!-- Onboard a brand-new product as expiry/batch-tracked on first receipt -->
-            <div v-if="expiryEnabled" class="ie-field ie-track-expiry">
-              <label class="ie-check">
-                <input type="checkbox" v-model="row.track_expiry" />
-                <span>{{ t('inventory.purchases.track_expiry_new') }}</span>
-              </label>
-            </div>
-          </div>
+          </Transition>
 
           <!-- Buy-by-unit — pick a pack/strip; stock converts to base on receive -->
-          <div v-if="row.kind === 'existing' && (row._units || []).length > 1 && !readOnly"
-               class="item-extra item-unit">
-            <div class="ie-field">
-              <label class="ie-label">{{ t('inventory.purchases.unit_hint') }}</label>
-              <select v-model="row.unit" class="form-input">
-                <option v-for="u in row._units" :key="u.id || 'base'" :value="u.id || ''">
-                  {{ u.name }}{{ u.is_base ? '' : ` (×${u.factor})` }}
-                </option>
-              </select>
+          <Transition name="expand">
+            <div v-if="row.kind === 'existing' && (row._units || []).length > 1 && !readOnly"
+                 class="item-extra item-unit">
+              <div class="ie-field">
+                <label class="ie-label">{{ t('inventory.purchases.unit_hint') }}</label>
+                <BaseSelect v-model="row.unit" :options="unitOptions(row._units)" />
+              </div>
             </div>
-          </div>
+          </Transition>
 
           <!-- Expiry / batch capture — only for expiry-tracked products -->
-          <div v-if="row.track_expiry && !readOnly" class="item-extra item-expiry">
-            <div class="ie-field">
-              <label class="ie-label">{{ t('inventory.purchases.expiry_date') }}</label>
-              <input v-model="row.expiry_date" type="date" class="form-input" />
+          <Transition name="expand">
+            <div v-if="row.track_expiry && !readOnly" class="item-extra item-expiry">
+              <div class="ie-field">
+                <label class="ie-label">{{ t('inventory.purchases.expiry_date') }}</label>
+                <BaseInput v-model="row.expiry_date" type="date" />
+              </div>
+              <div class="ie-field">
+                <label class="ie-label">{{ t('inventory.purchases.batch_number') }}</label>
+                <BaseInput v-model="row.batch_number" :placeholder="t('common.optional')" />
+              </div>
             </div>
-            <div class="ie-field">
-              <label class="ie-label">{{ t('inventory.purchases.batch_number') }}</label>
-              <input v-model="row.batch_number" class="form-input" :placeholder="t('common.optional')" />
-            </div>
-          </div>
+          </Transition>
         </div>
 
         <button v-if="!readOnly" class="btn-ghost" style="margin-top:10px;" @click="addRow">
@@ -282,11 +277,27 @@
         <button class="btn-primary" :disabled="!labelPicker.selectedId || labelPicker.loading" @click="printLabels"><Tag :size="14" /> {{ t('inventory.purchases.print_btn') }}</button>
       </template>
     </AppModal>
+
+    <!-- Inline add — new category / new attribute option, on the fly -->
+    <AppModal :open="inlineAdd.open" :title="inlineAdd.type === 'category' ? t('inventory.purchases.add_category') : t('inventory.purchases.add_option')" width="400px" @close="inlineAdd.open = false">
+      <BaseInput
+        v-model="inlineAdd.value"
+        :label="inlineAdd.type === 'category' ? t('inventory.purchases.col_category') : (inlineAdd.def?.name || '')"
+        :placeholder="inlineAdd.type === 'category' ? t('inventory.purchases.add_category') : t('inventory.purchases.add_option')"
+        @keyup.enter="submitInlineAdd"
+      />
+      <template #footer>
+        <button class="btn-ghost" @click="inlineAdd.open = false">{{ t('common.cancel') }}</button>
+        <button class="btn-primary" :disabled="inlineAdd.saving || !inlineAdd.value.trim()" @click="submitInlineAdd">
+          {{ inlineAdd.saving ? t('common.saving') : t('common.add') }}
+        </button>
+      </template>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X, Lock } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
@@ -296,6 +307,8 @@ useCtrlN(openNew)
 import { useLabelsStore } from '@/stores/labels'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
 import { formatNumber } from '@/utils/format'
 
 const { t }       = useI18n()
@@ -371,6 +384,34 @@ function subCategories(parentId) {
   return categories.value.filter(c => c.parent === parentId)
 }
 
+// ── BaseSelect option arrays (design-system: BaseSelect takes [{value,label}]) ──
+const supplierOptions = computed(() => [
+  { value: '', label: t('inventory.purchases.select_supplier') },
+  ...suppliers.value.map(s => ({ value: s.id, label: s.name })),
+])
+const categoryOptions = computed(() => [
+  { value: '', label: t('inventory.purchases.category_none') },
+  ...topCategories.value.map(c => ({ value: c.id, label: c.name })),
+])
+function subCategoryOptions(parentId) {
+  return [
+    { value: '', label: t('inventory.purchases.category_none') },
+    ...subCategories(parentId).map(c => ({ value: c.id, label: c.name })),
+  ]
+}
+function attrOptions(def) {
+  return [
+    { value: '', label: '—' },
+    ...(def.options || []).map(o => ({ value: o, label: o })),
+  ]
+}
+function unitOptions(units) {
+  return (units || []).map(u => ({
+    value: u.id || '',
+    label: `${u.name}${u.is_base ? '' : ` (×${u.factor})`}`,
+  }))
+}
+
 function statusLabel(s) {
   if (s === 'DRAFT') return t('inventory.purchases.status_badge_draft')
   if (s === 'RECEIVED') return t('inventory.purchases.status_badge_received')
@@ -410,10 +451,13 @@ const modalTotal = computed(() =>
 )
 
 function blankRow() {
+  // FEFO on by default — a brand-new product is onboarded as expiry/batch-tracked
+  // whenever the store master switch is on (superfix §5).
   return { kind: 'new', variant: '', sku: '', name: '', quantity: 1, base_price: '', retail_price: '',
-           track_expiry: false, expiry_date: '', batch_number: '',
+           track_expiry: expiryEnabled.value, expiry_date: '', batch_number: '',
            unit: '', _units: [],
-           category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null, _ac: null }
+           category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null, _ac: null,
+           _justFilled: false }
 }
 
 function openNew() {
@@ -512,6 +556,7 @@ function pickProduct(row, r) {
     row.kind = 'new'
     row.name = r.name
     row.variant = ''; row.sku = ''; row.unit = ''; row._units = []
+    row.category = r.category || ''   // MB entries are category-less today → usually ''
     const summary = r.attributes_summary || {}
     for (const def of attrDefs.value) {
       const v = summary[def.key]
@@ -519,6 +564,7 @@ function pickProduct(row, r) {
     }
     row._open = false
     row._results = []
+    flashRow(row)   // pulse the fields that just auto-filled (category + attrs)
     return
   }
   row.kind = 'existing'
@@ -533,6 +579,47 @@ function pickProduct(row, r) {
   row._results = []
 }
 function closeRowSoon(row) { setTimeout(() => { row._open = false }, 150) }
+
+// Pulse the auto-filled fields after a pick so the eye lands on what changed.
+// Toggle off→on across a tick so a second pick re-fires the CSS animation.
+function flashRow(row) {
+  row._justFilled = false
+  nextTick(() => {
+    row._justFilled = true
+    setTimeout(() => { row._justFilled = false }, 800)
+  })
+}
+
+// ── Inline add — create a category / attribute option on the fly ────────────
+const inlineAdd = reactive({ open: false, type: 'category', def: null, row: null, value: '', saving: false })
+function openInlineAdd(type, row, def = null) {
+  inlineAdd.type = type; inlineAdd.row = row; inlineAdd.def = def
+  inlineAdd.value = ''; inlineAdd.open = true
+}
+async function submitInlineAdd() {
+  const val = inlineAdd.value.trim()
+  if (!val || inlineAdd.saving) return
+  inlineAdd.saving = true
+  try {
+    if (inlineAdd.type === 'category') {
+      const res = await api.post('/api/inventory/categories/', { name: val, parent: null })
+      categories.value.push(res.data)
+      inlineAdd.row.category = res.data.id
+      inlineAdd.row.subcategory = ''
+    } else {
+      const def = inlineAdd.def
+      const opts = [...(def.options || [])]
+      if (!opts.some(o => String(o).toLowerCase() === val.toLowerCase())) opts.push(val)
+      const res = await api.patch(`/api/inventory/attributes/${def.id}/`, { options: opts })
+      const idx = attrDefs.value.findIndex(d => d.id === def.id)
+      if (idx !== -1) attrDefs.value[idx] = res.data
+      inlineAdd.row._attrs[def.id] = val
+    }
+    inlineAdd.open = false
+  } catch (e) {
+    alert(e.response?.data?.detail || t('inventory.purchases.err_save'))
+  } finally { inlineAdd.saving = false }
+}
 
 function skuHint(row) {
   if (row.sku) return row.sku
@@ -699,12 +786,12 @@ onMounted(() => {
 .section-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:10px; }
 
 /* Item rows */
-.items-head { display:grid; grid-template-columns:96px 1fr 70px 100px 100px 32px; gap:8px; padding:0 4px 6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
+.items-head { display:grid; grid-template-columns:110px 1fr 90px 130px 130px 36px; gap:10px; padding:0 4px 6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
 .ih-num { text-align:left; }
 
 .item-card { border:1px solid var(--border); border-radius:10px; padding:8px; margin-bottom:8px; background:var(--bg-card); transition:border-color 120ms; }
 .item-card.is-new { border-color:color-mix(in srgb, var(--accent) 40%, var(--border)); }
-.item-main { display:grid; grid-template-columns:96px 1fr 70px 100px 100px 32px; gap:8px; align-items:center; }
+.item-main { display:grid; grid-template-columns:110px 1fr 90px 130px 130px 36px; gap:10px; align-items:center; }
 
 .cell-sku { font-family:monospace; font-size:12px; display:flex; align-items:center; justify-content:center; min-height:34px; }
 .sku-val  { color:var(--text-primary); font-weight:600; }
@@ -712,8 +799,8 @@ onMounted(() => {
 .sku-lock { color:var(--warning, #d97706); }
 
 .cell-name { position:relative; }
-.cell-qty  { text-align:center; }
-.cell-num  { font-variant-numeric:tabular-nums; }
+.cell-qty :deep(.form-input)  { text-align:center; }
+.cell-num :deep(.form-input)  { font-variant-numeric:tabular-nums; }
 .cell-del  { justify-self:center; }
 
 .ac-dropdown { position:absolute; top:100%; left:0; right:0; z-index:30; margin-top:4px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow-card, 0 6px 20px rgba(0,0,0,.12)); overflow:hidden; max-height:240px; overflow-y:auto; }
@@ -728,7 +815,27 @@ onMounted(() => {
 .ie-check { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-secondary); cursor:pointer; }
 .ie-check input { width:15px; height:15px; accent-color:var(--accent); cursor:pointer; }
 .ie-track-expiry { justify-content:flex-end; align-self:center; }
-.item-unit .form-input { min-width:160px; }
+.item-unit :deep(.form-input) { min-width:160px; }
+
+/* Inline + add (new category / attribute option on the fly) */
+.ie-input-row { display:flex; align-items:stretch; gap:6px; }
+.ie-input-row > .base-select-root,
+.ie-input-row > .base-input-root { flex:1 1 auto; min-width:0; }
+.ie-add-btn { flex-shrink:0; width:34px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background 100ms,color 100ms,border-color 100ms; }
+.ie-add-btn:hover { border-color:var(--accent); color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, transparent); }
+
+/* Auto-fill flash — pulse a field that just populated after a pick */
+.flash-fill :deep(.form-input) { animation: fillFlash 0.8s ease; }
+@keyframes fillFlash {
+  0%   { background:color-mix(in srgb, var(--accent) 28%, transparent); border-color:var(--accent); }
+  100% { background:transparent; }
+}
+
+/* Expand/collapse for the detail panels (item-extra) when rows appear */
+.expand-enter-active { transition:opacity 220ms ease, transform 220ms cubic-bezier(0.16,1,0.3,1), max-height 220ms ease; overflow:hidden; }
+.expand-leave-active { transition:opacity 140ms ease, transform 140ms ease, max-height 140ms ease; overflow:hidden; }
+.expand-enter-from, .expand-leave-to { opacity:0; max-height:0; transform:translateY(-4px); padding-top:0; margin-top:0; }
+.expand-enter-to, .expand-leave-from { opacity:1; max-height:600px; }
 
 .invoice-totals { margin-top:18px; border-top:1px solid var(--border); padding-top:14px; display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
 .totals-row { display:flex; gap:32px; font-size:13px; color:var(--text-secondary); }

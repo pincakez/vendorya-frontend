@@ -12,6 +12,31 @@
 
 export const changelog = [
   {
+    version: '1.18.0',
+    date: '2026-06-27',
+    tag: 'Improved',
+    en: {
+      title: 'New Purchase screen is wider, faster to fill, and fills itself in',
+      points: [
+        'The New Purchase window is now wider so you can see more of each item at a glance, and it scrolls neatly when you add many items.',
+        'When you pick a drug, the system auto-fills its category, active ingredient, brand and manufacturer for you — the only things you type by hand are the price and the expiry date.',
+        'Each field that gets filled in briefly lights up, so you can see exactly what the system added.',
+        '"Track expiry & batches" is now ticked by default for a new product, so expiry dates are captured from the very first purchase.',
+        'You can add a new category or a new attribute option right from the purchase screen with a + button — no need to leave and set it up somewhere else first.',
+      ],
+    },
+    ar: {
+      title: 'شاشة فاتورة الشراء أصبحت أوسع وأسرع في التعبئة وتملأ نفسها',
+      points: [
+        'أصبحت نافذة فاتورة الشراء أوسع لترى تفاصيل كل صنف بوضوح، وتنزلق بسلاسة عند إضافة أصناف كثيرة.',
+        'عند اختيار دواء، يملأ النظام تلقائياً فئته ومادته الفعّالة وعلامته التجارية والشركة المصنّعة — ولا تكتب يدوياً سوى السعر وتاريخ الصلاحية.',
+        'كل حقل يتم ملؤه يُضيء للحظة حتى ترى بالضبط ما أضافه النظام.',
+        'أصبح خيار "تتبّع الصلاحية والدفعات" مفعّلاً تلقائياً للمنتج الجديد، حتى تُسجَّل تواريخ الصلاحية من أول عملية شراء.',
+        'يمكنك إضافة فئة جديدة أو خيار جديد لإحدى الخصائص مباشرةً من شاشة الشراء عبر زر + — دون الحاجة للخروج وإعدادها في مكان آخر.',
+      ],
+    },
+  },
+  {
     version: '1.17.0',
     date: '2026-06-27',
     tag: 'Improved',

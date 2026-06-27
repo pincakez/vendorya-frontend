@@ -531,6 +531,8 @@
       "col_category": "Category",
       "col_subcategory": "Sub-category",
       "category_none": "— none —",
+      "add_category": "Add category",
+      "add_option": "Add option",
       "item_search_placeholder": "Type to search, or enter a new product name…",
       "sku_needs_supplier": "SKU appears once a supplier is assigned",
       "print_now": "Print the labels now",
