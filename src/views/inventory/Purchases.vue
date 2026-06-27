@@ -148,7 +148,7 @@
                   @mousedown.prevent="pickProduct(row, r)"
                 >
                   <span class="ac-name">{{ r.name }}</span>
-                  <span class="ac-meta">{{ r.sku_display }} · {{ formatNumber(r.default_variant_price) }}</span>
+                  <span v-if="getActiveIng(r)" class="ac-meta">{{ getActiveIng(r) }}</span>
                 </button>
               </div>
             </div>
@@ -413,7 +413,7 @@ function blankRow() {
   return { kind: 'new', variant: '', sku: '', name: '', quantity: 1, base_price: '', retail_price: '',
            track_expiry: false, expiry_date: '', batch_number: '',
            unit: '', _units: [],
-           category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null }
+           category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null, _ac: null }
 }
 
 function openNew() {
@@ -435,7 +435,7 @@ function loadModal(p) {
                 quantity: Number(it.quantity), base_price: it.unit_cost, retail_price: it.retail_price,
                 track_expiry: !!it.track_expiry, expiry_date: it.expiry_date || '', batch_number: it.batch_number || '',
                 unit: it.unit || '', _units: it.selling_units || [],
-                category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null })
+                category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null, _ac: null })
   }
   for (const d of (p.draft_items || [])) {
     const _attrs = {}
@@ -443,7 +443,7 @@ function loadModal(p) {
     rows.push({ kind: 'new', variant: '', sku: '', name: d.name, quantity: Number(d.quantity),
                 base_price: d.base_price, retail_price: d.retail_price,
                 category: d.category || '', subcategory: d.subcategory || '',
-                _attrs, _results: [], _open: false, _timer: null })
+                _attrs, _results: [], _open: false, _timer: null, _ac: null })
   }
   if (rows.length === 0 || p.status === 'DRAFT') rows.push(blankRow())
   Object.assign(modal, {
@@ -474,21 +474,34 @@ function tryClose() {
 function addRow() { modal.rows.push(blankRow()) }
 
 // ── Autocomplete ─────────────────────────────────────────────────────────
+// Each row keeps its own AbortController so a stale response from a previous
+// keystroke can never overwrite results from the latest one.
 function onNameInput(row) {
   // typing past a selected product turns it back into a new-product line
   if (row.kind === 'existing') { row.kind = 'new'; row.variant = ''; row.sku = ''; row.unit = ''; row._units = [] }
   clearTimeout(row._timer)
   const q = (row.name || '').trim()
-  if (q.length < 2) { row._results = []; row._open = false; return }
+  if (q.length < 3) { row._results = []; row._open = false; return }
   row._timer = setTimeout(async () => {
+    // Cancel any in-flight request for this row before issuing a new one.
+    if (row._ac) row._ac.abort()
+    row._ac = new AbortController()
     try {
-      // source:'all' = search both real inventory AND the Memory Base reference pool
-      // (the seeded meds catalog), which the default products list now hides.
-      const res = await api.get('/api/inventory/products/', { params: { search: q, page_size: 8, source: 'all' } })
+      const res = await api.get('/api/inventory/products/autocomplete/', {
+        params: { q },
+        signal: row._ac.signal,
+      })
       row._results = (res.data.results ?? res.data).filter(r => r.default_variant_id)
       row._open = row._results.length > 0
-    } catch { row._results = []; row._open = false }
+    } catch (err) {
+      if (err?.code !== 'ERR_CANCELED') { row._results = []; row._open = false }
+    }
   }, 250)
+}
+
+function getActiveIng(r) {
+  const s = r.attributes_summary || {}
+  return (s.active_ing || [])[0] || ''
 }
 function pickProduct(row, r) {
   // Memory Base entries are reference-only (supplier-less, SKU-less, hidden from

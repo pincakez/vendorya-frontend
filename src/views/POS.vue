@@ -501,6 +501,7 @@ const searchIndex   = ref(-1)
 const searchFocused = ref(false)
 
 let searchTimer = null
+let searchAC = null
 function onSearchInput() {
   if (anyModalOpen.value) return   // background is dead while a modal is open
   clearTimeout(searchTimer)
@@ -509,13 +510,16 @@ function onSearchInput() {
 }
 
 async function runSearch() {
+  if (searchAC) searchAC.abort()
+  searchAC = new AbortController()
   try {
     const res = await api.get('/api/inventory/products/', {
-      params: { search: searchQuery.value, page_size: 12 }
+      params: { search: searchQuery.value, page_size: 12 },
+      signal: searchAC.signal,
     })
     searchResults.value = (res.data.results || res.data).filter(p => !p.hide_from_pos)
     searchIndex.value = searchResults.value.length ? 0 : -1
-  } catch { /* ok */ }
+  } catch (err) { if (err?.code !== 'ERR_CANCELED') searchResults.value = [] }
 }
 
 function onSearchKeydown(e) {
