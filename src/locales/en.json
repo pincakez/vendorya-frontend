@@ -33,6 +33,7 @@
       "purchases": "Purchases",
       "stock_adjustments": "Stock Adjustments",
       "stock_transfers": "Stock Transfers",
+      "memory_base": "Memory Base",
       "categories": "Categories",
       "attributes": "Attributes",
       "inventory_reports": "Reports",
@@ -408,6 +409,18 @@
       "err_save": "Could not save category.",
       "err_move": "Could not move contents.",
       "err_purge": "Could not delete."
+    },
+    "memory_base": {
+      "title": "Memory Base",
+      "sub": "Your reference pool of every product the store has ever seen — it powers autofill, but never appears in the POS or your sellable items.",
+      "count": "{n} entries",
+      "search_placeholder": "Search by name…",
+      "col_name": "Name",
+      "col_active_ing": "Active Ingredient",
+      "col_brand": "Brand",
+      "col_manufacturer": "Manufacturer",
+      "empty": "Your Memory Base is empty.",
+      "empty_search": "No entries match your search."
     },
     "attributes": {
       "title": "Attributes",

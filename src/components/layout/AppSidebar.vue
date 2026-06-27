@@ -139,6 +139,7 @@ import {
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
   BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles, CalendarClock,
+  Library,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -168,6 +169,7 @@ const groups = computed(() => [
     { label: t('nav.items.purchases'),         to: '/inventory/purchases',   icon: ShoppingCart },
     { label: t('nav.items.stock_adjustments'), to: '/inventory/adjustments', icon: SlidersHorizontal },
     { label: t('nav.items.stock_transfers'),   to: '/inventory/transfers',   icon: ArrowLeftRight },
+    { label: t('nav.items.memory_base'),       to: '/inventory/memory-base', icon: Library },
     { label: t('nav.items.categories'),        to: '/inventory/categories',  icon: Tag },
     { label: t('nav.items.attributes'),        to: '/inventory/attributes',  icon: List },
     { label: t('nav.items.inventory_reports'), to: '/inventory/reports',     icon: FileBarChart },
