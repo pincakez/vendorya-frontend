@@ -420,7 +420,12 @@
       "col_brand": "Brand",
       "col_manufacturer": "Manufacturer",
       "empty": "Your Memory Base is empty.",
-      "empty_search": "No entries match your search."
+      "empty_search": "No entries match your search.",
+      "import_btn": "Import CSV",
+      "import_title": "Import Memory Base from CSV",
+      "import_hint": "Upload a CSV file with a \"name\" column (required). Any other column whose heading matches one of your attributes (e.g. active_ing, brand_ar, manufacturer) is imported too. Names that already exist are skipped.",
+      "import_done": "Imported {created} new entries ({skipped} already existed).",
+      "import_error": "Could not import the file."
     },
     "attributes": {
       "title": "Attributes",

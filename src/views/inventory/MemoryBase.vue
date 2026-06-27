@@ -5,8 +5,13 @@
         <h1 class="page-title">{{ t('inventory.memory_base.title') }}</h1>
         <p class="page-sub">{{ t('inventory.memory_base.sub') }}</p>
       </div>
-      <div class="mb-count" v-if="!loading">
-        {{ t('inventory.memory_base.count', { n: formatNumber(total, { decimals: 0 }) }) }}
+      <div class="mb-head-actions">
+        <BaseButton variant="secondary" size="sm" @click="openImport">
+          <Upload :size="15" /> {{ t('inventory.memory_base.import_btn') }}
+        </BaseButton>
+        <div class="mb-count" v-if="!loading">
+          {{ t('inventory.memory_base.count', { n: formatNumber(total, { decimals: 0 }) }) }}
+        </div>
       </div>
     </div>
 
@@ -46,6 +51,24 @@
     </BaseTable>
 
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="p => { page = p; fetchEntries() }" />
+
+    <!-- CSV import (rough stub) -->
+    <AppModal :open="importModal.open" :title="t('inventory.memory_base.import_title')" width="560px" @close="closeImport">
+      <div class="mb-import">
+        <p class="mb-import-hint">{{ t('inventory.memory_base.import_hint') }}</p>
+        <input type="file" accept=".csv,text/csv" class="mb-import-file" @change="onFilePick" />
+        <p v-if="importModal.result" class="mb-import-result">
+          {{ t('inventory.memory_base.import_done', { created: importModal.result.created, skipped: importModal.result.skipped }) }}
+        </p>
+        <p v-if="importModal.error" class="mb-import-error">{{ importModal.error }}</p>
+      </div>
+      <template #footer>
+        <BaseButton variant="ghost" @click="closeImport">{{ t('common.close') }}</BaseButton>
+        <BaseButton variant="primary" :disabled="!importModal.file || importModal.busy" :loading="importModal.busy" @click="doImport">
+          {{ t('inventory.memory_base.import_btn') }}
+        </BaseButton>
+      </template>
+    </AppModal>
   </div>
 </template>
 
@@ -57,12 +80,15 @@
  * onto that pool. Queries the Products API with ?source=memory_base (the backend
  * opt-in shipped in Phase 1 · Step 1).
  */
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, X, Library } from 'lucide-vue-next'
+import { Search, X, Library, Upload } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { formatNumber } from '@/utils/format'
+import { showSuccessToast } from '@/utils/toast'
 import BaseTable from '@/components/base/BaseTable.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 
 const { t } = useI18n()
@@ -117,11 +143,36 @@ function debouncedFetch() {
 }
 function clearSearch() { search.value = ''; page.value = 1; fetchEntries() }
 
+// ── CSV import (rough stub) ──────────────────────────────────────────────────
+const importModal = reactive({ open: false, file: null, busy: false, result: null, error: '' })
+function openImport() { importModal.open = true; importModal.file = null; importModal.result = null; importModal.error = '' }
+function closeImport() { importModal.open = false }
+function onFilePick(e) { importModal.file = e.target.files?.[0] || null; importModal.result = null; importModal.error = '' }
+async function doImport() {
+  if (!importModal.file) return
+  importModal.busy = true; importModal.error = ''
+  try {
+    // Read the CSV client-side and send as text — avoids multipart/Content-Type
+    // pitfalls with the shared axios instance. The backend accepts {csv}.
+    const csv = await importModal.file.text()
+    const { data } = await api.post('/api/inventory/products/import-memory-base/', { csv })
+    importModal.result = data
+    showSuccessToast(t('inventory.memory_base.import_done', { created: data.created, skipped: data.skipped }))
+    page.value = 1
+    fetchEntries()
+  } catch (err) {
+    importModal.error = err?.response?.data?.detail || t('inventory.memory_base.import_error')
+  } finally {
+    importModal.busy = false
+  }
+}
+
 onMounted(fetchEntries)
 </script>
 
 <style scoped>
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.mb-head-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .mb-count {
   flex-shrink: 0; font-size: 13px; font-weight: 600; color: var(--accent);
   background: var(--accent-soft); border: 1px solid var(--accent);
@@ -145,4 +196,11 @@ onMounted(fetchEntries)
 
 .col-name { font-weight: 600; color: var(--text-primary); }
 .col-muted { color: var(--text-secondary); }
+
+/* CSV import modal */
+.mb-import { display: flex; flex-direction: column; gap: 12px; }
+.mb-import-hint { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+.mb-import-file { font-size: 13px; color: var(--text-primary); }
+.mb-import-result { font-size: 13px; font-weight: 600; color: var(--accent); margin: 0; }
+.mb-import-error { font-size: 13px; color: var(--danger); margin: 0; }
 </style>
