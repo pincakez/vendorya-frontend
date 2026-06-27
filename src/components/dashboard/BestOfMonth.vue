@@ -1,6 +1,6 @@
 <template>
   <div class="b-head">
-    <span class="b-title">Best of the Month</span>
+    <span class="b-title">{{ t('core.dash.best_of_month') }}</span>
     <div class="bom-dots">
       <button
         v-for="(_, i) in slides"
@@ -27,7 +27,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Tag, FolderOpen, Calendar, Clock } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 const props = defineProps({
   attribute: { type: String, default: null },
@@ -40,10 +43,10 @@ const idx = ref(0)
 let timer = null
 
 const slides = computed(() => [
-  { icon: Tag,        label: 'Best Attribute', value: props.attribute, color: '#f78f1e' },
-  { icon: FolderOpen, label: 'Best Category',  value: props.category,  color: '#3772ff' },
-  { icon: Calendar,   label: 'Best Day',       value: props.day,       color: '#ba2d0b' },
-  { icon: Clock,      label: 'Peak Hours',     value: props.hours,     color: '#0e4749' },
+  { icon: Tag,        label: t('core.dash.best_attribute'), value: props.attribute, color: '#f78f1e' },
+  { icon: FolderOpen, label: t('core.dash.best_category'),  value: props.category,  color: '#3772ff' },
+  { icon: Calendar,   label: t('core.dash.best_day'),       value: props.day,       color: '#ba2d0b' },
+  { icon: Clock,      label: t('core.dash.peak_hours'),     value: props.hours,     color: '#0e4749' },
 ])
 
 function jumpTo(i) {

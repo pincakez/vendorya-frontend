@@ -5,9 +5,12 @@
  * store's own symbol + format (via the format store) — never a hardcoded $.
  */
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Money from '@/components/ui/Money.vue'
 import { formatNumber } from '@/utils/format'
 import { useFormatStore } from '@/stores/format'
+
+const { t } = useI18n()
 
 const props = defineProps({
   // [{ date, label, total }] — 7 entries, oldest → newest
@@ -29,7 +32,7 @@ const rangeLabel = computed(() => {
 })
 
 const series = computed(() => [{
-  name: 'Revenue',
+  name: t('core.dash.revenue'),
   data: rows.value.map(r => parseFloat(r.total) || 0),
 }])
 
@@ -76,7 +79,7 @@ const hasData = computed(() => weekTotal.value > 0)
 <template>
   <div class="dw-head">
     <div class="dw-labels">
-      <span class="dw-tag">Weekly Revenue</span>
+      <span class="dw-tag">{{ t('core.dash.weekly_revenue') }}</span>
       <span class="dw-week">{{ rangeLabel }}</span>
     </div>
     <span class="dw-total"><Money :value="weekTotal" /></span>
@@ -85,7 +88,7 @@ const hasData = computed(() => weekTotal.value > 0)
   <div v-if="hasData" class="dw-chart">
     <apexchart type="area" height="118" :options="chartOptions" :series="series" />
   </div>
-  <div v-else class="dw-empty">No sales in the last 7 days</div>
+  <div v-else class="dw-empty">{{ t('core.dash.no_sales_7d') }}</div>
 </template>
 
 <style scoped>

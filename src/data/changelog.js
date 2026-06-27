@@ -12,6 +12,46 @@
 
 export const changelog = [
   {
+    version: '1.16.1',
+    date: '2026-06-27',
+    tag: 'Fixed',
+    en: {
+      title: 'Dashboard now fully in Arabic',
+      points: [
+        'When your store is set to Arabic, the dashboard cards now show their titles in Arabic too — like Today, Recent Sales, Upcoming Services, Revenue Ring, Activity Feed, and Weekly Revenue.',
+        'Before, those card titles stayed in English even when the rest of the app was Arabic.',
+      ],
+    },
+    ar: {
+      title: 'لوحة التحكم أصبحت بالعربية بالكامل',
+      points: [
+        'عند ضبط متجرك على العربية، أصبحت بطاقات لوحة التحكم تعرض عناوينها بالعربية أيضاً — مثل اليوم، وأحدث المبيعات، والخدمات القادمة، وحلقة الإيرادات، وسجل النشاط، والإيرادات الأسبوعية.',
+        'سابقاً كانت عناوين هذه البطاقات تبقى بالإنجليزية حتى عندما يكون باقي التطبيق بالعربية.',
+      ],
+    },
+  },
+  {
+    version: '1.16.0',
+    date: '2026-06-27',
+    tag: 'New',
+    en: {
+      title: 'A cleaner way to browse your categories',
+      points: [
+        'The Categories page now works like folders on a computer: click a category and what is inside it opens in the next column beside it — so you can walk through your whole structure from left to right.',
+        'Hover over any product inside a category to see its details (like active ingredient, brand, and manufacturer) in a small pop-up — no need to open it.',
+        'Add, rename, or remove categories right from each column as you browse.',
+      ],
+    },
+    ar: {
+      title: 'طريقة أوضح لتصفح فئاتك',
+      points: [
+        'صفحة الفئات أصبحت تعمل مثل المجلدات على الكمبيوتر: انقر على فئة فيظهر ما بداخلها في عمود جديد بجانبها — حتى تتنقل عبر هيكل فئاتك من اليسار إلى اليمين.',
+        'مرّر المؤشر فوق أي منتج داخل فئة لترى تفاصيله (مثل المادة الفعّالة والعلامة التجارية والشركة المصنّعة) في نافذة صغيرة — دون الحاجة لفتحه.',
+        'أضف أو أعد تسمية أو احذف الفئات مباشرة من كل عمود أثناء التصفح.',
+      ],
+    },
+  },
+  {
     version: '1.15.0',
     date: '2026-06-27',
     tag: 'New',

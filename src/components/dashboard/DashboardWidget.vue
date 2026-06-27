@@ -5,10 +5,13 @@
  * The selectable catalog lives in core/dashboard_widgets.py + WidgetGallery.vue.
  */
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ShoppingBag, Briefcase, CheckCircle, Activity } from 'lucide-vue-next'
 import Money from '@/components/ui/Money.vue'
 import WeekRevenueChart from '@/components/dashboard/WeekRevenueChart.vue'
 import { formatQty } from '@/utils/format'
+
+const { t } = useI18n()
 
 const props = defineProps({
   id:   { type: String, required: true },
@@ -57,9 +60,9 @@ function fmtETA(x) {
   if (!x) return '—'
   const eta = new Date(x), now = new Date()
   const day = (z) => new Date(z.getFullYear(), z.getMonth(), z.getDate())
-  const t = day(now), e = day(eta), tm = new Date(t); tm.setDate(tm.getDate() + 1)
-  if (e.getTime() === t.getTime())  return 'Today'
-  if (e.getTime() === tm.getTime()) return 'Tomorrow'
+  const nowDay = day(now), e = day(eta), tm = new Date(nowDay); tm.setDate(tm.getDate() + 1)
+  if (e.getTime() === nowDay.getTime()) return t('core.dash.today')
+  if (e.getTime() === tm.getTime())     return t('core.dash.tomorrow')
   return eta.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 }
 function fmtAgo(x) {
@@ -76,13 +79,13 @@ function fmtQty(v) { return formatQty ? formatQty(v) : Number(v).toFixed(0) }
 <template>
   <!-- Today's Sales -->
   <template v-if="id === 'today-sales'">
-    <div class="w-head"><span class="w-title">Today</span></div>
+    <div class="w-head"><span class="w-title">{{ t('core.dash.today') }}</span></div>
     <div class="kpi-grid">
-      <div class="kpi-item"><span class="kpi-val"><Money :value="d.today_sales_total" /></span><span class="kpi-lbl">Revenue</span></div>
+      <div class="kpi-item"><span class="kpi-val"><Money :value="d.today_sales_total" /></span><span class="kpi-lbl">{{ t('core.dash.revenue') }}</span></div>
       <div class="kpi-divider" />
-      <div class="kpi-item"><span class="kpi-val">{{ d.today_invoices_count || 0 }}</span><span class="kpi-lbl">Sales</span></div>
+      <div class="kpi-item"><span class="kpi-val">{{ d.today_invoices_count || 0 }}</span><span class="kpi-lbl">{{ t('core.dash.sales') }}</span></div>
       <div class="kpi-divider" />
-      <div class="kpi-item"><span class="kpi-val"><Money :value="avgTicket" /></span><span class="kpi-lbl">Avg Ticket</span></div>
+      <div class="kpi-item"><span class="kpi-val"><Money :value="avgTicket" /></span><span class="kpi-lbl">{{ t('core.dash.avg_ticket') }}</span></div>
     </div>
   </template>
 
@@ -91,8 +94,8 @@ function fmtQty(v) { return formatQty ? formatQty(v) : Number(v).toFixed(0) }
 
   <!-- Recent Sales -->
   <template v-else-if="id === 'recent-sales'">
-    <div class="w-head"><span class="w-title">Recent Sales</span><router-link to="/finance/invoices" class="w-link">View all</router-link></div>
-    <div v-if="!d.recent_sales?.length" class="w-empty"><ShoppingBag :size="26" /><span>No sales yet</span></div>
+    <div class="w-head"><span class="w-title">{{ t('core.dash.recent_sales') }}</span><router-link to="/finance/invoices" class="w-link">{{ t('core.dash.view_all_link') }}</router-link></div>
+    <div v-if="!d.recent_sales?.length" class="w-empty"><ShoppingBag :size="26" /><span>{{ t('core.dash.no_sales_yet') }}</span></div>
     <div v-else class="w-scroll">
       <div v-for="inv in d.recent_sales.slice(0,6)" :key="inv.id" class="row-line">
         <div class="rl-info"><span class="rl-sub">{{ inv.invoice_number }}</span><span class="rl-name">{{ inv.customer }}</span></div>
@@ -103,8 +106,8 @@ function fmtQty(v) { return formatQty ? formatQty(v) : Number(v).toFixed(0) }
 
   <!-- Low Stock -->
   <template v-else-if="id === 'low-stock-list'">
-    <div class="w-head"><span class="w-title">Low Stock Items</span><router-link to="/inventory/products" class="w-link">View</router-link></div>
-    <div v-if="!d.low_stock_items?.length" class="w-empty"><CheckCircle :size="26" /><span>All healthy</span></div>
+    <div class="w-head"><span class="w-title">{{ t('core.dash.low_stock_items') }}</span><router-link to="/inventory/products" class="w-link">{{ t('core.dash.view_link') }}</router-link></div>
+    <div v-if="!d.low_stock_items?.length" class="w-empty"><CheckCircle :size="26" /><span>{{ t('core.dash.all_healthy') }}</span></div>
     <div v-else class="w-scroll">
       <div v-for="(it,i) in d.low_stock_items.slice(0,6)" :key="i" class="row-line">
         <span class="rl-name">{{ it.product_name }}</span>
@@ -115,8 +118,8 @@ function fmtQty(v) { return formatQty ? formatQty(v) : Number(v).toFixed(0) }
 
   <!-- Upcoming Services -->
   <template v-else-if="id === 'services'">
-    <div class="w-head"><span class="w-title">Upcoming Services</span><router-link v-if="d.upcoming_services?.length" to="/services" class="w-link">View</router-link></div>
-    <div v-if="!d.upcoming_services?.length" class="w-empty"><Briefcase :size="26" /><span>No upcoming services</span></div>
+    <div class="w-head"><span class="w-title">{{ t('core.dash.upcoming_services') }}</span><router-link v-if="d.upcoming_services?.length" to="/services" class="w-link">{{ t('core.dash.view_link') }}</router-link></div>
+    <div v-if="!d.upcoming_services?.length" class="w-empty"><Briefcase :size="26" /><span>{{ t('core.dash.no_services') }}</span></div>
     <div v-else class="w-scroll">
       <div v-for="svc in d.upcoming_services.slice(0,5)" :key="svc.id" class="row-line">
         <div class="rl-info"><span class="rl-name">{{ svc.client_name }}</span><span class="rl-sub">{{ svc.service_type }}</span></div>
@@ -127,12 +130,12 @@ function fmtQty(v) { return formatQty ? formatQty(v) : Number(v).toFixed(0) }
 
   <!-- Stock Health -->
   <template v-else-if="id === 'stock-health'">
-    <div class="w-head"><span class="w-title">Stock Health</span></div>
+    <div class="w-head"><span class="w-title">{{ t('core.dash.stock_health') }}</span></div>
     <div class="health-summary">
-      <span class="chip chip-amber">Low · {{ stockLow }}</span>
-      <span class="chip chip-red">Out · {{ stockOut }}</span>
+      <span class="chip chip-amber">{{ t('core.dash.low_label') }} · {{ stockLow }}</span>
+      <span class="chip chip-red">{{ t('core.dash.out_label') }} · {{ stockOut }}</span>
     </div>
-    <div v-if="!d.low_stock_items?.length" class="w-empty"><CheckCircle :size="26" /><span>Everything in stock</span></div>
+    <div v-if="!d.low_stock_items?.length" class="w-empty"><CheckCircle :size="26" /><span>{{ t('core.dash.everything_in_stock') }}</span></div>
     <div v-else class="health-chips">
       <span v-for="(it,i) in d.low_stock_items.slice(0,8)" :key="i"
         class="chip" :class="Number(it.quantity)===0 ? 'chip-red' : 'chip-amber'">{{ it.product_name }}</span>
@@ -141,17 +144,17 @@ function fmtQty(v) { return formatQty ? formatQty(v) : Number(v).toFixed(0) }
 
   <!-- Revenue Ring -->
   <template v-else-if="id === 'revenue-ring'">
-    <div class="w-head"><span class="w-title">Revenue Ring</span></div>
+    <div class="w-head"><span class="w-title">{{ t('core.dash.revenue_ring') }}</span></div>
     <div class="ring-wrap">
       <div class="ring-gauge" :style="ringStyle"><div class="ring-hole"><span class="ring-pct">{{ ringPct }}%</span></div></div>
-      <span class="ring-lbl">today vs daily average</span>
+      <span class="ring-lbl">{{ t('core.dash.ring_sub') }}</span>
     </div>
   </template>
 
   <!-- Activity Feed -->
   <template v-else-if="id === 'activity-feed'">
-    <div class="w-head"><span class="w-title">Activity Feed</span></div>
-    <div v-if="!d.activity_feed?.length" class="w-empty"><Activity :size="26" /><span>No recent activity</span></div>
+    <div class="w-head"><span class="w-title">{{ t('core.dash.activity_feed') }}</span></div>
+    <div v-if="!d.activity_feed?.length" class="w-empty"><Activity :size="26" /><span>{{ t('core.dash.no_activity') }}</span></div>
     <div v-else class="w-scroll">
       <div v-for="(a,i) in d.activity_feed" :key="i" class="feed-row">
         <span class="feed-dot" />
@@ -163,7 +166,7 @@ function fmtQty(v) { return formatQty ? formatQty(v) : Number(v).toFixed(0) }
 
   <!-- Heat Calendar -->
   <template v-else-if="id === 'heat-calendar'">
-    <div class="w-head"><span class="w-title">Sales this month</span></div>
+    <div class="w-head"><span class="w-title">{{ t('core.dash.sales_this_month') }}</span></div>
     <div class="heat-grid">
       <span v-for="(c,i) in d.monthly_sales" :key="i" class="heat-cell" :data-lvl="heatLevel(c.total)" :title="`${c.date}: ${c.total}`" />
     </div>

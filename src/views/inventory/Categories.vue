@@ -3,12 +3,12 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">{{ t('inventory.categories.title') }}</h1>
-        <p class="page-sub">{{ t('inventory.categories.sub', { max: MAX_DEPTH }) }}</p>
+        <p class="page-sub">{{ t('inventory.categories.browse_hint') }}</p>
       </div>
       <button class="btn-primary" @click="openNew()"><Plus :size="15" /> {{ t('inventory.categories.add_category') }}</button>
     </div>
 
-    <div class="table-wrap" style="margin-top:20px;">
+    <div class="miller-wrap" style="margin-top:20px;">
       <div v-if="loading" class="table-skeleton">
         <div v-for="i in 5" :key="i" class="skeleton-row" />
       </div>
@@ -20,39 +20,86 @@
         <button class="btn-primary" style="margin-top:14px;" @click="openNew()"><Plus :size="15" /> {{ t('inventory.categories.add_category') }}</button>
       </div>
 
-      <div v-else class="tree">
-        <div
-          v-for="row in rows"
-          :key="row.id"
-          class="tree-row"
-          :style="{ paddingLeft: (12 + row.depth * 22) + 'px' }"
-        >
-          <button
-            class="tree-caret"
-            :class="{ invisible: !row.hasChildren }"
-            @click="toggle(row.id)"
-          >
-            <ChevronDown v-if="!collapsed.has(row.id)" :size="15" />
-            <ChevronRight v-else :size="15" />
-          </button>
-
-          <Tag :size="14" class="tree-icon" />
-          <span class="tree-name">{{ row.name }}</span>
-          <span class="tree-tier">{{ fmtStore.categoryLevels[row.depth] || t('inventory.categories.tier_fallback', { n: row.depth + 1 }) }}</span>
-
-          <div class="tree-actions">
-            <button
-              v-if="row.depth + 1 < MAX_DEPTH"
-              class="row-action"
-              :title="t('inventory.categories.add_sub')"
-              @click="openNew(row)"
-            ><CornerDownRight :size="13" /></button>
-            <button class="row-action" :title="t('common.edit')" @click="openEdit(row)"><Pencil :size="13" /></button>
-            <button class="row-action danger" :title="t('common.delete')" @click="del(row)"><Trash2 :size="13" /></button>
+      <!-- Mac-Finder-style Miller columns: each selection opens the column to its right. -->
+      <div v-else class="miller" ref="millerEl">
+        <div v-for="col in columns" :key="col.parentId || 'root'" class="mcol">
+          <div class="mcol-head">
+            {{ col.parentId ? (byId[col.parentId]?.name || '') : t('inventory.categories.title') }}
           </div>
+
+          <div class="mcol-body">
+            <!-- sub-categories (folders) -->
+            <button
+              v-for="cat in col.cats"
+              :key="cat.id"
+              class="mrow"
+              :class="{ active: path[col.idx] === cat.id }"
+              @click="selectCategory(cat, col.idx)"
+            >
+              <Tag :size="14" class="mrow-icon cat" />
+              <span class="mrow-name">{{ cat.name }}</span>
+              <span class="mrow-actions">
+                <span class="row-action" :title="t('common.edit')" @click.stop="openEdit(cat)"><Pencil :size="12" /></span>
+                <span class="row-action danger" :title="t('common.delete')" @click.stop="del(cat)"><Trash2 :size="12" /></span>
+              </span>
+              <ChevronRight :size="14" class="mrow-caret" />
+            </button>
+
+            <!-- this column's own products (files), under a divider -->
+            <template v-if="col.parentId">
+              <div v-if="col.cats.length && (loadingProducts.has(col.parentId) || (productsByCat[col.parentId]?.length))" class="mcol-divider">
+                {{ t('inventory.categories.products_divider') }}
+              </div>
+
+              <div v-if="loadingProducts.has(col.parentId)" class="mcol-note">{{ t('inventory.categories.loading_products') }}</div>
+
+              <button
+                v-for="p in (productsByCat[col.parentId] || [])"
+                :key="p.id"
+                class="mrow product"
+                :class="{ active: selectedProduct === p.id }"
+                @click.stop="selectedProduct = p.id"
+                @mouseenter="showTip($event, p)"
+                @mouseleave="hideTip"
+              >
+                <Package :size="14" class="mrow-icon prod" />
+                <span class="mrow-name">{{ p.name }}</span>
+              </button>
+
+              <!-- empty column -->
+              <div
+                v-if="!loadingProducts.has(col.parentId) && !col.cats.length && !(productsByCat[col.parentId]?.length)"
+                class="mcol-note empty"
+              >{{ t('inventory.categories.column_empty') }}</div>
+            </template>
+          </div>
+
+          <!-- per-column add: a bucket at root, a sub-category inside an open category -->
+          <button
+            v-if="!col.parentId || col.idx < MAX_DEPTH"
+            class="mcol-add"
+            @click="col.parentId ? openNew(byId[col.parentId]) : openNew()"
+          >
+            <Plus :size="13" />
+            {{ col.parentId ? t('inventory.categories.add_sub_here') : t('inventory.categories.add_category') }}
+          </button>
         </div>
       </div>
     </div>
+
+    <!-- Hover-a-product → its attributes (active ingredient / brand / manufacturer …) -->
+    <Teleport to="body">
+      <div v-if="hover" class="prod-tip" :style="{ left: hover.x + 'px', top: hover.y + 'px' }">
+        <div class="prod-tip-name">{{ hover.product.name }}</div>
+        <template v-if="attrRows(hover.product).length">
+          <div v-for="r in attrRows(hover.product)" :key="r.label" class="prod-tip-row">
+            <span class="prod-tip-k">{{ r.label }}</span>
+            <span class="prod-tip-v">{{ r.value }}</span>
+          </div>
+        </template>
+        <div v-else class="prod-tip-empty">{{ t('inventory.categories.no_attributes') }}</div>
+      </div>
+    </Teleport>
 
     <!-- Add / Edit -->
     <AppModal :open="modal.open" :title="modal.id ? t('inventory.categories.modal_edit_title') : t('inventory.categories.modal_new_title')" @close="closeModal">
@@ -145,24 +192,66 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, nextTick, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Plus, Pencil, Trash2, Tag, FolderTree, ChevronRight, ChevronDown, CornerDownRight, CornerUpLeft } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Tag, Package, FolderTree, ChevronRight, CornerUpLeft } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openNew)
 import AppModal from '@/components/ui/AppModal.vue'
-import { useFormatStore } from '@/stores/format'
 
 const { t } = useI18n()
-const fmtStore = useFormatStore()
 const MAX_DEPTH = 4
 
 const categories = ref([])
 const loading    = ref(true)
 const saving     = ref(false)
 const error      = ref('')
-const collapsed  = ref(new Set())
+
+// --- Miller-column state -------------------------------------------------
+const path            = ref([])              // selected category id per column (col 0 = root buckets)
+const productsByCat   = reactive({})         // category id -> product[] (cached)
+const loadingProducts = ref(new Set())
+const selectedProduct = ref(null)
+const millerEl        = ref(null)
+
+// --- product hover tooltip (Step C) --------------------------------------
+const attrLabels = ref({})       // attribute key -> display name (per-store)
+const hover      = ref(null)     // { product, x, y }
+// Show the pharmacy-relevant attributes first, then anything else.
+const ATTR_ORDER = ['active_ing', 'active_ing_ar', 'brand', 'brand_ar', 'manufacturer']
+
+async function loadAttrLabels() {
+  try {
+    const res = await api.get('/api/inventory/attributes/')
+    const m = {}
+    for (const a of (res.data.results ?? res.data)) m[a.key] = a.name
+    attrLabels.value = m
+  } catch { /* labels fall back to the prettified key */ }
+}
+
+function attrRows(p) {
+  const s = p.attributes_summary || {}
+  return Object.keys(s)
+    .filter(k => s[k] && s[k].length)
+    .sort((a, b) => {
+      const ia = ATTR_ORDER.indexOf(a), ib = ATTR_ORDER.indexOf(b)
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b)
+    })
+    .map(k => ({
+      label: attrLabels.value[k] || k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      value: s[k].join(', '),
+    }))
+}
+
+function showTip(e, p) {
+  const r = e.currentTarget.getBoundingClientRect()
+  const W = 240
+  let x = r.right + 8
+  if (x + W > window.innerWidth) x = Math.max(8, r.left - W - 8)  // flip left if no room
+  hover.value = { product: p, x, y: r.top }
+}
+function hideTip() { hover.value = null }
 
 // --- load ----------------------------------------------------------------
 async function load() {
@@ -173,8 +262,13 @@ async function load() {
   } finally {
     loading.value = false
   }
+  // drop any open columns whose category no longer exists, then refresh their products
+  path.value = path.value.filter(id => byId.value[id])
+  for (const k of Object.keys(productsByCat)) delete productsByCat[k]
+  path.value.forEach(id => ensureProducts(id))
 }
 onMounted(load)
+onMounted(loadAttrLabels)
 
 // --- tree helpers --------------------------------------------------------
 const byId = computed(() => {
@@ -213,24 +307,33 @@ function pathOf(id) {             // "Electronics > Computers"
   return parts.join(' > ')
 }
 
-// Flattened, expand-aware rows for rendering.
-const rows = computed(() => {
-  const out = []
-  const walk = (key, depth) => {
-    for (const c of (childrenMap.value[key] || [])) {
-      const hasChildren = (childrenMap.value[c.id] || []).length > 0
-      out.push({ id: c.id, name: c.name, parent: c.parent, depth, hasChildren })
-      if (hasChildren && !collapsed.value.has(c.id)) walk(c.id, depth + 1)
-    }
-  }
-  walk('root', 0)
-  return out
+// Columns: col 0 = root buckets; each selected category opens a column of ITS contents.
+const columns = computed(() => {
+  const cols = [{ idx: 0, parentId: null, cats: childrenMap.value['root'] || [] }]
+  path.value.forEach((catId, i) => {
+    cols.push({ idx: i + 1, parentId: catId, cats: childrenMap.value[catId] || [] })
+  })
+  return cols
 })
 
-function toggle(id) {
-  const next = new Set(collapsed.value)
-  next.has(id) ? next.delete(id) : next.add(id)
-  collapsed.value = next
+function ensureProducts(catId) {
+  if (productsByCat[catId] !== undefined || loadingProducts.value.has(catId)) return
+  const next = new Set(loadingProducts.value); next.add(catId); loadingProducts.value = next
+  api.get('/api/inventory/products/', { params: { category: catId } })
+    .then(res => { productsByCat[catId] = res.data.results ?? res.data })
+    .catch(() => { productsByCat[catId] = [] })
+    .finally(() => {
+      const n = new Set(loadingProducts.value); n.delete(catId); loadingProducts.value = n
+    })
+}
+
+function selectCategory(cat, colIdx) {
+  path.value = [...path.value.slice(0, colIdx), cat.id]
+  selectedProduct.value = null
+  ensureProducts(cat.id)
+  nextTick(() => {
+    if (millerEl.value) millerEl.value.scrollLeft = millerEl.value.scrollWidth
+  })
 }
 
 // Valid parents for the modal — no self, no descendants, no depth overflow.
@@ -338,27 +441,48 @@ async function doPurge() {
 </script>
 
 <style scoped>
+.miller-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 
-.table-wrap  { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+/* Mac-Finder columns: horizontal strip, each column scrolls vertically. */
+.miller       { display:flex; overflow-x:auto; min-height:440px; }
+.mcol         { flex:0 0 248px; display:flex; flex-direction:column; border-right:1px solid var(--border); min-height:440px; }
+.mcol:last-child { border-right:none; }
 
-.tree        { padding:6px 0; }
-.tree-row    { display:flex; align-items:center; gap:8px; padding:7px 14px 7px 0; border-bottom:1px solid var(--border); transition:background 100ms; }
-.tree-row:last-child { border-bottom:none; }
-.tree-row:hover { background:var(--bg-app); }
+.mcol-head    { padding:9px 14px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--bg-app); border-bottom:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mcol-body    { flex:1; overflow-y:auto; padding:5px 0; }
 
-.tree-caret  { width:20px; height:20px; flex-shrink:0; border:none; background:none; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; border-radius:5px; }
-.tree-caret:hover { background:var(--border); color:var(--text-primary); }
-.tree-caret.invisible { visibility:hidden; cursor:default; }
+.mrow         { width:100%; display:flex; align-items:center; gap:8px; padding:7px 10px 7px 13px; border:none; background:none; cursor:pointer; text-align:left; transition:background 90ms; }
+.mrow:hover   { background:var(--bg-app); }
+.mrow.active  { background:var(--accent-soft, var(--bg-app)); }
+.mrow.active .mrow-name { color:var(--accent); }
+.mrow-icon.cat  { color:var(--accent); flex-shrink:0; }
+.mrow-icon.prod { color:var(--text-muted); flex-shrink:0; }
+.mrow-name    { font-size:13px; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+.mrow.product .mrow-name { font-weight:500; }
+.mrow-caret   { color:var(--text-muted); flex-shrink:0; opacity:.55; }
+.mrow.active .mrow-caret { color:var(--accent); opacity:1; }
 
-.tree-icon   { color:var(--accent); flex-shrink:0; }
-.tree-name   { font-size:13.5px; font-weight:600; color:var(--text-primary); }
-.tree-tier   { font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); background:var(--bg-app); border:1px solid var(--border); padding:1px 6px; border-radius:10px; }
-
-.tree-actions { margin-left:auto; display:flex; gap:2px; opacity:0; transition:opacity 100ms; padding-right:6px; }
-.tree-row:hover .tree-actions { opacity:1; }
-.row-action  { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
+.mrow-actions { display:flex; gap:1px; opacity:0; transition:opacity 90ms; flex-shrink:0; }
+.mrow:hover .mrow-actions { opacity:1; }
+.row-action   { width:24px; height:24px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 90ms,color 90ms; }
 .row-action:hover { background:var(--border); color:var(--text-primary); }
 .row-action.danger:hover { background:var(--danger-soft); color:var(--danger); }
+
+.mcol-divider { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); padding:9px 13px 4px; }
+.mcol-note    { font-size:12px; color:var(--text-muted); padding:8px 13px; }
+.mcol-note.empty { padding:18px 13px; text-align:center; font-style:italic; opacity:.8; }
+
+.mcol-add     { display:flex; align-items:center; gap:6px; width:100%; padding:8px 13px; border:none; border-top:1px solid var(--border); background:none; cursor:pointer; font-size:12px; font-weight:600; color:var(--text-muted); transition:background 90ms,color 90ms; }
+.mcol-add:hover { background:var(--bg-app); color:var(--accent); }
+
+/* Hover-a-product attribute tooltip (teleported to body so columns don't clip it). */
+.prod-tip { position:fixed; z-index:9999; width:230px; max-height:300px; overflow:hidden; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; box-shadow:0 12px 32px rgba(0,0,0,.20); padding:10px 12px; pointer-events:none; animation:tipIn 110ms ease both; }
+@keyframes tipIn { from { opacity:0; transform:translateY(3px); } to { opacity:1; transform:translateY(0); } }
+.prod-tip-name { font-size:12.5px; font-weight:700; color:var(--text-primary); margin-bottom:7px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+.prod-tip-row  { display:flex; justify-content:space-between; gap:12px; padding:3px 0; font-size:11.5px; }
+.prod-tip-k    { color:var(--text-muted); white-space:nowrap; }
+.prod-tip-v    { color:var(--text-primary); text-align:right; font-weight:500; word-break:break-word; }
+.prod-tip-empty { font-size:11.5px; color:var(--text-muted); font-style:italic; }
 
 .tree-empty  { text-align:center; padding:56px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .tree-empty-title { font-size:15px; font-weight:700; color:var(--text-secondary); }
@@ -372,7 +496,6 @@ async function doPurge() {
 .form-input:focus { border-color:var(--accent); }
 .field-hint  { font-size:11.5px; color:var(--text-muted); margin:5px 0 0; }
 .form-error  { font-size:12.5px; color:var(--danger); margin:0; }
-
 
 .resolve-summary { font-size:13px; color:var(--text-secondary); margin:0; line-height:1.5; }
 .resolve-opt { display:flex; align-items:flex-start; gap:11px; text-align:left; width:100%; padding:12px 13px; border:1px solid var(--border); border-radius:10px; background:var(--bg-app); color:var(--text-primary); cursor:pointer; transition:border-color 120ms, background 120ms, transform 70ms; }
