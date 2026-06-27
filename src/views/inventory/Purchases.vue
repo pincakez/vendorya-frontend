@@ -482,7 +482,9 @@ function onNameInput(row) {
   if (q.length < 2) { row._results = []; row._open = false; return }
   row._timer = setTimeout(async () => {
     try {
-      const res = await api.get('/api/inventory/products/', { params: { search: q, page_size: 8 } })
+      // source:'all' = search both real inventory AND the Memory Base reference pool
+      // (the seeded meds catalog), which the default products list now hides.
+      const res = await api.get('/api/inventory/products/', { params: { search: q, page_size: 8, source: 'all' } })
       row._results = (res.data.results ?? res.data).filter(r => r.default_variant_id)
       row._open = row._results.length > 0
     } catch { row._results = []; row._open = false }
