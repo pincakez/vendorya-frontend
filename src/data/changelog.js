@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.15.0',
+    date: '2026-06-27',
+    tag: 'New',
+    en: {
+      title: 'Start your store with ready-made categories',
+      points: [
+        'When a new store is set up, it can now come with a few broad starter categories already in place — so you are not staring at an empty list on day one.',
+        'For a pharmacy, that is Drugs, Cosmetics, Kids, and Medical Tools. You can rename, add, or remove any of them anytime in Inventory → Categories.',
+        'Deleting a category that has sub-categories under it now asks first: move everything up one level, or delete it all together — no more losing items by accident.',
+      ],
+    },
+    ar: {
+      title: 'ابدأ متجرك بفئات جاهزة',
+      points: [
+        'عند إنشاء متجر جديد، يمكن أن يأتي الآن ومعه عدد قليل من الفئات الأساسية الجاهزة — حتى لا تبدأ بقائمة فارغة من أول يوم.',
+        'للصيدلية، هذه الفئات هي: أدوية، مستحضرات تجميل، أطفال، وأدوات طبية. يمكنك إعادة تسمية أي منها أو إضافة أو حذف فئات في أي وقت من المخزون ← الفئات.',
+        'حذف فئة تحتوي على فئات فرعية أصبح يسألك أولاً: نقل كل ما بداخلها مستوى واحد للأعلى، أو حذفها كلها معاً — حتى لا تفقد أصنافاً عن طريق الخطأ.',
+      ],
+    },
+  },
+  {
     version: '1.14.0',
     date: '2026-06-23',
     tag: 'New',
