@@ -35,7 +35,11 @@
             @mousedown.prevent="addToCart(p)"
             @mouseenter="searchIndex = i"
           >
-            <span class="psi-name">{{ p.name }}</span>
+            <div class="psi-text">
+              <span class="psi-name" dir="auto">{{ acPrimary(p) }}</span>
+              <span v-if="acEnSub(p)" class="psi-sub">{{ acEnSub(p) }}</span>
+              <span v-if="acMeta(p)" class="psi-meta" :class="{ 'psi-meta-ar': searchQAr }" dir="auto">{{ acMeta(p) }}</span>
+            </div>
             <span class="psi-sku">{{ p.sku_display }}</span>
             <span class="psi-price">{{ fmtNum(p.default_variant_price) }}</span>
           </div>
@@ -505,7 +509,11 @@ let searchAC = null
 function onSearchInput() {
   if (anyModalOpen.value) return   // background is dead while a modal is open
   clearTimeout(searchTimer)
-  if (searchQuery.value.length < 2) { searchResults.value = []; return }
+  const q = searchQuery.value.trim()
+  // §POS-AR: remember whether THIS query was typed in Arabic so the dropdown can
+  // surface the Arabic trade name / ingredient (English otherwise).
+  searchQAr.value = isArabic(q)
+  if (q.length < 2) { searchResults.value = []; return }
   searchTimer = setTimeout(runSearch, 200)
 }
 
@@ -513,13 +521,42 @@ async function runSearch() {
   if (searchAC) searchAC.abort()
   searchAC = new AbortController()
   try {
-    const res = await api.get('/api/inventory/products/', {
-      params: { search: searchQuery.value, page_size: 12 },
+    // §POS-AR: the Typesense-backed autocomplete endpoint (pos=1 → STORE-only,
+    // hidden products excluded, SKU/barcode matched for the scanner). Same engine
+    // as New Purchase, so Arabic brand + EN/AR active-ingredient + typo tolerance
+    // all come for free.
+    const res = await api.get('/api/inventory/products/autocomplete/', {
+      params: { q: searchQuery.value.trim(), pos: 1 },
       signal: searchAC.signal,
     })
-    searchResults.value = (res.data.results || res.data).filter(p => !p.hide_from_pos)
+    const data = res.data
+    searchResults.value = (data.results ?? data).filter(p => !p.hide_from_pos)
     searchIndex.value = searchResults.value.length ? 0 : -1
   } catch (err) { if (err?.code !== 'ERR_CANCELED') searchResults.value = [] }
+}
+
+// --- §POS-AR: Arabic-aware dropdown labels (mirrors Purchases.vue §AC-AR) --------
+const searchQAr = ref(false)
+const AR_RE = /[\u0600-\u06FF]/
+function isArabic(s) { return AR_RE.test(s || '') }
+function getBrandAr(p)     { return ((p.attributes_summary || {}).brand_ar || [])[0] || '' }
+function getActiveIng(p)   { return ((p.attributes_summary || {}).active_ing || [])[0] || '' }
+function getActiveIngAr(p) { return ((p.attributes_summary || {}).active_ing_ar || [])[0] || '' }
+// Primary label: the Arabic trade name when searched in Arabic and one exists;
+// otherwise the English product name (unchanged behaviour for EN / SKU search).
+function acPrimary(p) {
+  if (searchQAr.value) { const b = getBrandAr(p); if (b) return b }
+  return p.name
+}
+// Muted English name, shown only when the Arabic name is primary (so the cashier
+// still sees what's actually stored — products stay EN-named).
+function acEnSub(p) {
+  return (searchQAr.value && getBrandAr(p)) ? p.name : ''
+}
+// Active-ingredient line: prefer the Arabic ingredient when searching in Arabic.
+function acMeta(p) {
+  if (searchQAr.value) return getActiveIngAr(p) || getActiveIng(p)
+  return getActiveIng(p)
 }
 
 function onSearchKeydown(e) {
@@ -1324,7 +1361,12 @@ function fmtQty(n) {
 }
 .pos-search-item:last-child { border-bottom: none; }
 .pos-search-item:hover, .pos-search-item.highlighted { background: var(--accent-soft); }
-.psi-name  { flex: 1; font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+.psi-text  { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.psi-name  { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+.psi-sub   { font-size: 11.5px; color: var(--text-secondary); }
+.psi-meta  { font-size: 11px; font-family: monospace; color: var(--text-muted); }
+/* Arabic ingredient: drop monospace so cursive letters join correctly. */
+.psi-meta-ar { font-family: inherit; font-size: 11.5px; }
 .psi-sku   { font-size: 11px; font-family: monospace; color: var(--text-muted); }
 .psi-price { font-size: 14px; font-weight: 800; color: var(--accent); white-space: nowrap; }
 
