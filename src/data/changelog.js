@@ -12,6 +12,63 @@
 
 export const changelog = [
   {
+    version: '1.27.2',
+    date: '2026-06-28',
+    tag: 'Fixed',
+    en: {
+      title: 'Edit selling units directly from the products list',
+      points: [
+        'The edit button on the products list now shows the Selling Units section for existing products — you no longer have to open the full product page just to add or change units like Strip or Pack.',
+        'Changes save immediately alongside the rest of the product details.',
+      ],
+    },
+    ar: {
+      title: 'تعديل وحدات البيع مباشرة من قائمة المنتجات',
+      points: [
+        'أصبح زر التعديل في قائمة المنتجات يعرض قسم وحدات البيع للمنتجات الموجودة — لم تعد بحاجة لفتح صفحة المنتج الكاملة فقط لإضافة وحدة مثل شريط أو علبة أو تعديلها.',
+        'التغييرات تُحفظ فورًا مع بقية تفاصيل المنتج.',
+      ],
+    },
+  },
+  {
+    version: '1.27.1',
+    date: '2026-06-28',
+    tag: 'Improved',
+    en: {
+      title: 'Side menu opens one section at a time',
+      points: [
+        'Opening a section in the side menu now automatically closes the one that was open before, keeping the menu tidy and easy to scan.',
+      ],
+    },
+    ar: {
+      title: 'القائمة الجانبية تفتح قسمًا واحدًا في كل مرة',
+      points: [
+        'فتح قسم في القائمة الجانبية يُغلق الآن القسم الذي كان مفتوحًا تلقائيًا، مما يجعل القائمة منظمة وسهلة القراءة.',
+      ],
+    },
+  },
+  {
+    version: '1.27.0',
+    date: '2026-06-28',
+    tag: 'Improved',
+    en: {
+      title: 'Search bar now finds any page or setting',
+      points: [
+        'The search bar at the top now covers every page in the app — inventory, finance, reports, settings sub-pages like Capabilities or POS Settings, and more.',
+        'Keywords work too: typing "clock" finds POS Settings, "drug" finds Memory Base, "fefo" finds Capabilities.',
+        'If you make a typo the search still finds the closest match and shows a "Did you mean…" hint instead of leaving you with nothing.',
+      ],
+    },
+    ar: {
+      title: 'شريط البحث يجد الآن أي صفحة أو إعداد',
+      points: [
+        'شريط البحث في الأعلى يغطي الآن كل صفحة في التطبيق — المخزون والمالية والتقارير وصفحات الإعدادات الفرعية مثل الإمكانيات أو إعدادات نقطة البيع وأكثر.',
+        'الكلمات المفتاحية تعمل أيضًا: كتابة "ساعة" تجد إعدادات نقطة البيع، و"دواء" يجد قاعدة الأدوية.',
+        'إذا أخطأت في الكتابة يجد البحث أقرب نتيجة ويعرض تلميح "هل تقصد…" بدلًا من ترك الصفحة فارغة.',
+      ],
+    },
+  },
+  {
     version: '1.26.0',
     date: '2026-06-28',
     tag: 'New',
