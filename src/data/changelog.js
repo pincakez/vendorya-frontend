@@ -12,6 +12,31 @@
 
 export const changelog = [
   {
+    version: '1.28.0',
+    date: '2026-06-28',
+    tag: 'New',
+    en: {
+      title: 'Product showcase — photos and a video for each product',
+      points: [
+        'Each product can now hold up to 5 photos plus one short video, shown in a clean gallery on the product page.',
+        'Any photo you upload is automatically tidied up and made web-light: it is centered (never stretched) and saved in an efficient format that loads fast.',
+        'Videos are automatically converted to a light, instantly-playing format and start muted on a loop when you open the page — tap the speaker to turn the sound on. A tall (portrait) video shows taller and a wide video shows wider, using the space well.',
+        'You choose what each product opens with — the video or a photo slideshow — and whether it plays on its own or waits for a tap.',
+        'A note under the gallery always shows the current upload limits (sizes, length and how many photos).',
+      ],
+    },
+    ar: {
+      title: 'عرض المنتج — صور وفيديو لكل منتج',
+      points: [
+        'يمكن لكل منتج الآن أن يحتوي على حتى 5 صور بالإضافة إلى فيديو قصير واحد، تُعرض في معرض أنيق على صفحة المنتج.',
+        'أي صورة ترفعها تُحسَّن تلقائيًا لتصبح خفيفة وسريعة التحميل: تُوسَّط (دون أي تمديد) وتُحفظ بصيغة فعّالة.',
+        'يُحوَّل الفيديو تلقائيًا إلى صيغة خفيفة تعمل فورًا، ويبدأ صامتًا ويتكرر عند فتح الصفحة — اضغط على رمز الصوت لتشغيله. الفيديو الطولي يظهر أطول والعرضي يظهر أعرض لاستغلال المساحة.',
+        'أنت تختار بماذا يبدأ كل منتج — الفيديو أو عرض شرائح الصور — وهل يعمل تلقائيًا أم ينتظر الضغط.',
+        'تظهر ملاحظة أسفل المعرض دائمًا توضح حدود الرفع الحالية (الأحجام والمدة وعدد الصور).',
+      ],
+    },
+  },
+  {
     version: '1.27.2',
     date: '2026-06-28',
     tag: 'Fixed',

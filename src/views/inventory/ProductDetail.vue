@@ -29,24 +29,91 @@
     <div v-else-if="!product" class="empty-state">{{ t('inventory.product_detail.product_not_found') }}</div>
     <div v-else class="showcase-layout">
 
-      <!-- ══ LEFT: IMAGE PANEL ══ -->
-      <div class="image-panel">
-        <div class="image-well" @click="triggerImagePick" :class="{ 'has-image': !!product.image_url }">
-          <img v-if="product.image_url" :src="product.image_url" class="product-img" alt="Product image" />
-          <div v-else class="image-placeholder">
-            <ImageIcon :size="40" />
-            <span>{{ t('inventory.product_detail.tap_to_add_photo') }}</span>
+      <!-- ══ LEFT: SHOWCASE GALLERY ══ -->
+      <div class="showcase-panel">
+        <!-- HERO: video (natural aspect) or current slideshow image (fixed frame, center-cropped) -->
+        <div class="sc-hero" :class="{ 'is-video': activeIsVideo }" :style="heroStyle">
+          <template v-if="activeIsVideo">
+            <video ref="heroVideo" :src="videoMedia.file_url" :poster="videoMedia.poster_url || ''"
+                   class="sc-video" muted loop playsinline preload="metadata"
+                   @click="toggleMute" @volumechange="onVolChange" />
+            <button class="sc-mute" @click.stop="toggleMute"
+                    :title="muted ? t('inventory.product_detail.showcase.unmute') : t('inventory.product_detail.showcase.mute')">
+              <VolumeX v-if="muted" :size="15" /><Volume2 v-else :size="15" />
+            </button>
+          </template>
+          <img v-else-if="currentImage" :src="currentImage.file_url" class="sc-img" alt="" />
+          <div v-else class="sc-empty">
+            <ImageIcon :size="38" />
+            <span>{{ t('inventory.product_detail.showcase.empty') }}</span>
           </div>
-          <div class="image-overlay">
-            <Camera :size="18" /> {{ t('inventory.product_detail.change_photo') }}
+          <!-- slideshow dots -->
+          <div v-if="!activeIsVideo && displayImages.length > 1" class="sc-dots">
+            <button v-for="(im, i) in displayImages" :key="im.id || 'legacy'" class="sc-dot"
+                    :class="{ on: i === slideIdx }" @click="showImage(i)" aria-label="slide"></button>
           </div>
         </div>
-        <input ref="imgInput" type="file" accept="image/*" style="display:none" @change="uploadImage" />
-        <button v-if="product.image_url" class="img-remove-btn" @click.stop="removeImage">
-          <X :size="12" /> {{ t('inventory.product_detail.remove_photo') }}
-        </button>
 
-        <!-- Quick stats under image -->
+        <!-- THUMBNAIL STRIP -->
+        <div class="sc-thumbs">
+          <button v-if="videoMedia" class="sc-thumb" :class="{ on: activeIsVideo }" @click="showVideo()">
+            <img v-if="videoMedia.poster_url" :src="videoMedia.poster_url" alt="" />
+            <span class="sc-thumb-play"><Play :size="13" /></span>
+            <span class="sc-thumb-x" @click.stop="removeMedia(videoMedia)"><X :size="11" /></span>
+          </button>
+          <button v-for="(im, i) in displayImages" :key="im.id || 'legacy'" class="sc-thumb"
+                  :class="{ on: !activeIsVideo && i === slideIdx }" @click="showImage(i)">
+            <img :src="im.file_url" alt="" />
+            <span class="sc-thumb-x" @click.stop="removeMedia(im)"><X :size="11" /></span>
+          </button>
+          <button v-if="imageCount < (specs.max_images || 5)" class="sc-add"
+                  :title="t('inventory.product_detail.showcase.add_photos')" @click="pickImages">
+            <ImagePlus :size="17" />
+          </button>
+          <button v-if="!videoMedia" class="sc-add"
+                  :title="t('inventory.product_detail.showcase.add_video')" @click="pickVideo">
+            <Video :size="17" />
+          </button>
+        </div>
+
+        <!-- upload / convert progress -->
+        <div v-if="uploading" class="sc-progress">
+          <div class="sc-progress-track"><div class="sc-progress-bar" :style="{ width: uploadPct + '%' }"></div></div>
+          <span class="sc-progress-txt">{{ uploadLabel }}</span>
+        </div>
+
+        <!-- showcase display settings: two radios -->
+        <div class="sc-settings">
+          <div class="sc-set-row">
+            <span class="sc-set-label">{{ t('inventory.product_detail.showcase.lead') }}</span>
+            <div class="sc-seg">
+              <button :class="{ on: lead === 'video' }" :disabled="!videoMedia" @click="setLead('video')">
+                {{ t('inventory.product_detail.showcase.lead_video') }}
+              </button>
+              <button :class="{ on: lead === 'slideshow' }" @click="setLead('slideshow')">
+                {{ t('inventory.product_detail.showcase.lead_slideshow') }}
+              </button>
+            </div>
+          </div>
+          <div class="sc-set-row">
+            <span class="sc-set-label">{{ t('inventory.product_detail.showcase.autoplay') }}</span>
+            <div class="sc-seg">
+              <button :class="{ on: autoplay }" @click="setAutoplay(true)">{{ t('common.on') }}</button>
+              <button :class="{ on: !autoplay }" @click="setAutoplay(false)">{{ t('common.off') }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- specs / info note -->
+        <div class="sc-note">
+          <Info :size="13" />
+          <span>{{ specsLine }}</span>
+        </div>
+
+        <input ref="imgInput" type="file" accept="image/*" multiple style="display:none" @change="onPickImages" />
+        <input ref="vidInput" type="file" accept="video/*" style="display:none" @change="onPickVideo" />
+
+        <!-- Quick stats under gallery -->
         <div class="quick-stats">
           <div class="quick-stat">
             <div class="qs-label">{{ t('inventory.product_detail.total_stock') }}</div>
@@ -360,9 +427,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronLeft, Eye, X, Camera, Image as ImageIcon, Pencil, Lock, Layers } from 'lucide-vue-next'
+import { ChevronLeft, Eye, X, Camera, Image as ImageIcon, Pencil, Lock, Layers,
+         Volume2, VolumeX, Play, ImagePlus, Video, Info } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 import AppModal from '@/components/ui/AppModal.vue'
@@ -376,6 +444,50 @@ const product = ref(null)
 const loading = ref(true)
 const showSecret = ref(false)
 const imgInput = ref(null)
+
+// ── Showcase gallery state ──
+const vidInput   = ref(null)
+const heroVideo  = ref(null)
+const specs      = ref({ max_images: 5 })
+const lead       = ref('video')          // 'video' | 'slideshow'
+const autoplay   = ref(true)
+const activeView = ref('image')          // what the hero currently shows: 'video' | 'image'
+const slideIdx   = ref(0)
+const muted      = ref(true)
+const uploading  = ref(false)
+const uploadPct  = ref(0)
+const uploadLabel = ref('')
+let slideTimer = null
+
+const mediaList    = computed(() => product.value?.media || [])
+const galleryImages = computed(() => mediaList.value.filter(m => m.kind === 'image'))
+const videoMedia   = computed(() => mediaList.value.find(m => m.kind === 'video') || null)
+const imageCount   = computed(() => galleryImages.value.length)
+// Legacy single image (pre-gallery products) shown read-only when no gallery photos exist yet.
+const legacyImage  = computed(() =>
+  (!galleryImages.value.length && product.value?.image_url)
+    ? { id: null, file_url: product.value.image_url, legacy: true } : null)
+const displayImages = computed(() =>
+  galleryImages.value.length ? galleryImages.value : (legacyImage.value ? [legacyImage.value] : []))
+const currentImage = computed(() => displayImages.value[slideIdx.value] || null)
+const activeIsVideo = computed(() => activeView.value === 'video' && !!videoMedia.value)
+
+// Hero shape: video uses its own (clamped) aspect so 16:9 goes wide / 9:16 goes tall;
+// the image slideshow uses a stable square frame with center-crop (no stretch).
+const heroStyle = computed(() => {
+  if (activeIsVideo.value && videoMedia.value?.aspect) {
+    const a = Math.min(Math.max(videoMedia.value.aspect, 0.5), 2)
+    return { aspectRatio: String(a) }
+  }
+  return { aspectRatio: '1 / 1' }
+})
+
+const specsLine = computed(() => {
+  const s = specs.value
+  return t('inventory.product_detail.showcase.specs', {
+    imgs: s.max_images, imgmb: s.max_image_mb, vidmb: s.max_video_mb, vidsec: s.max_video_seconds,
+  })
+})
 
 const totalStock = computed(() => {
   if (!product.value) return 0
@@ -417,33 +529,144 @@ async function fetchProduct() {
   try {
     const r = await api.get(`/api/inventory/products/${props.id}/`)
     product.value = r.data
+    hydrateShowcase()
   } catch { product.value = null }
   finally { loading.value = false }
 }
 
-function triggerImagePick() {
-  imgInput.value?.click()
+// ── Showcase gallery actions ──
+function pickImages() { imgInput.value?.click() }
+function pickVideo()  { vidInput.value?.click() }
+
+function showVideo() {
+  activeView.value = 'video'
+  stopSlideshow()
+}
+function showImage(i) {
+  activeView.value = 'image'
+  slideIdx.value = i
+  restartSlideshow()
 }
 
-async function uploadImage(e) {
-  const file = e.target.files?.[0]
-  if (!file) return
+async function uploadOne(file, kind) {
+  if (uploading.value) return
+  uploading.value = true
+  uploadPct.value = 0
+  uploadLabel.value = t('inventory.product_detail.showcase.uploading')
   const fd = new FormData()
-  fd.append('image', file)
+  fd.append('file', file)
+  fd.append('kind', kind)
   try {
-    const { data } = await api.post(`/api/inventory/products/${props.id}/upload-image/`, fd, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    const { data } = await api.post(`/api/inventory/products/${props.id}/upload-media/`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (e) => {
+        if (!e.total) return
+        uploadPct.value = Math.round((e.loaded / e.total) * 100)
+        // Once bytes are up, the server is busy converting (esp. video).
+        if (uploadPct.value >= 100) uploadLabel.value = t('inventory.product_detail.showcase.converting')
+      },
     })
-    product.value.image_url = data.image_url
-  } catch { /* noop */ }
-  e.target.value = ''
+    product.value.media = [...mediaList.value, data]
+    if (kind === 'video') { showVideo() } else { showImage(galleryImages.value.length - 1) }
+    showSuccessToast(t('inventory.product_detail.showcase.added'))
+  } catch (err) {
+    const msg = err?.response?.data?.detail || t('inventory.product_detail.showcase.upload_failed')
+    showSuccessToast(msg)
+  } finally {
+    uploading.value = false
+    uploadPct.value = 0
+  }
 }
 
-async function removeImage() {
-  try {
-    await api.delete(`/api/inventory/products/${props.id}/remove-image/`)
+async function onPickImages(e) {
+  const files = Array.from(e.target.files || [])
+  e.target.value = ''
+  for (const f of files) {
+    if (imageCount.value >= (specs.value.max_images || 5)) {
+      showSuccessToast(t('inventory.product_detail.showcase.max_photos', { n: specs.value.max_images }))
+      break
+    }
+    await uploadOne(f, 'image')
+  }
+}
+async function onPickVideo(e) {
+  const file = e.target.files?.[0]
+  e.target.value = ''
+  if (file) await uploadOne(file, 'video')
+}
+
+async function removeMedia(m) {
+  if (m.legacy) {                                   // pre-gallery single image
+    try { await api.delete(`/api/inventory/products/${props.id}/remove-image/`) } catch {}
     product.value.image_url = null
-  } catch { /* noop */ }
+    slideIdx.value = 0
+    return
+  }
+  try {
+    await api.delete(`/api/inventory/products/${props.id}/media/${m.id}/`)
+    product.value.media = mediaList.value.filter(x => x.id !== m.id)
+    if (m.kind === 'video' && activeView.value === 'video') activeView.value = 'image'
+    if (slideIdx.value >= displayImages.value.length) slideIdx.value = Math.max(0, displayImages.value.length - 1)
+    syncActiveView()
+  } catch (err) {
+    showSuccessToast(err?.response?.data?.detail || t('inventory.product_detail.showcase.upload_failed'))
+  }
+}
+
+async function setLead(v) {
+  if (v === 'video' && !videoMedia.value) return
+  lead.value = v
+  syncActiveView()
+  try { await api.post(`/api/inventory/products/${props.id}/showcase-settings/`, { showcase_lead: v }) } catch {}
+}
+async function setAutoplay(v) {
+  autoplay.value = v
+  restartSlideshow()
+  applyVideoAutoplay()
+  try { await api.post(`/api/inventory/products/${props.id}/showcase-settings/`, { showcase_autoplay: v }) } catch {}
+}
+
+function toggleMute() {
+  const el = heroVideo.value
+  if (!el) return
+  el.muted = !el.muted
+  muted.value = el.muted
+  if (!el.muted && el.paused) el.play().catch(() => {})
+}
+function onVolChange() {
+  if (heroVideo.value) muted.value = heroVideo.value.muted
+}
+
+// ── Slideshow + autoplay orchestration ──
+function stopSlideshow() { if (slideTimer) { clearInterval(slideTimer); slideTimer = null } }
+function restartSlideshow() {
+  stopSlideshow()
+  if (activeView.value === 'image' && autoplay.value && displayImages.value.length > 1) {
+    slideTimer = setInterval(() => {
+      slideIdx.value = (slideIdx.value + 1) % displayImages.value.length
+    }, 3000)
+  }
+}
+function applyVideoAutoplay() {
+  const el = heroVideo.value
+  if (!el) return
+  if (activeIsVideo.value && autoplay.value) el.play().catch(() => {})
+  else el.pause()
+}
+// Decide what the hero opens on, honoring the lead setting.
+function syncActiveView() {
+  activeView.value = (lead.value === 'video' && videoMedia.value) ? 'video' : 'image'
+  if (activeView.value === 'image') restartSlideshow()
+  else stopSlideshow()
+  nextTick(() => applyVideoAutoplay())
+}
+
+function hydrateShowcase() {
+  if (!product.value) return
+  lead.value = product.value.showcase_lead || 'video'
+  autoplay.value = product.value.showcase_autoplay !== false
+  slideIdx.value = 0
+  syncActiveView()
 }
 
 /* ── Edit modal ── */
@@ -561,11 +784,21 @@ function handleKey(e) {
     saveEdit()
   }
 }
+async function loadSpecs() {
+  try {
+    const { data } = await api.get('/api/inventory/products/media-specs/')
+    specs.value = data
+  } catch { /* keep defaults */ }
+}
 onMounted(() => {
+  loadSpecs()
   fetchProduct()
   document.addEventListener('keydown', handleKey)
 })
-onUnmounted(() => document.removeEventListener('keydown', handleKey))
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKey)
+  stopSlideshow()
+})
 </script>
 
 <style scoped>
@@ -599,7 +832,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
 /* ── Showcase layout: image left, info right ── */
 .showcase-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 24px;
   margin-bottom: 24px;
   align-items: start;
@@ -608,40 +841,96 @@ onUnmounted(() => document.removeEventListener('keydown', handleKey))
   .showcase-layout { grid-template-columns: 1fr; }
 }
 
-/* ── Image panel ── */
-.image-panel { display: flex; flex-direction: column; gap: 12px; }
+/* ── Showcase gallery panel ── */
+.showcase-panel { display: flex; flex-direction: column; gap: 12px; }
 
-.image-well {
+/* Hero — image slideshow frame (square) or video (its own clamped aspect) */
+.sc-hero {
   position: relative; border-radius: 14px; overflow: hidden;
-  border: 2px dashed var(--border); background: var(--bg-card);
-  aspect-ratio: 1 / 1; cursor: pointer;
-  transition: border-color 150ms;
-  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); background: var(--bg-card);
+  max-height: 560px; display: flex; align-items: center; justify-content: center;
 }
-.image-well:hover { border-color: var(--accent); }
-.image-well.has-image { border-style: solid; }
-
-.product-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-.image-placeholder {
+.sc-hero.is-video { background: #000; }
+.sc-img   { width: 100%; height: 100%; object-fit: cover; display: block; }   /* center-crop, no stretch */
+.sc-video { width: 100%; height: 100%; object-fit: contain; display: block; cursor: pointer; background: #000; }
+.sc-empty {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   color: var(--text-muted); font-size: 13px;
 }
 
-.image-overlay {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  gap: 6px; font-size: 13px; font-weight: 600; color: #fff;
-  background: rgba(0,0,0,0.45); opacity: 0; transition: opacity 150ms;
+.sc-mute {
+  position: absolute; bottom: 10px; right: 10px; z-index: 2;
+  width: 34px; height: 34px; border-radius: 50%; border: none;
+  background: rgba(0,0,0,0.55); color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 120ms, transform 120ms;
 }
-.image-well:hover .image-overlay { opacity: 1; }
+.sc-mute:hover { background: rgba(0,0,0,0.8); transform: scale(1.06); }
 
-.img-remove-btn {
-  display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
-  padding: 5px 10px; border-radius: 7px; border: 1px solid var(--border);
-  background: none; color: var(--text-muted); cursor: pointer;
-  transition: background 100ms, color 100ms;
+.sc-dots {
+  position: absolute; bottom: 9px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 2;
 }
-.img-remove-btn:hover { background: var(--danger-soft); color: var(--danger); border-color: #fca5a5; }
+.sc-dot {
+  width: 7px; height: 7px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
+  background: rgba(255,255,255,0.5); box-shadow: 0 0 2px rgba(0,0,0,0.4); transition: background 120ms;
+}
+.sc-dot.on { background: #fff; }
+
+/* Thumbnail strip */
+.sc-thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+.sc-thumb {
+  position: relative; width: 54px; height: 54px; border-radius: 9px; overflow: hidden;
+  border: 2px solid var(--border); background: var(--bg-card); cursor: pointer; padding: 0;
+  transition: border-color 120ms;
+}
+.sc-thumb.on { border-color: var(--accent); }
+.sc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sc-thumb-play {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #fff; background: rgba(0,0,0,0.35);
+}
+.sc-thumb-x {
+  position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%;
+  background: rgba(0,0,0,0.6); color: #fff; display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 120ms;
+}
+.sc-thumb:hover .sc-thumb-x { opacity: 1; }
+.sc-add {
+  width: 54px; height: 54px; border-radius: 9px; cursor: pointer;
+  border: 2px dashed var(--border); background: var(--bg-card); color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center; transition: border-color 120ms, color 120ms;
+}
+.sc-add:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Upload / convert progress */
+.sc-progress { display: flex; flex-direction: column; gap: 4px; }
+.sc-progress-track { height: 6px; border-radius: 4px; background: var(--border); overflow: hidden; }
+.sc-progress-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width 150ms; }
+.sc-progress-txt { font-size: 11px; color: var(--text-muted); }
+
+/* Display settings (two radios) */
+.sc-settings {
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+}
+.sc-set-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sc-set-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.sc-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.sc-seg button {
+  border: none; background: none; padding: 5px 11px; font-size: 12px; font-weight: 600;
+  color: var(--text-muted); cursor: pointer; transition: background 100ms, color 100ms;
+}
+.sc-seg button + button { border-left: 1px solid var(--border); }
+.sc-seg button.on { background: var(--accent); color: #fff; }
+.sc-seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Specs note */
+.sc-note {
+  display: flex; align-items: flex-start; gap: 6px; font-size: 11px; line-height: 1.5;
+  color: var(--text-muted); padding: 2px 2px 0;
+}
+.sc-note svg { flex-shrink: 0; margin-top: 1px; }
 
 .quick-stats {
   display: grid; grid-template-columns: 1fr 1fr 1fr;

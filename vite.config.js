@@ -16,6 +16,12 @@ export default defineConfig(({ mode }) => {
         target: env.VITE_DEV_API_TARGET || 'http://localhost:8000',
         changeOrigin: true,
       },
+      // Serve uploaded media (product showcase photos/videos) through the dev
+      // server so relative /media URLs resolve against vdev like they do in prod.
+      '/media': {
+        target: env.VITE_DEV_API_TARGET || 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
   build: {

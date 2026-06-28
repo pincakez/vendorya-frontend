@@ -134,7 +134,9 @@
       }
     },
     "export": "تصدير",
-    "pg_info": "{from}–{to} من {total}"
+    "pg_info": "{from}–{to} من {total}",
+    "on": "تشغيل",
+    "off": "إيقاف"
   },
   "inventory": {
     "products": {
@@ -357,7 +359,24 @@
       "batch_expired": "منتهية",
       "batch_soon": "قريبة الانتهاء",
       "batch_ok": "سليمة",
-      "batch_days_left": "باقٍ {n} يوم"
+      "batch_days_left": "باقٍ {n} يوم",
+      "showcase": {
+        "empty": "لا توجد وسائط بعد",
+        "add_photos": "إضافة صور",
+        "add_video": "إضافة فيديو",
+        "mute": "كتم الصوت",
+        "unmute": "تشغيل الصوت",
+        "lead": "يبدأ بـ",
+        "lead_video": "فيديو",
+        "lead_slideshow": "عرض شرائح",
+        "autoplay": "تشغيل تلقائي",
+        "uploading": "جارٍ الرفع…",
+        "converting": "جارٍ التحويل…",
+        "added": "تمت إضافة الوسائط",
+        "upload_failed": "فشل الرفع",
+        "max_photos": "حتى {n} صور",
+        "specs": "حتى {imgs} صور (بحد أقصى {imgmb}MB لكل صورة) + فيديو واحد (بحد أقصى {vidmb}MB، {vidsec} ثانية). تتحول الصور إلى webp والفيديو إلى mp4."
+      }
     },
     "categories": {
       "title": "الفئات",
@@ -2350,7 +2369,7 @@
       "no_shift": "لا وردية نشطة",
       "stock_health": "حالة المخزون",
       "view": "عرض ←",
-      "all_healthy": "كل المخزون سليم",
+      "all_healthy": "كل المخزون جيد",
       "items_low": "صنف منخفض",
       "recent_sales": "أحدث المبيعات",
       "view_all": "عرض الكل ←",
@@ -2379,7 +2398,6 @@
       "view_all_link": "عرض الكل",
       "view_link": "عرض",
       "no_sales_yet": "لا مبيعات بعد",
-      "all_healthy": "كل المخزون جيد",
       "everything_in_stock": "كل شيء متوفر",
       "low_label": "منخفض",
       "out_label": "نافد",

@@ -135,7 +135,9 @@
       }
     },
     "export": "Export",
-    "pg_info": "{from}–{to} of {total}"
+    "pg_info": "{from}–{to} of {total}",
+    "on": "On",
+    "off": "Off"
   },
   "inventory": {
     "products": {
@@ -364,7 +366,24 @@
       "batch_expired": "Expired",
       "batch_soon": "Expiring soon",
       "batch_ok": "OK",
-      "batch_days_left": "{n} days left"
+      "batch_days_left": "{n} days left",
+      "showcase": {
+        "empty": "No media yet",
+        "add_photos": "Add photos",
+        "add_video": "Add video",
+        "mute": "Mute",
+        "unmute": "Unmute",
+        "lead": "Opens with",
+        "lead_video": "Video",
+        "lead_slideshow": "Slideshow",
+        "autoplay": "Autoplay",
+        "uploading": "Uploading…",
+        "converting": "Converting…",
+        "added": "Media added",
+        "upload_failed": "Upload failed",
+        "max_photos": "Up to {n} photos",
+        "specs": "Up to {imgs} photos (max {imgmb}MB each) + 1 video (max {vidmb}MB, {vidsec}s). Images become webp, videos become mp4."
+      }
     },
     "categories": {
       "title": "Categories",
@@ -2367,7 +2386,7 @@
       "no_shift": "no active shift",
       "stock_health": "Stock Health",
       "view": "View →",
-      "all_healthy": "All stock healthy",
+      "all_healthy": "All healthy",
       "items_low": "items low",
       "recent_sales": "Recent Sales",
       "view_all": "View all →",
@@ -2396,7 +2415,6 @@
       "view_all_link": "View all",
       "view_link": "View",
       "no_sales_yet": "No sales yet",
-      "all_healthy": "All healthy",
       "everything_in_stock": "Everything in stock",
       "low_label": "Low",
       "out_label": "Out",
