@@ -12,6 +12,105 @@
 
 export const changelog = [
   {
+    version: '1.26.0',
+    date: '2026-06-28',
+    tag: 'New',
+    en: {
+      title: 'A status bar at the bottom of the register',
+      points: [
+        'The POS screen now has a slim bar along the bottom showing how many lines and units are in the cart and the current total at a glance.',
+        'It also shows whether you are online or offline, and quick reminders of the handy keyboard shortcuts.',
+      ],
+    },
+    ar: {
+      title: 'شريط حالة أسفل شاشة البيع',
+      points: [
+        'أصبح في شاشة نقطة البيع شريط رفيع بالأسفل يعرض عدد الأسطر والوحدات في السلة والإجمالي الحالي بنظرة واحدة.',
+        'كما يعرض ما إذا كنت متصلًا بالإنترنت أم لا، مع تذكير سريع باختصارات لوحة المفاتيح المفيدة.',
+      ],
+    },
+  },
+  {
+    version: '1.25.0',
+    date: '2026-06-28',
+    tag: 'New',
+    en: {
+      title: 'Choose a 12-hour or 24-hour clock',
+      points: [
+        'You can now pick how the time shows on the POS screen — 24-hour (13:05) or 12-hour with AM/PM (1:05 PM).',
+        'Set it under Settings → POS → Cart Display. It applies to the clock in the register topbar.',
+      ],
+    },
+    ar: {
+      title: 'اختر ساعة 12 أو 24',
+      points: [
+        'يمكنك الآن اختيار طريقة عرض الوقت في شاشة نقطة البيع — 24 ساعة (13:05) أو 12 ساعة مع AM/PM (1:05 PM).',
+        'تجده في الإعدادات ← نقطة البيع ← عرض السلة. يُطبَّق على الساعة في الشريط العلوي للبيع.',
+      ],
+    },
+  },
+  {
+    version: '1.24.1',
+    date: '2026-06-28',
+    tag: 'Improved',
+    en: {
+      title: 'A reminder when a sale is still open',
+      points: [
+        'If you leave the register with items still in the cart, the POS button in the side menu now gently shimmers.',
+        'It is just a reminder to go back and finish the sale — leaving the register never cancels or loses it.',
+      ],
+    },
+    ar: {
+      title: 'تنبيه عندما تكون هناك فاتورة مفتوحة',
+      points: [
+        'إذا غادرت شاشة البيع وما زالت هناك أصناف في السلة، يلمع زر نقطة البيع في القائمة الجانبية بلطف.',
+        'إنه مجرد تذكير بالعودة لإتمام البيع — مغادرة الشاشة لا تُلغي الفاتورة ولا تفقدها أبدًا.',
+      ],
+    },
+  },
+  {
+    version: '1.24.0',
+    date: '2026-06-28',
+    tag: 'Improved',
+    en: {
+      title: 'A cleaner register toolbar',
+      points: [
+        'The POS topbar got a tidy-up: a shorter search box, a bigger bolder clock and cashier name, and a clear "Exit" button to return to the dashboard.',
+        'Leaving with the Exit button keeps any open sale exactly as it was — it just takes you back, like opening another page.',
+        'Dark-mode and Arabic/English switches are now right in the register, so you don\'t have to leave to change them.',
+      ],
+    },
+    ar: {
+      title: 'شريط أدوات أنظف لشاشة البيع',
+      points: [
+        'تم ترتيب الشريط العلوي لنقطة البيع: صندوق بحث أقصر، وساعة واسم كاشير أكبر وأوضح، وزر "خروج" واضح للعودة إلى لوحة التحكم.',
+        'المغادرة بزر الخروج تُبقي أي فاتورة مفتوحة كما هي تمامًا — إنها فقط تعيدك، تمامًا كفتح صفحة أخرى.',
+        'أصبح تبديل الوضع الداكن واللغة (عربي/إنجليزي) متاحًا داخل شاشة البيع مباشرة، دون الحاجة للخروج لتغييرهما.',
+      ],
+    },
+  },
+  {
+    version: '1.23.0',
+    date: '2026-06-28',
+    tag: 'New',
+    en: {
+      title: 'Search in Arabic at the register',
+      points: [
+        'You can now type a product\'s Arabic name (or its Arabic active ingredient) in the POS search and find it instantly.',
+        'The results show the Arabic name on top with the English name beneath, so it is clear which product you are picking.',
+        'Searching by code, barcode and English name keeps working exactly as before.',
+      ],
+    },
+    ar: {
+      title: 'البحث بالعربية في شاشة البيع',
+      points: [
+        'يمكنك الآن كتابة اسم المنتج بالعربية (أو مادته الفعّالة بالعربية) في بحث نقطة البيع والعثور عليه فورًا.',
+        'تعرض النتائج الاسم العربي في الأعلى والاسم الإنجليزي تحته، ليتضح أي منتج تختاره.',
+        'يظل البحث بالكود والباركود والاسم الإنجليزي يعمل تمامًا كما كان.',
+      ],
+    },
+  },
+  {
     version: '1.22.0',
     date: '2026-06-28',
     tag: 'New',

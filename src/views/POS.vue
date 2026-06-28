@@ -284,6 +284,24 @@
         </div>
       </div>
     </div>
+
+    <!-- ─── Footer — live status bar ──────────────────────── -->
+    <div class="pos-footer">
+      <div class="pos-foot-left">
+        <span class="pos-foot-stat">
+          <ShoppingCart :size="13" /> {{ cart.items.length }} {{ t('pos.foot.lines') }} · {{ cartUnits }} {{ t('pos.foot.units') }}
+        </span>
+        <span class="pos-foot-stat pos-foot-total">{{ auth.currencySymbol }} {{ fmtNum(cart.grandTotal) }}</span>
+      </div>
+      <div class="pos-foot-right">
+        <span class="pos-foot-hint"><kbd>F1</kbd> {{ t('pos.foot.keypad') }}</span>
+        <span class="pos-foot-hint"><kbd>*</kbd> {{ t('pos.foot.qty') }}</span>
+        <span class="pos-foot-hint"><kbd>Enter</kbd> {{ t('pos.foot.add') }}</span>
+        <span class="pos-foot-conn" :class="online ? 'is-on' : 'is-off'">
+          <span class="pos-foot-dot" /> {{ online ? t('pos.foot.online') : t('pos.foot.offline') }}
+        </span>
+      </div>
+    </div>
    </div><!-- /pos-scale -->
 
     <!-- ─── Scan sweep — a bright beam that races top→bottom ── -->
@@ -465,13 +483,30 @@ onUnmounted(() => {
 })
 
 // ── Clock ────────────────────────────────────────────────────
+const clock24h = ref(true)   // from StoreSettings.pos_clock_24h (loaded in init)
 const liveTime = ref(nowStr())
 let clockTimer
 function nowStr() {
-  return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  // 24h → en-GB (13:05:09); 12h → en-US with AM/PM (1:05:09 PM).
+  return new Date().toLocaleTimeString(clock24h.value ? 'en-GB' : 'en-US',
+    { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: !clock24h.value })
 }
 onMounted(() => { clockTimer = setInterval(() => { liveTime.value = nowStr() }, 1000) })
 onUnmounted(() => clearInterval(clockTimer))
+
+// ── Footer status bar ────────────────────────────────────────
+const online = ref(navigator.onLine)
+const cartUnits = computed(() => cart.items.reduce((s, i) => s + (Number(i.qty) || 0), 0))
+function setOnline()  { online.value = true }
+function setOffline() { online.value = false }
+onMounted(() => {
+  window.addEventListener('online', setOnline)
+  window.addEventListener('offline', setOffline)
+})
+onUnmounted(() => {
+  window.removeEventListener('online', setOnline)
+  window.removeEventListener('offline', setOffline)
+})
 
 // ── Init ─────────────────────────────────────────────────────
 const showBranchPicker = ref(false)
@@ -491,6 +526,8 @@ async function init() {
       posServiceTypes.value  = r.data.service_types ?? []
       allowNegativeStock.value = !!r.data.allow_negative_stock
       cartDisplayFields.value = Array.isArray(r.data.pos_cart_display_fields) ? r.data.pos_cart_display_fields : []
+      clock24h.value = r.data.pos_clock_24h !== false
+      liveTime.value = nowStr()
     }).catch(() => {}),
   ])
 
@@ -1430,6 +1467,25 @@ function fmtQty(n) {
 
 /* ── Body — three floating rounded cards with an inset gap ── */
 .pos-body { flex: 1; display: flex; gap: 10px; padding: 10px; overflow: hidden; align-items: stretch; }
+
+/* ── Footer status bar ───────────────────────────────────── */
+.pos-footer {
+  flex-shrink: 0; height: 34px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; gap: 16px; background: var(--bg-card); border-top: 1px solid var(--border);
+}
+.pos-foot-left, .pos-foot-right { display: flex; align-items: center; gap: 16px; }
+.pos-foot-stat { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+.pos-foot-total { color: var(--accent); font-variant-numeric: tabular-nums; }
+.pos-foot-hint { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-muted); }
+.pos-foot-hint kbd {
+  font-size: 10px; font-family: inherit; font-weight: 700; line-height: 1;
+  background: var(--bg-app); color: var(--text-secondary); border: 1px solid var(--border);
+  border-radius: 5px; padding: 3px 6px;
+}
+.pos-foot-conn { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; }
+.pos-foot-conn.is-on  { color: var(--success, #16a34a); }
+.pos-foot-conn.is-off { color: var(--danger); }
+.pos-foot-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 
 /* ── Left panel ───────────────────────────────────────────── */
 .pos-left {

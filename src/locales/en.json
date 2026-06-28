@@ -948,6 +948,15 @@
   "pos": {
     "brand": "POS",
     "exit": "Exit",
+    "foot": {
+      "lines": "lines",
+      "units": "units",
+      "keypad": "Keypad",
+      "qty": "Quantity",
+      "add": "Add",
+      "online": "Online",
+      "offline": "Offline"
+    },
     "stock": {
       "block": "Not enough stock — can't sell more than what's available",
       "warn": "Selling more than what's in stock"
@@ -1676,7 +1685,11 @@
       "kind_attribute": "Attribute",
       "no_fields": "No attributes defined yet. Add product attributes first.",
       "preview": "Preview",
-      "sample_name": "Sample Product"
+      "sample_name": "Sample Product",
+      "clock_title": "POS topbar clock",
+      "clock_hint": "How the time shows in the POS topbar.",
+      "clock_24h": "24-hour (13:05)",
+      "clock_12h": "12-hour (1:05 PM)"
     },
     "top_selling": {
       "title": "Top Selling Config",

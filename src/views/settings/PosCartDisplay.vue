@@ -8,7 +8,23 @@
       <button class="btn-primary" :disabled="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</button>
     </div>
 
-    <div class="settings-card" :style="{ marginTop: embedded ? '0' : '24px' }">
+    <!-- Topbar clock format (StoreSettings.pos_clock_24h) -->
+    <div class="settings-card clk-card" :style="{ marginTop: embedded ? '0' : '24px' }">
+      <div class="cd-head">
+        <span class="cd-title">{{ t('settings.cart_display.clock_title') }}</span>
+      </div>
+      <p class="cd-hint">{{ t('settings.cart_display.clock_hint') }}</p>
+      <div class="clk-opts">
+        <button type="button" class="clk-opt" :class="{ active: clock24h }" @click="clock24h = true">
+          {{ t('settings.cart_display.clock_24h') }}
+        </button>
+        <button type="button" class="clk-opt" :class="{ active: !clock24h }" @click="clock24h = false">
+          {{ t('settings.cart_display.clock_12h') }}
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-card" :style="{ marginTop: '24px' }">
       <div class="cd-head">
         <span class="cd-title">{{ t('settings.cart_display.heading') }}</span>
         <span class="cd-count" :class="{ full: selected.length >= 6 }">{{ selected.length }}/6</span>
@@ -65,6 +81,7 @@ const { t } = useI18n()
 
 const fields   = ref([])      // [{ token, label, kind }]
 const selected = ref([])      // ordered list of tokens
+const clock24h = ref(true)    // StoreSettings.pos_clock_24h — POS topbar clock format
 const saving   = ref(false)
 
 // Sample values for the live preview, keyed by token.
@@ -90,6 +107,7 @@ onMounted(async () => {
     api.get('/api/inventory/attributes/'),
   ])
   selected.value = Array.isArray(setRes.data.pos_cart_display_fields) ? [...setRes.data.pos_cart_display_fields] : []
+  clock24h.value = setRes.data.pos_clock_24h !== false
 
   const attrs = attrRes.data.results || attrRes.data || []
   const list = [
@@ -106,7 +124,10 @@ onMounted(async () => {
 async function save() {
   saving.value = true
   try {
-    await api.patch('/api/core/settings/', { pos_cart_display_fields: selected.value })
+    await api.patch('/api/core/settings/', {
+      pos_cart_display_fields: selected.value,
+      pos_clock_24h: clock24h.value,
+    })
   } finally {
     saving.value = false
   }
@@ -120,6 +141,16 @@ async function save() {
 .cd-count { font-size: 12px; font-weight: 800; color: var(--text-muted); padding: 3px 10px; border-radius: 8px; background: var(--bg-app); }
 .cd-count.full { color: var(--accent); background: var(--accent-soft); }
 .cd-hint { font-size: 12.5px; color: var(--text-muted); margin: 6px 0 16px; }
+
+.clk-opts { display: flex; gap: 10px; }
+.clk-opt {
+  flex: 1; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--border);
+  background: var(--bg-app); color: var(--text-secondary); cursor: pointer;
+  font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+  transition: background 140ms var(--ease-out), border-color 140ms var(--ease-out), color 140ms var(--ease-out);
+}
+.clk-opt:hover  { border-color: var(--accent); }
+.clk-opt.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 
 .cd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .cd-chip {
