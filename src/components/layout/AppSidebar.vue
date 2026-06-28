@@ -287,7 +287,11 @@ function itemActive(to) {
 const open = reactive({})
 ;[...groups.value, ...adminGroups.value].forEach(g => { open[g.id] = g.items.some(it => itemActive(it.to)) })
 
-function toggle(id) { open[id] = !open[id] }
+function toggle(id) {
+  const willOpen = !open[id]
+  if (willOpen) Object.keys(open).forEach(k => { open[k] = false })
+  open[id] = willOpen
+}
 function go(to) { if (route.path !== to) router.push(to) }
 function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard') }
 </script>
