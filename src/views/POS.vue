@@ -8,7 +8,10 @@
     <!-- ─── Top bar ─────────────────────────────────────────── -->
     <div class="pos-topbar">
       <div class="pos-topbar-left">
-        <button class="pos-back-btn" @click="goBack" :title="'Back'"><ArrowLeft :size="15" /></button>
+        <button class="pos-exit-badge" @click="exitToDashboard" :title="t('pos.exit')">
+          <LogOut :size="14" />
+          <span>{{ t('pos.exit') }}</span>
+        </button>
         <span class="pos-brand">{{ t('pos.brand') }}</span>
         <span class="pos-divider">|</span>
         <span class="pos-store">{{ auth.storeName }}</span>
@@ -47,6 +50,15 @@
       </div>
 
       <div class="pos-topbar-right">
+        <button class="pos-icon-btn" @click="theme.toggle()"
+                :title="theme.dark ? 'Switch to light mode' : 'Switch to dark mode'">
+          <Sun v-if="theme.dark" :size="16" />
+          <Moon v-else :size="16" />
+        </button>
+        <button class="pos-lang-btn" @click="toggleLocale"
+                :title="locale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'">
+          {{ locale === 'ar' ? 'EN' : 'AR' }}
+        </button>
         <span class="pos-operator">{{ auth.user?.first_name || auth.displayName }}</span>
         <span class="pos-branch-chip">{{ pos.branchName }}</span>
         <span class="pos-clock">{{ liveTime }}</span>
@@ -388,12 +400,14 @@ import { useI18n } from 'vue-i18n'
 import {
   Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
   Printer, FileText, ShoppingCart, CheckCircle2, ArrowLeft, ChevronDown, AlertTriangle,
+  Sun, Moon, LogOut,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore }  from '@/stores/auth'
 import { useCartStore }  from '@/stores/cart'
 import { usePosStore }   from '@/stores/pos'
 import { useUIStore }    from '@/stores/ui'
+import { useThemeStore } from '@/stores/theme'
 import BranchPickerModal   from '@/components/pos/BranchPickerModal.vue'
 import PaymentModal        from '@/components/pos/PaymentModal.vue'
 import DiscountModal       from '@/components/pos/DiscountModal.vue'
@@ -402,11 +416,28 @@ import CustomerFormModal   from '@/components/shared/CustomerFormModal.vue'
 import ServiceFormModal    from '@/views/services/ServiceFormModal.vue'
 
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const theme = useThemeStore()
+
+// Language switcher — mirrors the main AppHeader (persisted to localStorage).
+function toggleLocale() {
+  const next = locale.value === 'ar' ? 'en' : 'ar'
+  locale.value = next
+  localStorage.setItem('vendorya_locale', next)
+}
 
 function goBack() {
   const prev = window.history.state?.back
   router.push(prev && prev !== '/pos' ? prev : '/dashboard')
+}
+
+// "Exit" badge — plain navigation back to the dashboard, NOT a cancel: the cart /
+// held sale persists (localStorage), so coming back to POS resumes it. We also
+// force the left sidebar expanded on the way out (overrides the pre-POS state that
+// onUnmounted would otherwise restore).
+function exitToDashboard() {
+  prePosSidebarState = false
+  router.push('/dashboard')
 }
 const auth   = useAuthStore()
 const cart   = useCartStore()
@@ -1320,6 +1351,14 @@ function fmtQty(n) {
   border-bottom: 1px solid var(--border); height: 54px; flex-shrink: 0;
 }
 .pos-topbar-left { display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0; }
+.pos-exit-badge {
+  display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px;
+  border-radius: 9px; border: 1px solid var(--border); background: var(--bg-app);
+  color: var(--text-secondary); font-size: 12.5px; font-weight: 700; cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms, transform 100ms;
+}
+.pos-exit-badge:hover  { border-color: var(--danger); color: var(--danger); background: var(--danger-soft, var(--accent-soft)); }
+.pos-exit-badge:active { transform: scale(0.94); }
 .pos-back-btn {
   width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
   border: 1px solid var(--border); background: var(--bg-app); color: var(--text-muted);
@@ -1333,7 +1372,7 @@ function fmtQty(n) {
 .pos-store  { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
 
 .pos-search-wrap {
-  flex: 1; position: relative;
+  flex: 1; max-width: 460px; margin-right: auto; position: relative;
   display: flex; align-items: center; gap: 10px;
   background: var(--bg-app); border: 1.5px solid var(--border);
   border-radius: 12px; padding: 0 14px; height: 38px;
@@ -1371,9 +1410,23 @@ function fmtQty(n) {
 .psi-price { font-size: 14px; font-weight: 800; color: var(--accent); white-space: nowrap; }
 
 .pos-topbar-right { display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0; }
-.pos-operator    { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+.pos-icon-btn, .pos-lang-btn {
+  height: 32px; border-radius: 9px; border: 1px solid var(--border);
+  background: var(--bg-app); color: var(--text-secondary); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 120ms, color 120ms, border-color 120ms, transform 100ms;
+}
+.pos-icon-btn { width: 32px; }
+.pos-lang-btn { padding: 0 11px; font-size: 12px; font-weight: 800; letter-spacing: 0.03em; }
+.pos-icon-btn:hover, .pos-lang-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.pos-icon-btn:active, .pos-lang-btn:active { transform: scale(0.92); }
+.pos-operator    { font-size: 14.5px; font-weight: 800; color: var(--text-primary); }
 .pos-branch-chip { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); }
-.pos-clock       { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+.pos-clock {
+  font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums;
+  color: var(--text-primary); padding: 5px 11px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--bg-app);
+}
 
 /* ── Body — three floating rounded cards with an inset gap ── */
 .pos-body { flex: 1; display: flex; gap: 10px; padding: 10px; overflow: hidden; align-items: stretch; }

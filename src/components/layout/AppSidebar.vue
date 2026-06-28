@@ -18,14 +18,14 @@
       <!-- POS + SRV split (store only) -->
       <div v-if="!admin" class="nsb-pos">
         <div v-if="!collapsed" class="nsb-pos-row">
-          <PhysicalButton variant="primary" :collapsed="false" tooltip="POS System" class="nsb-pos-main" @click="go('/pos')">
+          <PhysicalButton variant="primary" :collapsed="false" tooltip="POS System" class="nsb-pos-main" :class="{ 'pos-shimmer': hasOpenInvoice }" @click="go('/pos')">
             <template #icon><Calculator :size="18" /></template>
             POS
           </PhysicalButton>
           <button class="nsb-srv-btn" @click="go('/services')" title="Services">SRV</button>
         </div>
         <div v-else class="nsb-pos-collapsed-row">
-          <PhysicalButton variant="primary" :collapsed="true" tooltip="POS System" @click="go('/pos')">
+          <PhysicalButton variant="primary" :collapsed="true" tooltip="POS System" :class="{ 'pos-shimmer': hasOpenInvoice }" @click="go('/pos')">
             <template #icon><Calculator :size="18" /></template>
           </PhysicalButton>
           <button class="nsb-srv-btn-col" @click="go('/services')" title="Services">
@@ -130,6 +130,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
+import { useCartStore } from '@/stores/cart'
 import PhysicalButton from '@/components/ui/PhysicalButton.vue'
 import {
   LayoutDashboard, Calculator, Package, ShoppingCart, SlidersHorizontal, Tag, List,
@@ -149,7 +150,13 @@ const route = useRoute()
 const router = useRouter()
 const auth  = useAuthStore()
 const theme = useThemeStore()
+const cart  = useCartStore()
 const { t, locale } = useI18n()
+
+// An "unclosed invoice" = the POS cart still has items (it persists across
+// navigation via localStorage). While one is open, the sidebar POS button
+// shimmers every 1.5s as a reminder to go back and finish the sale.
+const hasOpenInvoice = computed(() => cart.items.length > 0)
 
 const logoSrc = computed(() =>
   props.admin ? '/logo-text-dark-mode.png'
@@ -342,6 +349,22 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .nsb-pos { margin-bottom: 14px; }
 .nsb-pos-row { display: flex; gap: 5%; align-items: stretch; }
 .nsb-pos-main { flex: 0 0 70%; }
+
+/* Shimmer — runs while a POS invoice is still open (cart not empty). A light band
+   sweeps across the button every 1.5s. Implemented as a ::before gradient (clipped
+   to its own rounded box) so it never clips PhysicalButton's collapsed tooltip. */
+.pos-shimmer { position: relative; }
+.pos-shimmer::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 38%, rgba(255,255,255,0.55) 50%, transparent 62%);
+  background-size: 220% 100%;
+  animation: posShimmerSweep 1.5s ease-in-out infinite;
+}
+@keyframes posShimmerSweep {
+  0%        { background-position: 160% 0; }
+  55%, 100% { background-position: -90% 0; }
+}
 .nsb-srv-btn {
   flex: 0 0 25%;
   background: linear-gradient(155deg, #34d399 0%, #059669 100%);

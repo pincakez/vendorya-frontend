@@ -947,6 +947,7 @@
   },
   "pos": {
     "brand": "POS",
+    "exit": "Exit",
     "stock": {
       "block": "Not enough stock — can't sell more than what's available",
       "warn": "Selling more than what's in stock"
