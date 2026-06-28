@@ -12,6 +12,29 @@
 
 export const changelog = [
   {
+    version: '1.20.0',
+    date: '2026-06-28',
+    tag: 'Improved',
+    en: {
+      title: 'Search now forgives spelling mistakes',
+      points: [
+        'Product search now finds the right item even when the name is typed with a mistake — type "convantin" and you still get "Conventin".',
+        'This works whether you type in English or in Arabic.',
+        'Results are always shown in English, so the list stays quick to read no matter how you searched.',
+        'If the search engine is ever unavailable, search keeps working the way it did before — nothing breaks.',
+      ],
+    },
+    ar: {
+      title: 'البحث الآن يتسامح مع الأخطاء الإملائية',
+      points: [
+        'أصبح بحث الأصناف يعثر على الصنف الصحيح حتى لو كُتب الاسم بخطأ — اكتب "convantin" وستظهر لك "Conventin".',
+        'يعمل هذا سواء كتبت بالإنجليزية أو بالعربية.',
+        'تظهر النتائج دائمًا بالإنجليزية، لتبقى القائمة سهلة القراءة مهما كانت طريقة بحثك.',
+        'وإذا تعذّر عمل محرك البحث لأي سبب، يستمر البحث كما كان من قبل — لا شيء يتعطل.',
+      ],
+    },
+  },
+  {
     version: '1.19.0',
     date: '2026-06-28',
     tag: 'New',
