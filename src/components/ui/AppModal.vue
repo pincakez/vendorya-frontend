@@ -128,6 +128,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 48px);
+  /* Smoothly grow/shrink when a parent drives a dynamic :width (e.g. the
+     New Purchase modal's compact ↔ expanded states). Only fires when the
+     width prop actually changes, so static modals are unaffected. */
+  transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-header {

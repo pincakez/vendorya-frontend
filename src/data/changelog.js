@@ -12,6 +12,48 @@
 
 export const changelog = [
   {
+    version: '1.22.0',
+    date: '2026-06-28',
+    tag: 'New',
+    en: {
+      title: 'Print a purchase invoice',
+      points: [
+        'When you save a purchase, you can now tick "Print purchase invoice" to get a clean printable copy.',
+        'It lists the supplier, the date, your purchase number and the supplier\'s invoice number, plus every item with its cost and retail price and the totals.',
+        'Great for filing your supplier paperwork or handing back a confirmation.',
+      ],
+    },
+    ar: {
+      title: 'طباعة فاتورة الشراء',
+      points: [
+        'عند حفظ عملية شراء، يمكنك الآن تحديد "طباعة فاتورة الشراء" للحصول على نسخة مرتبة قابلة للطباعة.',
+        'تعرض المورّد والتاريخ ورقم الشراء ورقم فاتورة المورّد، مع كل صنف وتكلفته وسعر بيعه والإجماليات.',
+        'مفيدة لحفظ مستندات المورّد أو تسليم نسخة تأكيد.',
+      ],
+    },
+  },
+  {
+    version: '1.21.0',
+    date: '2026-06-28',
+    tag: 'Improved',
+    en: {
+      title: 'A cleaner, faster New Purchase screen',
+      points: [
+        'The New Purchase window now opens compact — supplier, date and notes up front, with a live running summary of total items, pieces, cost and retail value.',
+        'Tap the arrow to slide out the full items list when you\'re ready to add products; tap it again to tuck it away.',
+        'If you\'ve added items but hidden the list, the arrow gently blinks so you never forget there\'s work in progress.',
+      ],
+    },
+    ar: {
+      title: 'شاشة فاتورة شراء أوضح وأسرع',
+      points: [
+        'تفتح نافذة فاتورة الشراء الآن بشكل مُصغّر — المورّد والتاريخ والملاحظات في المقدمة، مع ملخص حيّ لإجمالي الأصناف والقطع والتكلفة وقيمة البيع.',
+        'اضغط السهم لإظهار قائمة الأصناف كاملة عندما تكون جاهزًا لإضافة المنتجات، واضغطه مرة أخرى لإخفائها.',
+        'إذا أضفت أصنافًا وأخفيت القائمة، يومض السهم بلطف كي لا تنسى أن هناك عملًا قيد الإنجاز.',
+      ],
+    },
+  },
+  {
     version: '1.20.1',
     date: '2026-06-28',
     tag: 'Improved',

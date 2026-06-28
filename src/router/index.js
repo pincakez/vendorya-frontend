@@ -103,6 +103,7 @@ const router = createRouter({
     },
     // Bare printable pages — no app shell.
     { path: '/finance/invoices/:id/print', component: () => import('@/views/sales/InvoicePrint.vue'), meta: { requiresAuth: true } },
+    { path: '/inventory/purchases/:id/print', component: () => import('@/views/inventory/PurchaseInvoicePrint.vue'), meta: { requiresAuth: true } },
     { path: '/print/labels',               component: () => import('@/views/print/LabelPrint.vue'),   meta: { requiresAuth: true } },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' }
   ]

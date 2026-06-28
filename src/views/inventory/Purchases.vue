@@ -78,37 +78,13 @@
     <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchPurchases" />
 
     <!-- MODAL: New / View Purchase -->
-    <AppModal :open="modal.open" :title="modalTitle" width="1100px" :no-backdrop-close="true" @close="tryClose">
-      <div class="form-grid">
-        <div>
-          <label class="form-label">
-            {{ t('inventory.purchases.form_supplier') }}
-            <span v-if="!modal.supplier" class="draft-hint">{{ t('inventory.purchases.draft_only_hint') }}</span>
-          </label>
-          <BaseSelect v-model="modal.supplier" :options="supplierOptions" :disabled="!supplierEditable" />
-        </div>
-        <div>
-          <label class="form-label">{{ t('inventory.purchases.form_number') }}</label>
-          <BaseInput v-model="modal.purchase_number" :placeholder="t('inventory.purchases.form_number_placeholder')" :disabled="readOnly" />
-        </div>
-        <div>
-          <label class="form-label">{{ t('inventory.purchases.form_date') }}</label>
-          <BaseInput v-model="modal.date" type="datetime-local" :disabled="readOnly" />
-        </div>
-        <div>
-          <label class="form-label">{{ t('inventory.purchases.form_vendor_ref') }}</label>
-          <BaseInput v-model="modal.vendor_reference" :placeholder="t('inventory.purchases.form_vendor_ref_placeholder')" :disabled="readOnly" />
-        </div>
-        <div style="grid-column:1 / -1;">
-          <label class="form-label">{{ t('inventory.purchases.form_notes') }}</label>
-          <BaseInput v-model="modal.notes" :placeholder="t('inventory.purchases.form_notes_placeholder')" :disabled="readOnly" />
-        </div>
-      </div>
+    <AppModal :open="modal.open" :title="modalTitle" :width="itemsOpen ? '1240px' : '480px'" :no-backdrop-close="true" @close="tryClose">
+      <div class="pm-shell" :class="{ 'pm-expanded': itemsOpen }">
+        <!-- LEFT: items entry (collapsible) -->
+        <div class="pm-items">
+          <div class="section-label">{{ t('inventory.purchases.items_section') }}</div>
 
-      <div style="margin-top:18px;">
-        <div class="section-label">{{ t('inventory.purchases.items_section') }}</div>
-
-        <div class="items-head">
+          <div class="items-head">
           <span class="ih-sku">{{ t('inventory.purchases.col_sku') }}</span>
           <span class="ih-name">{{ t('inventory.purchases.col_item') }}</span>
           <span class="ih-qty">{{ t('inventory.purchases.col_qty') }}</span>
@@ -230,30 +206,88 @@
           </Transition>
         </div>
 
-        <button v-if="!readOnly" class="btn-ghost" style="margin-top:10px;" @click="addRow">
-          <Plus :size="13" /> {{ t('inventory.purchases.add_item') }}
-        </button>
-      </div>
+          <button v-if="!readOnly" class="btn-ghost" style="margin-top:10px;" @click="addRow">
+            <Plus :size="13" /> {{ t('inventory.purchases.add_item') }}
+          </button>
+        </div><!-- /pm-items -->
 
-      <div class="invoice-totals">
-        <div class="totals-row total-line">
-          <span>{{ t('inventory.purchases.total_cost') }}</span>
-          <span><Money :value="modalTotal" /></span>
+        <!-- Expand / collapse the items panel. Blinks when items exist but the
+             panel is hidden — a nudge that there's unfinished business there. -->
+        <div class="pm-arrowcol">
+          <button type="button" class="pm-arrow" :class="{ blink: hasRows && !itemsOpen }"
+                  :title="itemsOpen ? t('inventory.purchases.collapse_items') : t('inventory.purchases.expand_items')"
+                  @click="itemsOpen = !itemsOpen">
+            <ChevronLeft v-if="!itemsOpen" :size="20" />
+            <ChevronRight v-else :size="20" />
+          </button>
         </div>
-      </div>
 
-      <!-- Print option -->
-      <div v-if="!readOnly" class="print-opt" :class="{ disabled: !modal.supplier }">
-        <label class="print-check" :title="!modal.supplier ? t('inventory.purchases.print_needs_supplier') : ''">
-          <input type="checkbox" v-model="printNow" :disabled="!modal.supplier" />
-          <Tag :size="14" /> {{ t('inventory.purchases.print_now') }}
-        </label>
-        <template v-if="printNow && modal.supplier">
-          <span class="print-x">×</span>
-          <input v-model.number="labelCopies" type="number" min="1" max="99" class="form-input print-copies" />
-          <span class="print-hint">{{ t('inventory.purchases.print_copies_hint') }}</span>
-        </template>
-      </div>
+        <!-- RIGHT: invoice header + live summary (always visible) -->
+        <div class="pm-side">
+          <div class="pm-fields">
+            <div>
+              <label class="form-label">
+                {{ t('inventory.purchases.form_supplier') }}
+                <span v-if="!modal.supplier" class="draft-hint">{{ t('inventory.purchases.draft_only_hint') }}</span>
+              </label>
+              <BaseSelect v-model="modal.supplier" :options="supplierOptions" :disabled="!supplierEditable" />
+            </div>
+            <div>
+              <label class="form-label">{{ t('inventory.purchases.form_number') }}</label>
+              <BaseInput v-model="modal.purchase_number" :placeholder="t('inventory.purchases.form_number_placeholder')" :disabled="readOnly" />
+            </div>
+            <div>
+              <label class="form-label">{{ t('inventory.purchases.form_date') }}</label>
+              <BaseInput v-model="modal.date" type="datetime-local" :disabled="readOnly" />
+            </div>
+            <div>
+              <label class="form-label">{{ t('inventory.purchases.form_vendor_ref') }}</label>
+              <BaseInput v-model="modal.vendor_reference" :placeholder="t('inventory.purchases.form_vendor_ref_placeholder')" :disabled="readOnly" />
+            </div>
+            <div>
+              <label class="form-label">{{ t('inventory.purchases.form_notes') }}</label>
+              <BaseInput v-model="modal.notes" :placeholder="t('inventory.purchases.form_notes_placeholder')" :disabled="readOnly" />
+            </div>
+          </div>
+
+          <!-- Live summary — recomputes as items are added in the left panel -->
+          <div class="pm-summary">
+            <div class="pm-sum-row">
+              <span class="pm-sum-k">{{ t('inventory.purchases.sum_items') }}</span>
+              <span class="pm-sum-v">{{ totalItems }}</span>
+            </div>
+            <div class="pm-sum-row">
+              <span class="pm-sum-k">{{ t('inventory.purchases.sum_pcs') }}</span>
+              <span class="pm-sum-v">{{ totalPcs }}</span>
+            </div>
+            <div class="pm-sum-row">
+              <span class="pm-sum-k">{{ t('inventory.purchases.sum_base') }}</span>
+              <span class="pm-sum-v"><Money :value="modalTotal" /></span>
+            </div>
+            <div class="pm-sum-row pm-sum-strong">
+              <span class="pm-sum-k">{{ t('inventory.purchases.sum_retail') }}</span>
+              <span class="pm-sum-v"><Money :value="totalRetail" /></span>
+            </div>
+          </div>
+
+          <!-- Print options — labels + purchase invoice -->
+          <div v-if="!readOnly" class="pm-print">
+            <label class="print-check" :class="{ disabled: !modal.supplier }" :title="!modal.supplier ? t('inventory.purchases.print_needs_supplier') : ''">
+              <input type="checkbox" v-model="printNow" :disabled="!modal.supplier" />
+              <Tag :size="14" /> {{ t('inventory.purchases.print_now') }}
+            </label>
+            <div v-if="printNow && modal.supplier" class="pm-copies">
+              <span class="print-x">×</span>
+              <input v-model.number="labelCopies" type="number" min="1" max="99" class="form-input print-copies" />
+              <span class="print-hint">{{ t('inventory.purchases.print_copies_hint') }}</span>
+            </div>
+            <label class="print-check" :class="{ disabled: !modal.supplier }" :title="!modal.supplier ? t('inventory.purchases.print_needs_supplier') : ''">
+              <input type="checkbox" v-model="printInvoice" :disabled="!modal.supplier" />
+              <Printer :size="14" /> {{ t('inventory.purchases.print_invoice') }}
+            </label>
+          </div>
+        </div><!-- /pm-side -->
+      </div><!-- /pm-shell -->
 
       <template #footer>
         <button class="btn-ghost" @click="tryClose">{{ t('common.cancel') }}</button>
@@ -315,7 +349,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X, Lock, ChevronDown } from 'lucide-vue-next'
+import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X, Lock, ChevronDown, ChevronLeft, ChevronRight, Printer } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
@@ -448,8 +482,10 @@ async function deletePurchase(p) {
 
 // ── Modal ──────────────────────────────────────────────────────────────────
 const saving = ref(false)
-const printNow = ref(false)
+const printNow = ref(false)        // print stock labels after save
+const printInvoice = ref(false)    // print the purchase invoice after save
 const labelCopies = ref(1)
+const itemsOpen = ref(false)       // left items panel collapsed (compact open) by default
 const modal  = reactive({
   open: false, id: null, status: 'DRAFT', supplier: '', origSupplier: '',
   purchase_number: '', date: '', vendor_reference: '', notes: '', rows: [],
@@ -465,6 +501,12 @@ const hasRows = computed(() => modal.rows.some(r => r.variant || (r.name || '').
 const modalTotal = computed(() =>
   modal.rows.reduce((sum, r) => sum + (Number(r.quantity) * Number(r.base_price) || 0), 0)
 )
+// Live summary for the right panel
+const totalItems = computed(() => modal.rows.filter(r => r.variant || (r.name || '').trim()).length)
+const totalPcs   = computed(() => modal.rows.reduce((sum, r) => sum + ((r.variant || (r.name || '').trim()) ? (Number(r.quantity) || 0) : 0), 0))
+const totalRetail = computed(() =>
+  modal.rows.reduce((sum, r) => sum + (Number(r.quantity) * Number(r.retail_price) || 0), 0)
+)
 
 function blankRow() {
   // FEFO on by default — a brand-new product is onboarded as expiry/batch-tracked
@@ -479,7 +521,8 @@ function blankRow() {
 function openNew() {
   const now = new Date()
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
-  printNow.value = false; labelCopies.value = 1
+  printNow.value = false; printInvoice.value = false; labelCopies.value = 1
+  itemsOpen.value = false   // new purchase opens compact — arrow reveals items
   Object.assign(modal, {
     open: true, id: null, status: 'DRAFT', supplier: '', origSupplier: '',
     purchase_number: '', date: now.toISOString().slice(0, 16),
@@ -488,7 +531,8 @@ function openNew() {
 }
 
 function loadModal(p) {
-  printNow.value = false; labelCopies.value = 1
+  printNow.value = false; printInvoice.value = false; labelCopies.value = 1
+  itemsOpen.value = true    // existing purchase opens with its items visible
   const rows = []
   for (const it of (p.items || [])) {
     rows.push({ kind: 'existing', variant: it.variant, sku: it.sku, name: it.product_name,
@@ -761,9 +805,13 @@ async function savePurchase() {
     const data = await persist()
     await api.post(`/api/finance/purchases/${data.id}/receive/`)
     const wantPrint = printNow.value
+    const wantInvoice = printInvoice.value
     const copies = Math.max(1, Number(labelCopies.value) || 1)
     modal.open = false
     fetchPurchases(1)
+    // Invoice opens in its own tab (auto-fires the print dialog) so a label
+    // print can still take over this one.
+    if (wantInvoice) window.open(`/inventory/purchases/${data.id}/print?auto=1`, '_blank')
     if (wantPrint) await startLabelPrint(data.id, copies)
   } catch (e) {
     alert(e.response?.data?.detail || t('inventory.purchases.err_save'))
@@ -939,4 +987,52 @@ onMounted(() => {
 .preset-info { display:flex; flex-direction:column; gap:2px; }
 .preset-name { font-size:13px; font-weight:600; color:var(--text-primary); }
 .preset-size { font-size:11.5px; color:var(--text-muted); font-variant-numeric:tabular-nums; }
+
+/* ── §PM-REDESIGN — two-panel modal (compact open + slide-out items) ───────── */
+.pm-shell { display:flex; align-items:stretch; }
+
+/* LEFT: items entry — collapsed to zero width until the arrow expands it */
+.pm-items {
+  width:0; opacity:0; overflow:hidden; flex:0 0 auto;
+  transition: width .4s cubic-bezier(.4,0,.2,1), opacity .25s ease;
+}
+.pm-expanded .pm-items {
+  width:800px; opacity:1; padding-right:20px; margin-right:4px;
+  border-right:1px solid var(--border);
+}
+
+/* Arrow column — sits between the two panels, always present */
+.pm-arrowcol { flex:0 0 44px; display:flex; align-items:center; justify-content:center; }
+.pm-arrow {
+  width:30px; height:52px; border-radius:9px; cursor:pointer;
+  border:1px solid var(--border); background:var(--accent-soft); color:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+.pm-arrow:hover { background:var(--accent); color:#fff; }
+.pm-arrow.blink { animation: pmArrowBlink 1.15s ease-in-out infinite; }
+@keyframes pmArrowBlink {
+  0%, 100% { background:var(--accent-soft); color:var(--accent); box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); }
+  50%      { background:var(--accent);      color:#fff;          box-shadow:0 0 0 6px transparent; }
+}
+
+/* RIGHT: invoice header + summary — always visible */
+.pm-side { flex:1 1 auto; min-width:340px; display:flex; flex-direction:column; gap:16px; }
+.pm-fields { display:flex; flex-direction:column; gap:12px; }
+
+/* Live summary card */
+.pm-summary {
+  border:1px solid var(--border); border-radius:12px;
+  background:var(--bg-app); padding:14px 16px; display:flex; flex-direction:column; gap:8px;
+}
+.pm-sum-row { display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text-secondary); }
+.pm-sum-k { font-weight:500; }
+.pm-sum-v { font-variant-numeric:tabular-nums; font-weight:600; color:var(--text-primary); }
+.pm-sum-strong { padding-top:8px; border-top:1px solid var(--border); }
+.pm-sum-strong .pm-sum-k, .pm-sum-strong .pm-sum-v { font-size:15px; font-weight:700; color:var(--text-primary); }
+
+/* Print options block */
+.pm-print { display:flex; flex-direction:column; gap:10px; padding:12px; border:1px dashed var(--border); border-radius:8px; }
+.pm-copies { display:flex; align-items:center; gap:8px; padding-left:22px; }
+.print-check.disabled { opacity:.55; cursor:not-allowed; }
 </style>
