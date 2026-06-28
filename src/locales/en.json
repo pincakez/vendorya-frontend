@@ -545,7 +545,8 @@
       "expiry_date": "Expiry date",
       "batch_number": "Batch / Lot no.",
       "unit_hint": "Receive in this unit — stock converts to base automatically",
-      "track_expiry_new": "Track expiry & batches for this new product (FEFO)"
+      "track_expiry_new": "Track expiry & batches for this new product (FEFO)",
+      "no_history_hint": "Not in your history — switch to Memory Base in Settings → Capabilities to search the full drug reference."
     },
     "adjustments": {
       "title": "Stock Adjustments",
@@ -1839,7 +1840,17 @@
       "confirm_multi_unit_enabled": "Turning off Multi-Unit Selling means only the base unit will be offered at the register. Any pack/strip units on your products will be hidden.",
       "confirm_expiry_tracking_enabled": "Turning off Expiry / Batch Tracking means stock goes back to a single number and FEFO stops. Expiry batches already recorded will be hidden.",
       "confirm_note": "Nothing is deleted — existing data is preserved and comes back if you switch this on again.",
-      "confirm_disable": "Yes, turn it off"
+      "confirm_disable": "Yes, turn it off",
+      "search_title": "Search & Autocomplete",
+      "search_desc": "Control which product pool the autocomplete searches when adding items to a purchase.",
+      "search_info": "Memory Base searches the full shared drug reference (26,000+ names) — great when your store catalog is small. Store History searches only products you have received or added — results get richer as your inventory grows. Switch to Store History once your catalog is well-established.",
+      "ac_source_label": "Autocomplete source",
+      "ac_source_mb": "Memory Base",
+      "ac_source_store": "Store History",
+      "ac_source_hint_memory_base": "Searching the shared 26,000-name drug reference. Your own received products appear first when there is a match.",
+      "ac_source_hint_store_history": "Searching only products you have received or added. If a drug is not found, a note will appear suggesting to switch to Memory Base.",
+      "mb_auto_label": "Auto-add new items to Memory Base",
+      "mb_auto_hint": "When on, every new product you add is automatically added to the shared drug reference pool — keeping it up to date."
     },
     "policies": {
       "title": "Business Policies",

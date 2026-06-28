@@ -148,6 +148,9 @@
                   <span v-if="getActiveIng(r)" class="ac-meta">{{ getActiveIng(r) }}</span>
                 </button>
               </div>
+              <div v-if="row._open && row._noHistory && !row._results.length" class="ac-no-history">
+                {{ t('inventory.purchases.no_history_hint') }}
+              </div>
             </div>
 
             <BaseInput v-model="row.quantity" type="number" min="1" step="1" class="cell-qty" :disabled="readOnly" />
@@ -468,7 +471,7 @@ function blankRow() {
   return { kind: 'new', variant: '', sku: '', name: '', quantity: 1, base_price: '', retail_price: '',
            track_expiry: expiryEnabled.value, expiry_date: '', batch_number: '',
            unit: '', _units: [],
-           category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null, _ac: null,
+           category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _noHistory: false, _timer: null, _ac: null,
            _justFilled: false, _collapsed: false, _lastEnter: 0 }
 }
 
@@ -491,7 +494,7 @@ function loadModal(p) {
                 quantity: Number(it.quantity), base_price: it.unit_cost, retail_price: it.retail_price,
                 track_expiry: !!it.track_expiry, expiry_date: it.expiry_date || '', batch_number: it.batch_number || '',
                 unit: it.unit || '', _units: it.selling_units || [],
-                category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null, _ac: null,
+                category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _noHistory: false, _timer: null, _ac: null,
                 _collapsed: false, _lastEnter: 0 })
   }
   for (const d of (p.draft_items || [])) {
@@ -500,7 +503,7 @@ function loadModal(p) {
     rows.push({ kind: 'new', variant: '', sku: '', name: d.name, quantity: Number(d.quantity),
                 base_price: d.base_price, retail_price: d.retail_price,
                 category: d.category || '', subcategory: d.subcategory || '',
-                _attrs, _results: [], _open: false, _timer: null, _ac: null,
+                _attrs, _results: [], _open: false, _noHistory: false, _timer: null, _ac: null,
             _collapsed: false, _lastEnter: 0 })
   }
   if (rows.length === 0 || p.status === 'DRAFT') rows.push(blankRow())
@@ -549,8 +552,10 @@ function onNameInput(row) {
         params: { q },
         signal: row._ac.signal,
       })
-      row._results = (res.data.results ?? res.data).filter(r => r.default_variant_id)
-      row._open = row._results.length > 0
+      const data = res.data
+      row._results   = (data.results ?? data).filter(r => r.default_variant_id)
+      row._noHistory = data.no_history ?? false
+      row._open      = row._results.length > 0 || row._noHistory
     } catch (err) {
       if (err?.code !== 'ERR_CANCELED') { row._results = []; row._open = false }
     }
@@ -578,6 +583,7 @@ function pickProduct(row, r) {
     }
     row._open = false
     row._results = []
+    row._noHistory = false
     flashRow(row)   // pulse the fields that just auto-filled (category + attrs)
     return
   }
@@ -591,6 +597,7 @@ function pickProduct(row, r) {
   if (row.retail_price === '' || row.retail_price == null) row.retail_price = r.default_variant_price
   row._open = false
   row._results = []
+  row._noHistory = false
 }
 function closeRowSoon(row) { setTimeout(() => { row._open = false }, 150) }
 
@@ -852,6 +859,7 @@ onMounted(() => {
 .ac-item:hover { background:var(--bg-app); }
 .ac-name { font-size:13px; font-weight:500; color:var(--text-primary); }
 .ac-meta { font-size:11px; font-family:monospace; color:var(--text-muted); }
+.ac-no-history { position:absolute; top:100%; left:0; right:0; z-index:30; margin-top:4px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow-card,0 6px 20px rgba(0,0,0,.12)); padding:10px 12px; font-size:12.5px; color:var(--text-muted); line-height:1.5; }
 
 .item-extra { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); }
 .ie-field { display:flex; flex-direction:column; gap:3px; min-width:140px; }

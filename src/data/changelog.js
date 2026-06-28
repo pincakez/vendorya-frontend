@@ -12,6 +12,31 @@
 
 export const changelog = [
   {
+    version: '1.19.0',
+    date: '2026-06-28',
+    tag: 'New',
+    en: {
+      title: 'Choose where the product search looks',
+      points: [
+        'Settings → Capabilities now has a "Search & Autocomplete" section where you can choose the source for the New Purchase search.',
+        '"Memory Base" (the default) searches the full 26,000+ drug reference — perfect when your own received catalog is small.',
+        '"Store History" searches only products you have actually received or added — results grow richer the more you use the system.',
+        'When Store History finds nothing, a note appears in the dropdown letting you know and suggesting how to switch sources.',
+        'You can also turn off the option that automatically adds new products to the shared drug reference pool — useful if you want full control over what goes in.',
+      ],
+    },
+    ar: {
+      title: 'اختر مصدر بحث الأصناف',
+      points: [
+        'أضفنا في الإعدادات ← الإمكانيات قسمًا جديدًا "البحث والإكمال التلقائي" لتتحكم في مصدر البحث عند إضافة فاتورة شراء.',
+        '"قاعدة الذاكرة" (الافتراضي) تبحث في مرجع الأدوية الكامل (أكثر من 26,000 اسم) — مثالية حين يكون كتالوجك الخاص صغيرًا.',
+        '"سجل المتجر" يبحث فقط في الأصناف التي استلمتها أو أضفتها — النتائج تتحسن كلما زاد استخدامك للنظام.',
+        'حين لا يعثر سجل المتجر على شيء، تظهر ملاحظة في القائمة المنسدلة توضح كيفية تبديل المصدر.',
+        'يمكنك أيضًا إيقاف الخيار الذي يضيف المنتجات الجديدة تلقائيًا لمجموعة مرجع الأدوية، إن أردت التحكم الكامل فيما يُضاف.',
+      ],
+    },
+  },
+  {
     version: '1.18.1',
     date: '2026-06-28',
     tag: 'Improved',

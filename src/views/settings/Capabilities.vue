@@ -115,6 +115,46 @@
         </div>
       </div>
 
+      <!-- Search & Autocomplete -->
+      <div class="cap-card">
+        <div class="cap-icon" style="background:#ede9fe;color:#7c3aed;"><Search :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.search_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='search' }" @click="toggleInfo('search')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.search_desc') }}</div>
+          <div v-if="openInfo==='search'" class="info-box">{{ t('settings.capabilities.search_info') }}</div>
+
+          <!-- Source toggle -->
+          <div class="sub-block" style="border-top:none;margin-top:0;padding-top:0;">
+            <div class="sub-label">{{ t('settings.capabilities.ac_source_label') }}</div>
+            <div class="mode-row" style="margin-top:6px;">
+              <button class="mode-btn" :class="{ active: form.autocomplete_source === 'memory_base' }"
+                @click="form.autocomplete_source = 'memory_base'">
+                {{ t('settings.capabilities.ac_source_mb') }}
+              </button>
+              <button class="mode-btn" :class="{ active: form.autocomplete_source === 'store_history' }"
+                @click="form.autocomplete_source = 'store_history'">
+                {{ t('settings.capabilities.ac_source_store') }}
+              </button>
+            </div>
+            <div class="sub-muted" style="margin-top:8px;">
+              {{ t(`settings.capabilities.ac_source_hint_${form.autocomplete_source}`) }}
+            </div>
+          </div>
+
+          <!-- Auto-register checkbox -->
+          <div class="sub-block">
+            <label class="check-row">
+              <input type="checkbox" v-model="form.mb_auto_register" class="check-input" />
+              <span class="check-label">{{ t('settings.capabilities.mb_auto_label') }}</span>
+            </label>
+            <div class="sub-muted" style="margin-top:4px;">{{ t('settings.capabilities.mb_auto_hint') }}</div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div class="save-bar">
@@ -139,7 +179,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2 } from 'lucide-vue-next'
+import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
 
@@ -158,6 +198,8 @@ const form = reactive({
   expired_sale_policy:     'WARN',
   expiry_alert_days:       60,
   weight_selling_enabled:  false,
+  autocomplete_source:     'memory_base',
+  mb_auto_register:        true,
 })
 
 // Switch → translation key for its store-type label
@@ -206,6 +248,8 @@ async function load() {
       expired_sale_policy:     settingsRes.data.expired_sale_policy || 'WARN',
       expiry_alert_days:       settingsRes.data.expiry_alert_days ?? 60,
       weight_selling_enabled:  settingsRes.data.weight_selling_enabled ?? false,
+      autocomplete_source:     settingsRes.data.autocomplete_source || 'memory_base',
+      mb_auto_register:        settingsRes.data.mb_auto_register ?? true,
     })
   } finally { loading.value = false }
 }
@@ -221,6 +265,8 @@ async function save() {
       expired_sale_policy:     form.expired_sale_policy,
       expiry_alert_days:       form.expiry_alert_days || 60,
       weight_selling_enabled:  form.weight_selling_enabled,
+      autocomplete_source:     form.autocomplete_source,
+      mb_auto_register:        form.mb_auto_register,
     })
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
@@ -283,6 +329,10 @@ onMounted(load)
 .mode-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-muted); font-size:12.5px; font-weight:600; cursor:pointer; transition:background 100ms,border-color 100ms,color 100ms; }
 .mode-btn:hover { border-color:var(--accent); color:var(--accent); }
 .mode-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+.check-row   { display:flex; align-items:center; gap:8px; cursor:pointer; }
+.check-input { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+.check-label { font-size:13px; font-weight:600; color:var(--text-primary); }
 
 .save-bar { display:flex; align-items:center; gap:12px; margin-top:24px; }
 .save-confirm { display:inline-flex; align-items:center; gap:5px; font-size:13px; color:var(--success); font-weight:500; }
