@@ -12,6 +12,25 @@
 
 export const changelog = [
   {
+    version: '1.18.1',
+    date: '2026-06-28',
+    tag: 'Improved',
+    en: {
+      title: 'New Purchase — cleaner item entry flow',
+      points: [
+        'After filling in a product\'s details, press Enter twice quickly to collapse that row and keep the screen tidy — the data stays saved.',
+        'A small arrow button now appears on any collapsed row so you can re-open it to make a correction without searching for the product again.',
+      ],
+    },
+    ar: {
+      title: 'فاتورة الشراء — إدخال أنظف للأصناف',
+      points: [
+        'بعد ملء تفاصيل المنتج، اضغط Enter مرتين بسرعة لطي السطر والإبقاء على الشاشة مرتبة — البيانات تُحفظ كما هي.',
+        'يظهر الآن زر سهم صغير على أي سطر مطوي لإعادة فتحه وتصحيح أي حقل دون الحاجة للبحث عن المنتج من جديد.',
+      ],
+    },
+  },
+  {
     version: '1.18.0',
     date: '2026-06-27',
     tag: 'Improved',

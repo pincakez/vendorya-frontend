@@ -114,6 +114,7 @@
           <span class="ih-qty">{{ t('inventory.purchases.col_qty') }}</span>
           <span class="ih-num">{{ t('inventory.purchases.col_base') }}</span>
           <span class="ih-num">{{ t('inventory.purchases.col_retail') }}</span>
+          <span class="ih-exp"></span>
           <span class="ih-del"></span>
         </div>
 
@@ -153,12 +154,23 @@
             <BaseInput v-model="row.base_price" type="number" min="0" step="0.01" class="cell-num" :placeholder="t('inventory.purchases.col_base')" :disabled="readOnly" />
             <BaseInput v-model="row.retail_price" type="number" min="0" step="0.01" class="cell-num" :placeholder="t('inventory.purchases.col_retail')" :disabled="readOnly" />
 
+            <!-- Expand — re-open a collapsed new-product detail panel (A2) -->
+            <button
+              v-if="row.kind === 'new' && (row.name||'').trim() && !readOnly && row._collapsed"
+              class="row-action cell-exp"
+              :title="t('inventory.purchases.reopen_details')"
+              @click="reopenRow(row)"
+            ><ChevronDown :size="13" /></button>
+            <span v-else class="cell-exp" />
+
             <button v-if="!readOnly" class="row-action danger cell-del" @click="modal.rows.splice(i, 1)"><Trash2 :size="13" /></button>
           </div>
 
           <!-- NEW product extra fields -->
           <Transition name="expand">
-            <div v-if="row.kind === 'new' && (row.name||'').trim() && !readOnly" class="item-extra">
+            <div v-if="row.kind === 'new' && (row.name||'').trim() && !readOnly && !row._collapsed"
+                 class="item-extra"
+                 @keydown="onExtraKeydown($event, row)">
               <div class="ie-field" :class="{ 'flash-fill': row._justFilled }">
                 <label class="ie-label">{{ t('inventory.purchases.col_category') }}</label>
                 <div class="ie-input-row">
@@ -299,7 +311,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X, Lock } from 'lucide-vue-next'
+import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X, Lock, ChevronDown } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
@@ -457,7 +469,7 @@ function blankRow() {
            track_expiry: expiryEnabled.value, expiry_date: '', batch_number: '',
            unit: '', _units: [],
            category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null, _ac: null,
-           _justFilled: false }
+           _justFilled: false, _collapsed: false, _lastEnter: 0 }
 }
 
 function openNew() {
@@ -479,7 +491,8 @@ function loadModal(p) {
                 quantity: Number(it.quantity), base_price: it.unit_cost, retail_price: it.retail_price,
                 track_expiry: !!it.track_expiry, expiry_date: it.expiry_date || '', batch_number: it.batch_number || '',
                 unit: it.unit || '', _units: it.selling_units || [],
-                category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null, _ac: null })
+                category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _timer: null, _ac: null,
+                _collapsed: false, _lastEnter: 0 })
   }
   for (const d of (p.draft_items || [])) {
     const _attrs = {}
@@ -487,7 +500,8 @@ function loadModal(p) {
     rows.push({ kind: 'new', variant: '', sku: '', name: d.name, quantity: Number(d.quantity),
                 base_price: d.base_price, retail_price: d.retail_price,
                 category: d.category || '', subcategory: d.subcategory || '',
-                _attrs, _results: [], _open: false, _timer: null, _ac: null })
+                _attrs, _results: [], _open: false, _timer: null, _ac: null,
+            _collapsed: false, _lastEnter: 0 })
   }
   if (rows.length === 0 || p.status === 'DRAFT') rows.push(blankRow())
   Object.assign(modal, {
@@ -588,6 +602,35 @@ function flashRow(row) {
     row._justFilled = true
     setTimeout(() => { row._justFilled = false }, 800)
   })
+}
+
+// Double-Enter to collapse the new-product detail panel.
+// Spec: two Enters with no other key between them and ≤600ms apart → collapse.
+// Any non-Enter keypress resets the sequence so the user can't accidentally close
+// the panel by typing a name character then quickly pressing Enter.
+function onExtraKeydown(e, row) {
+  if (e.target.tagName === 'SELECT') return   // let select handle its own Enter
+  if (e.key === 'Enter') {
+    const now = Date.now()
+    if (row._lastEnter > 0 && now - row._lastEnter <= 600) {
+      e.preventDefault()
+      row._collapsed = true
+      row._lastEnter = 0
+    } else {
+      row._lastEnter = now
+    }
+  } else {
+    row._lastEnter = 0   // any other key breaks the sequence
+  }
+}
+
+// Re-expand a collapsed new-product detail panel; collapse all others first
+// so only one panel is open at a time.
+function reopenRow(row) {
+  modal.rows.forEach(r => {
+    if (r !== row && r.kind === 'new' && (r.name || '').trim()) r._collapsed = true
+  })
+  row._collapsed = false
 }
 
 // ── Inline add — create a category / attribute option on the fly ────────────
@@ -786,12 +829,12 @@ onMounted(() => {
 .section-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:10px; }
 
 /* Item rows */
-.items-head { display:grid; grid-template-columns:110px 1fr 90px 130px 130px 36px; gap:10px; padding:0 4px 6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
+.items-head { display:grid; grid-template-columns:110px 1fr 90px 130px 130px 28px 36px; gap:10px; padding:0 4px 6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
 .ih-num { text-align:left; }
 
 .item-card { border:1px solid var(--border); border-radius:10px; padding:8px; margin-bottom:8px; background:var(--bg-card); transition:border-color 120ms; }
 .item-card.is-new { border-color:color-mix(in srgb, var(--accent) 40%, var(--border)); }
-.item-main { display:grid; grid-template-columns:110px 1fr 90px 130px 130px 36px; gap:10px; align-items:center; }
+.item-main { display:grid; grid-template-columns:110px 1fr 90px 130px 130px 28px 36px; gap:10px; align-items:center; }
 
 .cell-sku { font-family:monospace; font-size:12px; display:flex; align-items:center; justify-content:center; min-height:34px; }
 .sku-val  { color:var(--text-primary); font-weight:600; }
@@ -801,6 +844,7 @@ onMounted(() => {
 .cell-name { position:relative; }
 .cell-qty :deep(.form-input)  { text-align:center; }
 .cell-num :deep(.form-input)  { font-variant-numeric:tabular-nums; }
+.cell-exp  { justify-self:center; }
 .cell-del  { justify-self:center; }
 
 .ac-dropdown { position:absolute; top:100%; left:0; right:0; z-index:30; margin-top:4px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow-card, 0 6px 20px rgba(0,0,0,.12)); overflow:hidden; max-height:240px; overflow-y:auto; }
