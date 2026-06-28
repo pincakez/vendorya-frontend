@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.20.1',
+    date: '2026-06-28',
+    tag: 'Improved',
+    en: {
+      title: 'Arabic drug names in the New Purchase search',
+      points: [
+        'When you search in Arabic on the New Purchase screen, the dropdown now shows the Arabic trade name first, with the English name underneath so you still see exactly what gets saved.',
+        'The active ingredient is shown in Arabic too when you search in Arabic.',
+        'Searching in English is unchanged — you get the English name and ingredient as before.',
+      ],
+    },
+    ar: {
+      title: 'أسماء الأدوية بالعربية في بحث فاتورة الشراء',
+      points: [
+        'عند البحث بالعربية في شاشة فاتورة الشراء، تعرض القائمة الآن الاسم التجاري بالعربية أولًا، مع الاسم الإنجليزي تحته لترى بالضبط ما سيُحفظ.',
+        'كما تظهر المادة الفعّالة بالعربية عند البحث بالعربية.',
+        'البحث بالإنجليزية كما هو — تحصل على الاسم والمادة الفعّالة بالإنجليزية كالمعتاد.',
+      ],
+    },
+  },
+  {
     version: '1.20.0',
     date: '2026-06-28',
     tag: 'Improved',

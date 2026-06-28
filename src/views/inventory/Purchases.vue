@@ -144,8 +144,9 @@
                   class="ac-item"
                   @mousedown.prevent="pickProduct(row, r)"
                 >
-                  <span class="ac-name">{{ r.name }}</span>
-                  <span v-if="getActiveIng(r)" class="ac-meta">{{ getActiveIng(r) }}</span>
+                  <span class="ac-name" dir="auto">{{ acPrimary(row, r) }}</span>
+                  <span v-if="acEnSub(row, r)" class="ac-sub">{{ acEnSub(row, r) }}</span>
+                  <span v-if="acMeta(row, r)" class="ac-meta" :class="{ 'ac-meta-ar': row._qAr }" dir="auto">{{ acMeta(row, r) }}</span>
                 </button>
               </div>
               <div v-if="row._open && row._noHistory && !row._results.length" class="ac-no-history">
@@ -542,6 +543,10 @@ function onNameInput(row) {
   if (row.kind === 'existing') { row.kind = 'new'; row.variant = ''; row.sku = ''; row.unit = ''; row._units = [] }
   clearTimeout(row._timer)
   const q = (row.name || '').trim()
+  // Remember whether THIS query was typed in Arabic — drives the dropdown labels
+  // (§AC-AR). Typesense matches the Arabic trade name / ingredient; we surface the
+  // Arabic name when the user searched in Arabic, English otherwise.
+  row._qAr = isArabic(q)
   if (q.length < 3) { row._results = []; row._open = false; return }
   row._timer = setTimeout(async () => {
     // Cancel any in-flight request for this row before issuing a new one.
@@ -565,6 +570,29 @@ function onNameInput(row) {
 function getActiveIng(r) {
   const s = r.attributes_summary || {}
   return (s.active_ing || [])[0] || ''
+}
+
+// --- §AC-AR: Arabic-aware dropdown labels -------------------------------------
+const AR_RE = /[\u0600-\u06FF]/
+function isArabic(s) { return AR_RE.test(s || '') }
+function getBrandAr(r)     { return ((r.attributes_summary || {}).brand_ar || [])[0] || '' }
+function getActiveIngAr(r) { return ((r.attributes_summary || {}).active_ing_ar || [])[0] || '' }
+
+// Primary label: the Arabic trade name when the row was searched in Arabic and one
+// exists; otherwise the English product name (unchanged behaviour for EN search).
+function acPrimary(row, r) {
+  if (row._qAr) { const b = getBrandAr(r); if (b) return b }
+  return r.name
+}
+// Secondary muted line: the English name, shown only when the Arabic name is primary
+// (so the user still sees what will actually be saved — products stay EN-named).
+function acEnSub(row, r) {
+  return (row._qAr && getBrandAr(r)) ? r.name : ''
+}
+// Active ingredient line: prefer the Arabic ingredient when searching in Arabic.
+function acMeta(row, r) {
+  if (row._qAr) return getActiveIngAr(r) || getActiveIng(r)
+  return getActiveIng(r)
 }
 function pickProduct(row, r) {
   // Memory Base entries are reference-only (supplier-less, SKU-less, hidden from
@@ -858,7 +886,11 @@ onMounted(() => {
 .ac-item { display:flex; flex-direction:column; gap:2px; width:100%; text-align:left; padding:8px 10px; border:none; background:none; cursor:pointer; transition:background 100ms; }
 .ac-item:hover { background:var(--bg-app); }
 .ac-name { font-size:13px; font-weight:500; color:var(--text-primary); }
+.ac-sub { font-size:11.5px; color:var(--text-secondary, var(--text-muted)); }
 .ac-meta { font-size:11px; font-family:monospace; color:var(--text-muted); }
+/* §AC-AR: Arabic ingredient must use the normal (shaping) font — monospace breaks
+   Arabic cursive joining. */
+.ac-meta-ar { font-family:inherit; font-size:11.5px; }
 .ac-no-history { position:absolute; top:100%; left:0; right:0; z-index:30; margin-top:4px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow-card,0 6px 20px rgba(0,0,0,.12)); padding:10px 12px; font-size:12.5px; color:var(--text-muted); line-height:1.5; }
 
 .item-extra { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); }
