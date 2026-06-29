@@ -75,10 +75,7 @@
           class="nhdr-search-input"
           :placeholder="t('core.header.search_ph')"
           @focus="searchOpen = true"
-          @keydown.down.prevent="move(1)"
-          @keydown.up.prevent="move(-1)"
-          @keydown.enter.prevent="choose"
-          @keydown.esc="searchOpen = false"
+          @keydown="onInputKeydown"
         />
         <kbd class="nhdr-kbd">⌘K</kbd>
 
@@ -86,12 +83,14 @@
           <div v-if="searchOpen && q && results.length" class="nhdr-results">
             <div v-if="isFuzzyResult" class="nhdr-fuzzy-hint">Did you mean…</div>
             <button
-              v-for="(r, i) in results" :key="r.path"
+              v-for="(r, i) in results" :key="r.id || r.path + r.label"
               class="nhdr-result" :class="{ active: i === idx }"
               @click="navTo(r.path)" @mouseenter="idx = i"
             >
               <component :is="r.icon" :size="15" class="nhdr-result-icon" />
-              <span class="nhdr-result-label">{{ r.label }}</span>
+              <span class="nhdr-result-label">
+                <span v-if="r.parent" class="nhdr-result-parent">{{ locale === 'ar' && r.parent_ar ? r.parent_ar : r.parent }} <span class="nhdr-result-sep">›</span> </span>{{ locale === 'ar' && r.label_ar ? r.label_ar : r.label }}
+              </span>
               <span class="nhdr-result-group">{{ r.group }}</span>
             </button>
           </div>
@@ -198,7 +197,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, SlidersHorizontal, Tag, List, FileBarChart,
   FileText, CornerDownLeft, Receipt, Clock, Wallet, Users, Truck, Briefcase,
   LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator, Sparkles,
-  Library, Archive, ArrowLeftRight, ArrowDownUp, Layers, UserCircle, CreditCard,
+  Library, Archive, ArrowLeftRight, ArrowDownUp, Layers, UserCircle, CreditCard, Shield,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
@@ -255,42 +254,88 @@ function enterPreview() { auth.enterPreview(); router.push('/dashboard') }
 function selectGeneral() { auth.clearActiveStore(); pickerOpen.value = false; router.push('/admin/dashboard') }
 
 /* ── Global search (store) ──────────────────── */
+
+// Icon lookup by nav item id / path. Used to decorate API results that lack icons.
+const NAV_ICON_MAP = {
+  '/dashboard':               LayoutDashboard,
+  '/pos':                     Calculator,
+  '/inventory/products':      Package,
+  '/inventory/purchases':     ShoppingCart,
+  '/inventory/adjustments':   SlidersHorizontal,
+  '/inventory/transfers':     ArrowLeftRight,
+  '/inventory/memory-base':   Library,
+  '/inventory/categories':    Tag,
+  '/inventory/attributes':    List,
+  '/inventory/reports':       FileBarChart,
+  '/inventory/import-export': ArrowDownUp,
+  '/inventory/storage':       Archive,
+  '/finance/invoices':        FileText,
+  '/finance/returns':         CornerDownLeft,
+  '/finance/expenses':        Receipt,
+  '/finance/shifts':          Clock,
+  '/finance/cash-drawer':     Wallet,
+  '/people/customers':        Users,
+  '/people/suppliers':        Truck,
+  '/people/staff':            Briefcase,
+  '/reports/sales':           LineChart,
+  '/reports/profit':          TrendingUp,
+  '/reports/pnl':             DollarSign,
+  '/reports/tax':             Percent,
+  '/activity-log':            Activity,
+  '/inbox':                   InboxIcon,
+  '/settings':                Settings,
+  '/settings/capabilities':   Layers,
+  '/settings/pos':            Calculator,
+  '/settings/taxes':          Percent,
+  '/settings/profile':        UserCircle,
+  '/settings/security':       Lock,
+  '/settings/lockscreen':     Shield,
+  '/settings/notifications':  Bell,
+  '/settings/billing':        CreditCard,
+  '/settings/changelog':      Sparkles,
+}
+
 const PAGES = computed(() => [
-  { label: t('nav.dashboard'), path: '/dashboard', group: t('nav.groups.general'), icon: LayoutDashboard, kw: 'home overview summary' },
-  { label: t('core.header.pos'), path: '/pos', group: t('nav.groups.general'), icon: Calculator, kw: 'cashier sale checkout counter point of sale' },
-  { label: t('nav.items.products'), path: '/inventory/products', group: t('nav.groups.inventory'), icon: Package, kw: 'items drugs medicines stock sku barcode' },
-  { label: t('nav.items.purchases'), path: '/inventory/purchases', group: t('nav.groups.inventory'), icon: ShoppingCart, kw: 'receive supplier invoice stock in buy' },
-  { label: t('nav.items.stock_adjustments'), path: '/inventory/adjustments', group: t('nav.groups.inventory'), icon: SlidersHorizontal, kw: 'correct opening balance ledger movement' },
-  { label: t('nav.items.stock_transfers'), path: '/inventory/transfers', group: t('nav.groups.inventory'), icon: ArrowLeftRight, kw: 'move branch transfer between' },
-  { label: t('nav.items.memory_base'), path: '/inventory/memory-base', group: t('nav.groups.inventory'), icon: Library, kw: 'drug catalog reference index names medicines database' },
-  { label: t('nav.items.categories'), path: '/inventory/categories', group: t('nav.groups.inventory'), icon: Tag, kw: 'groups drugs types classify' },
-  { label: t('nav.items.attributes'), path: '/inventory/attributes', group: t('nav.groups.inventory'), icon: List, kw: 'fields manufacturer active ingredient custom meta' },
-  { label: t('nav.items.inventory_reports'), path: '/inventory/reports', group: t('nav.groups.inventory'), icon: FileBarChart, kw: 'stock report low reorder expiry batch' },
-  { label: t('nav.items.import_export'), path: '/inventory/import-export', group: t('nav.groups.inventory'), icon: ArrowDownUp, kw: 'csv bulk upload download data' },
-  { label: t('nav.items.storage'), path: '/inventory/storage', group: t('nav.groups.inventory'), icon: Archive, kw: 'warehouse shelf location bin rack' },
-  { label: t('nav.items.sales_invoices'), path: '/finance/invoices', group: t('nav.groups.finance'), icon: FileText, kw: 'invoice sale receipt order customer' },
-  { label: t('nav.items.returns'), path: '/finance/returns', group: t('nav.groups.finance'), icon: CornerDownLeft, kw: 'refund return exchange cancel' },
-  { label: t('nav.items.expenses'), path: '/finance/expenses', group: t('nav.groups.finance'), icon: Receipt, kw: 'cost spending overhead bills' },
-  { label: t('nav.items.shifts'), path: '/finance/shifts', group: t('nav.groups.finance'), icon: Clock, kw: 'open close shift daily session cash' },
-  { label: t('nav.items.cash_drawer'), path: '/finance/cash-drawer', group: t('nav.groups.finance'), icon: Wallet, kw: 'drawer float cash in out' },
-  { label: t('nav.items.customers'), path: '/people/customers', group: t('nav.groups.people'), icon: Users, kw: 'clients patients buyer contact' },
-  { label: t('nav.items.suppliers'), path: '/people/suppliers', group: t('nav.groups.people'), icon: Truck, kw: 'vendor company distributor source' },
-  { label: t('nav.items.staff'), path: '/people/staff', group: t('nav.groups.people'), icon: Briefcase, kw: 'employees cashier manager role user account' },
-  { label: t('nav.items.sales'), path: '/reports/sales', group: t('nav.groups.reports'), icon: LineChart, kw: 'revenue chart trend analytics' },
-  { label: t('nav.items.profit_margin'), path: '/reports/profit', group: t('nav.groups.reports'), icon: TrendingUp, kw: 'margin gross net cost' },
-  { label: t('nav.items.pnl'), path: '/reports/pnl', group: t('nav.groups.reports'), icon: DollarSign, kw: 'profit loss income statement financial' },
-  { label: t('nav.items.tax'), path: '/reports/tax', group: t('nav.groups.reports'), icon: Percent, kw: 'vat gst tax report' },
-  { label: t('nav.items.activity_log'), path: '/activity-log', group: t('nav.groups.general'), icon: Activity, kw: 'history audit log who changed' },
-  { label: t('nav.items.inbox'), path: '/inbox', group: t('nav.groups.general'), icon: InboxIcon, kw: 'messages alerts notifications' },
-  { label: t('nav.items.store_settings'), path: '/settings', group: t('nav.groups.settings'), icon: Settings, kw: 'store info general configuration setup name' },
-  { label: 'Capabilities', path: '/settings/capabilities', group: t('nav.groups.settings'), icon: Layers, kw: 'multi unit pharmacy fefo expiry weight selling mode features toggle enable disable' },
-  { label: 'POS Settings', path: '/settings/pos', group: t('nav.groups.settings'), icon: Calculator, kw: 'clock 12h 24h time format cart display pos favorites top selling ux' },
-  { label: t('nav.items.taxes'), path: '/settings/taxes', group: t('nav.groups.settings'), icon: Percent, kw: 'vat rate tax rate percentage' },
-  { label: 'Profile', path: '/settings/profile', group: t('nav.groups.settings'), icon: UserCircle, kw: 'account password name email photo avatar' },
-  { label: t('nav.items.security'), path: '/settings/security', group: t('nav.groups.settings'), icon: Lock, kw: 'password 2fa pin access login auth' },
-  { label: 'Notifications', path: '/settings/notifications', group: t('nav.groups.settings'), icon: Bell, kw: 'alerts push email sound notification prefs' },
-  { label: 'Billing', path: '/settings/billing', group: t('nav.groups.settings'), icon: CreditCard, kw: 'subscription plan payment invoice billing' },
-  { label: t('nav.items.whats_new'), path: '/settings/changelog', group: t('nav.groups.settings'), icon: Sparkles, kw: 'updates version release new features' },
+  { label: t('nav.dashboard'),              path: '/dashboard',               group: t('nav.groups.general'),   icon: LayoutDashboard, kw: 'home overview summary' },
+  { label: t('core.header.pos'),            path: '/pos',                     group: t('nav.groups.general'),   icon: Calculator,      kw: 'cashier sale checkout counter point of sale' },
+  { label: t('nav.items.products'),         path: '/inventory/products',      group: t('nav.groups.inventory'), icon: Package,         kw: 'items drugs medicines stock sku barcode' },
+  { label: t('nav.items.purchases'),        path: '/inventory/purchases',     group: t('nav.groups.inventory'), icon: ShoppingCart,    kw: 'receive supplier invoice stock in buy' },
+  { label: t('nav.items.stock_adjustments'),path: '/inventory/adjustments',   group: t('nav.groups.inventory'), icon: SlidersHorizontal, kw: 'correct opening balance ledger movement' },
+  { label: t('nav.items.stock_transfers'),  path: '/inventory/transfers',     group: t('nav.groups.inventory'), icon: ArrowLeftRight,  kw: 'move branch transfer between' },
+  { label: t('nav.items.memory_base'),      path: '/inventory/memory-base',   group: t('nav.groups.inventory'), icon: Library,         kw: 'drug catalog reference index names medicines database' },
+  { label: t('nav.items.categories'),       path: '/inventory/categories',    group: t('nav.groups.inventory'), icon: Tag,             kw: 'groups drugs types classify' },
+  { label: t('nav.items.attributes'),       path: '/inventory/attributes',    group: t('nav.groups.inventory'), icon: List,            kw: 'fields manufacturer active ingredient custom meta' },
+  { label: t('nav.items.inventory_reports'),path: '/inventory/reports',       group: t('nav.groups.inventory'), icon: FileBarChart,    kw: 'stock report low reorder expiry batch' },
+  { label: t('nav.items.import_export'),    path: '/inventory/import-export', group: t('nav.groups.inventory'), icon: ArrowDownUp,     kw: 'csv bulk upload download data' },
+  { label: t('nav.items.storage'),          path: '/inventory/storage',       group: t('nav.groups.inventory'), icon: Archive,         kw: 'warehouse shelf location bin rack' },
+  { label: t('nav.items.sales_invoices'),   path: '/finance/invoices',        group: t('nav.groups.finance'),   icon: FileText,        kw: 'invoice sale receipt order customer' },
+  { label: t('nav.items.returns'),          path: '/finance/returns',         group: t('nav.groups.finance'),   icon: CornerDownLeft,  kw: 'refund return exchange cancel' },
+  { label: t('nav.items.expenses'),         path: '/finance/expenses',        group: t('nav.groups.finance'),   icon: Receipt,         kw: 'cost spending overhead bills' },
+  { label: t('nav.items.shifts'),           path: '/finance/shifts',          group: t('nav.groups.finance'),   icon: Clock,           kw: 'open close shift daily session cash' },
+  { label: t('nav.items.cash_drawer'),      path: '/finance/cash-drawer',     group: t('nav.groups.finance'),   icon: Wallet,          kw: 'drawer float cash in out' },
+  { label: t('nav.items.customers'),        path: '/people/customers',        group: t('nav.groups.people'),    icon: Users,           kw: 'clients patients buyer contact' },
+  { label: t('nav.items.suppliers'),        path: '/people/suppliers',        group: t('nav.groups.people'),    icon: Truck,           kw: 'vendor company distributor source' },
+  { label: t('nav.items.staff'),            path: '/people/staff',            group: t('nav.groups.people'),    icon: Briefcase,       kw: 'employees cashier manager role user account' },
+  { label: t('nav.items.sales'),            path: '/reports/sales',           group: t('nav.groups.reports'),   icon: LineChart,       kw: 'revenue chart trend analytics' },
+  { label: t('nav.items.profit_margin'),    path: '/reports/profit',          group: t('nav.groups.reports'),   icon: TrendingUp,      kw: 'margin gross net cost' },
+  { label: t('nav.items.pnl'),              path: '/reports/pnl',             group: t('nav.groups.reports'),   icon: DollarSign,      kw: 'profit loss income statement financial' },
+  { label: t('nav.items.tax'),              path: '/reports/tax',             group: t('nav.groups.reports'),   icon: Percent,         kw: 'vat gst tax report' },
+  { label: t('nav.items.activity_log'),     path: '/activity-log',            group: t('nav.groups.general'),   icon: Activity,        kw: 'history audit log who changed' },
+  { label: t('nav.items.inbox'),            path: '/inbox',                   group: t('nav.groups.general'),   icon: InboxIcon,       kw: 'messages alerts notifications' },
+  { label: t('nav.items.store_settings'),   path: '/settings',                group: t('nav.groups.settings'),  icon: Settings,        kw: 'store info general configuration setup name' },
+  { label: 'Capabilities',                  path: '/settings/capabilities',   group: t('nav.groups.settings'),  icon: Layers,          kw: 'multi unit pharmacy fefo expiry weight selling mode features toggle' },
+  { label: 'POS Settings',                  path: '/settings/pos',            group: t('nav.groups.settings'),  icon: Calculator,      kw: 'clock 12h 24h time format cart display pos favorites' },
+  { label: t('nav.items.taxes'),            path: '/settings/taxes',          group: t('nav.groups.settings'),  icon: Percent,         kw: 'vat rate tax rate percentage' },
+  { label: 'Profile',                       path: '/settings/profile',        group: t('nav.groups.settings'),  icon: UserCircle,      kw: 'account password name email photo avatar' },
+  { label: t('nav.items.security'),         path: '/settings/security',       group: t('nav.groups.settings'),  icon: Lock,            kw: 'password 2fa pin access login auth' },
+  { label: t('nav.items.lockscreen'),       path: '/settings/lockscreen',     group: t('nav.groups.settings'),  icon: Shield,          kw: 'lock screen auto lock idle timeout pin code logo facts timer' },
+  { label: 'Notifications',                 path: '/settings/notifications',  group: t('nav.groups.settings'),  icon: Bell,            kw: 'alerts push email sound notification prefs' },
+  { label: 'Billing',                       path: '/settings/billing',        group: t('nav.groups.settings'),  icon: CreditCard,      kw: 'subscription plan payment invoice billing' },
+  { label: t('nav.items.whats_new'),        path: '/settings/changelog',      group: t('nav.groups.settings'),  icon: Sparkles,        kw: 'updates version release new features' },
+  // lockscreen child options (client-side fallback only — API returns these with parent field)
+  { label: 'Auto-Lock Timer', parent: 'Lock Screen', path: '/settings/lockscreen', group: t('nav.groups.settings'), icon: Shield, kw: 'auto lock timer idle timeout minutes disable' },
+  { label: 'PIN Code',        parent: 'Lock Screen', path: '/settings/lockscreen', group: t('nav.groups.settings'), icon: Shield, kw: 'pin code lock password digits set change' },
+  { label: 'Lock Screen Logo',parent: 'Lock Screen', path: '/settings/lockscreen', group: t('nav.groups.settings'), icon: Shield, kw: 'lock logo image upload branding' },
 ])
 
 function fuzzyMatch(term, target) {
@@ -303,11 +348,13 @@ function fuzzyMatch(term, target) {
   return true
 }
 
-const q = ref('')
-const searchOpen = ref(false)
-const idx = ref(0)
-const searchRef = ref(null)
+const q           = ref('')
+const searchOpen  = ref(false)
+const idx         = ref(0)
+const searchRef   = ref(null)
 const searchInput = ref(null)
+const navResults  = ref([])   // from API (Typesense-backed)
+let   navTimer    = null
 
 function pageMatches(p, term) {
   return p.label.toLowerCase().includes(term) ||
@@ -315,9 +362,29 @@ function pageMatches(p, term) {
     (p.kw || '').toLowerCase().includes(term)
 }
 
+// Debounced API call for nav search
+watch(q, (val) => {
+  clearTimeout(navTimer)
+  const term = val.trim()
+  if (!term) { navResults.value = []; return }
+  navTimer = setTimeout(async () => {
+    try {
+      const res = await api.get('/api/core/nav-search/', { params: { q: term } })
+      // decorate each hit with a Vue icon component
+      navResults.value = (res.data || []).map(r => ({
+        ...r,
+        icon: NAV_ICON_MAP[r.path] || Settings,
+      }))
+    } catch { navResults.value = [] }
+  }, 150)
+})
+
 const results = computed(() => {
   const term = q.value.trim().toLowerCase()
   if (!term) return []
+  // API results take priority (typo-tolerant, Arabic-aware)
+  if (navResults.value.length) return navResults.value.slice(0, 8)
+  // fallback: client-side substring then fuzzy
   const exact = PAGES.value.filter(p => pageMatches(p, term)).slice(0, 7)
   if (exact.length) return exact
   return PAGES.value.filter(p =>
@@ -343,6 +410,17 @@ function navTo(path) {
   q.value = ''
   if (router.currentRoute.value.path !== path) router.push(path)
 }
+
+// Unified keyboard handler for the search input (arrows, Tab, Enter, Esc)
+function onInputKeydown(e) {
+  if (!searchOpen.value && e.key !== 'Escape') { searchOpen.value = true }
+  if (!results.value.length) return
+  if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) { e.preventDefault(); move(1) }
+  else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) { e.preventDefault(); move(-1) }
+  else if (e.key === 'Enter') { e.preventDefault(); choose() }
+  else if (e.key === 'Escape') { searchOpen.value = false }
+}
+
 function onSearchKey(e) {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
     e.preventDefault()
@@ -468,6 +546,8 @@ onUnmounted(() => {
 .nhdr-result.active { background: var(--accent-soft); color: var(--text-primary); }
 .nhdr-result-icon { color: var(--accent); flex-shrink: 0; }
 .nhdr-result-label { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
+.nhdr-result-parent { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+.nhdr-result-sep { opacity: 0.5; margin: 0 2px; }
 .nhdr-result-group { margin-left: auto; font-size: 11px; color: var(--text-muted); }
 .nhdr-fuzzy-hint { font-size: 11px; color: var(--text-muted); padding: 6px 12px 2px; font-style: italic; }
 
