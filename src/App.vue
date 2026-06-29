@@ -1,23 +1,35 @@
 <template>
   <UpdateBanner />
   <RouterView />
+  <LockScreen />
 </template>
 
 <script setup>
 import { RouterView } from 'vue-router'
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import UpdateBanner from './components/UpdateBanner.vue'
+import LockScreen from './components/LockScreen.vue'
+import { useAuthStore } from './stores/auth'
+import { useLockscreen } from './composables/useLockscreen'
+
+const auth = useAuthStore()
+const { init, destroy } = useLockscreen()
+
+// Init lockscreen when a store user is present (user.store is set = store session)
+watch(() => auth.user?.store, (store) => {
+  if (store) init()
+  else destroy()
+}, { immediate: true })
 
 function blockBrowserShortcuts(e) {
   const k = (e.ctrlKey || e.metaKey)
   if (!k) return
   const key = e.key.toLowerCase()
-  // Block browser shortcuts that make no sense in a SPA or could destroy POS session
-  if (key === 's') { e.preventDefault(); return }  // save dialog
-  if (key === 'p') { e.preventDefault(); return }  // print dialog (we have our own)
-  if (key === 'w') { e.preventDefault(); return }  // close tab (catastrophic in POS mid-sale)
-  if (key === 'n') { e.preventDefault(); return }  // new window
-  if (key === 't') { e.preventDefault(); return }  // new tab
+  if (key === 's') { e.preventDefault(); return }
+  if (key === 'p') { e.preventDefault(); return }
+  if (key === 'w') { e.preventDefault(); return }
+  if (key === 'n') { e.preventDefault(); return }
+  if (key === 't') { e.preventDefault(); return }
 }
 
 onMounted(()   => window.addEventListener('keydown', blockBrowserShortcuts))

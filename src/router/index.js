@@ -68,6 +68,7 @@ const router = createRouter({
         { path: 'settings/billing/invoices/:id',   component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
         { path: 'settings/notifications',         component: () => import('@/views/settings/NotificationPrefs.vue'), meta: { store: true } },
         { path: 'settings/pos',                    component: () => import('@/views/settings/PosSettings.vue'),       meta: { store: true } },
+        { path: 'settings/lockscreen',             component: () => import('@/views/settings/LockscreenSettings.vue'), meta: { store: true } },
         // Legacy deep-links → redirect into the merged POS Settings page
         { path: 'settings/pos/favorites',          redirect: '/settings/pos' },
         { path: 'settings/pos/top-selling',        redirect: '/settings/pos' },

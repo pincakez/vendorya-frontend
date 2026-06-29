@@ -227,6 +227,7 @@ const groups = computed(() => [
     { label: t('nav.items.pos_settings'),    to: '/settings/pos',            icon: Keyboard },
     { label: t('nav.items.profile'),         to: '/settings/profile',        icon: User },
     { label: t('nav.items.security'),        to: '/settings/security',       icon: Lock },
+    { label: t('nav.items.lockscreen'),      to: '/settings/lockscreen',     icon: Shield },
     { label: t('nav.items.whats_new'),       to: '/settings/changelog',      icon: Sparkles },
   ] },
 ])
