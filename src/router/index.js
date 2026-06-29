@@ -91,6 +91,7 @@ const router = createRouter({
         { path: 'admin/billing-settings', component: () => import('@/views/admin/AdminBillingSettings.vue'), meta: { admin: true } },
         { path: 'admin/misc',          component: () => import('@/views/admin/AdminMisc.vue'),          meta: { admin: true } },
         { path: 'admin/ai-profiles',   component: () => import('@/views/admin/AdminAIProfiles.vue'),   meta: { admin: true } },
+        { path: 'admin/api-stats',     component: () => import('@/views/admin/ApiStats.vue'),           meta: { admin: true } },
         { path: 'admin/auth-settings', component: () => import('@/views/admin/AdminAuthSettings.vue'),  meta: { admin: true } },
         { path: 'admin/alerts',        component: () => import('@/views/admin/AdminAlerts.vue'),         meta: { admin: true } },
         { path: 'admin/trash',         component: () => import('@/views/admin/AdminTrash.vue'),          meta: { admin: true } },

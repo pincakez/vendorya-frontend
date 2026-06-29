@@ -12,6 +12,50 @@
 
 export const changelog = [
   {
+    version: '1.29.1',
+    date: '2026-06-29',
+    tag: 'New',
+    en: {
+      title: 'Admin: API Stats page — drug enrichment progress tracker',
+      points: [
+        'A new page under the AI section in the admin panel shows live progress on the drug-profile enrichment job (§DE).',
+        'See how many drug profiles have been created, how many still need attention, and the completion percentage across all solid-dose drugs.',
+        'Includes the shell command to run the enrichment, the last run timestamp, and a breakdown by which AI model was used.',
+      ],
+    },
+    ar: {
+      title: 'المشرف: صفحة إحصائيات API — متتبع تقدم إثراء بيانات الأدوية',
+      points: [
+        'صفحة جديدة ضمن قسم الذكاء الاصطناعي في لوحة الإدارة تعرض التقدم الفعلي لعملية إثراء بيانات الأدوية.',
+        'اعرف كم ملفًا دوائيًا تم إنشاؤه، وكم يحتاج مراجعة، ونسبة الاكتمال على جميع الأدوية الصلبة.',
+        'تتضمن أمر تشغيل الإثراء، وتاريخ آخر تشغيل، وتوزيعًا حسب نموذج الذكاء الاصطناعي المستخدم.',
+      ],
+    },
+  },
+  {
+    version: '1.29.0',
+    date: '2026-06-29',
+    tag: 'Improved',
+    en: {
+      title: 'Memory Base — resizable columns, search, and filters',
+      points: [
+        'The Memory Base drug list now uses the same powerful table engine as the Products page: drag columns left and right to reorder them, resize any column by pulling its edge, and hide columns you don\'t need.',
+        'You can save your preferred layout as a named preset and switch between layouts instantly — useful if you want different views for browsing vs. checking prices.',
+        'Search now uses typo-tolerant matching (the same engine as the POS and New Purchase screens), so a small spelling mistake still finds the right drug.',
+        'A category filter lets you narrow the list to one drug bucket at a time.',
+      ],
+    },
+    ar: {
+      title: 'قاعدة المعلومات — أعمدة قابلة للتغيير والبحث والتصفية',
+      points: [
+        'قائمة الأدوية في قاعدة المعلومات تستخدم الآن نفس محرك الجدول القوي الموجود في صفحة المنتجات: اسحب الأعمدة يمينًا ويسارًا لإعادة ترتيبها، وغيّر عرض أي عمود بسحب حافته، وأخفِ الأعمدة التي لا تحتاجها.',
+        'يمكنك حفظ تخطيطك المفضل كإعداد مسمى والتبديل بين التخطيطات فورًا.',
+        'يدعم البحث الآن التسامح مع الأخطاء الإملائية، فخطأ بسيط في الكتابة لن يمنعك من إيجاد الدواء الصحيح.',
+        'يتيح لك تصفية الفئات تضييق القائمة إلى مجموعة دوائية واحدة في كل مرة.',
+      ],
+    },
+  },
+  {
     version: '1.28.0',
     date: '2026-06-28',
     tag: 'New',

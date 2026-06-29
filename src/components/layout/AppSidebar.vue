@@ -252,6 +252,7 @@ const adminGroups = computed(() => [
   ] },
   { id: 'aai', title: t('nav.groups.ai'), icon: Bot, items: [
     { label: t('nav.items.ai_profiles'), to: '/admin/ai-profiles', icon: Bot },
+    { label: 'API Stats',                to: '/admin/api-stats',   icon: BarChart2 },
     { label: t('nav.items.misc'),        to: '/admin/misc',        icon: Wrench },
   ] },
   { id: 'adesign', title: t('nav.groups.design'), icon: LayoutGrid, items: [
