@@ -41,11 +41,16 @@
       <template #toolbar-start>
         <div class="dt-search">
           <Search :size="15" class="dt-search-icon" />
+          <span v-if="flags.mode.value" class="dt-flag-chip">
+            {{ flags.chipLabel() }}
+            <button class="dt-flag-x" @click="flags.clear()"><X :size="11" /></button>
+          </span>
           <input
             v-model="search"
             class="dt-search-input"
             :placeholder="t('inventory.memory_base.search_placeholder')"
             @input="debouncedFetch"
+            @keyup.enter="onSearchEnter"
           />
           <button v-show="search" class="dt-x" @click="clearSearch"><X :size="13" /></button>
         </div>
@@ -134,6 +139,14 @@
         </BaseButton>
       </template>
     </AppModal>
+
+    <!-- Same-active-ingredient alternatives (/sameing · /sametrade) -->
+    <AlternativesModal
+      :open="altModal.open" :title="altModal.title" :ingredient="altModal.ingredient"
+      :items="altModal.items" :loading="altModal.loading" :arabic="altModal.arabic"
+      context="catalog"
+      @close="altModal.open = false"
+    />
   </div>
 </template>
 
@@ -148,8 +161,11 @@ import FluidDataTable from '@/components/base/FluidDataTable.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import Money from '@/components/ui/Money.vue'
+import AlternativesModal from '@/components/inventory/AlternativesModal.vue'
+import { useSearchFlags } from '@/composables/useSearchFlags'
 
 const { t } = useI18n()
+const flags = useSearchFlags()
 
 /* ── Column definitions ─────────────────────────────────────── */
 const MB_COLUMNS = [
@@ -185,7 +201,9 @@ function attrVal(row, key) {
   return Array.isArray(v) && v.length ? v[0] : '—'
 }
 
+let fetchSeq = 0   // guards against out-of-order search responses clobbering newer results
 async function fetchEntries(p = page.value) {
+  const seq = ++fetchSeq
   loading.value = true
   page.value = p
   try {
@@ -197,13 +215,14 @@ async function fetchEntries(p = page.value) {
       if (col?.sort) params.ordering = (sortDir.value === 'desc' ? '-' : '') + col.sort
     }
     const { data } = await api.get('/api/inventory/products/', { params })
+    if (seq !== fetchSeq) return   // a newer request is in flight — ignore this stale one
     const results  = data.results ?? data
     total.value    = data.count ?? results.length
     rows.value     = results
   } catch {
-    rows.value = []; total.value = 0
+    if (seq === fetchSeq) { rows.value = []; total.value = 0 }
   } finally {
-    loading.value = false
+    if (seq === fetchSeq) loading.value = false
   }
 }
 
@@ -231,6 +250,26 @@ function debouncedFetch() {
 }
 function clearSearch()  { search.value = '';    page.value = 1; fetchEntries(1) }
 function clearFilters() { catFilter.value = ''; showFilters.value = false; fetchEntries(1) }
+
+/* ── /sameing · /sametrade flags → same-active-ingredient modal ── */
+const AR_RE = /[؀-ۿ]/
+const altModal = reactive({ open: false, loading: false, items: [], ingredient: '', title: '', arabic: false })
+function onSearchEnter() {
+  const { command, query } = flags.parse(search.value)
+  if (command) { search.value = query; page.value = 1; fetchEntries(1); return }  // command latched — strip it, keep filtering
+  if (flags.mode.value && query) openAlternatives(query)
+}
+async function openAlternatives(q) {
+  const mode = flags.mode.value
+  altModal.arabic = AR_RE.test(q)
+  altModal.title  = t(mode === 'sametrade' ? 'inventory.alternatives.title_trade' : 'inventory.alternatives.title_ing', { ing: q })
+  Object.assign(altModal, { open: true, loading: true, items: [], ingredient: q })
+  try {
+    const { data } = await api.get('/api/inventory/products/alternatives/', { params: { mode, q } })
+    altModal.items = data.results || []
+    altModal.ingredient = data.ingredient || q
+  } catch { altModal.items = [] } finally { altModal.loading = false }
+}
 
 /* ── Dedup ───────────────────────────────────────────────────── */
 const dedupModal = reactive({ open: false, busy: false })

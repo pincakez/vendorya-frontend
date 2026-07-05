@@ -664,6 +664,10 @@ body {
 .dt-search-icon { color: var(--text-muted); flex-shrink: 0; }
 .dt-search-input { flex: 1; border: none; background: none; outline: none; font-size: 13.5px; color: var(--text-primary); min-width: 0; }
 .dt-x { display: flex; border: none; cursor: pointer; background: var(--border); color: var(--text-muted); border-radius: 6px; padding: 3px; }
+/* Search-flag chip (/sameing · /sametrade) — shows the latched alternatives mode */
+.dt-flag-chip { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; padding: 2px 4px 2px 8px; background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); border-radius: 7px; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; white-space: nowrap; }
+.dt-flag-x { display: flex; align-items: center; border: none; cursor: pointer; background: none; color: var(--accent); padding: 1px; opacity: .7; }
+.dt-flag-x:hover { opacity: 1; }
 .dt-filter { display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 10px 16px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: 11px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background 120ms, color 120ms; }
 .dt-filter:hover, .dt-filter.on { color: var(--text-primary); border-color: var(--accent); }
 .dt-add { display: flex; align-items: center; gap: 7px; flex-shrink: 0; margin-left: auto; padding: 10px 16px; border: none; background: var(--accent); color: #fff; border-radius: 11px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background 120ms, transform 70ms; }

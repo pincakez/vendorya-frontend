@@ -12,6 +12,48 @@
 
 export const changelog = [
   {
+    version: '1.33.0',
+    date: '2026-07-05',
+    tag: 'New',
+    en: {
+      title: 'Find alternative brands with the same active ingredient',
+      points: [
+        'In the register search and in the Memory Base, type /sametrade followed by an active ingredient (for example: Paracetamol) to see every product that contains it.',
+        'Or type /sameing followed by a brand name (for example: Panadol) — the system finds that brand\'s active ingredient and shows you all the alternatives.',
+        'Press Enter and a window lists the matching brands. At the register it shows only what you have in stock, with the price and quantity — ideal for offering a substitute when something is out of stock.',
+        'A small tag next to the search box shows the mode is on. Type /clear, or click the tag\'s ✕, to go back to normal search.',
+      ],
+    },
+    ar: {
+      title: 'ابحث عن أصناف بديلة بنفس المادة الفعالة',
+      points: [
+        'في بحث نقطة البيع وفي بنك الذاكرة، اكتب /sametrade متبوعًا بمادة فعالة (مثل: Paracetamol) لعرض كل صنف يحتوي عليها.',
+        'أو اكتب /sameing متبوعًا باسم صنف تجاري (مثل: Panadol) — يجد النظام المادة الفعالة لذلك الصنف ويعرض لك كل البدائل.',
+        'اضغط Enter لتظهر نافذة بالأصناف المطابقة. عند نقطة البيع تعرض فقط ما هو متوفر لديك في المخزون، مع السعر والكمية — مثالية لتقديم بديل عند نفاد صنف.',
+        'تظهر علامة صغيرة بجوار مربع البحث توضح أن الوضع مُفعّل. اكتب /clear، أو اضغط ✕ على العلامة، للعودة إلى البحث العادي.',
+      ],
+    },
+  },
+  {
+    version: '1.32.2',
+    date: '2026-07-05',
+    tag: 'Fixed',
+    en: {
+      title: 'Search results no longer jump to the wrong list',
+      points: [
+        'Fixed an issue where typing quickly in a search box could suddenly show results that had nothing to do with what you typed — most noticeable after four or more letters.',
+        'Search now always shows the results for exactly what is in the box. This affects product search, the Memory Base, adding a product, and the purchases search.',
+      ],
+    },
+    ar: {
+      title: 'نتائج البحث لم تعد تقفز إلى قائمة خاطئة',
+      points: [
+        'تم إصلاح مشكلة كانت تجعل الكتابة السريعة في مربع البحث تعرض فجأة نتائج لا علاقة لها بما كتبته — وكانت أوضح بعد أربعة أحرف أو أكثر.',
+        'أصبح البحث يعرض دائمًا نتائج ما هو مكتوب في المربع تمامًا. يشمل ذلك بحث المنتجات، بنك الذاكرة، إضافة منتج، وبحث المشتريات.',
+      ],
+    },
+  },
+  {
     version: '1.32.1',
     date: '2026-07-05',
     tag: 'Improved',

@@ -996,7 +996,9 @@ const to = computed(() => Math.min(page.value * pageSize.value, total.value))
 
 const filterableAttrs = computed(() => attributes.value.filter(a => a.input_type === 'SELECT' && a.options?.length))
 
+let fetchSeq = 0   // guards against out-of-order search responses clobbering newer results
 async function fetchProducts(p = 1) {
+  const seq = ++fetchSeq
   if (p === 1) document.querySelector('.app-content')?.scrollTo({ top: 0, behavior: 'instant' })
   loading.value = true
   page.value = p
@@ -1010,9 +1012,11 @@ async function fetchProducts(p = 1) {
     }
     for (const [k, v] of Object.entries(attrFilters)) if (v) params[k] = v
     const res = await api.get('/api/inventory/products/', { params })
+    if (seq !== fetchSeq) return   // a newer request is in flight — ignore this stale one
     products.value = res.data.results ?? res.data
     total.value = res.data.count ?? products.value.length
-  } catch { products.value = [] } finally { loading.value = false }
+  } catch { if (seq === fetchSeq) products.value = [] }
+  finally { if (seq === fetchSeq) loading.value = false }
 }
 function goPage(p) {
   if (p < 1 || p > totalPages.value) return
@@ -1162,20 +1166,23 @@ function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] 
 // new product. Price/cost/stock stay hand-entered. Never runs while editing.
 const nameAC = reactive({ results: [], open: false })
 let nameAcTimer = null
+let nameAcSeq = 0   // guards against a stale autocomplete response reopening the dropdown
 function acIngredient(r) {
   const v = r?.attributes_summary?.active_ing
   return Array.isArray(v) && v.length ? v[0] : ''
 }
 function onProdNameInput() {
   clearTimeout(nameAcTimer)
+  const seq = ++nameAcSeq   // bump first so any in-flight response is invalidated
   const q = (prodModal.name || '').trim()
   if (prodModal.id || q.length < 2) { nameAC.results = []; nameAC.open = false; return }
   nameAcTimer = setTimeout(async () => {
     try {
       const { data } = await api.get('/api/inventory/products/', { params: { search: q, page_size: 8, source: 'all' } })
+      if (seq !== nameAcSeq) return   // superseded by a newer keystroke
       nameAC.results = data.results ?? data
       nameAC.open = nameAC.results.length > 0
-    } catch { nameAC.results = []; nameAC.open = false }
+    } catch { if (seq === nameAcSeq) { nameAC.results = []; nameAC.open = false } }
   }, 250)
 }
 function pickFromMemory(r) {

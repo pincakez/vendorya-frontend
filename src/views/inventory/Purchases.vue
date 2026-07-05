@@ -392,7 +392,9 @@ function clearFilters() {
   fetchPurchases(1)
 }
 
+let fetchSeq = 0   // guards against out-of-order search responses clobbering newer results
 async function fetchPurchases(p = 1) {
+  const seq = ++fetchSeq
   loading.value = true
   page.value = p
   try {
@@ -403,9 +405,11 @@ async function fetchPurchases(p = 1) {
     if (dateFrom.value)       params.date_from = dateFrom.value
     if (dateTo.value)         params.date_to   = dateTo.value
     const res = await api.get('/api/finance/purchases/', { params })
+    if (seq !== fetchSeq) return   // a newer request is in flight — ignore this stale one
     purchases.value = res.data.results ?? res.data
     total.value     = res.data.count ?? purchases.value.length
-  } catch { purchases.value = [] } finally { loading.value = false }
+  } catch { if (seq === fetchSeq) purchases.value = [] }
+  finally { if (seq === fetchSeq) loading.value = false }
 }
 
 async function fetchSuppliers() {

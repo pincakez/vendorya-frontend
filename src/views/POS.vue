@@ -29,7 +29,11 @@
           :placeholder="t('pos.search_placeholder')"
           class="pos-search"
         />
-        <kbd class="pos-search-kbd">F1</kbd>
+        <span v-if="flags.mode.value" class="pos-flag-chip">
+          {{ flags.chipLabel() }}
+          <button class="pos-flag-x" @click="flags.clear()"><X :size="12" /></button>
+        </span>
+        <kbd v-else class="pos-search-kbd">F1</kbd>
 
         <div v-if="searchResults.length && searchFocused" class="pos-search-dropdown">
           <div
@@ -394,6 +398,13 @@
       @saved="showServiceModal = false"
     />
 
+    <!-- Same-active-ingredient alternatives (/sameing · /sametrade) — in-stock only -->
+    <AlternativesModal
+      :open="altModal.open" :title="altModal.title" :ingredient="altModal.ingredient"
+      :items="altModal.items" :loading="altModal.loading" :arabic="altModal.arabic"
+      @close="altModal.open = false"
+    />
+
     <!-- ─── Held carts panel ───────────────────────────────── -->
     <Transition name="held-slide">
       <div v-if="showHeldPanel" class="pos-held-panel">
@@ -432,10 +443,13 @@ import DiscountModal       from '@/components/pos/DiscountModal.vue'
 import PosNumpad           from '@/components/pos/PosNumpad.vue'
 import CustomerFormModal   from '@/components/shared/CustomerFormModal.vue'
 import ServiceFormModal    from '@/views/services/ServiceFormModal.vue'
+import AlternativesModal   from '@/components/inventory/AlternativesModal.vue'
+import { useSearchFlags }  from '@/composables/useSearchFlags'
 
 const router = useRouter()
 const { t, locale } = useI18n()
 const theme = useThemeStore()
+const flags = useSearchFlags()
 
 // Language switcher — mirrors the main AppHeader (persisted to localStorage).
 function toggleLocale() {
@@ -641,8 +655,11 @@ function onSearchKeydown(e) {
     } else {
       searchIndex.value = searchIndex.value >= len - 1 ? 0 : searchIndex.value + 1
     }
-  } else if (e.key === 'Enter' && searchIndex.value >= 0) {
-    e.preventDefault(); addToCart(searchResults.value[searchIndex.value])
+  } else if (e.key === 'Enter') {
+    const { command, query } = flags.parse(searchQuery.value)
+    if (command) { e.preventDefault(); searchQuery.value = query; onSearchInput(); return }  // latch flag, strip command
+    if (flags.mode.value && query) { e.preventDefault(); openAlternatives(query); return }   // flag active → alternatives modal
+    if (searchIndex.value >= 0) { e.preventDefault(); addToCart(searchResults.value[searchIndex.value]) }
   } else if (e.key === '*') {
     // Fast quantity: jump focus to the last cart line's qty box (scanner-first flow)
     e.preventDefault(); focusLastQty()
@@ -1013,12 +1030,26 @@ const discountCtx    = ref('invoice')   // 'invoice' or { key, lineTotal }
 const unitPicker     = ref(null)
 const successInvoice = ref(null)
 
+// Same-active-ingredient alternatives (/sameing · /sametrade). In-stock only (pos=1).
+const altModal = reactive({ open: false, loading: false, items: [], ingredient: '', title: '', arabic: false })
+async function openAlternatives(q) {
+  const mode = flags.mode.value
+  altModal.arabic = /[؀-ۿ]/.test(q)
+  altModal.title  = t(mode === 'sametrade' ? 'inventory.alternatives.title_trade' : 'inventory.alternatives.title_ing', { ing: q })
+  Object.assign(altModal, { open: true, loading: true, items: [], ingredient: q })
+  try {
+    const { data } = await api.get('/api/inventory/products/alternatives/', { params: { mode, q, pos: 1 } })
+    altModal.items = data.results || []
+    altModal.ingredient = data.ingredient || q
+  } catch { altModal.items = [] } finally { altModal.loading = false }
+}
+
 // True while ANY POS modal/overlay is open — used to make the background go
 // completely dead (no search typing, no shortcuts, no cart nav behind a modal).
 const anyModalOpen = computed(() =>
   showPayment.value || showDiscount.value || showBranchPicker.value ||
   !!unitPicker.value || !!weightEntry.value || showAddCustomer.value ||
-  showServiceModal.value || !!successInvoice.value
+  showServiceModal.value || !!successInvoice.value || altModal.open
 )
 
 // ── Unit picker keyboard nav ─────────────────────────────────
@@ -1426,6 +1457,15 @@ function fmtQty(n) {
   font-size: 11px; background: var(--border); color: var(--text-muted);
   border-radius: 6px; padding: 2px 7px; font-family: inherit; flex-shrink: 0;
 }
+/* Search-flag chip (/sameing · /sametrade) — replaces the F1 kbd while a mode is latched */
+.pos-flag-chip {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  padding: 2px 5px 2px 9px; border-radius: 7px; font-size: 10.5px; font-weight: 700;
+  letter-spacing: .04em; white-space: nowrap;
+  background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent);
+}
+.pos-flag-x { display: flex; align-items: center; border: none; background: none; cursor: pointer; color: var(--accent); padding: 1px; opacity: .7; }
+.pos-flag-x:hover { opacity: 1; }
 .pos-search-dropdown {
   position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 300;
   background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px;

@@ -723,6 +723,16 @@
       "reason_placeholder": "Why is this being parked?",
       "confirm_delete_location": "Delete storage location \"{name}\"?",
       "err_save": "Could not save — please try again"
+    },
+    "alternatives": {
+      "count": "{n} results · {ing}",
+      "empty": "No matching products found.",
+      "out": "Out",
+      "loading": "Loading",
+      "title_ing": "Same active ingredient",
+      "title_trade": "Brands containing {ing}",
+      "chip_ing": "SAME INGREDIENT",
+      "chip_trade": "BY INGREDIENT"
     }
   },
   "finance": {

@@ -716,6 +716,16 @@
       "reason_placeholder": "لماذا يتم حفظ هذا؟",
       "confirm_delete_location": "حذف موقع التخزين \"{name}\"؟",
       "err_save": "تعذّر الحفظ — يرجى المحاولة مرة أخرى"
+    },
+    "alternatives": {
+      "count": "{n} نتيجة · {ing}",
+      "empty": "لا توجد منتجات مطابقة.",
+      "out": "نفد",
+      "loading": "جارٍ التحميل",
+      "title_ing": "نفس المادة الفعالة",
+      "title_trade": "الأصناف المحتوية على {ing}",
+      "chip_ing": "نفس المادة",
+      "chip_trade": "حسب المادة"
     }
   },
   "finance": {
