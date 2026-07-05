@@ -134,19 +134,19 @@
 
         <div class="facts-meta">
           <span class="facts-count">{{ form.lock_facts_bank.length }} {{ t('settings.lockscreen.facts_count') }}</span>
-          <button class="btn-secondary btn-sm" :disabled="generatingFacts" @click="generateFacts">
-            <span v-if="generatingFacts">{{ t('settings.lockscreen.generating') }}</span>
-            <span v-else>{{ t('settings.lockscreen.generate_btn') }}</span>
-          </button>
+          <div class="facts-actions">
+            <button class="btn-ghost btn-sm" @click="downloadTemplate">{{ t('settings.lockscreen.download_template') }}</button>
+            <label class="btn-secondary btn-sm logo-upload-btn">
+              {{ uploadingFacts ? t('common.uploading') : t('settings.lockscreen.upload_csv') }}
+              <input type="file" accept=".csv,text/csv" @change="uploadFacts" :disabled="uploadingFacts" class="hidden-file" />
+            </label>
+          </div>
         </div>
 
         <div v-if="form.lock_facts_bank.length" class="facts-list">
           <div v-for="(fact, i) in form.lock_facts_bank" :key="i" class="fact-row">
             <span class="fact-num">{{ i + 1 }}</span>
-            <div class="fact-texts">
-              <p class="fact-en">{{ fact.en }}</p>
-              <p class="fact-ar" dir="rtl">{{ fact.ar }}</p>
-            </div>
+            <p class="fact-en" dir="auto">{{ fact }}</p>
           </div>
         </div>
         <p v-else class="section-muted" style="margin-top:8px;">{{ t('settings.lockscreen.facts_empty') }}</p>
@@ -192,7 +192,7 @@ const pinSaved       = ref(false)
 const pinChangeMode  = ref('pin')
 
 // Facts
-const generatingFacts = ref(false)
+const uploadingFacts = ref(false)
 
 const timeoutOptions = [
   { value: 0,   label: t('settings.lockscreen.timeout_off') },
@@ -322,16 +322,31 @@ async function clearPin() {
   }
 }
 
-async function generateFacts() {
-  generatingFacts.value = true
+async function downloadTemplate() {
+  const res = await api.get('/api/core/lockscreen/facts/', { responseType: 'blob' })
+  const url = URL.createObjectURL(res.data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'lockscreen_template.csv'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+async function uploadFacts(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  uploadingFacts.value = true
   try {
-    const res = await api.post('/api/core/lockscreen/facts/')
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await api.post('/api/core/lockscreen/facts/', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
     form.lock_facts_bank = res.data.facts
     refreshSettings({ lock_facts_bank: res.data.facts })
-  } catch (e) {
-    console.error('Facts generation failed:', e.response?.data?.error)
+  } catch (err) {
+    console.error('Facts upload failed:', err.response?.data?.error)
   } finally {
-    generatingFacts.value = false
+    uploadingFacts.value = false
+    e.target.value = ''
   }
 }
 
@@ -391,6 +406,7 @@ onMounted(load)
 
 /* Facts */
 .facts-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.facts-actions { display: flex; gap: 8px; align-items: center; }
 .facts-count { font-size: 13px; color: var(--text-muted); }
 .facts-list { display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto; padding-right: 4px; }
 .fact-row { display: flex; gap: 12px; padding: 10px 12px; background: var(--bg-body); border-radius: 8px; }

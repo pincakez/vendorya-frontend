@@ -33,7 +33,7 @@
           <!-- Fun fact -->
           <div v-if="fact" class="ls-fact">
             <span class="ls-fact-star">✦</span>
-            <p class="ls-fact-text">{{ isAr ? fact.ar : fact.en }}</p>
+            <p class="ls-fact-text" dir="auto">{{ fact }}</p>
           </div>
 
         </div>

@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.32.1',
+    date: '2026-07-05',
+    tag: 'Improved',
+    en: {
+      title: 'Lock screen messages — now your own, from a simple spreadsheet',
+      points: [
+        'The lock screen messages are now yours to write. Go to Settings → Lock Screen → Facts Bank, download the template, type one message per line under the "lockinfo" column, and upload the CSV.',
+        'Your messages rotate at the bottom of the lock screen, one per session. Arabic and English both display correctly.',
+        'When you have not added any messages, the lock screen simply shows nothing — clean, with no placeholder.',
+      ],
+    },
+    ar: {
+      title: 'رسائل شاشة القفل — أصبحت من عندك عبر ملف بسيط',
+      points: [
+        'أصبحت رسائل شاشة القفل من كتابتك. من الإعدادات ← شاشة القفل ← بنك المعلومات، نزّل القالب، اكتب رسالة في كل سطر تحت عمود "lockinfo"، ثم ارفع ملف CSV.',
+        'تظهر رسائلك في أسفل شاشة القفل بالتناوب، واحدة في كل جلسة. تظهر العربية والإنجليزية بشكل صحيح.',
+        'عندما لا تضيف أي رسائل، لا تعرض شاشة القفل شيئًا — نظيفة بلا حشو.',
+      ],
+    },
+  },
+  {
     version: '1.32.0',
     date: '2026-07-05',
     tag: 'New',
