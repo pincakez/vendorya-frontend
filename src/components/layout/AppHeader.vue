@@ -57,11 +57,6 @@
         <Sun v-if="theme.dark" :size="18" />
         <Moon v-else :size="18" />
       </button>
-
-      <!-- AI Chat toggle -->
-      <button class="header-icon-btn ai-toggle-btn" :class="{ active: chatOpen }" @click="$emit('toggleChat')" title="Toggle AI Assistant">
-        <Bot :size="18" />
-      </button>
     </template>
 
     <!-- ─────────────── STORE MODE ─────────────── -->
@@ -204,8 +199,8 @@ import { useThemeStore } from '@/stores/theme'
 import { useNotifications } from '@/composables/useNotifications'
 import api from '@/api/axios'
 
-defineProps({ sidebarCollapsed: Boolean, admin: Boolean, chatOpen: Boolean })
-defineEmits(['toggleSidebar', 'toggleChat'])
+defineProps({ sidebarCollapsed: Boolean, admin: Boolean })
+defineEmits(['toggleSidebar'])
 
 const auth   = useAuthStore()
 const theme  = useThemeStore()

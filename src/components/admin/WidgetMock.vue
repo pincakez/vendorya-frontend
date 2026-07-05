@@ -102,13 +102,6 @@ const heatCells = [0,1,2,1,3,2,0, 1,2,3,2,1,0,1, 2,1,0,3,2,1,2, 0,2,1,2,3,1,0]
     </div>
   </div>
 
-  <!-- AI Insights — rotating recommendation -->
-  <div v-else-if="id === 'ai-insights'" class="wm wm-ai">
-    <span class="wm-ai-spark">✦</span>
-    <p class="wm-ai-text">Restock <b>USB-C Cable</b> — it sold out twice this week and trends up.</p>
-    <span class="wm-dots"><i class="on" /><i /><i /></span>
-  </div>
-
   <!-- Activity Feed — event ticker -->
   <div v-else-if="id === 'activity-feed'" class="wm wm-feed">
     <div v-for="(f, i) in [['Sale #1042 posted', '2m'], ['Stock adjusted: +12', '9m'], ['Ahmed opened shift', '1h']]"

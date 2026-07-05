@@ -138,7 +138,7 @@ import {
   DollarSign, BookOpen, UserCheck, Percent, Users, Truck, Briefcase, Folder, Activity,
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
-  Building2, KeyRound, Trash2, Bot, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
+  Building2, KeyRound, Trash2, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
   BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles, CalendarClock,
   Library,
 } from 'lucide-vue-next'
@@ -250,11 +250,6 @@ const adminGroups = computed(() => [
     { label: t('nav.items.tenant_usage'),   to: '/admin/usage',           icon: BarChart2 },
     { label: t('nav.items.trash'),          to: '/admin/trash',           icon: Trash2 },
     { label: t('nav.items.isolation_check'),to: '/admin/isolation-check', icon: ShieldCheck },
-  ] },
-  { id: 'aai', title: t('nav.groups.ai'), icon: Bot, items: [
-    { label: t('nav.items.ai_profiles'), to: '/admin/ai-profiles', icon: Bot },
-    { label: 'API Stats',                to: '/admin/api-stats',   icon: BarChart2 },
-    { label: t('nav.items.misc'),        to: '/admin/misc',        icon: Wrench },
   ] },
   { id: 'adesign', title: t('nav.groups.design'), icon: LayoutGrid, items: [
     { label: t('nav.items.gallery'),            to: '/admin/widget-gallery',    icon: LayoutGrid },

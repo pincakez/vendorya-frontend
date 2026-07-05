@@ -66,7 +66,6 @@ const widgets = [
   { id: 'sales-chart', draft: true, name: 'Sales Chart',  desc: 'Full bar chart — revenue over a chosen period.' },
   { id: 'top-products',draft: true, name: 'Top Products', desc: 'Carousel of best sellers with ranks.' },
   { id: 'items-shift', draft: true, name: 'Items & Shift',desc: 'Units sold today plus live shift status.' },
-  { id: 'ai-insights', draft: true, name: 'AI Insights',  desc: 'Rotating AI recommendations from your data.' },
   { id: 'kpi-tile',    draft: true, name: 'KPI Tile',     desc: 'Minimal single-metric tile.' },
 ]
 
