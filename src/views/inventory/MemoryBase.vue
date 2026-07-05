@@ -92,6 +92,12 @@
         <Money v-if="row.price_display" :value="row.price_display" />
         <span v-else class="mb-muted">—</span>
       </template>
+      <template #cell-strips_per_pack="{ row }">
+        <span :class="row.strips_per_pack == null ? 'mb-muted' : ''">{{ row.strips_per_pack ?? '—' }}</span>
+      </template>
+      <template #cell-tablets_per_strip="{ row }">
+        <span :class="row.tablets_per_strip == null ? 'mb-muted' : ''">{{ row.tablets_per_strip ?? '—' }}</span>
+      </template>
 
       <!-- Empty state -->
       <template #empty>
@@ -154,10 +160,12 @@ const MB_COLUMNS = [
   { key: 'manufacturer', label: 'MANUFACTURER',      align: 'left',  field: 'manufacturer',  cls: '' },
   { key: 'category',     label: 'CATEGORY',          align: 'left',  field: 'category_l1',   cls: '' },
   { key: 'price',        label: 'PRICE',             sort: 'o_retail', align: 'right', field: 'price_display', cls: '', money: true },
+  { key: 'strips_per_pack',   label: 'STRIPS / PACK',   align: 'right', field: 'strips_per_pack',   cls: '' },
+  { key: 'tablets_per_strip', label: 'TABLETS / STRIP', align: 'right', field: 'tablets_per_strip', cls: '' },
 ]
 const LOCKED         = ['name']
-const DEFAULT_HIDDEN = ['active_ing_ar']
-const DEFAULT_WIDTHS = { name: 280, brand_ar: 200, active_ing: 220, active_ing_ar: 200, manufacturer: 180, category: 160, price: 110 }
+const DEFAULT_HIDDEN = ['active_ing_ar', 'strips_per_pack', 'tablets_per_strip']
+const DEFAULT_WIDTHS = { name: 280, brand_ar: 200, active_ing: 220, active_ing_ar: 200, manufacturer: 180, category: 160, price: 110, strips_per_pack: 130, tablets_per_strip: 140 }
 
 /* ── Data state ─────────────────────────────────────────────── */
 const rows      = ref([])

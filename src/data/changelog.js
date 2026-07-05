@@ -12,6 +12,31 @@
 
 export const changelog = [
   {
+    version: '1.32.0',
+    date: '2026-07-05',
+    tag: 'New',
+    en: {
+      title: 'Sell by pack, strip, or single unit — powered by the drug reference',
+      points: [
+        'When you add a pharmacy product that the drug reference knows, the register can now offer it as a full pack, a single strip, or a single unit — with the pack and strip sizes filled in for you automatically.',
+        'New in Settings → Capabilities: name your three tiers (Pack, Strip, Unit) and choose whether the store shows 2 or 3 tiers by default. The biggest tier is always available.',
+        'Turn on "Make the register respect the drug reference packaging" and the strip/pack sizes are read from the reference — no manual typing.',
+        'Each product can override the store default from its edit panel: two simple checkboxes decide whether the register sells single strips and single units.',
+        'The Memory Base table gained two optional columns — strips per pack and units per strip — so you can see a drug\'s packaging at a glance (turn them on under Customize).',
+      ],
+    },
+    ar: {
+      title: 'البيع بالعبوة أو الشريط أو الوحدة المفردة — مدعوم بمرجع الأدوية',
+      points: [
+        'عند إضافة منتج صيدلية معروف في مرجع الأدوية، يمكن لنقطة البيع الآن عرضه كعبوة كاملة أو شريط مفرد أو وحدة مفردة — مع تعبئة مقاسات العبوة والشريط تلقائيًا.',
+        'جديد في الإعدادات → الإمكانات: سمِّ الوحدات الثلاث (العبوة، الشريط، الوحدة) واختر هل يعرض المتجر وحدتين أو ثلاثًا افتراضيًا. الوحدة الأكبر متاحة دائمًا.',
+        'فعّل «اجعل نقطة البيع تلتزم بتعبئة مرجع الأدوية» فتُقرأ مقاسات الشريط والعبوة من المرجع — دون إدخال يدوي.',
+        'يمكن لكل منتج تجاوز الإعداد الافتراضي من لوحة تعديله: خانتان بسيطتان تحددان هل تبيع نقطة البيع الشرائط والوحدات المفردة.',
+        'اكتسب جدول مرجع الأدوية عمودين اختياريين — عدد الشرائط في العبوة وعدد الوحدات في الشريط — لرؤية تعبئة الدواء بنظرة (فعّلهما من التخصيص).',
+      ],
+    },
+  },
+  {
     version: '1.31.0',
     date: '2026-06-29',
     tag: 'New',

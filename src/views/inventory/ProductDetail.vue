@@ -411,6 +411,18 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- §MU-MB per-product POS tiers: which smaller tiers the register offers -->
+        <div class="mb-tier-toggles">
+          <label v-if="hasStripRow" class="mb-tier-check">
+            <input type="checkbox" v-model="editModal.show_strip" />
+            <span>{{ t('inventory.product_detail.show_strip', { name: stripTierName }) }}</span>
+          </label>
+          <label class="mb-tier-check">
+            <input type="checkbox" v-model="editModal.show_unit" />
+            <span>{{ t('inventory.product_detail.show_unit', { name: editModal.unit || 'pcs' }) }}</span>
+          </label>
+        </div>
       </div>
 
       <p v-if="editModal.error" class="form-label" style="color:var(--danger,#dc2626);margin-top:4px;">{{ editModal.error }}</p>
@@ -675,13 +687,32 @@ const editModal = reactive({
   supplierName: '', base_price: 0, cost_price: 0, sell_price: 0,
   reorder_level: 0, attrs: {}, unit: 'pcs', units: [], track_expiry: false,
   selling_mode: 'UNIT', saving: false, error: '',
+  // §MU-MB: per-product POS-tier toggles. show_strip → Strip row's `sellable`;
+  // show_unit → product.sell_base_unit. Pack (biggest) is always sellable.
+  show_strip: true, show_unit: true, autofilled: false,
 })
 
 // Store master switches — gate the per-product expiry checkbox + batch panel and
 // the weight-selling mode toggle so stores that don't use them never see the option.
 const expiryEnabled = ref(false)
 const weightEnabled = ref(false)
+// §MU-MB store defaults, loaded with the settings fetch on modal open.
+const respectMBEnabled = ref(true)
+const tierCount        = ref(3)
+const stripTierName    = ref('Strip')
+const packTierName     = ref('Pack')
 const isWeightMode = computed(() => editModal.selling_mode === 'WEIGHT')
+
+// The extra-unit row that represents the "Strip" tier: matched by the store's
+// Strip tier name, else the smallest-factor extra unit (the 2nd-smaller tier).
+function stripRowOf(units) {
+  const nm = stripTierName.value.trim().toLowerCase()
+  const named = units.find(u => (u.name || '').trim().toLowerCase() === nm)
+  if (named) return named
+  const withF = units.filter(u => Number(u.factor) > 0)
+  return withF.length ? withF.reduce((a, b) => Number(b.factor) < Number(a.factor) ? b : a) : null
+}
+const hasStripRow = computed(() => !!stripRowOf(editModal.units))
 
 function addUnitRow() {
   editModal.units.push({ id: null, name: '', factor: null, sell_price: 0, barcode: '' })
@@ -712,6 +743,11 @@ async function openEditModal() {
     const s = await api.get('/api/core/settings/')
     expiryEnabled.value = !!s.data.expiry_tracking_enabled
     weightEnabled.value = !!s.data.weight_selling_enabled
+    respectMBEnabled.value = s.data.pos_respect_mb_units ?? true
+    tierCount.value = s.data.pos_tier_count ?? 3
+    const tn = s.data.unit_tier_names || ['Strip', 'Pack']
+    stripTierName.value = tn[0] || 'Strip'
+    packTierName.value  = tn[1] || 'Pack'
   } catch { /* noop */ }
 
   const p = product.value
@@ -731,7 +767,27 @@ async function openEditModal() {
   // is implicit and excluded from the editable rows.
   editModal.units = (p.selling_units || [])
     .filter(u => !u.is_base)
-    .map(u => ({ id: u.id, name: u.name, factor: Number(u.factor), sell_price: Number(u.price), barcode: u.barcode || '' }))
+    .map(u => ({ id: u.id, name: u.name, factor: Number(u.factor), sell_price: Number(u.price),
+                 barcode: u.barcode || '', sellable: u.sellable !== false }))
+
+  // §MU-MB auto-fill: a fresh drug (no extra units) linked to a Memory Base
+  // profile seeds Strip + Pack rows from the enriched packaging. Factors:
+  // Strip = tablets_per_strip, Pack = tablets_per_strip × strips_per_pack.
+  editModal.autofilled = false
+  const tps = Number(p.tablets_per_strip) || 0
+  const spp = Number(p.strips_per_pack) || 0
+  if (respectMBEnabled.value && tps > 0 && spp > 0 && editModal.units.length === 0) {
+    editModal.units = [
+      { id: null, name: stripTierName.value, factor: tps,       sell_price: 0, barcode: '', sellable: true },
+      { id: null, name: packTierName.value,  factor: tps * spp, sell_price: 0, barcode: '', sellable: true },
+    ]
+    editModal.autofilled = true
+  }
+  // Pre-check the tier toggles: a freshly seeded config follows the store default
+  // (3 tiers → both on, 2 tiers → Unit off); an existing config reflects its saved state.
+  const strip = stripRowOf(editModal.units)
+  editModal.show_strip = editModal.autofilled ? true : (strip ? strip.sellable : (tierCount.value >= 2))
+  editModal.show_unit  = editModal.autofilled ? (tierCount.value >= 3) : (p.sell_base_unit !== false)
 
   // Build attrs map
   const a = {}
@@ -748,6 +804,7 @@ async function saveEdit() {
   const attributes_payload = Object.entries(editModal.attrs)
     .filter(([, val]) => val !== '' && val != null)
     .map(([definition, value]) => ({ definition, value }))
+  const stripRow = stripRowOf(editModal.units)
   const payload = {
     name: editModal.name.trim(),
     description: editModal.description || '',
@@ -758,6 +815,8 @@ async function saveEdit() {
     reorder_level: editModal.reorder_level ?? 0,
     track_expiry: editModal.track_expiry,
     selling_mode: editModal.selling_mode,
+    // §MU-MB: "show Unit" tier = whether the base unit itself is sellable at the POS.
+    sell_base_unit: editModal.show_unit,
     attributes: attributes_payload,
     // Only send rows that have a name + a positive factor; backend reconciles
     // (creates new, updates by id, soft-deletes any the user removed).
@@ -765,7 +824,10 @@ async function saveEdit() {
     selling_units: isWeightMode.value ? [] : editModal.units
       .filter(u => (u.name || '').trim() && Number(u.factor) > 0)
       .map(u => ({ id: u.id || undefined, name: u.name.trim(), factor: u.factor,
-                   sell_price: u.sell_price || 0, barcode: u.barcode || '' })),
+                   sell_price: u.sell_price || 0, barcode: u.barcode || '',
+                   // The Strip tier's sellability follows the "show Strip" checkbox;
+                   // every other extra unit stays sellable.
+                   sellable: (u === stripRow) ? editModal.show_strip : (u.sellable !== false) })),
   }
   try {
     await api.patch(`/api/inventory/products/${props.id}/`, payload)
@@ -1056,6 +1118,9 @@ onUnmounted(() => {
 .prod-units-table td:nth-child(2) { width: 130px; }
 .prod-units-table td:nth-child(3) { width: 120px; }
 .prod-units-table td:last-child { width: 34px; text-align: center; }
+.mb-tier-toggles { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 12px; }
+.mb-tier-check { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-primary); cursor: pointer; }
+.mb-tier-check input { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
 .pcr-del-sm {
   width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
   background: var(--bg-card); color: var(--text-muted); cursor: pointer;

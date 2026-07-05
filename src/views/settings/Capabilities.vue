@@ -39,17 +39,51 @@
               <span class="toggle-knob" />
             </button>
           </div>
-          <!-- Default tier names, used to seed new products -->
+          <!-- Default tier names, used to seed new products. Biggest→smallest:
+               Pack = unit_tier_names[1], Strip = unit_tier_names[0], Unit = base_unit_name. -->
           <template v-if="form.multi_unit_enabled">
             <div class="sub-block">
               <div class="sub-label">{{ t('settings.capabilities.tier_names_label') }}</div>
               <div class="tier-names-row">
-                <input v-model="form.unit_tier_names[0]" type="text" maxlength="20" class="num-input tier-input"
-                  :placeholder="t('settings.capabilities.tier1_ph')" />
-                <input v-model="form.unit_tier_names[1]" type="text" maxlength="20" class="num-input tier-input"
-                  :placeholder="t('settings.capabilities.tier2_ph')" />
+                <label class="tier-field">
+                  <span class="tier-cap">{{ t('settings.capabilities.tier_pack') }}</span>
+                  <input v-model="form.unit_tier_names[1]" type="text" maxlength="20" class="num-input tier-input"
+                    :placeholder="t('settings.capabilities.tier2_ph')" />
+                </label>
+                <label class="tier-field">
+                  <span class="tier-cap">{{ t('settings.capabilities.tier_strip') }}</span>
+                  <input v-model="form.unit_tier_names[0]" type="text" maxlength="20" class="num-input tier-input"
+                    :placeholder="t('settings.capabilities.tier1_ph')" />
+                </label>
+                <label class="tier-field">
+                  <span class="tier-cap">{{ t('settings.capabilities.tier_unit') }}</span>
+                  <input v-model="form.base_unit_name" type="text" maxlength="20" class="num-input tier-input"
+                    :placeholder="t('settings.capabilities.tier_unit_ph')" />
+                </label>
               </div>
               <div class="sub-muted">{{ t('settings.capabilities.tier_names_hint') }}</div>
+            </div>
+
+            <!-- Respect Memory Base packaging -->
+            <div class="sub-block">
+              <label class="check-row">
+                <input type="checkbox" v-model="form.pos_respect_mb_units" class="check-input" />
+                <span class="check-label">{{ t('settings.capabilities.respect_mb_label') }}</span>
+              </label>
+              <div class="sub-muted" style="margin-top:4px;">{{ t('settings.capabilities.respect_mb_hint') }}</div>
+            </div>
+
+            <!-- Store-wide tier count -->
+            <div class="sub-block">
+              <div class="sub-label">{{ t('settings.capabilities.tier_count_label') }}</div>
+              <div class="mode-row" style="margin-top:6px;">
+                <button class="mode-btn" :class="{ active: form.pos_tier_count === 3 }"
+                  @click="form.pos_tier_count = 3">{{ t('settings.capabilities.tier_count_3') }}</button>
+                <button class="mode-btn" :class="{ active: form.pos_tier_count === 2 }"
+                  @click="form.pos_tier_count = 2">{{ t('settings.capabilities.tier_count_2') }}</button>
+              </div>
+              <div class="sub-muted" style="margin-top:8px;">{{ t('settings.capabilities.tier_count_hint') }}</div>
+              <div class="sub-muted tier-count-override">{{ t('settings.capabilities.tier_count_override') }}</div>
             </div>
           </template>
         </div>
@@ -194,6 +228,9 @@ const storeType = ref('GENERAL')
 const form = reactive({
   multi_unit_enabled:      true,
   unit_tier_names:         ['Strip', 'Pack'],
+  base_unit_name:          'Unit',
+  pos_respect_mb_units:    true,
+  pos_tier_count:          3,
   expiry_tracking_enabled: false,
   expired_sale_policy:     'WARN',
   expiry_alert_days:       60,
@@ -244,6 +281,9 @@ async function load() {
     Object.assign(form, {
       multi_unit_enabled:      settingsRes.data.multi_unit_enabled ?? true,
       unit_tier_names:         settingsRes.data.unit_tier_names || ['Strip', 'Pack'],
+      base_unit_name:          settingsRes.data.base_unit_name || 'Unit',
+      pos_respect_mb_units:    settingsRes.data.pos_respect_mb_units ?? true,
+      pos_tier_count:          settingsRes.data.pos_tier_count ?? 3,
       expiry_tracking_enabled: settingsRes.data.expiry_tracking_enabled ?? false,
       expired_sale_policy:     settingsRes.data.expired_sale_policy || 'WARN',
       expiry_alert_days:       settingsRes.data.expiry_alert_days ?? 60,
@@ -261,6 +301,9 @@ async function save() {
     await api.patch('/api/core/settings/', {
       multi_unit_enabled:      form.multi_unit_enabled,
       unit_tier_names:         form.unit_tier_names,
+      base_unit_name:          form.base_unit_name || 'Unit',
+      pos_respect_mb_units:    form.pos_respect_mb_units,
+      pos_tier_count:          form.pos_tier_count,
       expiry_tracking_enabled: form.expiry_tracking_enabled,
       expired_sale_policy:     form.expired_sale_policy,
       expiry_alert_days:       form.expiry_alert_days || 60,
@@ -321,8 +364,11 @@ onMounted(load)
 .sub-label { font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:8px; }
 .mode-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .days-row { display:flex; align-items:center; gap:8px; margin-top:14px; }
-.tier-names-row { display:flex; gap:8px; margin:10px 0 6px; flex-wrap:wrap; }
+.tier-names-row { display:flex; gap:12px; margin:10px 0 6px; flex-wrap:wrap; }
+.tier-field { display:flex; flex-direction:column; gap:5px; }
+.tier-cap { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
 .tier-input { width:150px; }
+.tier-count-override { color:var(--danger); margin-top:4px; }
 .sub-muted { font-size:12px; color:var(--text-muted); }
 .num-input { padding:7px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; transition:border-color 120ms; }
 .num-input:focus { border-color:var(--accent); }
