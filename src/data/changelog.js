@@ -12,6 +12,29 @@
 
 export const changelog = [
   {
+    version: '1.33.1',
+    date: '2026-07-06',
+    tag: 'Improved',
+    en: {
+      title: 'Adding a product now fills in pack & strip sizes automatically',
+      points: [
+        'When you add a product and pick a known medicine from the suggestions, its pack and strip sizes are now filled in for you — no manual typing. (This already worked while editing a product; now it works while adding one too.)',
+        'A simple checkbox lets you choose whether single units are also sold, matching your 2- or 3-tier choice in Settings → Capabilities.',
+        'New medicines received on a purchase get their pack and strip sizes set automatically too — nothing extra to fill in.',
+        'The related setting is now clearly labeled: "Auto-fill pack & strip sizes from the drug reference when adding or editing a product."',
+      ],
+    },
+    ar: {
+      title: 'إضافة منتج تملأ الآن مقاسات العبوة والشريط تلقائيًا',
+      points: [
+        'عند إضافة منتج واختيار دواء معروف من الاقتراحات، تُملأ الآن مقاسات العبوة والشريط تلقائيًا — دون إدخال يدوي. (كان هذا يعمل عند تعديل منتج؛ وأصبح يعمل الآن عند الإضافة أيضًا.)',
+        'يتيح لك مربع اختيار بسيط تحديد ما إذا كانت الوحدات المفردة تُباع أيضًا، بما يطابق اختيارك للمستويين أو الثلاثة في الإعدادات ← الإمكانيات.',
+        'الأدوية الجديدة المستلمة عبر فاتورة شراء تحصل على مقاسات العبوة والشريط تلقائيًا كذلك — لا شيء إضافي لملئه.',
+        'أصبح الإعداد المرتبط موضحًا بعنوان صريح: "املأ مقاسات العبوة والشريط تلقائيًا من مرجع الأدوية عند إضافة أو تعديل منتج".',
+      ],
+    },
+  },
+  {
     version: '1.33.0',
     date: '2026-07-05',
     tag: 'New',

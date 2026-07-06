@@ -419,6 +419,10 @@
                 </tr>
               </tbody>
             </table>
+            <label v-if="prodModal.units.length" class="pm2-base-toggle">
+              <input type="checkbox" v-model="prodModal.sell_base_unit" />
+              <span>Also sell single {{ storeSettings.base_unit_name || 'pcs' }} (3 tiers). Off = pack/strip only.</span>
+            </label>
           </div>
         </div>
 
@@ -1096,15 +1100,20 @@ async function saveSupplier() {
 async function deleteSupplier(id) { if (!confirm(t('inventory.products.suppliers_tab.confirm_delete'))) return; await api.delete(`/api/inventory/suppliers/${id}/`); fetchSuppliers() }
 
 /* ── store settings (for multi-unit gate) ── */
-const storeSettings = reactive({ multi_unit_enabled: false, base_unit_name: 'pcs', unit_tier_names: ['Strip', 'Pack'] })
+const storeSettings = reactive({ multi_unit_enabled: false, base_unit_name: 'pcs', unit_tier_names: ['Strip', 'Pack'], pos_respect_mb_units: true, pos_tier_count: 3 })
 async function fetchStoreSettings() {
   try {
     const { data } = await api.get('/api/core/settings/')
     storeSettings.multi_unit_enabled = data.multi_unit_enabled ?? false
     storeSettings.base_unit_name = data.base_unit_name || 'pcs'
     storeSettings.unit_tier_names = data.unit_tier_names || ['Strip', 'Pack']
+    storeSettings.pos_respect_mb_units = data.pos_respect_mb_units ?? true
+    storeSettings.pos_tier_count = data.pos_tier_count ?? 3
   } catch { /* noop */ }
 }
+// §MU-MB tier names (Strip = unit_tier_names[0], Pack = [1]) — mirrors ProductDetail.
+const stripTierName = computed(() => (storeSettings.unit_tier_names?.[0]) || 'Strip')
+const packTierName  = computed(() => (storeSettings.unit_tier_names?.[1]) || 'Pack')
 
 // Keep tier columns wired into the layout as the capability / tier names change:
 // give each a default width, drop any tier keys that no longer exist (capability
@@ -1154,7 +1163,7 @@ function saveDefaults() {
 const prodModal = reactive({
   open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
   base_price: null, cost_price: null, sell_price: null, reorder_level: null, initial_stock: 1, attrs: {}, saving: false, error: '',
-  units: [],
+  units: [], sell_base_unit: true,
 })
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
 function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
@@ -1194,6 +1203,20 @@ function pickFromMemory(r) {
     const vals = summary[def.key]
     if (Array.isArray(vals) && vals.length) prodModal.attrs[def.id] = vals[0]
   }
+  // §MU-MB: seed Strip + Pack tiers from the drug reference packaging, honouring the
+  // store's 2/3-tier choice. Strip = tablets_per_strip, Pack = tablets × strips.
+  // Mirrors ProductDetail's edit-modal auto-fill. Only for a fresh product with no
+  // units yet, when the store opts in and multi-unit is on.
+  const tps = Number(r.tablets_per_strip) || 0
+  const spp = Number(r.strips_per_pack) || 0
+  if (storeSettings.pos_respect_mb_units && storeSettings.multi_unit_enabled
+      && tps > 0 && spp > 0 && prodModal.units.length === 0) {
+    prodModal.units = [
+      { name: stripTierName.value, factor: tps,       sell_price: 0, barcode: '', sellable: true },
+      { name: packTierName.value,  factor: tps * spp, sell_price: 0, barcode: '', sellable: true },
+    ]
+    prodModal.sell_base_unit = storeSettings.pos_tier_count >= 3
+  }
   nameAC.open = false
   nameAC.results = []
 }
@@ -1209,7 +1232,7 @@ function openAddProduct() {
     base_price: null, cost_price: null, sell_price: null,
     reorder_level: prodDefaults.reorder_enabled ? prodDefaults.reorder_value : null,
     initial_stock: prodDefaults.stock_enabled ? prodDefaults.stock_value : 1,
-    units: [],
+    units: [], sell_base_unit: true,
     saving: false, error: '',
   })
   resetAttrs()
@@ -1285,9 +1308,10 @@ async function saveProduct() {
     payload.supplier = prodModal.supplier   // supplier locked on edit
   }
   if (storeSettings.multi_unit_enabled) {
+    payload.sell_base_unit = prodModal.sell_base_unit   // §MU-MB: 3-tier sells single units, 2-tier doesn't
     payload.selling_units = prodModal.units
       .filter(u => u.name && Number(u.factor) > 0)
-      .map(u => ({ name: u.name, factor: Number(u.factor), sell_price: Number(u.sell_price || 0), barcode: u.barcode || '' }))
+      .map(u => ({ name: u.name, factor: Number(u.factor), sell_price: Number(u.sell_price || 0), barcode: u.barcode || '', sellable: u.sellable !== false }))
   }
   let stockWarning = false
   try {
@@ -1704,6 +1728,8 @@ onMounted(() => { fetchAttributes(); loadLayout(); fetchCategories(); fetchSuppl
 .pm2-units { display: flex; flex-direction: column; gap: 8px; }
 .pm2-units-head { display: flex; align-items: center; justify-content: space-between; }
 .pm2-units-sub { font-size: 11.5px; color: var(--text-muted); }
+.pm2-base-toggle { display: flex; align-items: center; gap: 7px; margin-top: 4px; font-size: 12px; color: var(--text-secondary); cursor: pointer; }
+.pm2-base-toggle input { accent-color: var(--accent); cursor: pointer; }
 .pm2-add-unit-btn { font-size: 12px; color: var(--accent); background: none; border: 1px solid var(--accent); border-radius: 5px; padding: 3px 9px; cursor: pointer; }
 .pm2-add-unit-btn:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .pm2-units-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
