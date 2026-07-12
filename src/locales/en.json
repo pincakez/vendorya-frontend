@@ -1049,7 +1049,8 @@
       "subtitle": "Choose the branch for this POS session",
       "loading": "Loading branches…",
       "set_default": "Set as my default branch (skip picker next time)",
-      "open": "Open POS"
+      "open": "Open POS",
+      "offline": "You're offline and this device hasn't loaded your branches yet. Connect to the internet once to set up POS, then it will work offline."
     },
     "discount_modal": {
       "title": "Apply Discount",

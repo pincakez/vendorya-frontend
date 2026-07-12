@@ -545,7 +545,10 @@ async function init() {
     }).catch(() => {}),
   ])
 
-  // Branch selection
+  // Branch selection.
+  // Try the server first (source of truth), but if it's unreachable (offline
+  // PWA) fall back to the branch we persisted last session — otherwise the
+  // picker below would be a dead end with no branch list to load.
   try {
     const bRes = await api.get('/api/core/branches/')
     const branches = bRes.data.results || bRes.data
@@ -558,7 +561,10 @@ async function init() {
       const branch = branches.find(b => b.id === auth.user.default_branch)
       if (branch) { pos.initSession(branch); await loadWalkIn(); return }
     }
-  } catch { /* ok */ }
+  } catch {
+    // Offline (or server down): reuse the last branch this device sold from.
+    if (pos.branchId) { await loadWalkIn(); return }
+  }
 
   showBranchPicker.value = true
 }

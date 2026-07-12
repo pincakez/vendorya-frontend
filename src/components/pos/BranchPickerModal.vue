@@ -4,6 +4,7 @@
       <div class="bpm-subtitle">{{ t('pos.branch_picker.subtitle') }}</div>
 
       <div v-if="loading" class="bpm-loading">{{ t('pos.branch_picker.loading') }}</div>
+      <div v-else-if="!branches.length" class="bpm-offline">{{ t('pos.branch_picker.offline') }}</div>
       <div v-else class="bpm-list">
         <button
           v-for="b in branches" :key="b.id"
@@ -37,6 +38,8 @@ import AppModal from '@/components/ui/AppModal.vue'
 const { t } = useI18n()
 const emit = defineEmits(['selected'])
 
+const BRANCH_LIST_KEY = 'vendorya_pos_branch_list'
+
 const branches   = ref([])
 const selected   = ref(null)
 const setDefault = ref(false)
@@ -46,10 +49,19 @@ onMounted(async () => {
   try {
     const res = await api.get('/api/core/branches/')
     branches.value = res.data.results || res.data
+    // Cache the list so a later offline open still has branches to pick from.
+    try { localStorage.setItem(BRANCH_LIST_KEY, JSON.stringify(branches.value)) } catch { /* non-fatal */ }
     if (branches.value.length === 1) {
       selected.value = branches.value[0]
       confirm()
     }
+  } catch {
+    // Offline / server down: fall back to the last cached branch list so the
+    // user can still pick, instead of staring at an empty dead-end modal.
+    try {
+      const cached = JSON.parse(localStorage.getItem(BRANCH_LIST_KEY) || '[]')
+      branches.value = Array.isArray(cached) ? cached : []
+    } catch { branches.value = [] }
   } finally {
     loading.value = false
   }
@@ -70,6 +82,11 @@ async function confirm() {
 }
 .bpm-subtitle { font-size: 13px; color: var(--text-muted); }
 .bpm-loading { color: var(--text-muted); text-align: center; padding: 24px; }
+.bpm-offline {
+  color: var(--text-secondary); text-align: center; padding: 20px 16px;
+  font-size: 13px; line-height: 1.6; background: var(--bg-app);
+  border: 1px solid var(--border); border-radius: 12px;
+}
 .bpm-list { display: flex; flex-direction: column; gap: 8px; }
 .bpm-branch {
   display: flex; align-items: center; gap: 12px;

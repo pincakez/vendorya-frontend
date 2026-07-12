@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.33.2',
+    date: '2026-07-12',
+    tag: 'Fixed',
+    en: {
+      title: 'The register now opens offline without getting stuck on branch selection',
+      points: [
+        'If your internet drops while you\'re working, switching to the Point of Sale no longer gets stuck on a "Select Branch" screen it can\'t finish.',
+        'The register now remembers the branch you last sold from and opens straight to it, even with no connection.',
+        'On the rare first-ever open of a device that\'s already offline, you\'ll now see a clear message instead of an empty screen — just connect once to set it up.',
+      ],
+    },
+    ar: {
+      title: 'نقطة البيع تفتح الآن دون اتصال دون التوقف عند اختيار الفرع',
+      points: [
+        'إذا انقطع الإنترنت أثناء عملك، لم يعد التبديل إلى نقطة البيع يتوقف عند شاشة "اختر الفرع" التي يتعذّر إكمالها.',
+        'تتذكر نقطة البيع الآن الفرع الذي بعت منه آخر مرة وتفتح عليه مباشرة، حتى بدون اتصال.',
+        'في الحالة النادرة لأول فتح على جهاز غير متصل أصلاً، سترى الآن رسالة واضحة بدلاً من شاشة فارغة — فقط اتصل مرة واحدة لإعداده.',
+      ],
+    },
+  },
+  {
     version: '1.33.1',
     date: '2026-07-06',
     tag: 'Improved',
