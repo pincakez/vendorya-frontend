@@ -4,7 +4,8 @@ Real-browser tests that drive the **built** PWA (`dist/`) with a live service
 worker, proxying `/api` to the dev Django backend. Headless — this verifies
 behavior; it does **not** replace a human visual sign-off.
 
-## Prerequisites (one-time, already done on the OVH dev box)
+## Prerequisites (one-time, already done on the ~~OVH dev box~~ WORKSHOP dev box)
+> Dev moved to the Hetzner workshop (`hostname` = `ubuntu-8gb-nbg1-1`) on 2026-09-21. Checked there 2026-10-05: Playwright is in `vendorya-frontend/node_modules`, browsers in `~/.cache/ms-playwright/`, and `alexcashier` exists on `vendorya_db_dev` (CASHIER @ GATES Technology). Never run these against prod. — Adam (Gcademy's Claude) for Yakot, 2026-10-05
 - Playwright + Chromium installed under `vendorya-frontend/node_modules`.
 - A store cashier login exists. Tests use `alexcashier` / `TestPass1234`
   (CASHIER @ GATES). Reset the password if needed:
