@@ -12,6 +12,134 @@
 
 export const changelog = [
   {
+    version: '1.34.5',
+    date: '2026-10-06',
+    tag: 'Fixed',
+    en: {
+      title: 'Small fixes: language, service edits, and the medicine finder',
+      points: [
+        'Choosing Arabic in My Profile is now remembered — it no longer switches back to English.',
+        'Changing a service job\'s cost or diagnosis no longer shows an error after it saves.',
+        'Cashiers can now use the "same ingredient / same trade name" finder at the Point of Sale.',
+      ],
+    },
+    ar: {
+      title: 'إصلاحات صغيرة: اللغة وتعديل الصيانة والبحث عن البدائل',
+      points: [
+        'اختيار اللغة العربية من ملفك الشخصي أصبح محفوظًا — ولم يعد يرجع إلى الإنجليزية.',
+        'تعديل تكلفة أو تشخيص طلب الصيانة لم يعد يُظهر رسالة خطأ بعد الحفظ.',
+        'يمكن للكاشير الآن استخدام البحث عن "نفس المادة الفعالة / نفس الاسم التجاري" في نقطة البيع.',
+      ],
+    },
+  },
+  {
+    version: '1.34.4',
+    date: '2026-10-06',
+    tag: 'Fixed',
+    en: {
+      title: 'Staff accounts are better protected',
+      points: [
+        'Only someone with a higher role can add, change or deactivate a staff member — an Admin can no longer create an Owner or change the Owner\'s account.',
+        'Nobody can change their own role or deactivate themselves.',
+        'Adding a staff member with just a name (no password) works again — a password is created for them.',
+      ],
+    },
+    ar: {
+      title: 'حماية أفضل لحسابات الموظفين',
+      points: [
+        'فقط صاحب الدور الأعلى يمكنه إضافة موظف أو تعديله أو إيقافه — لم يعد بإمكان المسؤول إنشاء مالك أو تعديل حساب المالك.',
+        'لا يمكن لأحد تغيير دوره بنفسه أو إيقاف حسابه بنفسه.',
+        'إضافة موظف بالاسم فقط (بدون كلمة مرور) تعمل مرة أخرى — ويتم إنشاء كلمة مرور له تلقائيًا.',
+      ],
+    },
+  },
+  {
+    version: '1.34.3',
+    date: '2026-10-06',
+    tag: 'Fixed',
+    en: {
+      title: 'The lock screen PIN is now properly protected',
+      points: [
+        'Only the shop owner can set, change or remove the lock-screen PIN.',
+        'After 5 wrong PIN tries, the lock screen waits 5 minutes before trying again.',
+        'The lock screen now always asks for the PIN on every account, including cashiers.',
+      ],
+    },
+    ar: {
+      title: 'رمز شاشة القفل أصبح محميًا بشكل صحيح',
+      points: [
+        'فقط مالك المتجر يمكنه تعيين رمز شاشة القفل أو تغييره أو إزالته.',
+        'بعد 5 محاولات خاطئة، تنتظر شاشة القفل 5 دقائق قبل المحاولة مرة أخرى.',
+        'شاشة القفل تطلب الرمز الآن دائمًا على كل الحسابات، بما فيها حسابات الكاشير.',
+      ],
+    },
+  },
+  {
+    version: '1.34.2',
+    date: '2026-10-06',
+    tag: 'Fixed',
+    en: {
+      title: 'Cashier sales always include every item in the cart',
+      points: [
+        'When a cashier changed the cart (added items, changed quantities), some changes could be missed when the sale was completed. Every change is now saved.',
+        'Putting a cart on hold no longer leaves unfinished invoices behind.',
+      ],
+    },
+    ar: {
+      title: 'مبيعات الكاشير تشمل دائمًا كل الأصناف في السلة',
+      points: [
+        'عندما كان الكاشير يغيّر السلة (يضيف أصنافًا أو يغيّر الكميات)، كان من الممكن ألا تُحفظ بعض التغييرات عند إتمام البيع. الآن يتم حفظ كل تغيير.',
+        'تعليق السلة لم يعد يترك فواتير غير مكتملة.',
+      ],
+    },
+  },
+  {
+    version: '1.34.1',
+    date: '2026-10-06',
+    tag: 'Fixed',
+    en: {
+      title: 'Credit (Ajel) sales at the register now add to the customer\'s balance',
+      points: [
+        'A sale paid with Ajel now stays unpaid and is added to the customer\'s balance — before, it was saved as fully paid.',
+        'Completing the sale and taking the payment now happen in one step.',
+        'If you turn off credit selling, cash and card sales at the register still work normally.',
+        'Ajel needs a named customer — the payment window tells you right away if Walk-in is selected.',
+        'The payment window shows the total including VAT when your store charges tax.',
+      ],
+    },
+    ar: {
+      title: 'البيع الآجل في نقطة البيع يُضاف الآن إلى رصيد العميل',
+      points: [
+        'البيع بالآجل يبقى الآن غير مدفوع ويُضاف إلى رصيد العميل — من قبل كان يُسجَّل كمدفوع بالكامل.',
+        'إتمام البيع واستلام الدفع يتمان الآن في خطوة واحدة.',
+        'إذا أوقفت البيع الآجل، يظل البيع نقدًا أو بالبطاقة في نقطة البيع يعمل بشكل طبيعي.',
+        'البيع الآجل يحتاج عميلاً باسمه — نافذة الدفع تنبهك فورًا إذا كان العميل "عميل نقدي".',
+        'نافذة الدفع تعرض الإجمالي شاملاً ضريبة القيمة المضافة عندما يطبّق متجرك الضريبة.',
+      ],
+    },
+  },
+  {
+    version: '1.34.0',
+    date: '2026-10-06',
+    tag: 'New',
+    en: {
+      title: 'Finishing a service job now asks how the customer paid',
+      points: [
+        'When you mark a service job as Done, choose how the customer paid — cash, card, or any of your payment methods.',
+        'Choose Ajel to add the cost to the customer\'s balance (the job needs a named customer).',
+        'Free jobs (cost 0) are finished without asking.',
+      ],
+    },
+    ar: {
+      title: 'إنهاء طلب الصيانة يسألك الآن كيف دفع العميل',
+      points: [
+        'عند تحديد طلب الصيانة كمكتمل، اختر طريقة دفع العميل — نقدًا أو بالبطاقة أو أي طريقة دفع لديك.',
+        'اختر "آجل" لإضافة التكلفة إلى رصيد العميل (يحتاج الطلب إلى عميل باسمه).',
+        'الطلبات المجانية (التكلفة 0) تكتمل دون سؤال.',
+      ],
+    },
+  },
+  {
     version: '1.33.3',
     date: '2026-10-06',
     tag: 'Fixed',
