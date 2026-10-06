@@ -12,6 +12,56 @@
 
 export const changelog = [
   {
+    version: '1.35.1',
+    date: '2026-10-06',
+    tag: 'Fixed',
+    en: {
+      title: 'Safer sales, transfers and settings',
+      points: [
+        'A sale can no longer be completed twice — even with a double click or a weak connection. If the connection drops after the sale went through, pressing Confirm again simply shows the finished sale.',
+        'Moving stock between branches now moves its expiry dates too, earliest-expiring first — so each branch knows exactly what it holds and when it expires.',
+        'Moving stock to a branch that never had that item before works again.',
+        '"Items are called" in Settings now accepts any word you type (letters, numbers and "-", up to 10 characters).',
+        'Cashiers can now use the shop\'s label sizes when printing labels.',
+        'Empty lists now show their message across the whole table.',
+      ],
+    },
+    ar: {
+      title: 'مبيعات وتحويلات وإعدادات أكثر أمانًا',
+      points: [
+        'لم يعد ممكنًا إتمام نفس البيع مرتين — حتى مع الضغط مرتين أو ضعف الاتصال. وإذا انقطع الاتصال بعد إتمام البيع، فالضغط على "تأكيد" مرة أخرى يعرض البيع المكتمل فقط.',
+        'تحويل المخزون بين الفروع ينقل تواريخ الصلاحية معه الآن، بدءًا بالأقرب انتهاءً — فيعرف كل فرع بالضبط ما لديه ومتى تنتهي صلاحيته.',
+        'تحويل المخزون إلى فرع لم يكن لديه هذا الصنف من قبل يعمل مرة أخرى.',
+        'خانة "اسم الأصناف" في الإعدادات تقبل الآن أي كلمة تكتبها (حروف وأرقام و"-"، حتى 10 أحرف).',
+        'يمكن للكاشير الآن استخدام مقاسات الملصقات الخاصة بالمتجر عند طباعة الملصقات.',
+        'القوائم الفارغة تعرض رسالتها الآن على عرض الجدول كله.',
+      ],
+    },
+  },
+  {
+    version: '1.35.0',
+    date: '2026-10-06',
+    tag: 'Improved',
+    en: {
+      title: 'The Cash Drawer now matches your shift',
+      points: [
+        'Cash refunds now come out of the drawer: when a customer gets cash back, the shift\'s expected cash goes down by that amount — so closing the shift no longer shows a false "over".',
+        'Only cash really paid out counts: a refund on a card sale goes back to the card, and a refund on a credit (Ajel) sale just lowers the customer\'s debt.',
+        'The Cash Drawer page shows your open shift: cash in from sales, cash out for refunds, the expected balance, and every cash move — the same numbers used when you close the shift.',
+        'A cashier can only close their own shift; managers can close any shift.',
+      ],
+    },
+    ar: {
+      title: 'درج النقد يطابق ورديتك الآن',
+      points: [
+        'المرتجعات النقدية تُخصم الآن من الدرج: عندما يسترد العميل نقدًا، ينخفض النقد المتوقع في الوردية بنفس المبلغ — فلم يعد إغلاق الوردية يُظهر "زيادة" غير حقيقية.',
+        'يُحسب فقط النقد المدفوع فعلًا: مرتجع بيع بالبطاقة يعود إلى البطاقة، ومرتجع بيع آجل يخفض دين العميل فقط.',
+        'صفحة درج النقد تعرض ورديتك المفتوحة: النقد الوارد من المبيعات، والنقد الصادر للمرتجعات، والرصيد المتوقع، وكل حركة نقدية — بنفس الأرقام المستخدمة عند إغلاق الوردية.',
+        'الكاشير يغلق ورديته فقط؛ والمدير يمكنه إغلاق أي وردية.',
+      ],
+    },
+  },
+  {
     version: '1.34.5',
     date: '2026-10-06',
     tag: 'Fixed',
