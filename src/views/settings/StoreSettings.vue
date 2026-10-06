@@ -1143,7 +1143,7 @@ async function saveStore() {
       }),
       api.patch('/api/core/settings/', {
         decimals: settingsForm.decimals, thousands_separator: settingsForm.thousands_separator,
-        item_noun: settingsForm.item_noun, category_level_names: settingsForm.category_level_names,
+        item_noun: settingsForm.item_noun || 'NAME', category_level_names: settingsForm.category_level_names,
       }),
     ])
     const cur = storeRes.data.currency
@@ -1176,7 +1176,7 @@ async function saveRules() {
       base_unit_name:       (settingsForm.base_unit_name || 'pcs').trim() || 'pcs',
       category_level_names: settingsForm.category_level_names,
     })
-    fmt.apply({ decimals: settingsForm.decimals, thousands_separator: settingsForm.thousands_separator, item_noun: settingsForm.item_noun, category_level_names: settingsForm.category_level_names })
+    fmt.apply({ decimals: settingsForm.decimals, thousands_separator: settingsForm.thousands_separator, item_noun: settingsForm.item_noun || 'NAME', category_level_names: settingsForm.category_level_names })
   } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.save')) } finally { storeSaving.value = false }
 }
 

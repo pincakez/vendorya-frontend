@@ -47,7 +47,8 @@ export const useFormatStore = defineStore('format', {
       separator: s.thousandsSeparator,
     }),
     // "Name" / "Product" / "Item" / "Model" and an uppercase variant for headers.
-    itemLabel: (s) => ({ NAME: 'Name', PRODUCT: 'Product', ITEM: 'Item', MODEL: 'Model' }[s.itemNoun] || 'Name'),
+    // Free text since s157 (§AUDIT B6): the 4 old codes keep their nice spelling, any other word shows as typed.
+    itemLabel: (s) => ({ NAME: 'Name', PRODUCT: 'Product', ITEM: 'Item', MODEL: 'Model' }[s.itemNoun] || s.itemNoun || 'Name'),
     itemLabelUpper() { return this.itemLabel.toUpperCase() },
   },
 
