@@ -93,7 +93,7 @@ try {
   await page.waitForTimeout(800)
   await page.screenshot({ path: `${SHOTS}/till-4-done.png` })
 
-  console.log('5) New sale → Ajel on Walk-in must be refused with a message')
+  console.log('5) New sale → Ajel on Walk-in: blocked up front with a message (the server refuses it too — unit test)')
   await page.keyboard.press('Escape').catch(() => {})
   await page.locator('button:has-text("New Sale"), button:has-text("New sale")').first().click().catch(() => {})
   await page.waitForTimeout(500)
@@ -102,14 +102,10 @@ try {
   await page.click('.pos-pay-btn')
   await page.waitForSelector('.pm-method', { timeout: 10000 })
   await page.locator('.pm-method', { hasText: /ajel|آجل|credit/i }).first().click()
-  const [res2] = await Promise.all([
-    page.waitForResponse(r => r.url().includes('/checkout/'), { timeout: 15000 }),
-    page.click('.pm-confirm'),
-  ])
-  check(res2.status() === 400, `Ajel on Walk-in refused (${res2.status()})`)
-  await page.waitForTimeout(500)
+  await page.waitForTimeout(300)
+  check(await page.locator('.pm-confirm').isDisabled(), 'Confirm is disabled for Ajel on Walk-in')
   const shown = await page.locator('.pm-body').innerText()
-  check(/named customer/i.test(shown), 'the cashier sees why (named-customer message)')
+  check(/named customer/i.test(shown), 'the cashier is told up front to pick a named customer')
   await page.screenshot({ path: `${SHOTS}/till-5-ajel-refused.png` })
 } catch (e) {
   check(false, 'crashed: ' + e.message.split('\n')[0])

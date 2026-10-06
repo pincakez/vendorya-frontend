@@ -1077,7 +1077,8 @@
       "err_stock_item": "{name} (have {have}, need {need})",
       "err_failed": "Payment failed. Please try again.",
       "err_expired": "Blocked: this sale would draw from expired stock ({names}). Adjust or remove the expired batch.",
-      "incl_vat": "incl. VAT {amount}"
+      "incl_vat": "incl. VAT {amount}",
+      "agel_needs_customer": "Credit (Ajel) needs a named customer — close this, pick the customer, then pay."
     },
     "choose_unit": "Choose a unit",
     "change_unit": "Change unit",

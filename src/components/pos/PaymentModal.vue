@@ -42,7 +42,8 @@
       <!-- Agel credit warning -->
       <div v-if="selectedMethod?.is_agel" class="pm-agel-warn">
         <AlertTriangle :size="16" />
-        <span>{{ t('pos.payment.agel_warn', { name: cart.customerObj?.name || t('pos.payment.the_customer') }) }}</span>
+        <span v-if="agelNeedsCustomer">{{ t('pos.payment.agel_needs_customer') }}</span>
+        <span v-else>{{ t('pos.payment.agel_warn', { name: cart.customerObj?.name || t('pos.payment.the_customer') }) }}</span>
       </div>
 
       <!-- Print options -->
@@ -119,8 +120,13 @@ const change = computed(() => {
   return received - totalDue.value
 })
 
+// Ajel (credit) needs a NAMED customer — the server refuses Walk-in (s156); say so up front.
+const agelNeedsCustomer = computed(() =>
+  !!selectedMethod.value?.is_agel && (!cart.customerObj || !!cart.customerObj.is_walk_in))
+
 const canConfirm = computed(() => {
   if (!selectedMethod.value) return false
+  if (agelNeedsCustomer.value) return false
   if (selectedMethod.value.is_cash) {
     const r = parseFloat(cashReceived.value) || 0
     return r >= totalDue.value
