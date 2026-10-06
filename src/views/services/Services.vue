@@ -125,9 +125,20 @@
       <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
         {{ t('core.services.done_body_a') }} <strong><Money :value="confirm.target?.cost" /></strong> {{ t('core.services.done_body_b') }} <strong>{{ confirm.target?.serial_number }}</strong>.
       </p>
+      <!-- How the customer paid (Yakot, s156) — not asked for a free job -->
+      <div v-if="Number(confirm.target?.cost) > 0" class="done-pay">
+        <div class="done-pay-lbl">{{ t('core.services.paid_how') }}</div>
+        <div class="done-pay-methods">
+          <button
+            v-for="m in payMethods" :key="m.id" type="button"
+            :class="confirm.method === m.id ? 'btn-primary' : 'btn-ghost'"
+            @click="confirm.method = m.id"
+          >{{ m.name }}</button>
+        </div>
+      </div>
       <template #footer>
         <button class="btn-ghost" @click="confirm.done = false">{{ t('common.cancel') }}</button>
-        <button class="btn-primary" :disabled="confirm.busy" @click="executeDone">
+        <button class="btn-primary" :disabled="confirm.busy || (Number(confirm.target?.cost) > 0 && !confirm.method)" @click="executeDone">
           {{ confirm.busy ? t('core.services.processing') : t('core.services.done_confirm') }}
         </button>
       </template>
@@ -292,7 +303,7 @@ const modal = reactive({ open: false, serviceId: null, data: null })
 /* ── confirm dialogs ─────────────────────────────────────────────── */
 const confirm = reactive({
   done: false, cancel: false, archive: false, return: false,
-  target: null, busy: false,
+  target: null, busy: false, method: null,
 })
 
 /* ── detail modal ────────────────────────────────────────────────── */
@@ -390,14 +401,24 @@ async function toggleBell(s) {
 }
 
 /* ── mark done ───────────────────────────────────────────────────── */
+const payMethods = ref([])
+async function loadPayMethods() {
+  if (payMethods.value.length) return
+  try {
+    const { data } = await api.get('/api/finance/payment-methods/')
+    payMethods.value = data.results ?? data
+  } catch { payMethods.value = [] }
+}
 function confirmDone(s) {
   confirm.target = s
+  confirm.method = null
   confirm.done = true
+  loadPayMethods()
 }
 async function executeDone() {
   confirm.busy = true
   try {
-    await api.post(`/api/services/${confirm.target.id}/done/`)
+    await api.post(`/api/services/${confirm.target.id}/done/`, confirm.method ? { method: confirm.method } : {})
     confirm.done = false
     fetchItems(); fetchCounts()
   } catch (e) {
@@ -480,9 +501,8 @@ async function detailMarkDone() {
   detail.busy = true
   try {
     await _saveChangesIfAny()
-    await api.post(`/api/services/${detail.service.id}/done/`)
     detail.open = false
-    fetchItems(); fetchCounts()
+    confirmDone(detail.service)   // same window as the list's Done: asks how the customer paid
   } catch (e) {
     alert(e?.response?.data?.detail ?? t('core.services.err_done'))
   } finally { detail.busy = false }
@@ -594,6 +614,9 @@ onMounted(() => {
 }
 
 .col-client { display: flex; flex-direction: column; gap: 2px; }
+.done-pay { margin-top: 14px; }
+.done-pay-lbl { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+.done-pay-methods { display: flex; flex-wrap: wrap; gap: 8px; }
 .client-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .client-phone { font-size: 11px; color: var(--text-muted); }
 

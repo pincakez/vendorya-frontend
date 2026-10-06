@@ -2568,7 +2568,8 @@
         "cancelled": "ملغاة",
         "archived": "مؤرشفة",
         "returned": "مُرجَعة"
-      }
+      },
+      "paid_how": "كيف دفع العميل؟"
     },
     "svcform": {
       "edit_title": "تعديل {n}",

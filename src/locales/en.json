@@ -2568,7 +2568,8 @@
         "cancelled": "Cancelled",
         "archived": "Archived",
         "returned": "Returned"
-      }
+      },
+      "paid_how": "How did the customer pay?"
     },
     "svcform": {
       "edit_title": "Edit {n}",
