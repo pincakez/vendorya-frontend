@@ -131,20 +131,15 @@ async function confirm() {
   error.value = ''
   loading.value = true
   try {
+    // ONE call completes the sale AND takes the payment (s156). The server pays the whole balance with
+    // this method — or, for Ajel (credit), pays nothing so the balance becomes the customer's debt.
     const idempotencyKey = crypto.randomUUID()
     const checkoutRes = await api.post(
       `/api/finance/invoices/${pos.currentInvoiceId}/checkout/`,
-      {},
+      { method: selectedMethod.value.id },
       { headers: { 'Idempotency-Key': idempotencyKey } }
     )
-    const invoiceId = pos.currentInvoiceId
-    pos.lastPostedInvoiceId = invoiceId
-
-    await api.post('/api/finance/payments/', {
-      invoice: invoiceId,
-      method: selectedMethod.value.id,
-      amount: cart.grandTotal,
-    })
+    pos.lastPostedInvoiceId = pos.currentInvoiceId
 
     emit('success', checkoutRes.data, {
       print:  printReceipt.value,
