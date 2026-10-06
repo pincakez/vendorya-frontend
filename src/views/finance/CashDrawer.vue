@@ -59,7 +59,7 @@
             </thead>
             <tbody>
               <tr v-if="moves.length === 0">
-                <td colspan="4" class="dt-empty">{{ openShift ? t('finance.cash_drawer.empty') : t('finance.cash_drawer.no_shift_hint') }}</td>
+                <td colspan="4" class="dt-empty"><div class="dt-empty-inner">{{ openShift ? t('finance.cash_drawer.empty') : t('finance.cash_drawer.no_shift_hint') }}</div></td>
               </tr>
               <tr v-for="(m, i) in moves" :key="i" class="dt-row">
                 <td>{{ fmtTime(m.time) }}</td>
