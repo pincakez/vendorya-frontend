@@ -1076,7 +1076,8 @@
       "err_stock": "Insufficient stock: ",
       "err_stock_item": "{name} (have {have}, need {need})",
       "err_failed": "Payment failed. Please try again.",
-      "err_expired": "Blocked: this sale would draw from expired stock ({names}). Adjust or remove the expired batch."
+      "err_expired": "Blocked: this sale would draw from expired stock ({names}). Adjust or remove the expired batch.",
+      "incl_vat": "incl. VAT {amount}"
     },
     "choose_unit": "Choose a unit",
     "change_unit": "Change unit",

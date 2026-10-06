@@ -3,8 +3,9 @@
     <div class="pm-body">
       <div class="pm-total">
         <span class="pm-total-label">{{ t('pos.payment.total_due') }}</span>
-        <span class="pm-total-amount">{{ currSymbol }} {{ fmtNum(cart.grandTotal) }}</span>
+        <span class="pm-total-amount">{{ currSymbol }} {{ fmtNum(totalDue) }}</span>
       </div>
+      <div v-if="taxTotal > 0" class="pm-tax-line">{{ t('pos.payment.incl_vat', { amount: fmtNum(taxTotal) }) }}</div>
 
       <!-- Payment method tabs -->
       <div class="pm-methods">
@@ -79,6 +80,9 @@ import AppModal from '@/components/ui/AppModal.vue'
 
 const { t } = useI18n()
 const emit = defineEmits(['close', 'success'])
+// serverTotals = the draft as the server last saved it. Its grand_total includes VAT, which the cart's own
+// figure does not — so it is what we show and charge (s156, §AUDIT A4). Falls back to the cart if missing.
+const props = defineProps({ serverTotals: { type: Object, default: null } })
 
 const cart = useCartStore()
 const pos  = usePosStore()
@@ -104,16 +108,22 @@ onMounted(async () => {
   }
 })
 
+const totalDue = computed(() => {
+  const g = parseFloat(props.serverTotals?.grand_total)
+  return Number.isFinite(g) ? g : cart.grandTotal
+})
+const taxTotal = computed(() => parseFloat(props.serverTotals?.tax_total) || 0)
+
 const change = computed(() => {
   const received = parseFloat(cashReceived.value) || 0
-  return received - cart.grandTotal
+  return received - totalDue.value
 })
 
 const canConfirm = computed(() => {
   if (!selectedMethod.value) return false
   if (selectedMethod.value.is_cash) {
     const r = parseFloat(cashReceived.value) || 0
-    return r >= cart.grandTotal
+    return r >= totalDue.value
   }
   return true
 })
@@ -183,6 +193,7 @@ async function confirm() {
 }
 .pm-method:hover { border-color: var(--accent); }
 .pm-method.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.pm-tax-line { margin-top: -6px; text-align: end; font-size: 12px; color: var(--text-muted); }
 .pm-agel-badge {
   font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
   background: var(--warning-soft); color: #92400e;

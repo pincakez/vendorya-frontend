@@ -313,7 +313,7 @@
 
     <!-- ─── Modals ─────────────────────────────────────────── -->
     <BranchPickerModal v-if="showBranchPicker" @selected="onBranchSelected" />
-    <PaymentModal      v-if="showPayment"   @close="showPayment = false"   @success="onPaymentSuccess" />
+    <PaymentModal      v-if="showPayment"   :server-totals="serverTotals" @close="showPayment = false"   @success="onPaymentSuccess" />
     <DiscountModal     v-if="showDiscount"  :context="discountCtx" @close="showDiscount = false" />
 
     <!-- Unit picker: choose Pack / Strip / Tablet for a multi-unit product -->
@@ -877,6 +877,9 @@ function addToCartFromFav(fav) {
 
 // ── DRAFT invoice management ─────────────────────────────────
 let patchTimer = null
+// The server's own totals for the current draft (tax included) — what the customer really pays (s156, §AUDIT A4).
+const serverTotals = ref(null)
+
 function schedulePatch() {
   clearTimeout(patchTimer)
   patchTimer = setTimeout(syncInvoice, 300)
@@ -902,8 +905,10 @@ async function syncInvoice() {
     if (!pos.currentInvoiceId) {
       const res = await api.post('/api/finance/invoices/', payload)
       pos.setCurrentInvoice(res.data.id)
+      serverTotals.value = res.data
     } else {
-      await api.patch(`/api/finance/invoices/${pos.currentInvoiceId}/`, payload)
+      const res = await api.patch(`/api/finance/invoices/${pos.currentInvoiceId}/`, payload)
+      serverTotals.value = res.data
     }
   } catch { /* best-effort */ }
 }
