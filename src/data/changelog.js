@@ -12,6 +12,25 @@
 
 export const changelog = [
   {
+    version: '1.33.3',
+    date: '2026-10-06',
+    tag: 'Fixed',
+    en: {
+      title: 'POS Settings and product selling units are now fully in Arabic',
+      points: [
+        'The POS Settings page — its title, description and the Top Selling, Favorites, Cart Display and Keyboard tabs — now shows in Arabic when Arabic is selected.',
+        'The "Selling Units" section on a product page (add unit, unit name, how many, barcode) is now in Arabic too.',
+      ],
+    },
+    ar: {
+      title: 'إعدادات نقطة البيع ووحدات بيع المنتج أصبحت بالعربية بالكامل',
+      points: [
+        'صفحة إعدادات نقطة البيع — عنوانها ووصفها وتبويبات الأكثر مبيعاً والمفضلة وعرض السلة ولوحة المفاتيح — تظهر الآن بالعربية عند اختيار اللغة العربية.',
+        'قسم "وحدات البيع" في صفحة المنتج (إضافة وحدة، اسم الوحدة، كم، الباركود) أصبح بالعربية أيضًا.',
+      ],
+    },
+  },
+  {
     version: '1.33.2',
     date: '2026-07-12',
     tag: 'Fixed',
