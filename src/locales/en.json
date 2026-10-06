@@ -789,18 +789,22 @@
     },
     "cash_drawer": {
       "title": "Cash Drawer",
-      "sub": "Today's cash movements and current balance",
-      "cash_in": "Cash In (Today)",
-      "cash_out": "Cash Out (Expenses)",
+      "sub": "Your open shift's cash: what came in, what went out, and what should be in the drawer",
+      "cash_in": "Cash In (This Shift)",
+      "cash_out": "Cash Out (Refunds)",
       "expected_balance": "Expected Balance",
       "current_shift": "Current Shift",
       "open_since": "Open · since {time}",
       "no_open_shift": "No open shift",
-      "payments_title": "Today's Cash Payments",
+      "payments_title": "Cash Moves This Shift",
       "col_time": "Time",
       "col_invoice": "Invoice #",
       "col_amount": "Amount",
-      "empty": "No cash payments today"
+      "empty": "No cash moves in this shift yet",
+      "no_shift_hint": "Open a shift at the till to start counting the drawer.",
+      "col_type": "Type",
+      "kind_in": "Sale",
+      "kind_out": "Refund #{n}"
     },
     "expenses": {
       "title": "Expenses",

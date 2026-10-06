@@ -55,16 +55,17 @@
           <div class="dt-xscroll">
         <table class="dt">
             <thead>
-              <tr><th class="dt-th">{{ t('finance.cash_drawer.col_time') }}</th><th class="dt-th">{{ t('finance.cash_drawer.col_invoice') }}</th><th class="dt-th">{{ t('finance.cash_drawer.col_amount') }}</th></tr>
+              <tr><th class="dt-th">{{ t('finance.cash_drawer.col_time') }}</th><th class="dt-th">{{ t('finance.cash_drawer.col_type') }}</th><th class="dt-th">{{ t('finance.cash_drawer.col_invoice') }}</th><th class="dt-th">{{ t('finance.cash_drawer.col_amount') }}</th></tr>
             </thead>
             <tbody>
-              <tr v-if="payments.length === 0">
-                <td colspan="3" class="dt-empty">{{ t('finance.cash_drawer.empty') }}</td>
+              <tr v-if="moves.length === 0">
+                <td colspan="4" class="dt-empty">{{ openShift ? t('finance.cash_drawer.empty') : t('finance.cash_drawer.no_shift_hint') }}</td>
               </tr>
-              <tr v-for="p in payments" :key="p.id" class="dt-row">
-                <td>{{ fmtTime(p.created_at) }}</td>
-                <td class="col-ref">{{ p.invoice }}</td>
-                <td class="col-amount"><Money :value="p.amount" /></td>
+              <tr v-for="(m, i) in moves" :key="i" class="dt-row">
+                <td>{{ fmtTime(m.time) }}</td>
+                <td>{{ m.kind === 'OUT' ? t('finance.cash_drawer.kind_out', { n: m.refund_number }) : t('finance.cash_drawer.kind_in') }}</td>
+                <td class="col-ref">{{ m.invoice_number ?? '—' }}</td>
+                <td :class="m.kind === 'OUT' ? 'col-amount col-out' : 'col-amount'"><Money :value="m.kind === 'OUT' ? -m.amount : m.amount" /></td>
               </tr>
             </tbody>
           </table>
@@ -87,29 +88,21 @@ const { t }   = useI18n()
 const auth    = useAuthStore()
 const loading = ref(false)
 const openShift = ref(null)
-const payments  = ref([])
+const moves     = ref([])
 const stats     = ref({ cash_in: 0, cash_out: 0, expected_balance: 0 })
 
+// s157 (§AUDIT A10): one server answer for the caller's open drawer — cash payments in, cash refunds
+// out, expected balance — computed exactly like closing the shift (before: all methods, last 100, out = 0).
 async function fetchData() {
   loading.value = true
   try {
-    const [shiftRes, payRes] = await Promise.all([
-      api.get('/api/finance/shifts/', { params: { status: 'OPEN', page_size: 1 } }),
-      api.get('/api/finance/payments/', { params: { page_size: 100 } }),
-    ])
-    const shiftResults = shiftRes.data.results ?? shiftRes.data
-    openShift.value = shiftResults.length ? shiftResults[0] : null
-
-    const today = new Date().toDateString()
-    const allPayments = payRes.data.results ?? payRes.data
-    payments.value = allPayments.filter(p => new Date(p.created_at).toDateString() === today)
-
-    const cashIn = payments.value.reduce((s, p) => s + Number(p.amount), 0)
-    const startingCash = openShift.value ? Number(openShift.value.starting_cash) : 0
+    const { data } = await api.get('/api/finance/shifts/drawer/')
+    openShift.value = data.shift
+    moves.value = data.moves
     stats.value = {
-      cash_in: cashIn,
-      cash_out: 0,
-      expected_balance: startingCash + cashIn,
+      cash_in: Number(data.cash_in),
+      cash_out: Number(data.cash_out),
+      expected_balance: Number(data.expected_balance),
     }
   } catch {} finally { loading.value = false }
 }
@@ -137,4 +130,5 @@ onMounted(fetchData)
 
 .col-ref    { font-family:monospace; font-size:12px; color:var(--text-muted); }
 .col-amount { font-variant-numeric:tabular-nums; color:var(--success); font-weight:600; }
+.col-out    { color:var(--danger); }
 </style>
