@@ -149,7 +149,12 @@ async function confirm() {
   try {
     // ONE call completes the sale AND takes the payment (s156). The server pays the whole balance with
     // this method — or, for Ajel (credit), pays nothing so the balance becomes the customer's debt.
-    const idempotencyKey = crypto.randomUUID()
+    // ONE key per sale, reused on every retry (s157, §AUDIT A5): if the reply was lost after the server
+    // finished, the retry gets that finished sale back instead of "already posted".
+    if (pos.checkoutKey.invoice !== pos.currentInvoiceId) {
+      pos.checkoutKey = { invoice: pos.currentInvoiceId, key: crypto.randomUUID() }
+    }
+    const idempotencyKey = pos.checkoutKey.key
     const checkoutRes = await api.post(
       `/api/finance/invoices/${pos.currentInvoiceId}/checkout/`,
       { method: selectedMethod.value.id },

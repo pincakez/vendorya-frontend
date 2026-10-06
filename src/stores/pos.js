@@ -28,6 +28,7 @@ export const usePosStore = defineStore('pos', {
       favorites: [],
       animateScan: false,
       lastPostedInvoiceId: null,  // for reprint
+      checkoutKey: { invoice: null, key: null },  // s157 A5: one Idempotency-Key per sale, kept across retries
     }
   },
   actions: {
