@@ -6,7 +6,7 @@
 // The whole offline part is a real in-app SPA navigation (clicking the sidebar
 // POS button) — NOT a page reload — because a reload re-runs the auth bootstrap,
 // which itself needs the network and would bounce us to /login offline.
-import { readFileSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import pw from '/home/ubuntu/vendorya-dev/vendorya-frontend/node_modules/playwright/index.js'
 const { chromium } = pw
 
@@ -21,7 +21,9 @@ const log = (m) => console.log(m)
 let failed = false
 const check = (cond, name) => { log(`${cond ? '  ✅ PASS' : '  ❌ FAIL'}  ${name}`); if (!cond) failed = true }
 
-const browser = await chromium.launch({ args: ['--no-sandbox'] })
+// The workshop has no Playwright-bundled Chromium (version mismatch) — use the real Chrome when it exists
+const CHROME = process.env.CHROME_PATH || (existsSync('/usr/bin/google-chrome') ? '/usr/bin/google-chrome' : undefined)
+const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] })
 const ctx = await browser.newContext({ baseURL: BASE, serviceWorkers: 'allow' })
 const page = await ctx.newPage()
 

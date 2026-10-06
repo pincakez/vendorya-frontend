@@ -29,7 +29,7 @@ npm run build
 node e2e/serve-pwa.mjs &
 
 # 4. Run a test
-PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 node e2e/offline-pos.test.mjs
+node e2e/offline-pos.test.mjs   # uses the real /usr/bin/google-chrome when present (or $CHROME_PATH)
 ```
 Exit code 0 = pass, 1 = fail. A screenshot lands in the scratchpad.
 
