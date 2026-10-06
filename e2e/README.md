@@ -7,11 +7,12 @@ behavior; it does **not** replace a human visual sign-off.
 ## Prerequisites (one-time, already done on the ~~OVH dev box~~ WORKSHOP dev box)
 > Dev moved to the Hetzner workshop (`hostname` = `ubuntu-8gb-nbg1-1`) on 2026-09-21. Checked there 2026-10-05: Playwright is in `vendorya-frontend/node_modules`, browsers in `~/.cache/ms-playwright/`, and `alexcashier` exists on `vendorya_db_dev` (CASHIER @ GATES Technology). Never run these against prod. — Adam (Gcademy's Claude) for Yakot, 2026-10-05
 - Playwright + Chromium installed under `vendorya-frontend/node_modules`.
-- A store cashier login exists. Tests use `alexcashier` / `TestPass1234`
+- A store cashier login exists. Tests use `alexcashier`; the password is `E2E_CASHIER_PASSWORD`
+  in the gitignored `vendorya-backend/.env` (see .env / ask Yakot)
   (CASHIER @ GATES). Reset the password if needed:
   ```
   cd ../vendorya-backend
-  venv/bin/python manage.py shell -c "from django.contrib.auth import get_user_model as g; u=g().objects.get(username='alexcashier'); u.set_password('TestPass1234'); u.save()"
+  venv/bin/python manage.py shell -c "from django.contrib.auth import get_user_model as g; u=g().objects.get(username='alexcashier'); import os; u.set_password(os.environ['E2E_CASHIER_PASSWORD']); u.save()"
   ```
 
 ## Run

@@ -6,11 +6,16 @@
 // The whole offline part is a real in-app SPA navigation (clicking the sidebar
 // POS button) — NOT a page reload — because a reload re-runs the auth bootstrap,
 // which itself needs the network and would bounce us to /login offline.
+import { readFileSync } from 'node:fs'
 import pw from '/home/ubuntu/vendorya-dev/vendorya-frontend/node_modules/playwright/index.js'
 const { chromium } = pw
 
 const BASE = 'http://localhost:4173'
-const USER = 'alexcashier', PASS = 'TestPass1234'   // CASHIER @ GATES (dev-only pw)
+// CASHIER @ GATES. Password: env E2E_CASHIER_PASSWORD, else read from the gitignored dev backend .env
+const USER = 'alexcashier'
+const PASS = process.env.E2E_CASHIER_PASSWORD ||
+  (readFileSync(new URL('../../vendorya-backend/.env', import.meta.url), 'utf8').match(/^E2E_CASHIER_PASSWORD=(.*)$/m) || [])[1]
+if (!PASS) throw new Error('E2E_CASHIER_PASSWORD missing — set it in vendorya-backend/.env')
 
 const log = (m) => console.log(m)
 let failed = false
