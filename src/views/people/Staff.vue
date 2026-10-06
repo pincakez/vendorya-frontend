@@ -110,11 +110,8 @@
           </div>
           <div class="pfm-row">
             <label class="form-label">{{ t('people.staff.role_label') }}</label>
-            <select v-model="modal.role" class="form-input">
-              <option value="CASHIER">{{ t('people.staff.roles.cashier') }}</option>
-              <option value="MANAGER">{{ t('people.staff.roles.manager') }}</option>
-              <option value="ADMIN">{{ t('people.staff.roles.admin') }}</option>
-              <option value="OWNER">{{ t('people.staff.roles.owner') }}</option>
+            <select v-model="modal.role" class="form-input" :disabled="isSelf">
+              <option v-for="r in roleOptions" :key="r" :value="r">{{ roleLabel(r) }}</option>
             </select>
           </div>
           <div v-if="modal.id" style="display:flex;align-items:center;gap:10px;">
@@ -137,16 +134,25 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Search, UserCog, Pencil, Plus, ChevronDown } from 'lucide-vue-next'
 import api from '@/api/axios'
+import { useAuthStore } from '@/stores/auth'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openNew)
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const { t } = useI18n()
+const auth = useAuthStore()
+
+// You can only give roles below your own (the server enforces the same rule — s156).
+const ROLE_RANK = { CASHIER: 1, MANAGER: 2, ADMIN: 3, OWNER: 4 }
+const myRank = computed(() => auth.user?.is_superadmin ? 99 : (ROLE_RANK[auth.user?.role] || 0))
+const isSelf = computed(() => !!modal.id && modal.id === auth.user?.id)
+const roleOptions = computed(() =>
+  Object.keys(ROLE_RANK).filter(r => ROLE_RANK[r] < myRank.value || r === modal.role))
 
 function roleLabel(role) {
   const key = (role || '').toLowerCase()
@@ -230,7 +236,7 @@ async function save() {
     closeModal()
     fetchStaff(modal.id ? page.value : 1)
   } catch (e) {
-    alert(e.response?.data ? JSON.stringify(e.response.data) : t('people.staff.err_save'))
+    alert(e.response?.data?.detail || (e.response?.data ? JSON.stringify(e.response.data) : t('people.staff.err_save')))
   } finally { saving.value = false }
 }
 
