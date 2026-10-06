@@ -85,8 +85,10 @@ async function submitPin() {
   const pin = pinBuffer.value
   pinBuffer.value = ''
 
-  // No PIN set on server → just unlock
-  if (!settings.value.lock_pin_set) {
+  // Settings say for SURE there is no PIN → just unlock. If the settings didn't load (undefined), fall
+  // through to the server check — it answers valid:true when no PIN is set (s156: fail closed; before, a
+  // cashier whose settings call was refused got in with ANY PIN).
+  if (settings.value?.lock_pin_set === false) {
     doUnlock(); return
   }
 

@@ -34,6 +34,10 @@ node e2e/offline-pos.test.mjs   # uses the real /usr/bin/google-chrome when pres
 Exit code 0 = pass, 1 = fail. A screenshot lands in the scratchpad.
 
 ## Tests
+- **till-cashier.test.mjs** (s156) — a CASHIER in the real Chrome against dev (:4456): rings up 3 lines,
+  pays cash, checks the server invoice holds the WHOLE cart and is paid in the same step; then Ajel on
+  Walk-in must be refused with a message. Dev login `s156cashier` (CASHIER @ Khodair, dev only; password =
+  `E2E_CASHIER_PASSWORD` in the dev `.env`). Run: `node e2e/till-cashier.test.mjs` (needs dev running).
 - **offline-pos.test.mjs** — offline POS branch bug. Logs in online, opens POS
   (branch auto-selects + persists), exits, goes offline, then switches back to
   POS via the sidebar (real in-app nav, no reload) and asserts NO dead-end
