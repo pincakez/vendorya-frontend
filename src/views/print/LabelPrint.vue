@@ -29,6 +29,7 @@
         <svg v-if="preset.show_barcode" :ref="el => { if (el) barcodeSvgs[i] = el }" class="lbl-barcode" />
         <div v-if="preset.show_sku || preset.show_price" class="lbl-footer">
           <span v-if="preset.show_sku" class="lbl-sku">{{ label.sku }}</span>
+          <span v-if="label.sku2" class="lbl-sku">{{ label.sku2 }}</span>
           <span v-if="preset.show_price" class="lbl-price">{{ fmtPrice(label.sell_price) }}</span>
         </div>
       </div>
@@ -99,6 +100,7 @@ function buildTSPL(labels, storeName) {
     out += `TEXT 400,20,"ROMAN.TTF",0,1,1,"${store}"\r\n`
     out += `BARCODE 400,60,"128",80,1,0,2,2,"${sku}"\r\n`
     out += `TEXT 400,160,"ROMAN.TTF",0,1,1,"${price}"\r\n`
+    if (label.sku2) out += `TEXT 20,160,"ROMAN.TTF",0,1,1,"${String(label.sku2).replace(/"/g, '')}"\r\n`
     out += `PRINT 1,1\r\n`
   }
   return out
