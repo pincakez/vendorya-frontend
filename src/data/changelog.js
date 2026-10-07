@@ -12,6 +12,27 @@
 
 export const changelog = [
   {
+    version: '1.38.0',
+    date: '2026-10-08',
+    tag: 'New',
+    en: {
+      title: 'Your shop’s data is private — even from the Vendorya team',
+      points: [
+        'Nobody outside your shop can open your sales, customers, products, expenses or reports any more — not even the Vendorya platform team. The old “enter a shop” shortcut is gone for good.',
+        'The platform team now sees only what it needs to run the service: your shop’s name, plan and simple counts (how many staff, branches and invoices) — never amounts, customer names or invoice details.',
+        'Only you and the staff you add can see your shop’s numbers.',
+      ],
+    },
+    ar: {
+      title: 'بيانات محلك خاصة بيك — حتى فريق Vendorya ميقدرش يشوفها',
+      points: [
+        'محدش من بره محلك يقدر يفتح مبيعاتك أو عملاءك أو أصنافك أو مصروفاتك أو تقاريرك — حتى فريق Vendorya نفسه. اختصار «الدخول على محل» القديم اتشال نهائيًا.',
+        'فريق المنصة بقى يشوف بس اللي محتاجه عشان يشغّل الخدمة: اسم المحل والباقة وأعداد بسيطة (عدد الموظفين والفروع والفواتير) — من غير أي مبالغ أو أسماء عملاء أو تفاصيل فواتير.',
+        'أرقام محلك بيشوفها إنت والموظفين اللي إنت بتضيفهم بس.',
+      ],
+    },
+  },
+  {
     version: '1.37.1',
     date: '2026-10-07',
     tag: 'Fixed',
