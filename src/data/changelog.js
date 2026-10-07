@@ -12,6 +12,50 @@
 
 export const changelog = [
   {
+    version: '1.36.1',
+    date: '2026-10-07',
+    tag: 'Improved',
+    en: {
+      title: 'Scanning finds the exact item first',
+      points: [
+        'When you scan or type a code, the item with exactly that code now always comes first — a short code like 12077 no longer lands on a longer code that merely contains it.',
+        'Codes with dashes (like 123-45-67) are found whether you type the dashes or not.',
+        'When you add a new supplier, Vendorya now suggests the next free supplier code for you.',
+      ],
+    },
+    ar: {
+      title: 'المسح يجد الصنف المطابق أولًا',
+      points: [
+        'عند مسح أو كتابة كود، يظهر الآن الصنف الذي له نفس الكود بالضبط أولًا دائمًا — فالكود القصير مثل 12077 لم يعد يذهب إلى كود أطول يحتويه فقط.',
+        'الأكواد التي بها شرطات (مثل 123-45-67) تُوجد سواء كتبت الشرطات أم لا.',
+        'عند إضافة مورّد جديد، يقترح Vendorya عليك الآن أول كود مورّد متاح.',
+      ],
+    },
+  },
+  {
+    version: '1.36.0',
+    date: '2026-10-07',
+    tag: 'New',
+    en: {
+      title: 'Your own product codes — and a second code (SKU2)',
+      points: [
+        'Each shop can now have its own product code style: how many digits for the product, the supplier and the shop, with or without dashes. The platform team sets it up with you before your first product.',
+        'When a part of the code runs out of numbers, it simply grows by one digit — and codes you already printed on stickers never change.',
+        'New: SKU2, a second code on every product — for example the code from your old system that is already printed on your stickers. Scan it or type it and the product is found.',
+        'SKU2 can show in your product list, on the product page, in the POS search, on price stickers, and in the product file import/export.',
+      ],
+    },
+    ar: {
+      title: 'أكواد أصناف على مقاسك — وكود ثاني (SKU2)',
+      points: [
+        'كل متجر يمكنه الآن أن يكون له شكل أكواد خاص به: عدد أرقام الصنف والمورّد والمتجر، مع شرطات أو بدونها. يجهّزه معك فريق المنصة قبل أول صنف.',
+        'عندما تنفد أرقام جزء من الكود، يزيد رقمًا واحدًا تلقائيًا — والأكواد المطبوعة على الملصقات لا تتغير أبدًا.',
+        'جديد: SKU2، كود ثاني لكل صنف — مثل كود نظامك القديم المطبوع على ملصقاتك. امسحه أو اكتبه ويظهر الصنف.',
+        'يمكن أن يظهر SKU2 في قائمة الأصناف، وصفحة الصنف، وبحث نقطة البيع، وملصقات الأسعار، وملف استيراد وتصدير الأصناف.',
+      ],
+    },
+  },
+  {
     version: '1.35.1',
     date: '2026-10-06',
     tag: 'Fixed',
