@@ -3,52 +3,9 @@
     <!-- ─────────────── ADMIN MODE ─────────────── -->
     <template v-if="admin">
       <div class="header-greeting" style="display:flex; align-items:center; gap:10px;">
-        <span class="admin-badge" v-if="!auth.activeStore">GENERAL ADMIN</span>
-        <span class="admin-badge" v-else style="background: var(--admin-accent-soft); color: var(--admin-accent);">
-          ACTING AS · {{ auth.activeStore.name }}
-        </span>
+        <span class="admin-badge">GENERAL ADMIN</span>
       </div>
-
-      <!-- Store picker -->
-      <div class="store-picker" ref="pickerRef">
-        <button class="store-picker-btn" @click="pickerOpen = !pickerOpen" :class="{ open: pickerOpen }">
-          <Search :size="14" />
-          <span>{{ auth.activeStore ? 'Switch store' : 'Pick store' }}</span>
-          <ChevronDown :size="14" />
-        </button>
-
-        <div v-if="pickerOpen" class="store-picker-pop">
-          <div class="store-picker-search">
-            <Search :size="14" style="opacity:0.5;" />
-            <input v-model="storeQuery" type="text" placeholder="Search stores..." @input="onStoreSearch" />
-          </div>
-          <div class="store-picker-list">
-            <button v-if="auth.activeStore" class="store-picker-item exit" @click="selectGeneral">
-              <ArrowLeft :size="14" />
-              <span>Back to General Admin</span>
-            </button>
-            <div v-if="storesLoading" class="store-picker-empty">Loading...</div>
-            <div v-else-if="!stores.length" class="store-picker-empty">No stores</div>
-            <button
-              v-for="s in stores" :key="s.id"
-              class="store-picker-item" :class="{ active: auth.activeStore?.id === s.id }"
-              @click="selectStore(s)"
-            >
-              <div class="sp-avatar">{{ s.name.charAt(0).toUpperCase() }}</div>
-              <div class="sp-info">
-                <div class="sp-name">{{ s.name }}</div>
-                <div class="sp-meta">{{ s.owner_username }} · {{ s.plan }}</div>
-              </div>
-              <Check v-if="auth.activeStore?.id === s.id" :size="14" style="color: var(--admin-accent);" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Switch to Store View (preview) -->
-      <button v-if="auth.isInStoreMode" class="header-preview-btn" title="Switch to Store View" @click="enterPreview">
-        <Eye :size="14" /> Store View
-      </button>
+      <!-- §PRIVACY-SUDO (s163): no store picker / "Store View" — the platform account never opens a shop. -->
 
       <div class="nhdr-spacer" />
 
@@ -188,7 +145,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
-  Bell, Sun, Moon, Search, ChevronDown, Check, ArrowLeft, Bot, Eye, LogOut,
+  Bell, Sun, Moon, Search, Bot, LogOut,
   LayoutDashboard, Package, ShoppingCart, SlidersHorizontal, Tag, List, FileBarChart,
   FileText, CornerDownLeft, Receipt, Clock, Wallet, Users, Truck, Briefcase,
   LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator, Sparkles,
@@ -214,39 +171,11 @@ function toggleLocale() {
 }
 
 const storeLogo = computed(() => {
-  const store = auth.user?.store || auth.activeStore
+  const store = auth.user?.store
   if (!store) return null
   return theme.dark ? (store.logo_dark_url || store.logo_light_url || null)
                     : (store.logo_light_url || store.logo_dark_url || null)
 })
-
-/* ── Store picker (admin) ───────────────────── */
-const pickerOpen    = ref(false)
-const storeQuery    = ref('')
-const stores        = ref([])
-const storesLoading = ref(false)
-const pickerRef     = ref(null)
-let storeSearchTimer = null
-
-async function fetchStores(qy = '') {
-  storesLoading.value = true
-  try {
-    const res = await api.get('/api/admin/stores/', { params: qy ? { search: qy } : {} })
-    stores.value = Array.isArray(res.data) ? res.data : (res.data.results || [])
-  } catch { stores.value = [] }
-  finally { storesLoading.value = false }
-}
-function onStoreSearch() {
-  clearTimeout(storeSearchTimer)
-  storeSearchTimer = setTimeout(() => fetchStores(storeQuery.value.trim()), 250)
-}
-function selectStore(store) {
-  auth.setActiveStore(store)
-  pickerOpen.value = false
-  router.push('/dashboard')
-}
-function enterPreview() { auth.enterPreview(); router.push('/dashboard') }
-function selectGeneral() { auth.clearActiveStore(); pickerOpen.value = false; router.push('/admin/dashboard') }
 
 /* ── Global search (store) ──────────────────── */
 
@@ -435,7 +364,6 @@ function toggleDropdown() { dropdownOpen.value = !dropdownOpen.value }
 function onDocClick(e) {
   if (bellRef.value && !bellRef.value.contains(e.target)) dropdownOpen.value = false
   if (searchRef.value && !searchRef.value.contains(e.target)) searchOpen.value = false
-  if (pickerRef.value && !pickerRef.value.contains(e.target)) pickerOpen.value = false
 }
 
 async function openNotif(n) {
@@ -488,9 +416,6 @@ async function doLogout() {
 }
 
 onMounted(() => {
-  if (auth.isSuperadmin) {
-    fetchStores()
-  }
   if (auth.user?.store) {
     fetchPrefs()
     fetchRecent()
@@ -597,56 +522,9 @@ onUnmounted(() => {
   border-radius: 5px; background: var(--sb-badge-bg); color: var(--sb-badge-text);
 }
 
-/* ── AI toggle + store picker (admin) ───────── */
+/* ── AI toggle (admin) ───────── */
 .ai-toggle-btn.active { background: rgba(239,68,68,0.12); color: var(--admin-accent, #ef4444); }
 
-.header-preview-btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
-  border-radius: 8px; border: 1px solid var(--admin-accent);
-  background: var(--admin-accent-soft); color: var(--admin-accent);
-  font-size: 12.5px; font-weight: 600; cursor: pointer;
-  transition: background 120ms, transform 80ms; flex-shrink: 0;
-}
-.header-preview-btn:hover  { background: rgba(239,68,68,0.22); }
-.header-preview-btn:active { transform: scale(0.96); }
-
-.store-picker { position: relative; flex-shrink: 0; }
-.store-picker-btn {
-  display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px;
-  border: 1px solid var(--border); border-radius: 9px; background: var(--bg-card);
-  color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer;
-  transition: background 120ms, border-color 120ms, transform 80ms;
-}
-.store-picker-btn:hover { border-color: var(--admin-accent); color: var(--admin-accent); }
-.store-picker-btn:active { transform: scale(0.97); }
-.store-picker-btn.open { border-color: var(--admin-accent); color: var(--admin-accent); }
-.store-picker-pop {
-  position: absolute; top: calc(100% + 6px); left: 0; width: 320px;
-  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12); z-index: 100; overflow: hidden;
-}
-.store-picker-search { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
-.store-picker-search input { flex: 1; background: transparent; border: none; outline: none; color: var(--text-primary); font-size: 13px; }
-.store-picker-list { max-height: 340px; overflow-y: auto; padding: 4px; }
-.store-picker-item {
-  width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 10px;
-  border-radius: 8px; background: transparent; text-align: left; cursor: pointer;
-  color: var(--text-primary); transition: background 120ms;
-}
-.store-picker-item:hover { background: var(--admin-accent-soft); }
-.store-picker-item.active { background: var(--admin-accent-soft); }
-.store-picker-item.exit {
-  color: var(--admin-accent); font-weight: 600; font-size: 12.5px; margin-bottom: 4px;
-  border-bottom: 1px dashed var(--border); border-radius: 0; padding-bottom: 12px;
-}
-.sp-avatar {
-  width: 32px; height: 32px; border-radius: 8px; background: var(--admin-accent-soft);
-  color: var(--admin-accent); font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.sp-info { flex: 1; min-width: 0; }
-.sp-name { font-size: 13px; font-weight: 600; }
-.sp-meta { font-size: 11px; color: var(--text-muted); }
-.store-picker-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
 .dropdown-enter-active, .dropdown-leave-active { transition: opacity 150ms, transform 150ms; }
 .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px); }

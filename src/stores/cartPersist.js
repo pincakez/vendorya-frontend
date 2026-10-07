@@ -15,10 +15,9 @@ export function cartPersist({ store }) {
   if (store.$id !== 'cart') return
 
   const auth = useAuthStore()
-  // Key by the active store id (sudo-in-store uses activeStore; everyone else
-  // their own store). 'anon' is a harmless fallback before login.
+  // Key by the user's store id. 'anon' is a harmless fallback before login.
   const keyFor = () =>
-    `vya_cart_${auth.activeStore?.id || auth.user?.store?.id || 'anon'}`
+    `vya_cart_${auth.user?.store?.id || 'anon'}`
 
   // ── Hydrate on first use ──────────────────────────────────────
   try {

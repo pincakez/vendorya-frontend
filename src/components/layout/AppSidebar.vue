@@ -34,27 +34,21 @@
         </div>
       </div>
 
-      <!-- Top solo: Dashboard (store / acting) or Overview (general admin) -->
+      <!-- Top solo: Dashboard (store) or Overview (admin) -->
       <div class="nsb-solo">
         <PhysicalButton variant="sidebar" :collapsed="collapsed" :active="itemActive(soloTo)" :tooltip="soloLabel" @click="go(soloTo)">
           <template #icon><LayoutDashboard :size="17" :class="itemActive(soloTo) ? 'ic-active' : 'ic'" /></template>
           {{ soloLabel }}
         </PhysicalButton>
-        <PhysicalButton v-if="admin && !acting" variant="sidebar" :collapsed="collapsed" :active="itemActive('/admin/commands')" tooltip="Commands" @click="go('/admin/commands')">
+        <PhysicalButton v-if="admin" variant="sidebar" :collapsed="collapsed" :active="itemActive('/admin/commands')" tooltip="Commands" @click="go('/admin/commands')">
           <template #icon><Terminal :size="17" :class="itemActive('/admin/commands') ? 'ic-active' : 'ic'" /></template>
           Commands
         </PhysicalButton>
       </div>
     </div><!-- /nsb-sticky-top -->
 
-    <!-- ── SCROLLABLE MIDDLE: acting banner + groups ── -->
+    <!-- ── SCROLLABLE MIDDLE: groups ── -->
     <div class="nsb-scroll-area">
-      <!-- Acting-as-store banner -->
-      <div v-if="acting && !collapsed" class="nsb-acting">
-        <span class="nsb-acting-label">{{ t('nav.acting_as') }}</span>
-        <span class="nsb-acting-name">{{ auth.activeStore.name }}</span>
-      </div>
-
       <!-- Groups -->
       <div class="nsb-groups">
         <div v-for="g in displayGroups" :key="g.id" class="nsb-group">
@@ -96,12 +90,6 @@
           </div>
         </div>
       </div>
-      <!-- ── SCROLL-END ACTIONS (exit-to-admin only — logout/settings moved to header) ── -->
-      <div v-if="acting" class="nsb-actions-row" :class="{ 'nsb-col': collapsed }">
-        <button class="nsb-gear-btn" :title="t('nav.exit_to_admin')" @click="exitToAdmin">
-          <ArrowLeft :size="22" />
-        </button>
-      </div>
     </div><!-- /nsb-scroll-area -->
 
     <!-- ── BOTTOM (user card only — pinned) ── -->
@@ -137,7 +125,7 @@ import {
   FileBarChart, Wallet, FileText, CornerDownLeft, Receipt, Clock, LineChart, TrendingUp,
   DollarSign, BookOpen, UserCheck, Percent, Users, Truck, Briefcase, Folder, Activity,
   Inbox, Settings, Store, Shield, Bell, User, Lock, CreditCard,
-  ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
+  ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight,
   Building2, KeyRound, Trash2, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
   BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles, CalendarClock,
   Library, Barcode,
@@ -266,14 +254,11 @@ const visibleGroups = computed(() =>
   groups.value.map(g => ({ ...g, items: g.items.filter(it => !it.ownerOnly || canBilling.value) }))
 )
 
-const acting = computed(() => props.admin && !!auth.activeStore)
+// §PRIVACY-SUDO (s163): the admin sidebar never switches to a shop's menu ("acting as" is gone).
+const displayGroups = computed(() => props.admin ? adminGroups.value : visibleGroups.value)
 
-const displayGroups = computed(() =>
-  (props.admin && !acting.value) ? adminGroups.value : visibleGroups.value
-)
-
-const soloTo    = computed(() => (props.admin && !acting.value) ? '/admin/dashboard' : '/dashboard')
-const soloLabel = computed(() => (props.admin && !acting.value) ? t('nav.overview') : t('nav.dashboard'))
+const soloTo    = computed(() => props.admin ? '/admin/dashboard' : '/dashboard')
+const soloLabel = computed(() => props.admin ? t('nav.overview') : t('nav.dashboard'))
 const userCardTo = computed(() => props.admin ? '/admin/users' : '/settings/profile')
 
 function itemActive(to) {
@@ -291,7 +276,6 @@ function toggle(id) {
   open[id] = willOpen
 }
 function go(to) { if (route.path !== to) router.push(to) }
-function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard') }
 </script>
 
 <style scoped>
@@ -392,16 +376,6 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 
 .nsb-solo { margin-bottom: 0; }
 
-/* Acting-as banner */
-.nsb-acting {
-  display: flex; flex-direction: column; gap: 2px;
-  padding: 8px 12px; margin-bottom: 16px;
-  border-radius: 12px; background: var(--accent-soft);
-  border: 1px solid var(--accent);
-}
-.nsb-acting-label { font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent); }
-.nsb-acting-name { font-size: 13px; font-weight: 600; color: var(--sb-text-active); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
 /* Groups */
 .nsb-groups { display: flex; flex-direction: column; gap: 16px; padding-bottom: 16px; }
 .nsb-group-head {
@@ -465,18 +439,6 @@ function exitToAdmin() { auth.clearActiveStore(); router.push('/admin/dashboard'
 .ic-logout { color: var(--danger); }
 
 /* Scroll-end actions row (settings gear + logout — not sticky) */
-.nsb-actions-row {
-  display: flex; align-items: center; gap: 6px;
-  padding: 12px 0 16px; border-top: 1px solid var(--sb-border); margin-top: 8px;
-}
-.nsb-actions-row.nsb-col { flex-direction: column; align-items: center; }
-.nsb-gear-btn {
-  display: flex; align-items: center; justify-content: center;
-  background: none; border: none; cursor: pointer;
-  color: var(--sb-text); padding: 8px; border-radius: 10px;
-  transition: background 120ms, color 120ms; flex-shrink: 0;
-}
-.nsb-gear-btn:hover { background: var(--sb-hover); color: var(--sb-text-active); }
 .nsb-logout-btn {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
   background: var(--danger-soft); border: 1px solid rgba(239,68,68,0.25);

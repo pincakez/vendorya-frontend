@@ -416,7 +416,7 @@ function _dashes() { return '-'.repeat(_COLS) + _LF }
 function _two(l, r) { return l + ' '.repeat(Math.max(1, _COLS - l.length - r.length)) + r + _LF }
 
 function buildServiceESCPOS(copy) {
-  const storeName  = auth.storeName || auth.activeStore?.name || 'Store'
+  const storeName  = auth.storeName || 'Store'
   const clientName = form.freeText ? (form.client_name || 'Walk-in') : (form.clientName || 'Walk-in')
   const clientPhone= form.freeText ? (form.client_phone || '') : ''
   const serial     = form.serial_number || props.serviceId?.slice(0, 8) || '—'
@@ -450,7 +450,7 @@ function buildServiceESCPOS(copy) {
 }
 
 function printReceiptCSS(copies = 2) {
-  const storeName  = auth.storeName || auth.activeStore?.name || 'Store'
+  const storeName  = auth.storeName || 'Store'
   const clientName = form.freeText ? (form.client_name || 'Walk-in') : (form.clientName || 'Walk-in')
   const clientPhone = form.freeText ? (form.client_phone || '') : ''
   const serial     = form.serial_number || props.serviceId?.slice(0, 8) || '—'

@@ -66,7 +66,7 @@
           v-for="s in topStores"
           :key="s.id"
           class="store-row"
-          @click="pick(s)"
+          @click="pick()"
         >
           <div class="store-row-avatar">{{ s.name.charAt(0).toUpperCase() }}</div>
           <div class="store-row-info">
@@ -84,11 +84,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { Store, Building, Shield, TrendingUp } from 'lucide-vue-next'
-import { useAuthStore } from '@/stores/auth'
 import api from '@/api/axios'
 
 const router = useRouter()
-const auth = useAuthStore()
 
 const loading = ref(true)
 const stores = ref([])
@@ -103,9 +101,9 @@ const stats = computed(() => ({
 
 const topStores = computed(() => stores.value.slice(0, 5))
 
-function pick(store) {
-  auth.setActiveStore(store)
-  router.push('/dashboard')
+// §PRIVACY-SUDO (s163): a store row opens the platform's Stores page — never the shop itself.
+function pick() {
+  router.push('/admin/stores')
 }
 
 onMounted(async () => {

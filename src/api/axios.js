@@ -35,11 +35,13 @@ export function refreshAccessToken() {
 function failToLogin() {
   setAccessToken(null)
   localStorage.removeItem('vendorya_user')
-  localStorage.removeItem('vendorya_active_store')
-  localStorage.removeItem('vendorya_active_store_obj')
-  localStorage.removeItem('vendorya_preview_mode')
   if (window.location.pathname !== '/login') window.location.href = '/login'
 }
+
+// §PRIVACY-SUDO (s163): "Enter store" is gone — drop its leftovers from browsers that used it.
+try {
+  for (const k of ['vendorya_active_store', 'vendorya_active_store_obj', 'vendorya_preview_mode']) localStorage.removeItem(k)
+} catch { /* storage blocked — nothing to clean */ }
 
 const api = axios.create({
   baseURL: BASE,
@@ -51,10 +53,6 @@ const api = axios.create({
 api.interceptors.request.use(config => {
   const token = getAccessToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
-  // Super-admin scoping: send the selected store on every request when in store mode.
-  // Server ignores this header for non-super-admin users.
-  const storeId = localStorage.getItem('vendorya_active_store')
-  if (storeId) config.headers['X-Store-ID'] = storeId
   // Send locale so Django returns validation errors in the right language.
   const locale = localStorage.getItem('vendorya_locale') || 'en'
   config.headers['Accept-Language'] = locale

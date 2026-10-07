@@ -147,8 +147,8 @@ router.beforeEach(async (to, from, next) => {
   // Admin-only routes: block non-sudo
   if (to.meta.admin && !auth.isSuperadmin) return next('/dashboard')
 
-  // Sudo visiting a store route without picking a store → bounce to admin dashboard
-  if (to.meta.store && auth.isSuperadmin && !auth.activeStore) {
+  // §PRIVACY-SUDO (s163): the platform account never opens a shop's screens → admin dashboard.
+  if (to.meta.store && auth.isSuperadmin) {
     return next('/admin/dashboard')
   }
 

@@ -51,9 +51,6 @@
               <span v-else class="status-inactive">Inactive</span>
             </td>
             <td>
-              <button class="row-action" title="Enter store" @click="enterStore(s)">
-                <LogIn :size="13" />
-              </button>
               <button class="row-action" title="Edit" @click="openEdit(s)">
                 <Pencil :size="13" />
               </button>
@@ -372,15 +369,11 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { Search, Store, Pencil, LogIn, Plus } from 'lucide-vue-next'
+import { Search, Store, Pencil, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
-import { useAuthStore } from '@/stores/auth'
 import AppModal from '@/components/ui/AppModal.vue'
 import AppTable from '@/components/ui/AppTable.vue'
 
-const router = useRouter()
-const auth = useAuthStore()
 
 const stores = ref([])
 const currencies = ref([])
@@ -604,11 +597,6 @@ async function submitCreate() {
   } finally {
     saving.value = false
   }
-}
-
-function enterStore(store) {
-  auth.setActiveStore(store)
-  router.push('/dashboard')
 }
 
 onMounted(() => {

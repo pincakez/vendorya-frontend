@@ -56,13 +56,12 @@
             <th class="dt-th" style="width:150px;">Store</th>
             <th class="dt-th" style="width:140px;">User</th>
             <th class="dt-th" style="width:120px;">Type</th>
-            <th class="dt-th">Action</th>
-            <th class="dt-th" style="width:120px;">IP</th>
+            <th class="dt-th">IP</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="!logs.length">
-            <td colspan="6" class="dt-empty">
+            <td colspan="5" class="dt-empty">
               <Activity :size="32" style="opacity:.3;margin-bottom:8px;" />
               <div>No activity recorded yet</div>
             </td>
@@ -77,10 +76,6 @@
               </div>
             </td>
             <td><span class="op-pill" :class="'op-' + log.operation_type.toLowerCase()">{{ opLabel(log.operation_type) }}</span></td>
-            <td>
-              <div>{{ log.action }}</div>
-              <div v-if="hasMeaningfulDetails(log.details)" class="details-line">{{ shortDetails(log.details) }}</div>
-            </td>
             <td class="ip">{{ log.ip_address || '—' }}</td>
           </tr>
         </tbody>
@@ -194,21 +189,7 @@ function opLabel(value) {
   return found ? found.label : value
 }
 
-function hasMeaningfulDetails(d) {
-  return d && typeof d === 'object' && Object.keys(d).length > 0
-}
-
-function shortDetails(d) {
-  const items = []
-  if (d.invoice_number) items.push(`#${d.invoice_number}`)
-  if (d.grand_total)    items.push(`total ${d.grand_total}`)
-  if (d.amount)         items.push(`amount ${d.amount}`)
-  if (d.change)         items.push(`Δ ${d.change}`)
-  if (d.customer)       items.push(d.customer)
-  if (d.supplier)       items.push(d.supplier)
-  if (d.role)           items.push(d.role)
-  return items.join(' · ')
-}
+// §PRIVACY-SUDO (s163): the server no longer sends `action` / `details` (amounts, names) to the platform account.
 
 const COLORS = ['#3b82f6','#a855f7','#16a34a','#d97706','#dc2626','#0891b2','#ec4899']
 function userColor(key) {
@@ -267,7 +248,6 @@ onUnmounted(() => {
 .op-staff      { background:rgba(99,102,241,0.15); color:#6366f1; }
 .op-other      { background:#f3f4f6;               color:#6b7280; }
 
-.details-line { font-size:11.5px; color:var(--text-muted); margin-top:2px; }
 .table-empty  { text-align:center; padding:48px 20px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; }
 .table-skeleton { padding:8px 0; }
 .skeleton-row { height:40px; margin:4px 16px; border-radius:6px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }

@@ -57,7 +57,7 @@ export const useFormatStore = defineStore('format', {
      *  fetch StoreSettings to learn decimals + separator. */
     async loadForStore() {
       const auth = useAuthStore()
-      const store = auth.activeStore || auth.user?.store
+      const store = auth.user?.store
       if (!store) {
         this.$reset()
         return

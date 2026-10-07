@@ -45,9 +45,6 @@
             <button class="icon-btn" title="Refresh" :disabled="card.loading" @click="loadCard(card)">
               <RefreshCw :size="13" :class="card.loading ? 'spin' : ''" />
             </button>
-            <button class="icon-btn export-btn" title="Export store data" :disabled="card.exporting" @click="exportStore(card)">
-              <Download :size="13" />
-            </button>
           </div>
         </div>
 
@@ -88,8 +85,8 @@
             <p class="stat-label">Invoices (all)</p>
           </div>
           <div class="stat wide">
-            <p class="stat-value accent">{{ fmtRevenue(card.data.revenue_month) }}</p>
-            <p class="stat-label">Revenue this month</p>
+            <p class="stat-value">{{ card.data.purchases_total }}</p>
+            <p class="stat-label">Purchases (all)</p>
           </div>
         </div>
         <div v-else class="card-loading">
@@ -104,7 +101,7 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
-import { Search, RefreshCw, Download, BarChart2 } from 'lucide-vue-next'
+import { Search, RefreshCw, BarChart2 } from 'lucide-vue-next'
 import api from '@/api/axios'
 
 const search = ref('')
@@ -131,7 +128,6 @@ async function fetchStores() {
       store: s,
       data: null,
       loading: false,
-      exporting: false,
       error: null,
     }))
   } catch {
@@ -161,31 +157,7 @@ async function loadAll() {
   }
 }
 
-async function exportStore(card) {
-  card.exporting = true
-  try {
-    const resp = await api.get(`/api/admin/stores/${card.store.id}/export/`, { responseType: 'blob' })
-    const url = URL.createObjectURL(resp.data)
-    const a = document.createElement('a')
-    const cd = resp.headers['content-disposition'] || ''
-    const match = cd.match(/filename="(.+)"/)
-    a.href = url
-    a.download = match ? match[1] : `vendorya_export_${card.store.store_code}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-  } catch {
-    alert('Export failed. Try again.')
-  } finally {
-    card.exporting = false
-  }
-}
-
-function fmtRevenue(val) {
-  if (!val) return '—'
-  const n = parseFloat(val)
-  if (isNaN(n)) return '—'
-  return n.toLocaleString('en-US', { maximumFractionDigits: 0 })
-}
+// §PRIVACY-SUDO (s163): no shop export and no revenue here — the platform account sees counts only.
 
 function fmtTime(iso) {
   if (!iso) return '—'
@@ -233,7 +205,6 @@ onMounted(async () => {
 .icon-btn { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:7px; border:1px solid var(--border); background:var(--surface); cursor:pointer; color:var(--text-secondary); transition:background 100ms; }
 .icon-btn:hover { background:var(--bg-hover,rgba(0,0,0,.06)); }
 .icon-btn:disabled { opacity:.45; cursor:not-allowed; }
-.export-btn { color:var(--admin-accent,#ef4444); border-color:rgba(239,68,68,.3); }
 
 .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px 8px; }
 .stat { text-align:center; }

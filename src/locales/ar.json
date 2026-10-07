@@ -6,8 +6,6 @@
   "nav": {
     "dashboard": "لوحة التحكم",
     "overview": "نظرة عامة",
-    "acting_as": "يعمل كـ",
-    "exit_to_admin": "الخروج إلى الإدارة",
     "store_settings_btn": "الإعدادات",
     "log_out": "تسجيل الخروج",
     "logout_confirm_title": "تسجيل الخروج؟",

@@ -6,8 +6,6 @@
   "nav": {
     "dashboard": "Dashboard",
     "overview": "Overview",
-    "acting_as": "ACTING AS",
-    "exit_to_admin": "Exit to Admin",
     "store_settings_btn": "Store Settings",
     "log_out": "Log Out",
     "logout_confirm_title": "Log out?",

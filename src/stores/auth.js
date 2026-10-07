@@ -13,10 +13,8 @@ export const useAuthStore = defineStore('auth', {
     // is set by login() or bootstrap() (silent refresh from the httpOnly cookie).
     accessToken: null,
     user: JSON.parse(localStorage.getItem('vendorya_user') || 'null'),
-    // Super-admin: the store currently being acted on (null = General Admin mode)
-    activeStore: JSON.parse(localStorage.getItem('vendorya_active_store_obj') || 'null'),
-    // Preview mode: sudo sees the store as a real user
-    previewMode: localStorage.getItem('vendorya_preview_mode') === '1',
+    // §PRIVACY-SUDO (s163, Yakot 2026-10-08): no "Enter store" / store preview for the platform
+    // account any more — sudo only ever sees the admin area. (activeStore + previewMode removed.)
   }),
   getters: {
     isAuthenticated: s => !!s.accessToken,
@@ -26,20 +24,16 @@ export const useAuthStore = defineStore('auth', {
     isCashier:       s => s.user?.role === 'CASHIER',
     isManager:       s => s.user?.role === 'MANAGER',
     isOwner:         s => s.user?.role === 'OWNER',
-    currency:        s => (s.activeStore?.currency || s.user?.store?.currency) || null,
-    currencySymbol:  s => (s.activeStore?.currency?.symbol
-                            || s.user?.store?.currency?.symbol
-                            || ''),
-    timezone:        s => s.activeStore?.timezone || s.user?.store?.timezone || 'Africa/Cairo',
-    storeName:       s => s.activeStore?.name || s.user?.store?.name || 'Vendorya',
-    isPremium:       s => (s.activeStore?.plan || s.user?.store?.plan) === 'PREMIUM',
+    currency:        s => s.user?.store?.currency || null,
+    currencySymbol:  s => s.user?.store?.currency?.symbol || '',
+    timezone:        s => s.user?.store?.timezone || 'Africa/Cairo',
+    storeName:       s => s.user?.store?.name || 'Vendorya',
+    isPremium:       s => s.user?.store?.plan === 'PREMIUM',
     displayName:     s => s.user?.full_name || s.user?.username || '—',
     initials: s => {
       const name = s.user?.full_name || s.user?.username || '?'
       return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
     },
-    // True when sudo has picked a store; drives sidebar nav + axios header
-    isInStoreMode: s => !!s.user?.is_superadmin && !!s.activeStore,
   },
   actions: {
     // Returns a status the Login view branches on:
@@ -88,11 +82,7 @@ export const useAuthStore = defineStore('auth', {
         // Cookie gone/expired → not actually logged in. Drop stale UX state so the
         // guard routes to /login (keep theme prefs).
         this.user = null
-        this.activeStore = null
         localStorage.removeItem('vendorya_user')
-        localStorage.removeItem('vendorya_active_store')
-        localStorage.removeItem('vendorya_active_store_obj')
-        localStorage.removeItem('vendorya_preview_mode')
       }
     },
     setUser(user) {
@@ -103,31 +93,6 @@ export const useAuthStore = defineStore('auth', {
         i18n.global.locale.value = user.language
         localStorage.setItem('vendorya_locale', user.language)
       }
-    },
-    // Sudo picks a store from the admin topbar
-    setActiveStore(store) {
-      this.activeStore = store
-      if (store) {
-        localStorage.setItem('vendorya_active_store_obj', JSON.stringify(store))
-        localStorage.setItem('vendorya_active_store', store.id)
-      } else {
-        localStorage.removeItem('vendorya_active_store_obj')
-        localStorage.removeItem('vendorya_active_store')
-      }
-      // Currency + decimal rules belong to the active store — reload them.
-      useFormatStore().loadForStore()
-    },
-    clearActiveStore() {
-      this.previewMode = false
-      this.setActiveStore(null)
-    },
-    enterPreview() {
-      this.previewMode = true
-      localStorage.setItem('vendorya_preview_mode', '1')
-    },
-    exitPreview() {
-      this.previewMode = false
-      localStorage.removeItem('vendorya_preview_mode')
     },
     // Hard logout via a full-page navigation.
     //

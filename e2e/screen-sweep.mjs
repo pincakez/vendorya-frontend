@@ -1,11 +1,12 @@
-// Screen sweep (s156, Yakot): open EVERY screen as Yakot's own account (`sudo`) — the admin area first, then
-// "Enter store" (X-Store-ID) for every shop screen — at desktop AND mobile width, and record per screen:
+// Screen sweep (s156, Yakot): open EVERY screen — the admin area as `sudo`, then every shop screen as a REAL shop
+// account (s163 §PRIVACY-SUDO: sudo can no longer "Enter store") — at desktop AND mobile width, and record per screen:
 // console errors · API calls that failed (≥400) · sideways overflow (page wider than the screen) · a screenshot.
 // Runs against DEV only. Navigation is in-app (router.push), like a person clicking — no full reloads.
 //
 //   node e2e/screen-sweep.mjs                         # headless real Chrome
 //   xvfb-run -a node e2e/screen-sweep.mjs --headed    # real Chrome on a virtual screen
-// env: BASE (default http://localhost:4456) · STORE_ID (shop to enter) · IDS (JSON of ids for detail screens)
+// env: BASE (default http://localhost:4456) · SHOP_USER + SHOP_PASS (a shop account for the shop screens — an OWNER
+//      sees them all; default = the e2e cashier, who sees only cashier screens) · IDS (JSON of ids for detail screens)
 //      SHOTS (screenshot folder) · ONLY (comma list of route substrings to limit the run)
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import pw from '/home/ubuntu/vendorya-dev/vendorya-frontend/node_modules/playwright/index.js'
@@ -17,7 +18,8 @@ const SHOTS = (process.env.SHOTS || '/tmp/vendorya-sweep') + (HEADED ? '/headed'
 mkdirSync(SHOTS, { recursive: true })
 const env = readFileSync(new URL('../../vendorya-backend/.env', import.meta.url), 'utf8')
 const PASS = process.env.DEV_SUDO_PASSWORD || (env.match(/^DEV_SUDO_PASSWORD=(.*)$/m) || [])[1]
-const STORE_ID = process.env.STORE_ID
+const SHOP_USER = process.env.SHOP_USER || 'alexcashier'
+const SHOP_PASS = process.env.SHOP_PASS || process.env.E2E_CASHIER_PASSWORD || (env.match(/^E2E_CASHIER_PASSWORD=(.*)$/m) || [])[1]
 const IDS = JSON.parse(process.env.IDS || '{}')
 const ONLY = (process.env.ONLY || '').split(',').filter(Boolean)
 const CHROME = process.env.CHROME_PATH || (existsSync('/usr/bin/google-chrome') ? '/usr/bin/google-chrome' : undefined)
@@ -57,13 +59,15 @@ for (const [vpName, vp] of Object.entries(VIEWPORTS)) {
       cur.api.push(`${r.status()} ${r.request().method()} ${r.url().replace(/^https?:\/\/[^/]+/, '').slice(0, 120)}`)
   })
 
-  // login once per viewport (fresh context)
-  await page.goto(BASE + '/login')
-  await page.fill('input[autocomplete="username"]', 'sudo')
-  await page.fill('input[autocomplete="current-password"]', PASS)
-  await page.keyboard.press('Enter')
-  await page.waitForURL(u => !u.toString().includes('/login'), { timeout: 20000 })
-  await page.waitForLoadState('networkidle').catch(() => {})
+  async function login(user, pass) {
+    await page.goto(BASE + '/login')
+    await page.fill('input[autocomplete="username"]', user)
+    await page.fill('input[autocomplete="current-password"]', pass)
+    await page.keyboard.press('Enter')
+    await page.waitForURL(u => !u.toString().includes('/login'), { timeout: 20000 })
+    await page.waitForLoadState('networkidle').catch(() => {})
+  }
+  await login('sudo', PASS)   // admin area first (fresh context per viewport)
 
   async function visit(route, area) {
     const path = '/' + fill(route)
@@ -84,11 +88,10 @@ for (const [vpName, vp] of Object.entries(VIEWPORTS)) {
   }
 
   for (const r of pick(ADMIN)) await visit(r, 'admin')
-  if (STORE_ID) {
-    // "Enter store" exactly like AdminStores.vue does (localStorage → X-Store-ID on every request)
-    await page.evaluate(id => localStorage.setItem('vendorya_active_store', id), STORE_ID)
-    await page.goto(BASE + '/dashboard')
-    await page.waitForLoadState('networkidle').catch(() => {})
+  if (SHOP_PASS) {
+    await ctx.clearCookies()
+    await page.evaluate(() => localStorage.clear())
+    await login(SHOP_USER, SHOP_PASS)   // shop screens as the shop's own staff
     for (const r of pick(SHOP)) await visit(r, 'shop')
   }
   await ctx.close()
