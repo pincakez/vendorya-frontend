@@ -12,6 +12,46 @@
 
 export const changelog = [
   {
+    version: '1.37.1',
+    date: '2026-10-07',
+    tag: 'Fixed',
+    en: {
+      title: 'Product names are back in the product list',
+      points: [
+        'In some column layouts the product list squeezed the product name column to nothing. The name now always shows, at its full width.',
+        'You can now edit a supplier whose code has 2 digits from the product page’s supplier list — before, it only accepted 3-digit codes.',
+      ],
+    },
+    ar: {
+      title: 'أسماء الأصناف رجعت في قائمة الأصناف',
+      points: [
+        'في بعض ترتيبات الأعمدة كانت قائمة الأصناف تضغط عمود اسم الصنف حتى يختفي. الآن يظهر الاسم دائمًا بعرضه الكامل.',
+        'يمكنك الآن تعديل مورّد كوده رقمين من قائمة الموردين في صفحة الأصناف — كانت تقبل الأكواد المكونة من 3 أرقام فقط.',
+      ],
+    },
+  },
+  {
+    version: '1.37.0',
+    date: '2026-10-07',
+    tag: 'New',
+    en: {
+      title: 'A full description on every product page',
+      points: [
+        'The product page now has its own Description section under the photos — with headings, bold words and bullet lists, so a long text about a device reads like a real product page.',
+        'Arabic paragraphs line up on the right by themselves, English ones on the left — in the same description.',
+        'The description box in Edit Product is bigger, so long texts are easier to write.',
+      ],
+    },
+    ar: {
+      title: 'وصف كامل في صفحة كل صنف',
+      points: [
+        'صفحة الصنف فيها الآن قسم خاص بالوصف تحت الصور — بعناوين وكلمات بخط عريض ونقاط، فالنص الطويل عن أي جهاز يُقرأ كصفحة منتج حقيقية.',
+        'الفقرات العربية تصطف على اليمين تلقائيًا والإنجليزية على اليسار — في نفس الوصف.',
+        'خانة الوصف في تعديل الصنف أصبحت أكبر، فكتابة النصوص الطويلة أسهل.',
+      ],
+    },
+  },
+  {
     version: '1.36.1',
     date: '2026-10-07',
     tag: 'Improved',

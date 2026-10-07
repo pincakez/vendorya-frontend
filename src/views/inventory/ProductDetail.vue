@@ -137,7 +137,6 @@
         <!-- Public-facing info (client-safe) -->
         <div class="info-section">
           <div class="info-row big-name">{{ product.name }}</div>
-          <div v-if="product.description" class="info-row description">{{ product.description }}</div>
 
           <div class="info-grid">
             <div class="info-item" v-if="product.category_name">
@@ -194,6 +193,14 @@
       </div>
 
     </div><!-- /showcase-layout -->
+
+    <!-- ══ DESCRIPTION (full width — the showcase write-up, light Markdown) ══ -->
+    <div v-if="product?.description" class="variants-card desc-card">
+      <div class="section-header">
+        <h2 class="section-title">{{ t('common.description') }}</h2>
+      </div>
+      <div class="rich-text" v-html="descriptionHtml" />
+    </div>
 
     <!-- ══ STOCK BREAKDOWN (only for multi-tier products) ══ -->
     <div v-if="product && stockBreakdown.hasTiers" class="variants-card stock-units-card">
@@ -315,7 +322,7 @@
           </div>
           <div>
             <label class="form-label">{{ t('common.description') }}</label>
-            <textarea v-model="editModal.description" class="form-input" rows="3" :placeholder="t('common.optional')" />
+            <textarea v-model="editModal.description" class="form-input" rows="6" :placeholder="t('common.optional')" />
           </div>
           <div class="prod-prices-row">
             <div><label class="form-label">{{ t('inventory.product_detail.base_price_label') }}</label><input v-model.number="editModal.base_price" class="form-input" type="number" min="0" step="0.01" /></div>
@@ -450,6 +457,7 @@ import Money from '@/components/ui/Money.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { showSuccessToast } from '@/utils/toast'
 import { decomposeStock, headlineLabel, formatBreakdown, unitConversionLine } from '@/utils/units'
+import { renderRichText } from '@/utils/richText'
 
 const { t } = useI18n()
 const props = defineProps({ id: String })
@@ -523,6 +531,8 @@ function variantStock(v) {
 }
 
 // SKU2 column (s159) — shown whenever a variant carries one (also as history after "disable for good").
+const descriptionHtml = computed(() => renderRichText(product.value?.description))
+
 const hasSku2 = computed(() => (product.value?.variants || []).some(v => v.sku2))
 
 const primaryVariant = computed(() =>
@@ -1019,7 +1029,16 @@ onUnmounted(() => {
 }
 
 .big-name { font-size: 20px; font-weight: 800; color: var(--text-primary); }
-.description { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+.desc-card { margin-bottom: 24px; }
+.rich-text { padding: 16px 22px 20px; font-size: 14px; line-height: 1.8; color: var(--text-secondary); max-width: 900px; }
+.rich-text :deep(h3) { font-size: 18px; color: var(--text-primary); margin: 0 0 10px; }
+.rich-text :deep(h4) { font-size: 15px; color: var(--text-primary); margin: 18px 0 8px; }
+.rich-text :deep(p) { margin: 0 0 10px; }
+.rich-text :deep(ul) { margin: 0 0 10px; padding-inline-start: 22px; list-style: disc; }
+.rich-text :deep(li) { margin-bottom: 8px; }
+.rich-text :deep(strong) { color: var(--text-primary); font-weight: 600; }
+.rich-text :deep(.rt-sub) { display: block; }
+.rich-text :deep(hr) { border: 0; border-top: 1px solid var(--border); margin: 14px 0; }
 
 .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
 .info-item { }

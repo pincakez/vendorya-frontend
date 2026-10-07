@@ -139,7 +139,7 @@
                     colDragOver === col.key && colDragKey !== col.key && colDragMoved ? 'col-drag-over' : ''
                   ]"
                   :style="col.key === 'product'
-                    ? { minWidth: colWidths[col.key] + 'px', position: 'sticky', left: '0', zIndex: 22, background: 'var(--bg-app)' }
+                    ? { width: colWidths[col.key] + 'px', minWidth: colWidths[col.key] + 'px', position: 'sticky', left: '0', zIndex: 22, background: 'var(--bg-app)' }
                     : { width: colWidths[col.key] + 'px' }"
                   @click="col.sort && handleSort(col)"
                   @pointerdown="startColDrag(col.key, $event)"
@@ -317,12 +317,12 @@
     <AppModal :open="supModal.open" :title="supModal.id ? t('inventory.products.supplier_modal.edit_title') : t('inventory.products.supplier_modal.new_title')" @close="supModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div><label class="form-label">{{ t('common.name') }}</label><input v-model="supModal.name" class="form-input" :placeholder="t('inventory.products.supplier_modal.name_placeholder')" /></div>
-        <div><label class="form-label">{{ t('inventory.products.supplier_modal.code_prefix_label') }}</label><input v-model="supModal.code_prefix" class="form-input" :placeholder="t('inventory.products.supplier_modal.code_prefix_placeholder')" maxlength="3" /></div>
+        <div><label class="form-label">{{ t('inventory.products.supplier_modal.code_prefix_label') }}</label><input v-model="supModal.code_prefix" class="form-input" :placeholder="t('inventory.products.supplier_modal.code_prefix_placeholder')" maxlength="4" /></div>
         <div><label class="form-label">{{ t('inventory.products.supplier_modal.contact_label') }}</label><textarea v-model="supModal.contact_info" class="form-input" rows="2" :placeholder="t('inventory.products.supplier_modal.contact_placeholder')" /></div>
       </div>
       <template #footer>
         <button class="btn-ghost" @click="supModal.open = false">{{ t('common.cancel') }}</button>
-        <button class="btn-primary" @click="saveSupplier" :disabled="!supModal.name.trim() || supModal.code_prefix.length !== 3">{{ t('common.save') }}</button>
+        <button class="btn-primary" @click="saveSupplier" :disabled="!supModal.name.trim() || !/^\d{2,4}$/.test(supModal.code_prefix)">{{ t('common.save') }}</button>
       </template>
     </AppModal>
 
