@@ -140,7 +140,7 @@ import {
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, ArrowLeft,
   Building2, KeyRound, Trash2, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
   BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles, CalendarClock,
-  Library,
+  Library, Barcode,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -250,6 +250,7 @@ const adminGroups = computed(() => [
     { label: t('nav.items.tenant_usage'),   to: '/admin/usage',           icon: BarChart2 },
     { label: t('nav.items.trash'),          to: '/admin/trash',           icon: Trash2 },
     { label: t('nav.items.isolation_check'),to: '/admin/isolation-check', icon: ShieldCheck },
+    { label: t('nav.items.sku_management'), to: '/admin/sku',             icon: Barcode },
   ] },
   { id: 'adesign', title: t('nav.groups.design'), icon: LayoutGrid, items: [
     { label: t('nav.items.gallery'),            to: '/admin/widget-gallery',    icon: LayoutGrid },

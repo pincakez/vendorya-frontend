@@ -47,7 +47,7 @@
               <span v-if="acEnSub(p)" class="psi-sub">{{ acEnSub(p) }}</span>
               <span v-if="acMeta(p)" class="psi-meta" :class="{ 'psi-meta-ar': searchQAr }" dir="auto">{{ acMeta(p) }}</span>
             </div>
-            <span class="psi-sku">{{ p.sku_display }}</span>
+            <span class="psi-sku">{{ p.sku_display }}<template v-if="showSku2 && p.sku2_display"> · {{ p.sku2_display }}</template></span>
             <span class="psi-price">{{ fmtNum(p.default_variant_price) }}</span>
           </div>
         </div>
@@ -541,6 +541,8 @@ async function init() {
       allowNegativeStock.value = !!r.data.allow_negative_stock
       cartDisplayFields.value = Array.isArray(r.data.pos_cart_display_fields) ? r.data.pos_cart_display_fields : []
       clock24h.value = r.data.pos_clock_24h !== false
+      // SKU2 beside the SKU in results — unless sudo ticked "hide in search" (it still finds the product).
+      showSku2.value = r.data.sku2_state === 'ON' && !r.data.sku2_hide_search
       liveTime.value = nowStr()
     }).catch(() => {}),
   ])
@@ -687,6 +689,7 @@ const cartDisplayFields = ref([])
 
 // Store negative-stock policy (false = overselling forbidden → hard-block PAY).
 const allowNegativeStock = ref(false)
+const showSku2 = ref(false)
 // A line oversells when the base units it needs exceed what's on hand. Compare in
 // base units (qty × unit_factor) so it's correct for Strip/Pack/kg lines too.
 function lineOver(item) {

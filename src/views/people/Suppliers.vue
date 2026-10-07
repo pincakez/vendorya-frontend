@@ -225,10 +225,10 @@
             <textarea v-model="newModal.notes" class="form-input" rows="2" :placeholder="t('people.pfm.notes_ph')" />
           </div>
           <div class="pfm-row">
-            <label class="form-label">{{ t('people.suppliers.new_modal.prefix_label') }} <span class="label-hint">{{ t('people.suppliers.new_modal.prefix_hint') }}</span></label>
+            <label class="form-label">{{ t('people.suppliers.new_modal.prefix_label') }} <span class="label-hint">{{ t('people.suppliers.new_modal.prefix_hint', { n: newModal.width }) }}</span></label>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input v-model="newModal.code_prefix" class="form-input" :placeholder="t('people.suppliers.new_modal.prefix_ph')" maxlength="3" style="width:90px;" @input="newModal.prefixCheck = null" />
-              <button class="btn-check" :disabled="!newModal.code_prefix || newModal.code_prefix.length !== 3 || newModal.checkingPrefix" @click="checkNewPrefix">
+              <input v-model="newModal.code_prefix" class="form-input" :placeholder="t('people.suppliers.new_modal.prefix_ph')" :maxlength="newModal.width" style="width:90px;" @input="newModal.prefixCheck = null" />
+              <button class="btn-check" :disabled="!newModal.code_prefix || newModal.code_prefix.length !== newModal.width || newModal.checkingPrefix" @click="checkNewPrefix">
                 {{ newModal.checkingPrefix ? '…' : t('people.suppliers.new_modal.check') }}
               </button>
               <span v-if="newModal.prefixCheck === true" class="check-ok">{{ t('people.suppliers.new_modal.available') }}</span>
@@ -562,7 +562,7 @@ function clearSearch() { search.value = ''; fetchSuppliers(1) }
 const saving = ref(false)
 
 const _newDefaults = () => ({
-  open: false, expanded: false, name: '', code_prefix: '', prefixCheck: null, checkingPrefix: false,
+  open: false, expanded: false, name: '', code_prefix: '', prefixCheck: null, checkingPrefix: false, width: 3,
   phone_number: '', email: '', company_name: '',
   whatsapp_number: '', instagram: '', website: '', country: 'Egypt', city: '', notes: '',
 })
@@ -576,13 +576,15 @@ const _editDefaults = () => ({
 })
 const editModal = reactive(_editDefaults())
 
-function suggestPrefix() { return String(Math.floor(Math.random() * 900) + 100) }
-
+// s159: the server says how many digits a NEW supplier code needs (the shop's SKU setup: 2 or 3, +1 once
+// a width is used up) and suggests the next free one.
 async function openNew() {
-  Object.assign(newModal, { ..._newDefaults(), open: true, code_prefix: suggestPrefix(), checkingPrefix: true })
+  Object.assign(newModal, { ..._newDefaults(), open: true, code_prefix: '', checkingPrefix: true })
   try {
-    const res = await api.get('/api/inventory/suppliers/check-prefix/', { params: { prefix: newModal.code_prefix } })
-    newModal.prefixCheck = res.data.available
+    const res = await api.get('/api/inventory/suppliers/check-prefix/')
+    newModal.width = res.data.width || 3
+    newModal.code_prefix = res.data.next_free || ''
+    newModal.prefixCheck = !!res.data.next_free
   } catch { newModal.prefixCheck = false } finally { newModal.checkingPrefix = false }
 }
 function closeNew() { newModal.open = false }

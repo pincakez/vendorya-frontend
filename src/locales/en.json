@@ -79,6 +79,7 @@
       "tenant_usage": "Tenant Usage",
       "trash": "Trash",
       "isolation_check": "Isolation Check",
+      "sku_management": "SKU Management",
       "ai_profiles": "AI Profiles",
       "misc": "Misc",
       "gallery": "Widget Gallery",
@@ -238,7 +239,7 @@
         "new_title": "New Supplier",
         "edit_title": "Edit Supplier",
         "name_placeholder": "Supplier name",
-        "code_prefix_label": "3-digit code prefix",
+        "code_prefix_label": "Supplier code",
         "code_prefix_placeholder": "e.g. 130",
         "contact_label": "Contact info (optional)",
         "contact_placeholder": "Phone, email…"
@@ -267,7 +268,9 @@
         "err_save": "Save failed. Make sure the supplier prefix is confirmed (locked).",
         "err_load": "Failed to load product details.",
         "toast_saved": "✓ Product saved",
-        "toast_stock_failed": "Product saved, but the initial stock wasn't set. Add it from Inventory → Stock Adjustments."
+        "toast_stock_failed": "Product saved, but the initial stock wasn't set. Add it from Inventory → Stock Adjustments.",
+        "sku2_label": "SKU2",
+        "sku2_ph": "Second code (digits) — blank = automatic"
       },
       "add_option_modal": {
         "new_option_label": "New option value",
@@ -386,7 +389,9 @@
         "upload_failed": "Upload failed",
         "max_photos": "Up to {n} photos",
         "specs": "Up to {imgs} photos (max {imgmb}MB each) + 1 video (max {vidmb}MB, {vidsec}s). Images become webp, videos become mp4."
-      }
+      },
+      "sku2_col": "SKU2",
+      "sku2_history": "SKU2 (history)"
     },
     "categories": {
       "title": "Categories",
@@ -1140,7 +1145,7 @@
         "email_label": "Email",
         "company_ph": "Company or trade name",
         "prefix_label": "Supplier Code Prefix",
-        "prefix_hint": "— 3 digits (100–999)",
+        "prefix_hint": "— {n} digits",
         "prefix_ph": "e.g. 101",
         "check": "Check",
         "available": "Available",

@@ -471,6 +471,11 @@
 
           <div class="pm2-section">Stock</div>
 
+          <div v-if="storeSettings.sku2_state === 'ON'" class="pm2-field">
+            <div class="pm2-fh"><label class="pm2-label">{{ t('inventory.products.product_modal.sku2_label') }}</label></div>
+            <input v-model.trim="prodModal.sku2" class="pm2-input" inputmode="numeric" maxlength="8"
+                   :placeholder="t('inventory.products.product_modal.sku2_ph')" />
+          </div>
           <div class="pm2-stock-row">
             <div class="pm2-field">
               <div class="pm2-fh">
@@ -702,7 +707,13 @@ const tierCols = computed(() => {
     .filter(c => c.tierName)
 })
 
-const columns = computed(() => [...BASE_COLUMNS, ...tierCols.value, ...attrCols.value])
+// SKU2 column (s159): only when sudo switched the shop's SKU2 on (or it was disabled with history kept)
+// and did not tick "hide SKU2 in tables".
+const sku2Cols = computed(() =>
+  (storeSettings.sku2_state && storeSettings.sku2_state !== 'OFF' && !storeSettings.sku2_hide_tables)
+    ? [{ key: 'sku2', label: 'SKU2', align: 'left', field: 'sku2_display', cls: 'c-sku' }] : [])
+
+const columns = computed(() => [...BASE_COLUMNS, ...sku2Cols.value, ...tierCols.value, ...attrCols.value])
 
 const DEFAULT_WIDTHS = { sku: 130, product: 300, supplier: 170, cat1: 150, cat2: 150, cat3: 150, cat4: 150, wholesale: 120, retail: 120, profit: 120, inStock: 110 }
 const colWidths = reactive({ ...DEFAULT_WIDTHS })
@@ -1100,10 +1111,12 @@ async function saveSupplier() {
 async function deleteSupplier(id) { if (!confirm(t('inventory.products.suppliers_tab.confirm_delete'))) return; await api.delete(`/api/inventory/suppliers/${id}/`); fetchSuppliers() }
 
 /* ── store settings (for multi-unit gate) ── */
-const storeSettings = reactive({ multi_unit_enabled: false, base_unit_name: 'pcs', unit_tier_names: ['Strip', 'Pack'], pos_respect_mb_units: true, pos_tier_count: 3 })
+const storeSettings = reactive({ sku2_state: 'OFF', sku2_hide_tables: false, multi_unit_enabled: false, base_unit_name: 'pcs', unit_tier_names: ['Strip', 'Pack'], pos_respect_mb_units: true, pos_tier_count: 3 })
 async function fetchStoreSettings() {
   try {
     const { data } = await api.get('/api/core/settings/')
+    storeSettings.sku2_state = data.sku2_state || 'OFF'
+    storeSettings.sku2_hide_tables = !!data.sku2_hide_tables
     storeSettings.multi_unit_enabled = data.multi_unit_enabled ?? false
     storeSettings.base_unit_name = data.base_unit_name || 'pcs'
     storeSettings.unit_tier_names = data.unit_tier_names || ['Strip', 'Pack']
@@ -1136,6 +1149,22 @@ watch(tierCols, (cols) => {
   }
 }, { immediate: true })
 
+// SKU2 column joins the layout right after SKU (visible), and leaves when it's switched off/hidden.
+watch(sku2Cols, (cols) => {
+  if (cols.length) {
+    if (!colWidths.sku2) colWidths.sku2 = 100
+    if (!colOrder.value.includes('sku2')) {
+      const arr = [...colOrder.value]
+      const idx = arr.indexOf('sku')
+      arr.splice(idx >= 0 ? idx + 1 : 0, 0, 'sku2')
+      colOrder.value = arr
+    }
+  } else {
+    colOrder.value = colOrder.value.filter(k => k !== 'sku2')
+    colHidden.value = colHidden.value.filter(k => k !== 'sku2')
+  }
+}, { immediate: true })
+
 /* ── product defaults (persisted in localStorage) ── */
 const PROD_DEFAULTS_KEY = 'prod_field_defaults'
 const prodDefaults = reactive({
@@ -1163,7 +1192,7 @@ function saveDefaults() {
 const prodModal = reactive({
   open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
   base_price: null, cost_price: null, sell_price: null, reorder_level: null, initial_stock: 1, attrs: {}, saving: false, error: '',
-  units: [], sell_base_unit: true,
+  units: [], sell_base_unit: true, sku2: '',
 })
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
 function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
@@ -1232,7 +1261,7 @@ function openAddProduct() {
     base_price: null, cost_price: null, sell_price: null,
     reorder_level: prodDefaults.reorder_enabled ? prodDefaults.reorder_value : null,
     initial_stock: prodDefaults.stock_enabled ? prodDefaults.stock_value : 1,
-    units: [], sell_base_unit: true,
+    units: [], sell_base_unit: true, sku2: '',
     saving: false, error: '',
   })
   resetAttrs()
@@ -1280,6 +1309,7 @@ async function openEditProduct(p) {
     prodModal.cost_price  = v ? Number(v.cost_price || 0) : 0
     prodModal.sell_price  = v ? Number(v.sell_price || 0) : 0
     prodModal.reorder_level = v ? Number(v.reorder_level ?? 0) : 0
+    prodModal.sku2 = v ? (v.sku2 || '') : ''
     if (v && v.attributes) for (const a of v.attributes) prodModal.attrs[a.definition] = a.value
     prodModal.units = (data.selling_units || [])
       .filter(u => !u.is_base)
@@ -1304,6 +1334,7 @@ async function saveProduct() {
     reorder_level: prodModal.reorder_level ?? 0,
     attributes: attributes_payload,
   }
+  if (storeSettings.sku2_state === 'ON') payload.sku2 = prodModal.sku2 || ''
   if (!prodModal.id) {
     payload.supplier = prodModal.supplier   // supplier locked on edit
   }
@@ -1355,6 +1386,7 @@ async function saveProduct() {
   } catch (e) {
     prodModal.error = e.response?.data?.detail
       || e.response?.data?.supplier?.[0]
+      || e.response?.data?.sku2?.[0]
       || t('inventory.products.product_modal.err_save')
   } finally { prodModal.saving = false }
 }

@@ -229,6 +229,7 @@
           <thead>
             <tr>
               <th class="dt-th">{{ t('inventory.product_detail.sku_col') }}</th>
+              <th v-if="hasSku2" class="dt-th">{{ t('inventory.product_detail.sku2_col') }}</th>
               <th class="dt-th">{{ t('inventory.product_detail.attrs_col') }}</th>
               <th class="dt-th">{{ t('inventory.product_detail.cost_col') }}</th>
               <th class="dt-th">{{ t('inventory.product_detail.sell_price_col') }}</th>
@@ -239,10 +240,11 @@
           </thead>
           <tbody>
             <tr v-if="product.variants.length === 0">
-              <td colspan="7" class="dt-empty">{{ t('inventory.product_detail.no_variants') }}</td>
+              <td :colspan="hasSku2 ? 8 : 7" class="dt-empty">{{ t('inventory.product_detail.no_variants') }}</td>
             </tr>
             <tr v-for="v in product.variants" :key="v.id" class="dt-row">
               <td class="mono">{{ v.sku }}</td>
+              <td v-if="hasSku2" class="mono">{{ v.sku2 || '—' }}</td>
               <td>
                 <span v-for="a in v.attributes" :key="a.id" class="attr-tag">{{ a.definition_name }}: {{ a.value }}</span>
                 <span v-if="!v.attributes.length" class="text-muted">—</span>
@@ -519,6 +521,9 @@ function variantStock(v) {
     ? { label: headlineLabel(d.headline), title: formatBreakdown(d.parts) }
     : { label: String(v.total_stock ?? 0), title: '' }
 }
+
+// SKU2 column (s159) — shown whenever a variant carries one (also as history after "disable for good").
+const hasSku2 = computed(() => (product.value?.variants || []).some(v => v.sku2))
 
 const primaryVariant = computed(() =>
   product.value?.variants?.[0] ?? null
