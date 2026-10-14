@@ -12,6 +12,90 @@
 
 export const changelog = [
   {
+    version: '1.50.1',
+    date: '2026-10-15',
+    tag: 'Fixed',
+    en: {
+      title: 'A sale with a return can no longer be voided',
+      points: [
+        'Voiding a sale that already had a return put the whole quantity back on the shelf — counting the returned items twice. Now Vendorya stops it and tells you to return the rest instead.',
+        'If the Sales Invoices page refuses to post or void a sale, it now tells you why.',
+      ],
+    },
+    ar: {
+      title: 'الفاتورة اللي عليها مرتجع مبقاش ينفع تتلغي',
+      points: [
+        'إلغاء فاتورة عليها مرتجع كان بيرجّع الكمية كلها للرف — فالحاجات المرتجعة كانت بتتحسب مرتين. دلوقتي Vendorya بيمنعها ويقولك رجّع الباقي بدل كده.',
+        'لو صفحة فواتير البيع رفضت ترحيل أو إلغاء فاتورة، بقت بتقولك السبب.',
+      ],
+    },
+  },
+  {
+    version: '1.50.0',
+    date: '2026-10-15',
+    tag: 'New',
+    en: {
+      title: 'Till rules: open shifts, credit limits, a bigger phone till',
+      points: [
+        'New option in Store Settings: sell only with an open shift. Every sale (and every finished repair job) then lands in a cash drawer someone counts. The payment window tells you why and lets you open your shift on the spot.',
+        'Only a manager or the owner can set or change a customer’s credit limit. Cashiers still add and edit customers.',
+        'Shifts can be opened from the Shifts page again, and a double click can never open two shifts for the same person.',
+        'On a phone the till now shows at full size — bigger text, easier to tap.',
+      ],
+    },
+    ar: {
+      title: 'قواعد الكاشير: الورديات، حد الائتمان، كاشير أكبر على الموبايل',
+      points: [
+        'اختيار جديد في إعدادات المحل: البيع بوردية مفتوحة بس. كده كل بيعة (وكل أمر صيانة بيخلص) بتدخل في درج فلوس حد بيعدّه. شباك الدفع بيقولك السبب ويخليك تفتح ورديتك في مكانك.',
+        'المدير أو المالك بس هما اللي يحددوا أو يغيّروا حد ائتمان العميل. والكاشير لسه بيضيف ويعدّل العملاء عادي.',
+        'الورديات رجعت تتفتح من صفحة الورديات، والضغطة المزدوجة عمرها ما هتفتح ورديتين لنفس الشخص.',
+        'على الموبايل الكاشير بقى بحجمه الكامل — خط أكبر وأسهل في الضغط.',
+      ],
+    },
+  },
+  {
+    version: '1.49.0',
+    date: '2026-10-15',
+    tag: 'New',
+    en: {
+      title: 'Download all your shop’s data',
+      points: [
+        'Owners: Settings → Export My Data gives you one zip with spreadsheets of your products, customers, suppliers, sales, purchases, payments, returns and expenses.',
+        'It opens in Excel with Arabic shown correctly, and a README inside explains every column. Only the owner can download it; passwords are never included.',
+      ],
+    },
+    ar: {
+      title: 'نزّل كل بيانات محلك',
+      points: [
+        'للمالك: الإعدادات ← تصدير بياناتي بيديك ملف zip واحد فيه جداول بمنتجاتك وعملائك ومورديك ومبيعاتك ومشترياتك والمدفوعات والمرتجعات والمصروفات.',
+        'بيفتح في Excel والعربي ظاهر صح، وجواه ملف README بيشرح كل عمود. المالك بس اللي يقدر ينزّله، وكلمات السر عمرها ما بتكون فيه.',
+      ],
+    },
+  },
+  {
+    version: '1.48.0',
+    date: '2026-10-15',
+    tag: 'New',
+    en: {
+      title: 'Serial numbers and warranty for every unit',
+      points: [
+        'Turn on "Track serial numbers" for a product (laptops, phones…) and every unit keeps its own serial or IMEI: scan it when you buy, scan or pick it when you sell, check it when it comes back.',
+        'Units already on your shelf get their serials with "Register serials" — your stock count does not change. Items sold before you switched it on can still be returned.',
+        'Set a condition (new, imported and inspected, used) and a warranty in months; the receipt shows the serial and "Warranty: 12 months — until …".',
+        'The new Serial Lookup page finds any unit in seconds: where it is, who bought it, and whether its warranty still runs.',
+      ],
+    },
+    ar: {
+      title: 'سيريال وضمان لكل قطعة',
+      points: [
+        'فعّل "تتبع الأرقام التسلسلية" لأي منتج (لابتوب، موبايل…) وكل قطعة يبقى ليها السيريال أو الـ IMEI بتاعها: امسحه وانت بتشتري، امسحه أو اختاره وانت بتبيع، واتأكد منه لما يرجع.',
+        'القطع اللي على الرف أصلاً تاخد سيرياتها من "تسجيل سيريالات" — من غير ما رصيد المخزن يتغير. والحاجات اللي اتباعت قبل ما تفعّلها لسه ينفع ترجع.',
+        'حدد الحالة (جديد، مستورد ومتفحص، مستعمل) والضمان بالشهور؛ والفاتورة بتطبع السيريال و"الضمان: 12 شهر — لحد …".',
+        'صفحة البحث بالسيريال الجديدة بتلاقي أي قطعة في ثواني: هي فين، مين اشتراها، والضمان لسه شغال ولا لأ.',
+      ],
+    },
+  },
+  {
     version: '1.47.2',
     date: '2026-10-14',
     tag: 'Fixed',
