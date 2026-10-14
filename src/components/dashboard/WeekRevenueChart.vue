@@ -10,7 +10,9 @@ import Money from '@/components/ui/Money.vue'
 import { formatNumber } from '@/utils/format'
 import { useFormatStore } from '@/stores/format'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+// s168: dates follow the APP language (not the browser's), always with Western digits.
+const dateLocale = computed(() => (locale.value === 'ar' ? 'ar-EG-u-nu-latn' : 'en-GB'))
 
 const props = defineProps({
   // [{ date, label, total }] — 7 entries, oldest → newest
@@ -27,7 +29,7 @@ const weekTotal = computed(() => rows.value.reduce((a, r) => a + (parseFloat(r.t
 const rangeLabel = computed(() => {
   if (!rows.value.length) return ''
   const first = rows.value[0]?.date, last = rows.value[rows.value.length - 1]?.date
-  const f = (d) => d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''
+  const f = (d) => d ? new Date(d).toLocaleDateString(dateLocale.value, { month: 'short', day: 'numeric' }) : ''
   return `${f(first)} – ${f(last)}`
 })
 
@@ -57,7 +59,7 @@ const chartOptions = computed(() => ({
   },
   colors: [ACCENT],
   xaxis: {
-    categories: rows.value.map(r => r.label),
+    categories: rows.value.map(r => r.date ? new Date(r.date).toLocaleDateString(dateLocale.value, { weekday: 'short' }) : r.label),
     labels: { style: { fontSize: '9px', colors: Array(7).fill('#9ca3af') } },
     axisBorder: { show: false },
     axisTicks:  { show: false },

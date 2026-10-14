@@ -1296,3 +1296,14 @@ html.pos-mode .route-view  { flex: 1; min-height: 0; display: flex; flex-directi
   background: var(--warning);
   color: white;
 }
+
+/* s168: ONE global reduced-motion guard (before, only the dashboard had one). People who ask their system for
+   less motion get no animations/transitions anywhere; layouts and end states stay the same. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
