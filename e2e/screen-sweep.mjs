@@ -18,6 +18,7 @@ const SHOTS = (process.env.SHOTS || '/tmp/vendorya-sweep') + (HEADED ? '/headed'
 mkdirSync(SHOTS, { recursive: true })
 const env = readFileSync(new URL('../../vendorya-backend/.env', import.meta.url), 'utf8')
 const PASS = process.env.DEV_SUDO_PASSWORD || (env.match(/^DEV_SUDO_PASSWORD=(.*)$/m) || [])[1]
+const SUDO_USER = process.env.SUDO_USER || 'sudo'   // s168: dev test sudo = s168sudo (password = E2E_CASHIER_PASSWORD)
 const SHOP_USER = process.env.SHOP_USER || 'alexcashier'
 const SHOP_PASS = process.env.SHOP_PASS || process.env.E2E_CASHIER_PASSWORD || (env.match(/^E2E_CASHIER_PASSWORD=(.*)$/m) || [])[1]
 const IDS = JSON.parse(process.env.IDS || '{}')
@@ -67,7 +68,7 @@ for (const [vpName, vp] of Object.entries(VIEWPORTS)) {
     await page.waitForURL(u => !u.toString().includes('/login'), { timeout: 20000 })
     await page.waitForLoadState('networkidle').catch(() => {})
   }
-  await login('sudo', PASS)   // admin area first (fresh context per viewport)
+  await login(SUDO_USER, PASS)   // admin area first (fresh context per viewport)
 
   async function visit(route, area) {
     const path = '/' + fill(route)
