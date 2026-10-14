@@ -1016,7 +1016,8 @@
         "refund_ph": "Refund",
         "restock": "Restock",
         "add_item": "Add Item",
-        "save_btn": "Save Return"
+        "save_btn": "Save Return",
+        "select_line": "Pick a line from the sale…"
       },
       "err_no_branch": "No branch available for this return.",
       "err_save": "Failed to save return."

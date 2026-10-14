@@ -81,11 +81,16 @@
       <div style="margin-top:18px;">
         <div class="section-label">{{ t('sales.returns.modal.items_label') }}</div>
         <div v-for="(item, i) in modal.items" :key="i" class="item-row">
-          <select v-model="item.variant" class="form-input item-variant">
+          <!-- s168: with an original sale, pick one of ITS lines — the unit sold (Pack / Strip / base) comes with it -->
+          <select v-if="modal.original_invoice" v-model="item.line" class="form-input item-variant" @change="pickLine(item)">
+            <option value="">{{ t('sales.returns.modal.select_line') }}</option>
+            <option v-for="l in invoiceLines" :key="l.key" :value="l.key">{{ l.label }}</option>
+          </select>
+          <select v-else v-model="item.variant" class="form-input item-variant">
             <option value="">{{ t('sales.returns.modal.select_variant') }}</option>
             <option v-for="v in variants" :key="v.id" :value="v.id">{{ v.product_name }} — {{ v.sku }}</option>
           </select>
-          <input v-model="item.quantity" type="number" min="1" class="form-input item-qty" :placeholder="t('sales.returns.modal.qty_ph')" />
+          <input v-model="item.quantity" type="number" min="1" class="form-input item-qty" :placeholder="t('sales.returns.modal.qty_ph')" @input="pickLine(item)" />
           <input v-model="item.refund_amount" type="number" min="0" step="0.01" class="form-input item-price" :placeholder="t('sales.returns.modal.refund_ph')" />
           <label class="restock-label">
             <input v-model="item.restock_inventory" type="checkbox" />
@@ -93,7 +98,7 @@
           </label>
           <button class="row-action danger" @click="modal.items.splice(i, 1)"><Trash2 :size="13" /></button>
         </div>
-        <button class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ variant: '', quantity: 1, refund_amount: '', restock_inventory: true })">
+        <button class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ line: '', variant: '', unit: null, quantity: 1, refund_amount: '', restock_inventory: true })">
           <Plus :size="13" /> {{ t('sales.returns.modal.add_item') }}
         </button>
       </div>
@@ -109,7 +114,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { formatQty } from '@/utils/format'
 import { useI18n } from 'vue-i18n'
 import { RotateCcw, Trash2, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
@@ -189,6 +195,7 @@ async function saveReturn() {
       reason: modal.reason,
       items: modal.items.map(i => ({
         variant: i.variant,
+        unit: i.unit || null,
         quantity: Number(i.quantity),
         refund_amount: Number(i.refund_amount),
         restock_inventory: i.restock_inventory,
@@ -202,6 +209,33 @@ async function saveReturn() {
   } finally {
     saving.value = false
   }
+}
+
+// s168 (returns by unit): the original sale's own lines, so a returned Pack restocks a whole pack.
+const invoiceLines = ref([])
+watch(() => modal.original_invoice, async (id) => {
+  invoiceLines.value = []
+  modal.items.forEach(i => { i.line = ''; i.variant = ''; i.unit = null })
+  if (!id) return
+  try {
+    const { data } = await api.get(`/api/finance/invoices/${id}/print-data/`)
+    invoiceLines.value = (data.items ?? []).map(l => ({
+      key: `${l.variant}|${l.unit ?? ''}`,
+      variant: l.variant,
+      unit: l.unit,
+      quantity: Number(l.quantity),
+      total: Number(l.total),
+      label: `${l.name} — ${formatQty(l.quantity)}${l.unit_name ? ' ' + l.unit_name : ''}`,
+    }))
+  } catch {}
+})
+function pickLine(item) {
+  const l = invoiceLines.value.find(x => x.key === item.line)
+  if (!l) return
+  item.variant = l.variant
+  item.unit = l.unit
+  // default refund = what one unit of this line was sold for × qty (the server caps it anyway)
+  if (l.quantity > 0) item.refund_amount = (Math.round(l.total / l.quantity * Number(item.quantity || 0) * 100) / 100).toFixed(2)
 }
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '—' }
