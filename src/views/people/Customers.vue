@@ -229,7 +229,7 @@
             <label class="form-label">{{ t('people.pfm.notes') }}</label>
             <textarea v-model="modal.notes" class="form-input" rows="2" :placeholder="t('people.pfm.notes_ph')" />
           </div>
-          <div class="pfm-row">
+          <div v-if="canSetOpening" class="pfm-row">
             <label class="form-label">{{ t('people.customer_form.credit_limit_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
             <input v-model.number="modal.credit_limit" type="number" min="0" step="100" class="form-input" style="max-width:160px;" placeholder="0" />
           </div>
@@ -532,9 +532,9 @@ async function saveCustomer() {
       website:         modal.website.trim(),
       country:         modal.country.trim(),
       city:            modal.city.trim(),
-      credit_limit:    modal.credit_limit            || null,
-      // Opening balance (s167): managers and up only — the server refuses a cashier who changes it.
-      ...(canSetOpening.value ? { opening_balance: modal.opening_balance || 0 } : {}),
+      // Opening balance (s167) + credit limit (2026-10-14): managers and up only — the server refuses a
+      // cashier who changes either, so a cashier's form leaves both out (and they stay as they are).
+      ...(canSetOpening.value ? { opening_balance: modal.opening_balance || 0, credit_limit: modal.credit_limit || null } : {}),
     }
     if (isEdit) {
       await api.patch(`/api/auth/customers/${modal.id}/`, payload)

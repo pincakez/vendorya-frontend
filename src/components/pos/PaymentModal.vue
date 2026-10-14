@@ -91,6 +91,19 @@
         </label>
       </div>
 
+      <!-- The shop sells only with an open shift (2026-10-14) and this seller has none here: open it right here -->
+      <div v-if="shiftMissing" class="pm-shift">
+        <div class="pm-shift-msg"><AlertTriangle :size="16" /><span>{{ t('pos.payment.shift_needed') }}</span></div>
+        <div class="pm-shift-row">
+          <label class="pm-shift-label">
+            <span>{{ t('finance.shifts.open_modal.cash_label') }}</span>
+            <input v-model="shiftCash" type="number" min="0" step="0.01" class="form-input" placeholder="0.00"
+                   @keydown.enter.stop.prevent="openShift" />
+          </label>
+          <BaseButton :loading="shiftOpening" @click="openShift">{{ t('finance.shifts.open_modal.open_btn') }}</BaseButton>
+        </div>
+      </div>
+
       <!-- Error -->
       <div v-if="error" class="pm-error">{{ error }}</div>
 
@@ -114,6 +127,8 @@ import { useAuthStore } from '@/stores/auth'
 import { formatNumber } from '@/utils/format'
 import { serialErrorText } from '@/utils/serials'
 import AppModal from '@/components/ui/AppModal.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import { showErrorToast, showSuccessToast } from '@/utils/toast'
 
 const { t } = useI18n()
 const emit = defineEmits(['close', 'success'])
@@ -132,6 +147,36 @@ const error      = ref('')
 const printReceipt = ref(true)
 const doublePrint  = ref(false)
 const allowAgel    = ref(true)
+
+// "Require an open shift to sell" (shop setting, 2026-10-14): the seller needs their own open shift in this
+// branch. Checked when the window opens and again if the server refuses the sale; the box opens one in place.
+const shiftMissing = ref(false)
+const shiftCash    = ref('')
+const shiftOpening = ref(false)
+
+async function checkShift() {
+  try {
+    const { data } = await api.get('/api/finance/shifts/drawer/')
+    shiftMissing.value = !data?.shift || data.shift.branch !== pos.branchId
+  } catch { /* the server still checks at checkout */ }
+}
+
+async function openShift() {
+  if (shiftOpening.value) return
+  shiftOpening.value = true
+  try {
+    await api.post('/api/finance/shifts/', { branch: pos.branchId, starting_cash: shiftCash.value || 0 })
+    shiftMissing.value = false
+    error.value = ''
+    showSuccessToast(t('pos.payment.shift_opened'))
+    focusLine(activeKey.value)
+  } catch (e) {
+    const d = e?.response?.data
+    showErrorToast(typeof d?.detail === 'string' ? d.detail : (Array.isArray(d) && d[0]) || t('pos.payment.err_shift_open'), 3500)
+  } finally {
+    shiftOpening.value = false
+  }
+}
 
 // The customer's store credit — re-read from the server when the window opens (the cart's copy may be old).
 const isNamedCustomer = computed(() => !!cart.customerObj && !cart.customerObj.is_walk_in)
@@ -271,6 +316,7 @@ onMounted(async () => {
     printReceipt.value = data.pos_print_default ?? true
     doublePrint.value  = data.pos_double_print_default ?? false
     allowAgel.value    = data.enable_agel_selling ?? true
+    if (data.require_shift_to_sell) checkShift()
   } catch {
     // keep safe fallbacks
   }
@@ -322,7 +368,11 @@ async function confirm() {
     })
   } catch (e) {
     const data = e?.response?.data
-    if (data?.serial_code) {
+    if (data?.code === 'shift_required') {
+      shiftMissing.value = true
+      error.value = t('pos.payment.err_shift_required')
+      showErrorToast(error.value, 3500)
+    } else if (data?.serial_code) {
       error.value = serialErrorText(t, data)   // New 7: serial not on the shelf here / wrong count …
     } else if (data?.expired) {
       const names = data.expired.map(x => x.name).join(', ')
@@ -430,6 +480,15 @@ async function confirm() {
 .pm-print-cb.disabled { opacity: .45; cursor: not-allowed; }
 .pm-print-cb.disabled input { cursor: not-allowed; }
 
+.pm-shift {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 14px; border-radius: 10px;
+  background: var(--warning-soft); border: 1px solid var(--warning);
+}
+.pm-shift-msg { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; font-weight: 700; color: var(--warning); }
+.pm-shift-msg svg { flex-shrink: 0; margin-top: 1px; }
+.pm-shift-row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+.pm-shift-label { flex: 1; min-width: 140px; display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: var(--text-secondary); }
 .pm-error {
   padding: 12px 16px; border-radius: 10px; background: var(--danger-soft);
   border: 1px solid var(--danger); color: var(--danger); font-size: 13px; font-weight: 600;

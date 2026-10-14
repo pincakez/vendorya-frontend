@@ -53,7 +53,7 @@
             <label class="form-label">{{ t('people.pfm.city') }}</label>
             <input v-model="form.city" class="form-input" placeholder="Cairo" />
           </div>
-          <div class="modal-field">
+          <div v-if="canSetCredit" class="modal-field">
             <label class="form-label">{{ t('people.customer_form.credit_limit_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
             <input v-model.number="form.credit_limit" type="number" min="0" step="100" class="form-input" placeholder="0" />
           </div>
@@ -82,6 +82,7 @@ import { useI18n } from 'vue-i18n'
 import { ChevronDown } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 
@@ -94,6 +95,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'saved'])
+
+const auth = useAuthStore()
+const canSetCredit = computed(() => ['MANAGER', 'ADMIN', 'OWNER'].includes(auth.userRole))
 
 const saving      = ref(false)
 const errorMsg    = ref('')
@@ -137,7 +141,8 @@ async function save() {
     website:         form.website.trim(),
     country:         form.country.trim(),
     city:            form.city.trim(),
-    credit_limit:    form.credit_limit || null,
+    // Credit limit: managers and up only (2026-10-14) — the server refuses a cashier who sets one.
+    ...(canSetCredit.value ? { credit_limit: form.credit_limit || null } : {}),
   }
   try {
     let res

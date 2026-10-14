@@ -226,7 +226,7 @@
           <label class="form-label">{{ t('people.customer_detail.edit_modal.phone_label') }}</label>
           <input v-model="editModal.phone" class="form-input" />
         </div>
-        <div>
+        <div v-if="isManagerPlus">
           <label class="form-label">{{ t('people.customer_detail.edit_modal.credit_limit_label') }}</label>
           <input v-model="editModal.credit_limit" class="form-input" type="number" :placeholder="t('people.customer_detail.edit_modal.credit_limit_ph')" />
         </div>
@@ -324,9 +324,9 @@ async function saveEdit() {
     const r = await api.patch(`/api/auth/customers/${props.id}/`, {
       name: editModal.name,
       phone_number: editModal.phone,
-      credit_limit: editModal.credit_limit || null,
       notes: editModal.notes,
-      ...(isManagerPlus.value ? { opening_balance: editModal.opening_balance || 0 } : {}),
+      // Opening balance + credit limit: managers and up only (s167 / 2026-10-14) — a cashier's edit leaves both out.
+      ...(isManagerPlus.value ? { opening_balance: editModal.opening_balance || 0, credit_limit: editModal.credit_limit || null } : {}),
     })
     customer.value = r.data
     editModal.open = false

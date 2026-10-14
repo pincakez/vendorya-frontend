@@ -2094,13 +2094,25 @@ function fmtNum(n) {
 
 /* ── Phone till (< 768px, s167): cart full width · pay bar · keypad/actions bottom sheet ──
    Everything below is phone-only; 768px and up is the 3-column till exactly as before.
-   Sizes are in the .pos-scale space (drawn at 0.78). */
+   Yakot 2026-10-14: a phone draws the till at FULL size (no 0.78 shrink) — bigger text and touch targets;
+   PCs keep the compact 0.78. */
 @media (max-width: 767px) {
-  .pos-scale { --pos-paybar-h: 96px; --pos-foot-h: 34px; --pos-dock-h: calc(var(--pos-paybar-h) + var(--pos-foot-h)); }
+  .pos-scale {
+    width: 100%; height: 100%; transform: none;
+    --pos-paybar-h: 96px; --pos-foot-h: 34px; --pos-dock-h: calc(var(--pos-paybar-h) + var(--pos-foot-h));
+  }
   .pos-left { display: none; }
   .pos-body { padding: 8px; }
-  /* Slimmer discount / price / ✕ columns → more room for the item name */
-  .pos-cart-header, .pos-cart-row { grid-template-columns: 1fr 96px 52px 84px 28px; }
+  /* Slimmer qty / discount / price / ✕ columns → more room for the item name (full size since 2026-10-14) */
+  .pos-cart-header, .pos-cart-row { grid-template-columns: minmax(0, 1fr) 80px 42px 78px 24px; }
+  .pcr-qty-ctrl { gap: 2px; }
+  .pcr-qty-input { width: 28px; }
+  .pcr-disc { min-width: 36px; padding: 2px 4px; }
+  .pcr-price { font-size: 13px; }
+  .pcr-del { width: 24px; }
+  .pcr-tag { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }   /* a long spec never runs under QTY */
+  .pos-search-kbd { display: none; }   /* no F1 on a phone — the room goes to the search box */
+  .pos-clock { font-size: 13px; padding: 5px 8px; }
   .pos-cart-header { padding: 7px 12px; }
   .pos-cart-row { padding: 9px 10px; margin: 5px 6px; }
 

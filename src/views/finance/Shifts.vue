@@ -6,7 +6,7 @@
         <p class="page-sub">{{ t('finance.shifts.sub') }}</p>
       </div>
       <div v-if="!openShift" class="header-right">
-        <button class="btn-primary" @click="startingCash = ''; openModal = true"><Plus :size="14" /> {{ t('finance.shifts.open_modal.open_btn') }}</button>
+        <button class="btn-primary" @click="startOpen"><Plus :size="14" /> {{ t('finance.shifts.open_modal.open_btn') }}</button>
       </div>
     </div>
 
@@ -71,7 +71,7 @@
         </div>
         <div>
           <label class="form-label">{{ t('finance.shifts.open_modal.branch_label') }}</label>
-          <input class="form-input" :value="auth.user?.store?.name || 'Main'" disabled />
+          <BaseSelect v-model="shiftBranch" :options="branchOptions" :disabled="branchOptions.length < 2" />
         </div>
       </div>
       <template #footer>
@@ -110,6 +110,8 @@ import { useRouter } from 'vue-router'
 import { Clock, History, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
+import BaseSelect from '@/components/base/BaseSelect.vue'
+import { showErrorToast } from '@/utils/toast'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
@@ -149,21 +151,47 @@ async function fetchShifts(p = 1) {
   } catch { shifts.value = [] } finally { loading.value = false }
 }
 
+// The banner is MY open shift (a manager sees everyone's in the history below, not here) — 2026-10-14.
 async function fetchOpenShift() {
   try {
-    const res = await api.get('/api/finance/shifts/', { params: { status: 'OPEN', page_size: 1 } })
+    const res = await api.get('/api/finance/shifts/', { params: { status: 'OPEN', page_size: 100 } })
     const results = res.data.results ?? res.data
-    openShift.value = results.length ? results[0] : null
+    openShift.value = results.find(s => String(s.user) === String(auth.user?.id)) || null
   } catch { openShift.value = null }
 }
 
 function openCloseModal() { countedCash.value = ''; closeModal.value = true }
 
+// A shift belongs to a branch (its drawer). Before 2026-10-14 the page sent the SHOP's id as the branch (always
+// refused, silently) — no shift could be opened from this page. Now: my default branch, else the first; a pick if several.
+const branches      = ref([])
+const shiftBranch   = ref('')
+const branchOptions = computed(() => branches.value.map(b => ({ value: b.id, label: b.name })))
+
+async function startOpen() {
+  startingCash.value = ''
+  if (!branches.value.length) {
+    try {
+      const r = await api.get('/api/core/branches/')
+      branches.value = r.data.results ?? r.data
+    } catch { branches.value = [] }
+  }
+  const mine = branches.value.find(b => b.id === auth.user?.default_branch)
+  shiftBranch.value = (mine || branches.value[0])?.id || ''
+  openModal.value = true
+}
+
 async function openShiftAction() {
-  await api.post('/api/finance/shifts/', {
-    starting_cash: startingCash.value || 0,
-    branch: auth.user?.store?.id,
-  })
+  try {
+    await api.post('/api/finance/shifts/', {
+      starting_cash: startingCash.value || 0,
+      branch: shiftBranch.value,
+    })
+  } catch (e) {
+    const d = e?.response?.data
+    showErrorToast(typeof d?.detail === 'string' ? d.detail : (Array.isArray(d) && d[0]) || t('pos.payment.err_shift_open'), 3500)
+    return
+  }
   openModal.value = false
   startingCash.value = ''
   await fetchOpenShift()

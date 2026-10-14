@@ -294,6 +294,10 @@
             <div><div class="toggle-label">{{ t('settings.policies.agel_title') }}</div><div class="toggle-desc">{{ t('settings.store.agel_desc') }}</div></div>
             <button class="toggle-btn" :class="{ on: settingsForm.enable_agel_selling }" @click="settingsForm.enable_agel_selling = !settingsForm.enable_agel_selling"><span class="toggle-knob" /></button>
           </div>
+          <div class="toggle-item">
+            <div><div class="toggle-label">{{ t('settings.store.require_shift_title') }}</div><div class="toggle-desc">{{ t('settings.store.require_shift_desc') }}</div></div>
+            <button class="toggle-btn" :class="{ on: settingsForm.require_shift_to_sell }" @click="settingsForm.require_shift_to_sell = !settingsForm.require_shift_to_sell"><span class="toggle-knob" /></button>
+          </div>
         </div>
 
         <div class="form-grid" style="margin-top:16px;">
@@ -1080,7 +1084,7 @@ const storeForm    = reactive({
   address_line: '', email: '', website: '', fb_page: '', instagram: '',
 })
 const settingsForm = reactive({
-  allow_negative_stock: false, enable_agel_selling: true,
+  allow_negative_stock: false, enable_agel_selling: true, require_shift_to_sell: false,
   decimals: 2, thousands_separator: false, item_noun: 'NAME',
   base_unit_name: 'pcs', unit_tier_names: ['Strip', 'Pack'],
   category_level_names: ['Category', 'Sub-category', 'Sub-category 2', 'Sub-category 3'],
@@ -1168,6 +1172,7 @@ async function saveRules() {
     await api.patch('/api/core/settings/', {
       allow_negative_stock: settingsForm.allow_negative_stock,
       enable_agel_selling:  settingsForm.enable_agel_selling,
+      require_shift_to_sell: settingsForm.require_shift_to_sell,
       credit_policy:        settingsForm.credit_policy,
       default_credit_limit: (settingsForm.credit_policy !== 'ALLOW' && settingsForm.default_credit_limit) ? settingsForm.default_credit_limit : null,
       return_window_days:   settingsForm.return_window_days || 0,
