@@ -95,6 +95,7 @@
       "storage_movements": "Storage Movements",
       "storage_recon": "Storage Reconciliation",
       "whats_new": "What's New",
+      "shop_export": "Export My Data",
       "expiry": "Expiry & Batches",
       "lockscreen": "Lock Screen"
     }
@@ -2056,6 +2057,19 @@
       "confirm_delete": "Delete this tax?",
       "err_delete": "Cannot delete — tax may be in use.",
       "err_save": "Error saving tax"
+    },
+    "export": {
+      "title": "Export my shop's data",
+      "sub": "Download a copy of everything your shop has recorded.",
+      "card_title": "Export my shop's data",
+      "card_desc": "One zip file with spreadsheets (CSV) of your products, customers, suppliers, sales, purchases, payments, returns and expenses. It opens in Excel, Arabic included.",
+      "files_note": "A README.txt file inside the zip explains every file and column. Deleted records are not included.",
+      "privacy": "Only the shop owner can download this. Passwords and other secrets are never included.",
+      "button": "Download export",
+      "preparing": "Preparing your file…",
+      "done": "Your download has started.",
+      "err_throttled": "You just exported. Please wait a minute and try again.",
+      "err_generic": "Could not export your data. Please try again."
     },
     "branch_detail": {
       "branches": "Branches",

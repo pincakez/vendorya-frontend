@@ -232,6 +232,7 @@ const groups = computed(() => [
     { label: t('nav.items.taxes'),           to: '/settings/taxes',          icon: Percent },
     { label: t('nav.items.notifications'),   to: '/settings/notifications',  icon: Bell },
     { label: t('nav.items.billing'),         to: '/settings/billing',        icon: CreditCard },
+    { label: t('nav.items.shop_export'),     to: '/settings/export',         icon: Archive },
     { label: t('nav.items.pos_settings'),    to: '/settings/pos',            icon: Keyboard },
     { label: t('nav.items.profile'),         to: '/settings/profile',        icon: User },
     { label: t('nav.items.security'),        to: '/settings/security',       icon: Lock },
