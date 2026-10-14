@@ -12,6 +12,84 @@
 
 export const changelog = [
   {
+    version: '1.44.0',
+    date: '2026-10-14',
+    tag: 'New',
+    en: {
+      title: 'Receipts in your shop’s language',
+      points: [
+        'Printed sales receipts, purchase invoices and service tickets now use your shop’s language (Settings → Store → Default language) — the same receipt whoever prints it. Choose Arabic and your customers get Arabic receipts.',
+        'Notifications now show in each person’s own screen language.',
+      ],
+    },
+    ar: {
+      title: 'الفواتير بلغة محلك',
+      points: [
+        'فواتير البيع المطبوعة وفواتير الشراء وإيصالات الصيانة بقت بلغة المحل (الإعدادات ← المحل ← اللغة الافتراضية) — نفس الفاتورة مين ما يطبعها. اختار العربي وزباينك ياخدوا فواتير بالعربي.',
+        'الإشعارات بقت بتظهر بلغة شاشة كل واحد.',
+      ],
+    },
+  },
+  {
+    version: '1.43.0',
+    date: '2026-10-14',
+    tag: 'New',
+    en: {
+      title: 'Split payment at the till',
+      points: [
+        'A customer can pay with more than one method: part cash, part card, part store credit — and leave the rest on their account (Ajel).',
+        'Cash can be more than the total: the till shows the change to hand back and prints it on the receipt.',
+        'Store credit from earlier returns can now be spent at the till.',
+        'One method is as fast as before: PAY, then Enter.',
+      ],
+    },
+    ar: {
+      title: 'الدفع بأكتر من طريقة في الكاشير',
+      points: [
+        'العميل يقدر يدفع بأكتر من طريقة: جزء كاش وجزء فيزا وجزء من رصيده — والباقي آجل على حسابه.',
+        'الكاش ممكن يبقى أكتر من الإجمالي: الكاشير بيعرض الباقي اللي ترجّعه وبيطبعه في الفاتورة.',
+        'رصيد العميل من المرتجعات القديمة بقى ينفع يتصرف في الكاشير.',
+        'طريقة دفع واحدة لسه بنفس السرعة: دفع، وبعدين Enter.',
+      ],
+    },
+  },
+  {
+    version: '1.42.2',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'The menu shows only your pages',
+      points: [
+        'Each person now sees only the pages their role can use — a cashier no longer finds Purchases, Reports or Suppliers in the menu and then a "not allowed" error.',
+      ],
+    },
+    ar: {
+      title: 'القايمة بتعرض صفحاتك بس',
+      points: [
+        'كل واحد بقى يشوف الصفحات اللي دوره يقدر يستخدمها بس — الكاشير مبقاش يلاقي المشتريات أو التقارير أو الموردين في القايمة وبعدين رسالة "غير مسموح".',
+      ],
+    },
+  },
+  {
+    version: '1.42.1',
+    date: '2026-10-14',
+    tag: 'Improved',
+    en: {
+      title: 'Print price stickers from the product list',
+      points: [
+        'Select products on the Products page (or open one product) and press "Print labels" — no purchase invoice needed. Handy when you move in from another system.',
+        'Choose 1 label each or 1 per unit in stock. Big jobs print in batches of 500.',
+      ],
+    },
+    ar: {
+      title: 'طباعة الإستيكرات من قايمة المنتجات',
+      points: [
+        'اختار منتجات من صفحة المنتجات (أو افتح منتج واحد) ودوس "طباعة الملصقات" — من غير فاتورة شراء. مفيدة لما تنقل من سيستم تاني.',
+        'اختار ملصق واحد لكل منتج أو واحد لكل قطعة في المخزن. الطباعة الكبيرة بتطلع على دفعات 500.',
+      ],
+    },
+  },
+  {
     version: '1.42.0',
     date: '2026-10-14',
     tag: 'New',
