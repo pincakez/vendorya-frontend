@@ -8,6 +8,18 @@
     <!-- ─── Top bar ─────────────────────────────────────────── -->
     <div class="pos-topbar">
       <div class="pos-topbar-left">
+        <!-- Phone only (s166, Yakot): the app header — and its menu button — is hidden on the POS, so the
+             till gets its own small ☰ that opens the same sidebar drawer. -->
+        <button
+          v-if="isPhone"
+          class="pos-back-btn pos-menu-btn"
+          :title="t('nav.open_menu')"
+          :aria-label="t('nav.open_menu')"
+          :aria-expanded="mobileOpen ? 'true' : 'false'"
+          @click="toggleMobile"
+        >
+          <Menu :size="16" />
+        </button>
         <button class="pos-exit-badge" @click="exitToDashboard" :title="t('pos.exit')">
           <LogOut :size="14" />
           <span>{{ t('pos.exit') }}</span>
@@ -431,8 +443,9 @@ import { useI18n } from 'vue-i18n'
 import {
   Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
   Printer, FileText, ShoppingCart, CheckCircle2, ArrowLeft, ChevronDown, AlertTriangle,
-  Sun, Moon, LogOut,
+  Sun, Moon, LogOut, Menu,
 } from 'lucide-vue-next'
+import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
 import api from '@/api/axios'
 import { formatWeight, weightUnitLabel, isGramUnit, toBaseKg, fromBaseKg } from '@/utils/format'
 import { useAuthStore }  from '@/stores/auth'
@@ -451,6 +464,7 @@ import { useSearchFlags }  from '@/composables/useSearchFlags'
 
 const router = useRouter()
 const { t, locale } = useI18n()
+const { isPhone, mobileOpen, toggleMobile } = usePhoneSidebar()
 const theme = useThemeStore()
 const flags = useSearchFlags()
 
@@ -1457,6 +1471,17 @@ function fmtNum(n) {
 .pos-brand { font-size: 15px; font-weight: 900; color: var(--accent); letter-spacing: 0.1em; }
 .pos-divider { color: var(--border); font-size: 20px; }
 .pos-store  { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+/* Phone (≤768px, s166): the bar must fit, or the browser scrolls it sideways to show the focused
+   search box and the ☰ / Exit buttons slide off the left edge. Keep the buttons, drop the labels. */
+@media (max-width: 768px) {
+  .pos-topbar { gap: 8px; padding: 0 8px; }
+  .pos-brand, .pos-divider, .pos-store, .pos-exit-badge span { display: none; }
+  .pos-exit-badge { padding: 0 8px; }
+  .pos-topbar-left, .pos-topbar-right { gap: 6px; }
+  .pos-search-wrap { min-width: 0; padding: 0 10px; }
+  .pos-search { min-width: 0; width: 100%; text-overflow: ellipsis; }
+  .pos-operator, .pos-branch-chip { display: none; }
+}
 
 .pos-search-wrap {
   flex: 1; max-width: 460px; margin-right: auto; position: relative;
