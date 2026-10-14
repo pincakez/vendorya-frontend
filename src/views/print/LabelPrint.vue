@@ -93,7 +93,8 @@ function goBack() { router.back() }
 function buildTSPL(labels, storeName) {
   let out = 'SIZE 50 mm, 25 mm\r\nGAP 2 mm, 0 mm\r\nDIRECTION 1\r\n'
   for (const label of labels) {
-    const price = parseFloat(label.sell_price || 0).toFixed(2) + ' EGP'
+    // Same shop currency symbol as the on-screen label (fmtPrice) — not a hard-coded EGP.
+    const price = fmtPrice(label.sell_price).trim().replace(/"/g, '')
     const sku   = (label.barcode || label.sku || '').replace(/"/g, '')
     const store = (storeName || '').replace(/"/g, '')
     out += `CLS\r\n`
