@@ -48,7 +48,7 @@
         <button v-if="canEdit && !editing" class="dt-filter" @click="enterEdit">
           <Columns3 :size="14" /> {{ t('inventory.products.toolbar.customize') }}
         </button>
-        <button v-if="canEdit && !editing" class="dt-filter" :class="{ on: bulkMode }" @click="toggleBulk">
+        <button v-if="canSelect && !editing" data-testid="bulk-toggle" class="dt-filter" :class="{ on: bulkMode }" @click="toggleBulk">
           <CheckSquare :size="14" /> {{ t('inventory.products.toolbar.bulk') }}
         </button>
         <button v-if="canEdit && !editing" class="dt-filter" :title="t('inventory.products.toolbar.assign_layouts')" @click="openAssign">
@@ -111,10 +111,14 @@
         <div v-if="bulkMode" class="bulk-bar">
           <span class="bulk-count">{{ t('inventory.products.bulk_bar.n_selected', { count: selectedCount }) }}</span>
           <div class="bulk-actions">
-            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="doBulkGhost(true)"><EyeOff :size="14" /> {{ t('inventory.products.bulk_bar.ghost') }}</button>
-            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="doBulkGhost(false)"><Eye :size="14" /> {{ t('inventory.products.bulk_bar.unghost') }}</button>
-            <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="openBulkEdit"><Pencil :size="14" /> {{ t('common.edit') }}</button>
-            <button class="btn-ghost danger" :disabled="!selectedCount || bulkBusy" @click="openBulkDelete"><Trash2 :size="14" /> {{ t('common.delete') }}</button>
+            <!-- s167 (Upgrade 14): price stickers for the selected items — anyone who may print labels -->
+            <button class="btn-ghost" data-testid="bulk-print-labels" :disabled="!selectedCount || bulkBusy" @click="openLabels(selectedIds())"><Printer :size="14" /> {{ t('inventory.labels.print_labels') }}</button>
+            <template v-if="canEdit">
+              <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="doBulkGhost(true)"><EyeOff :size="14" /> {{ t('inventory.products.bulk_bar.ghost') }}</button>
+              <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="doBulkGhost(false)"><Eye :size="14" /> {{ t('inventory.products.bulk_bar.unghost') }}</button>
+              <button class="btn-ghost" :disabled="!selectedCount || bulkBusy" @click="openBulkEdit"><Pencil :size="14" /> {{ t('common.edit') }}</button>
+              <button class="btn-ghost danger" :disabled="!selectedCount || bulkBusy" @click="openBulkDelete"><Trash2 :size="14" /> {{ t('common.delete') }}</button>
+            </template>
           </div>
           <button class="bulk-exit" :title="t('inventory.products.bulk_bar.exit_hint')" @click="toggleBulk"><X :size="15" /></button>
         </div>
@@ -551,6 +555,9 @@
       </template>
     </AppModal>
 
+    <!-- ═══════════ PRINT LABELS (s167) ═══════════ -->
+    <ProductLabelsModal :open="labelsModal.open" :product-ids="labelsModal.ids" @close="labelsModal.open = false" />
+
     <!-- ═══════════ BULK EDIT ═══════════ -->
     <AppModal :open="bulkEditModal.open" :title="t('inventory.products.bulk_edit_modal.title')" @close="bulkEditModal.open = false">
       <div style="display:flex;flex-direction:column;gap:14px;">
@@ -602,7 +609,7 @@ import {
   Package, BarChart3, Search, X, Filter, Pencil, Trash2, Tags, Truck, Plus,
   ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown,
   Columns3, GripVertical, Lock, UserCog, RotateCcw,
-  Eye, EyeOff, CheckSquare,
+  Eye, EyeOff, CheckSquare, Printer,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -635,6 +642,7 @@ function tierCell(p, col) {
 }
 import AppModal from '@/components/ui/AppModal.vue'
 import ReasonModal from '@/components/ui/ReasonModal.vue'
+import ProductLabelsModal from '@/components/inventory/ProductLabelsModal.vue'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -760,6 +768,9 @@ const canEdit = computed(() => ['OWNER', 'ADMIN'].includes(auth.userRole) || aut
 // Add / edit / ghost a product = MANAGER and up on the server (ProductViewSet.role_map) —
 // a cashier only looks (s167: the buttons used to show, then the save got a 403).
 const canManage = computed(() => !!auth.userRole && !auth.isCashier)
+// Bulk SELECT is open to every shop role since s167 — printing labels needs it, and cashiers print
+// labels (s157 §AUDIT B7). Ghost / edit / delete inside the bar keep the old Owner/Admin gate (canEdit).
+const canSelect = computed(() => canEdit.value || !!auth.userRole)
 
 function cellText(col, p) {
   if (col.isTier) return tierCell(p, col)
@@ -1469,6 +1480,14 @@ async function toggleGhost(p) {
 }
 
 const selectedIds = () => [...selected.value]
+
+// s167 (PROLINE-PARITY Upgrade 14): price stickers from the product list
+const labelsModal = reactive({ open: false, ids: [] })
+function openLabels(ids) {
+  if (!ids.length) return
+  labelsModal.ids = ids
+  labelsModal.open = true
+}
 
 async function doBulkGhost(hide) {
   if (!selectedCount.value || bulkBusy.value) return

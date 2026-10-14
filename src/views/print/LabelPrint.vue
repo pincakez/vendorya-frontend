@@ -2,25 +2,31 @@
   <div class="label-page">
     <!-- Screen toolbar — hidden when printing -->
     <div class="print-toolbar no-print">
-      <button class="tb-btn" @click="goBack"><ArrowLeft :size="15" /> Back</button>
+      <button class="tb-btn" @click="goBack"><ArrowLeft :size="15" /> {{ t('inventory.labels.back') }}</button>
       <div class="tb-info">
-        <span class="tb-title">Label Print</span>
-        <span class="tb-meta">{{ totalLabels }} label{{ totalLabels !== 1 ? 's' : '' }} · {{ preset.width_mm }}×{{ preset.height_mm }} mm</span>
+        <span class="tb-title">{{ t('inventory.labels.page_title') }}</span>
+        <span class="tb-meta" data-testid="label-meta">{{ t('inventory.labels.page_meta', { n: totalLabels, w: preset.width_mm, h: preset.height_mm }, totalLabels) }}</span>
+      </div>
+      <!-- s167: a big job (2,000+ stickers) is shown + printed one batch at a time -->
+      <div v-if="batchCount > 1" class="tb-batch">
+        <button class="tb-btn" :disabled="batchIdx === 0" @click="batchIdx--"><ChevronLeft :size="15" /></button>
+        <span class="tb-meta" data-testid="label-batch">{{ t('inventory.labels.batch', { i: batchIdx + 1, n: batchCount, from: batchFrom + 1, to: batchTo }) }}</span>
+        <button class="tb-btn" :disabled="batchIdx >= batchCount - 1" @click="batchIdx++"><ChevronRight :size="15" /></button>
       </div>
       <button class="tb-btn primary" :disabled="printing" @click="doPrint">
-        <Printer :size="15" /> {{ printing ? 'Sending…' : 'Print' }}
+        <Printer :size="15" /> {{ printing ? t('inventory.labels.sending') : (batchCount > 1 ? t('inventory.labels.print_batch') : t('inventory.purchases.print_btn')) }}
       </button>
     </div>
 
     <div v-if="!job" class="no-job no-print">
-      No label job loaded. Go back to a purchase and click "Print Labels".
+      {{ t('inventory.labels.no_job') }}
     </div>
 
     <!-- Label sheet -->
     <div v-else class="label-sheet">
       <div
         v-for="(label, i) in flatLabels"
-        :key="i"
+        :key="batchIdx + '-' + i"
         class="label-card"
         :style="labelStyle"
       >
@@ -38,15 +44,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, Printer } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { ArrowLeft, Printer, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import JsBarcode from 'jsbarcode'
-import { useLabelsStore } from '@/stores/labels'
+import { useLabelsStore, LABEL_BATCH } from '@/stores/labels'
 import { useFormatStore } from '@/stores/format'
 import { useQZTray } from '@/composables/useQZTray'
 import api from '@/api/axios'
 
+const { t } = useI18n()
 const router = useRouter()
 const labelsStore = useLabelsStore()
 const fmt = useFormatStore()
@@ -60,20 +68,33 @@ const preset = computed(() => job.value?.preset ?? {})
 
 const barcodeSvgs = ref([])
 
-// Expand each item by its quantity into individual label objects
+const labelCount = item => Math.max(1, Math.round(Number(item.quantity) || 0))
+
+const totalLabels = computed(() =>
+  job.value ? job.value.items.reduce((s, item) => s + labelCount(item), 0) : 0)
+
+// s167: never put more than LABEL_BATCH stickers (each with an SVG barcode) on the page at once.
+const batchIdx   = ref(0)
+const batchCount = computed(() => Math.max(1, Math.ceil(totalLabels.value / LABEL_BATCH)))
+const batchFrom  = computed(() => batchIdx.value * LABEL_BATCH)
+const batchTo    = computed(() => Math.min(totalLabels.value, batchFrom.value + LABEL_BATCH))
+
+// Expand each item by its quantity into individual label objects — only the current batch is built.
 const flatLabels = computed(() => {
   if (!job.value) return []
+  const from = batchFrom.value, to = batchTo.value
   const out = []
+  let pos = 0
   for (const item of job.value.items) {
-    const count = Math.max(1, Math.round(item.quantity))
-    for (let n = 0; n < count; n++) {
-      out.push({ ...item, store_name: job.value.store_name })
+    const count = labelCount(item)
+    if (pos + count <= from) { pos += count; continue }
+    for (let n = 0; n < count && pos < to; n++, pos++) {
+      if (pos >= from) out.push({ ...item, store_name: job.value.store_name })
     }
+    if (pos >= to) break
   }
   return out
 })
-
-const totalLabels = computed(() => flatLabels.value.length)
 
 const labelStyle = computed(() => {
   const p = preset.value
@@ -130,12 +151,8 @@ async function doPrint() {
   }
 }
 
-onMounted(async () => {
-  // Load printer name from store settings (non-blocking — screen still renders)
-  api.get('/api/core/settings/').then(r => {
-    labelPrinterName.value = r.data.label_printer_name || ''
-  }).catch(() => {})
-
+// Draw the barcodes of the batch on screen (the template's ref callback keeps barcodeSvgs[i] current).
+async function renderBarcodes() {
   await nextTick()
   if (!preset.value.show_barcode) return
   flatLabels.value.forEach((label, i) => {
@@ -153,6 +170,16 @@ onMounted(async () => {
       // barcode value was empty or invalid — skip silently
     }
   })
+}
+
+watch(batchIdx, () => { renderBarcodes(); window.scrollTo(0, 0) })
+
+onMounted(() => {
+  // Load printer name from store settings (non-blocking — screen still renders)
+  api.get('/api/core/settings/').then(r => {
+    labelPrinterName.value = r.data.label_printer_name || ''
+  }).catch(() => {})
+  renderBarcodes()
 })
 </script>
 
@@ -169,6 +196,8 @@ onMounted(async () => {
 .tb-info   { display: flex; flex-direction: column; align-items: center; }
 .tb-title  { font-size: 14px; font-weight: 700; color: #0f172a; }
 .tb-meta   { font-size: 12px; color: #64748b; }
+.tb-batch  { display: flex; align-items: center; gap: 8px; }
+.tb-btn:disabled { opacity: .45; cursor: default; }
 .tb-btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;

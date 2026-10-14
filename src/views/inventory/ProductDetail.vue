@@ -20,6 +20,10 @@
         <button v-if="canManage" class="edit-prod-btn" @click="openEditModal" :title="t('inventory.product_detail.edit_product_btn')">
           <Pencil :size="14" /> {{ t('inventory.product_detail.edit_product_btn') }}
         </button>
+        <!-- s167 (Upgrade 14): price stickers for this product (one per variant) — any shop role -->
+        <button v-if="product.source !== 'MEMORY_BASE'" class="edit-prod-btn" data-testid="detail-print-labels" @click="labelsOpen = true">
+          <Printer :size="14" /> {{ t('inventory.labels.print_labels') }}
+        </button>
         <!-- Secret S button — reveals cost/supplier panel -->
         <button v-if="seesCost" class="s-btn" :class="{ active: showSecret }" @click="showSecret = !showSecret" :title="t('inventory.product_detail.show_cost_title')">S</button>
       </div>
@@ -312,6 +316,8 @@
     </div>
 
     <!-- ══ EDIT PRODUCT MODAL ══ -->
+    <ProductLabelsModal v-if="product" :open="labelsOpen" :product-ids="[product.id]" @close="labelsOpen = false" />
+
     <AppModal v-if="product" :open="editModal.open" :title="t('inventory.product_detail.edit_product_btn')" width="900px" :noBackdropClose="true" @close="editModal.open = false">
       <div class="prod-modal-grid">
         <!-- LEFT COLUMN -->
@@ -451,10 +457,11 @@
 import { ref, computed, onMounted, onUnmounted, reactive, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronLeft, Eye, X, Camera, Image as ImageIcon, Pencil, Lock, Layers,
-         Volume2, VolumeX, Play, ImagePlus, Video, Info } from 'lucide-vue-next'
+         Volume2, VolumeX, Play, ImagePlus, Video, Info, Printer } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import ProductLabelsModal from '@/components/inventory/ProductLabelsModal.vue'
 import { showSuccessToast } from '@/utils/toast'
 import { decomposeStock, headlineLabel, formatBreakdown, unitConversionLine } from '@/utils/units'
 import { formatWeight } from '@/utils/format'
@@ -470,6 +477,7 @@ const canManage = computed(() => !!auth.userRole && !auth.isCashier)
 const seesCost = computed(() => !!product.value && 'base_price' in product.value)
 
 const product = ref(null)
+const labelsOpen = ref(false)   // s167: Print labels modal
 const loading = ref(true)
 const showSecret = ref(false)
 const imgInput = ref(null)

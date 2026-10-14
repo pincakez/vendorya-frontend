@@ -497,6 +497,27 @@
       "save_changes": "Save Changes",
       "create_attribute": "Create Attribute"
     },
+    "labels": {
+      "print_labels": "Print labels",
+      "title": "Print labels",
+      "loading": "Loading…",
+      "per_item_title": "Labels per item",
+      "per_item_one": "1 label each",
+      "per_item_stock": "1 per unit in stock",
+      "summary": "{n} labels for {items} items",
+      "weight_note": "Items sold by weight always get 1 label.",
+      "batch_note": "More than {max} labels: the print page splits them into batches of {max}. Print one batch, then go to the next.",
+      "none_found": "None of the selected items can get a label.",
+      "err_load": "Could not load label data.",
+      "too_many": "Select at most {max} products at a time.",
+      "back": "Back",
+      "page_title": "Label Print",
+      "page_meta": "{n} label · {w}×{h} mm | {n} labels · {w}×{h} mm",
+      "batch": "Batch {i} of {n} · labels {from}–{to}",
+      "print_batch": "Print this batch",
+      "sending": "Sending…",
+      "no_job": "No labels to print. Open a received purchase or the Products list and click \"Print labels\"."
+    },
     "purchases": {
       "title": "Purchases",
       "sub": "Supplier purchase invoices and stock receiving",

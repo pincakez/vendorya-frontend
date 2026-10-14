@@ -291,7 +291,7 @@
 
       <template #footer>
         <button class="btn-ghost" @click="tryClose">{{ t('common.cancel') }}</button>
-        <button v-if="modal.id && readOnly" class="btn-ghost" @click="openLabelPicker"><Tag :size="14" /> {{ t('inventory.purchases.print_labels') }}</button>
+        <button v-if="modal.id && readOnly" class="btn-ghost" data-testid="purchase-print-labels" @click="openLabelPicker"><Tag :size="14" /> {{ t('inventory.purchases.print_labels') }}</button>
         <template v-if="!readOnly">
           <button class="btn-secondary" :disabled="saving || !hasRows" @click="saveDraft">
             {{ saving ? t('common.saving') : t('inventory.purchases.save_draft') }}
@@ -324,7 +324,7 @@
       </div>
       <template #footer>
         <button class="btn-ghost" @click="labelPicker.open = false">{{ t('common.cancel') }}</button>
-        <button class="btn-primary" :disabled="!labelPicker.selectedId || labelPicker.loading" @click="printLabels"><Tag :size="14" /> {{ t('inventory.purchases.print_btn') }}</button>
+        <button class="btn-primary" data-testid="purchase-labels-print" :disabled="!labelPicker.selectedId || labelPicker.loading" @click="printLabels"><Tag :size="14" /> {{ t('inventory.purchases.print_btn') }}</button>
       </template>
     </AppModal>
 
@@ -864,7 +864,7 @@ async function printLabels() {
     }
     const copies = Math.max(1, Number(labelPicker.copies) || 1)
     const expanded = items.map(i => ({ ...i, quantity: (Number(i.quantity) || 0) * copies }))
-    labelsStore.setJob({ preset, store_name: labelPicker._storeName, items: expanded })
+    labelsStore.setJob({ source: 'purchase', preset, store_name: labelPicker._storeName, items: expanded })
     labelPicker.open = false
     router.push('/print/labels')
   } catch { alert(t('inventory.purchases.err_label_data')) }
