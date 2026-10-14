@@ -19,6 +19,7 @@ export const changelog = [
       title: 'Account statements (كشف حساب)',
       points: [
         'Every supplier now has a Statement tab: each purchase and each payment in date order, with the running balance, an opening line, totals and the closing balance.',
+        'Every customer has one too (managers and owners): sales, payments, returns and their opening balance — and the last line always equals what they owe you today.',
         'Pick any date range. The balance you owed before that range shows as the opening line.',
         'Print it or download it as a spreadsheet (CSV) with one click.',
       ],
@@ -27,6 +28,7 @@ export const changelog = [
       title: 'كشف الحساب',
       points: [
         'كل مورد بقى ليه تبويب "كشف حساب": كل فاتورة شراء وكل دفعة بالترتيب بالتاريخ، والرصيد بعد كل حركة، وسطر رصيد أول المدة، والإجماليات، ورصيد آخر المدة.',
+        'وكل عميل كمان (للمدير والمالك): المبيعات والدفعات والمرتجعات ورصيد أول المدة — وآخر سطر دايمًا هو اللي عليه النهارده بالظبط.',
         'اختار أي فترة. اللي كان عليك قبل الفترة دي بيظهر في سطر رصيد أول المدة.',
         'تقدر تطبعه أو تنزّله شيت (CSV) بضغطة واحدة.',
       ],
