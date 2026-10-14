@@ -5,6 +5,9 @@
         <h1 class="page-title">{{ t('settings.taxes.title') }}</h1>
         <p class="page-sub">{{ t('settings.taxes.sub') }}</p>
       </div>
+      <div v-if="auth.hasRole('ADMIN')" class="header-right">
+        <button class="btn-primary" @click="openNew"><Plus :size="14" /> {{ t('settings.taxes.new_title') }}</button>
+      </div>
     </div>
 
     <div class="table-wrap">
@@ -57,15 +60,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Percent, Pencil, Trash2 } from 'lucide-vue-next'
+import { Percent, Pencil, Trash2, Plus } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/auth'
+const auth = useAuthStore()
 import api from '@/api/axios'
-import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const { t } = useI18n()
-const qab = useQABStore()
 
 const taxes   = ref([])
 const loading = ref(false)
@@ -110,9 +113,7 @@ async function save() {
 
 onMounted(() => {
   fetchTaxes()
-  qab.setActions([{ id: 'new-tax', label: t('settings.taxes.new_title'), icon: 'plus', handler: openNew }])
 })
-onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>

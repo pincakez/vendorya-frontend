@@ -29,7 +29,6 @@
       <AppFooter />
     </div>
 
-    <QAB />
   </div>
 </template>
 
@@ -39,7 +38,6 @@ import { RouterView, useRouter } from 'vue-router'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
-import QAB from '@/components/ui/QAB.vue'
 
 const SIDEBAR_STATE_KEY = 'vendorya_sidebar'
 

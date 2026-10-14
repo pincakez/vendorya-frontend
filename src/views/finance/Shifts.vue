@@ -5,6 +5,9 @@
         <h1 class="page-title">{{ t('finance.shifts.title') }}</h1>
         <p class="page-sub">{{ t('finance.shifts.sub') }}</p>
       </div>
+      <div v-if="!openShift" class="header-right">
+        <button class="btn-primary" @click="startingCash = ''; openModal = true"><Plus :size="14" /> {{ t('finance.shifts.open_modal.open_btn') }}</button>
+      </div>
     </div>
 
     <!-- Open shift banner -->
@@ -101,20 +104,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Clock, History } from 'lucide-vue-next'
+import { Clock, History, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
-import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
 const { t } = useI18n()
 const auth   = useAuthStore()
-const qab    = useQABStore()
 const router = useRouter()
 
 const tabs = [
@@ -167,7 +168,6 @@ async function openShiftAction() {
   startingCash.value = ''
   await fetchOpenShift()
   fetchShifts(1)
-  qab.setActions([])
 }
 
 async function closeShiftAction() {
@@ -176,9 +176,6 @@ async function closeShiftAction() {
   closeModal.value = false
   await fetchOpenShift()
   fetchShifts(1)
-  if (!openShift.value) {
-    qab.setActions([{ id: 'open', label: 'Open Shift', icon: 'plus', handler: () => { startingCash.value = ''; openModal.value = true } }])
-  }
 }
 
 function diffClass(diff) {
@@ -194,11 +191,7 @@ function fmtDateTime(d) {
 onMounted(async () => {
   await fetchOpenShift()
   fetchShifts()
-  if (!openShift.value) {
-    qab.setActions([{ id: 'open', label: 'Open Shift', icon: 'plus', handler: () => { startingCash.value = ''; openModal.value = true } }])
-  }
 })
-onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>

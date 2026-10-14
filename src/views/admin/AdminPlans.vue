@@ -5,6 +5,9 @@
         <h1 class="page-title">Subscription Plans</h1>
         <p class="page-sub">Pricing tiers sudo can assign to client stores. Free-form names, optional quotas.</p>
       </div>
+      <div class="header-right">
+        <button class="btn-primary" @click="openNew"><Plus :size="14" /> New Plan</button>
+      </div>
     </div>
 
     <div class="dt-card">
@@ -127,14 +130,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { Pencil, PackageOpen } from 'lucide-vue-next'
+import { ref, reactive, onMounted } from 'vue'
+import { Pencil, PackageOpen, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
-import { useQABStore } from '@/stores/qab'
 import { formatNumber } from '@/utils/format'
 
-const qab = useQABStore()
 const plans = ref([])
 const loading = ref(false)
 const saving = ref(false)
@@ -211,9 +212,7 @@ async function save() {
 
 onMounted(() => {
   fetchPlans()
-  qab.setActions([{ id: 'new-plan', label: 'New Plan', icon: 'plus', handler: openNew }])
 })
-onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>

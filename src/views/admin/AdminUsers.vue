@@ -10,6 +10,7 @@
           <Search :size="14" class="search-icon" />
           <input v-model="search" class="search-input" placeholder="Search name or username…" @input="onSearch" />
         </div>
+        <button class="btn-primary" @click="openNew"><Plus :size="14" /> New Admin</button>
       </div>
     </div>
 
@@ -86,14 +87,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { Search, Shield, Pencil } from 'lucide-vue-next'
+import { ref, reactive, onMounted } from 'vue'
+import { Search, Shield, Pencil, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
-import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
 import AppTable from '@/components/ui/AppTable.vue'
 
-const qab = useQABStore()
 
 const users = ref([])
 const loading = ref(false)
@@ -156,9 +155,7 @@ function initials(u) {
 
 onMounted(() => {
   fetchUsers()
-  qab.setActions([{ id: 'new-admin', label: 'New Admin', icon: 'plus', handler: openNew }])
 })
-onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>

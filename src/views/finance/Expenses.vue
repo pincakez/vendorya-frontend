@@ -5,6 +5,10 @@
         <h1 class="page-title">{{ t('finance.expenses.title') }}</h1>
         <p class="page-sub">{{ t('finance.expenses.sub') }}</p>
       </div>
+      <div class="header-right">
+        <button v-if="activeTab === 'expenses' && auth.hasRole('MANAGER')" class="btn-primary" @click="openNewExpense"><Plus :size="14" /> {{ t('finance.expenses.exp_modal.title') }}</button>
+        <button v-else-if="activeTab !== 'expenses' && auth.hasRole('ADMIN')" class="btn-primary" @click="openNewCat"><Plus :size="14" /> {{ t('finance.expenses.cat_modal.new_title') }}</button>
+      </div>
     </div>
 
     <div class="tab-bar">
@@ -121,21 +125,19 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Wallet, Tags, Trash2, Pencil } from 'lucide-vue-next'
+import { Wallet, Tags, Trash2, Pencil, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openNewExpense)
 import { useAuthStore } from '@/stores/auth'
-import { useQABStore } from '@/stores/qab'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
 
 const { t } = useI18n()
 const auth = useAuthStore()
-const qab  = useQABStore()
 
 const tabs = [
   { id: 'expenses',   icon: Wallet },
@@ -217,16 +219,7 @@ async function deleteCat(id) {
   fetchCategories()
 }
 
-watch(activeTab, tab => {
-  if (tab === 'expenses') {
-    qab.setActions([{ id: 'new', label: 'New Expense', icon: 'plus', handler: openNewExpense }])
-  } else {
-    qab.setActions([{ id: 'new-cat', label: 'New Category', icon: 'plus', handler: openNewCat }])
-  }
-}, { immediate: true })
-
 onMounted(() => { fetchExpenses(); fetchCategories() })
-onUnmounted(() => qab.clearActions())
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '—' }
 </script>

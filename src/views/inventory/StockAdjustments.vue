@@ -5,6 +5,9 @@
         <h1 class="page-title">{{ t('inventory.adjustments.title') }}</h1>
         <p class="page-sub">{{ t('inventory.adjustments.sub') }}</p>
       </div>
+      <div v-if="auth.hasRole('MANAGER')" class="header-right">
+        <button class="btn-primary" @click="openModal"><Plus :size="14" /> {{ t('inventory.adjustments.modal_title') }}</button>
+      </div>
     </div>
 
     <BaseTable :columns="columns" :rows="adjustments" :loading="loading"
@@ -110,19 +113,19 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { PackageSearch, CheckCircle } from 'lucide-vue-next'
+import { PackageSearch, CheckCircle, Plus } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/auth'
+const auth = useAuthStore()
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openModal)
-import { useQABStore } from '@/stores/qab'
 import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import BaseTable from '@/components/base/BaseTable.vue'
 
 const { t } = useI18n()
-const qab = useQABStore()
 
 const columns = computed(() => [
   { key: 'created_at',       label: t('inventory.adjustments.table_date'),    type: 'date' },
@@ -241,9 +244,7 @@ function fmtDate(d) {
 onMounted(() => {
   fetchAdjustments()
   fetchBranches()
-  qab.setActions([{ id: 'new-adj', label: t('inventory.adjustments.modal_title'), icon: 'plus', handler: openModal }])
 })
-onUnmounted(() => qab.clearActions())
 </script>
 
 <style scoped>
