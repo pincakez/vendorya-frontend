@@ -1,5 +1,16 @@
 <template>
   <header class="app-header nhdr">
+    <!-- Phone only: opens the sidebar drawer (usePhoneSidebar). -->
+    <button
+      v-if="isPhone"
+      class="header-icon-btn nhdr-menu-btn"
+      :title="t('nav.open_menu')"
+      :aria-label="t('nav.open_menu')"
+      :aria-expanded="mobileOpen ? 'true' : 'false'"
+      @click="toggleMobile"
+    >
+      <Menu :size="20" />
+    </button>
     <!-- ─────────────── ADMIN MODE ─────────────── -->
     <template v-if="admin">
       <div class="header-greeting" style="display:flex; align-items:center; gap:10px;">
@@ -149,8 +160,9 @@ import {
   LayoutDashboard, Package, ShoppingCart, SlidersHorizontal, Tag, List, FileBarChart,
   FileText, CornerDownLeft, Receipt, Clock, Wallet, Users, Truck, Briefcase,
   LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator, Sparkles,
-  Library, Archive, ArrowLeftRight, ArrowDownUp, Layers, UserCircle, CreditCard, Shield,
+  Library, Archive, ArrowLeftRight, ArrowDownUp, Layers, UserCircle, CreditCard, Shield, Menu,
 } from 'lucide-vue-next'
+import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { useNotifications } from '@/composables/useNotifications'
@@ -162,6 +174,7 @@ defineEmits(['toggleSidebar'])
 const auth   = useAuthStore()
 const theme  = useThemeStore()
 const router = useRouter()
+const { isPhone, mobileOpen, toggleMobile } = usePhoneSidebar()
 const { locale, t } = useI18n()
 
 function toggleLocale() {

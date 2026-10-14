@@ -1,23 +1,32 @@
 <template>
-  <aside class="nsb" :class="{ 'nsb-collapsed': collapsed }">
+  <!-- Phone: the sidebar is a slide-in drawer; tapping the dimmed page closes it. -->
+  <Transition name="nsb-fade">
+    <div v-if="isPhone && mobileOpen" class="nsb-backdrop" @click="closeMobile" />
+  </Transition>
+  <aside
+    class="nsb"
+    :class="{ 'nsb-collapsed': isCollapsed, 'nsb-phone': isPhone, 'nsb-phone-open': isPhone && mobileOpen }"
+    :aria-hidden="isPhone && !mobileOpen ? 'true' : undefined"
+    :inert="isPhone && !mobileOpen ? '' : undefined"
+  >
 
     <!-- ── STICKY TOP: logo + collapse + POS/SRV + Dashboard ── -->
     <div class="nsb-sticky-top">
       <!-- Logo + collapse -->
-      <div class="nsb-logo-row" :class="{ 'nsb-col': collapsed }">
+      <div class="nsb-logo-row" :class="{ 'nsb-col': isCollapsed }">
         <div class="nsb-logo">
-          <img v-if="collapsed" src="/favicon.png" alt="Vendorya" class="nsb-logo-mark" />
+          <img v-if="isCollapsed" src="/favicon.png" alt="Vendorya" class="nsb-logo-mark" />
           <img v-else :src="logoSrc" alt="Vendorya" class="nsb-logo-full" />
-          <span v-if="admin && !collapsed" class="nsb-admin-badge">ADMIN</span>
+          <span v-if="admin && !isCollapsed" class="nsb-admin-badge">ADMIN</span>
         </div>
-        <button class="nsb-collapse" @click="$emit('toggle-collapse')" :title="collapsed ? 'Expand' : 'Collapse'">
-          <ChevronLeft :size="18" class="nsb-collapse-icon" :class="{ flip: collapsed }" />
+        <button class="nsb-collapse" @click="isPhone ? closeMobile() : $emit('toggle-collapse')" :title="isPhone ? t('nav.close_menu') : (isCollapsed ? 'Expand' : 'Collapse')">
+          <ChevronLeft :size="18" class="nsb-collapse-icon" :class="{ flip: isCollapsed }" />
         </button>
       </div>
 
       <!-- POS + SRV split (store only) -->
       <div v-if="!admin" class="nsb-pos">
-        <div v-if="!collapsed" class="nsb-pos-row">
+        <div v-if="!isCollapsed" class="nsb-pos-row">
           <PhysicalButton variant="primary" :collapsed="false" tooltip="POS System" class="nsb-pos-main" :class="{ 'pos-shimmer': hasOpenInvoice }" @click="go('/pos')">
             <template #icon><Calculator :size="18" /></template>
             POS
@@ -36,11 +45,11 @@
 
       <!-- Top solo: Dashboard (store) or Overview (admin) -->
       <div class="nsb-solo">
-        <PhysicalButton variant="sidebar" :collapsed="collapsed" :active="itemActive(soloTo)" :tooltip="soloLabel" @click="go(soloTo)">
+        <PhysicalButton variant="sidebar" :collapsed="isCollapsed" :active="itemActive(soloTo)" :tooltip="soloLabel" @click="go(soloTo)">
           <template #icon><LayoutDashboard :size="17" :class="itemActive(soloTo) ? 'ic-active' : 'ic'" /></template>
           {{ soloLabel }}
         </PhysicalButton>
-        <PhysicalButton v-if="admin" variant="sidebar" :collapsed="collapsed" :active="itemActive('/admin/commands')" tooltip="Commands" @click="go('/admin/commands')">
+        <PhysicalButton v-if="admin" variant="sidebar" :collapsed="isCollapsed" :active="itemActive('/admin/commands')" tooltip="Commands" @click="go('/admin/commands')">
           <template #icon><Terminal :size="17" :class="itemActive('/admin/commands') ? 'ic-active' : 'ic'" /></template>
           Commands
         </PhysicalButton>
@@ -53,7 +62,7 @@
       <div class="nsb-groups">
         <div v-for="g in displayGroups" :key="g.id" class="nsb-group">
           <!-- Collapsed: icon with rich tooltip showing group + pages -->
-          <div v-if="collapsed" class="nsb-group-icon-wrap">
+          <div v-if="isCollapsed" class="nsb-group-icon-wrap">
             <button class="nsb-group-head nsb-col" @click="toggle(g.id)">
               <component :is="g.icon" :size="20" class="grp-icon" />
             </button>
@@ -75,10 +84,10 @@
 
           <div class="nsb-group-body" :class="{ open: open[g.id] }">
             <div class="nsb-group-inner">
-              <div class="nsb-group-card" :class="{ 'nsb-col': collapsed }">
+              <div class="nsb-group-card" :class="{ 'nsb-col': isCollapsed }">
                 <PhysicalButton
                   v-for="it in g.items" :key="it.to"
-                  variant="sidebar" :collapsed="collapsed" :active="itemActive(it.to)"
+                  variant="sidebar" :collapsed="isCollapsed" :active="itemActive(it.to)"
                   :tooltip="it.label"
                   @click="go(it.to)"
                 >
@@ -94,12 +103,12 @@
 
     <!-- ── BOTTOM (user card only — pinned) ── -->
     <div class="nsb-bottom">
-      <div class="nsb-user" :class="{ 'nsb-col': collapsed }" @click="go(userCardTo)">
+      <div class="nsb-user" :class="{ 'nsb-col': isCollapsed }" @click="go(userCardTo)">
         <div class="nsb-avatar">
           <img v-if="auth.user?.photo" :src="auth.user.photo" alt="" />
           <span v-else>{{ auth.initials }}</span>
         </div>
-        <template v-if="!collapsed">
+        <template v-if="!isCollapsed">
           <div class="nsb-user-info">
             <span class="nsb-user-name">{{ auth.displayName }}</span>
             <span class="nsb-user-role">{{ admin || auth.isSuperadmin ? t('nav.super_admin') : (auth.userRole || 'User') }}</span>
@@ -113,7 +122,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
@@ -134,7 +144,16 @@ import {
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
 defineEmits(['toggle-collapse'])
 
+// Phone (≤ 768px): drawer mode — always shown full-width (never the icon rail),
+// hidden until the header's menu button opens it, closed on navigation / Escape.
+const { isPhone, mobileOpen, closeMobile } = usePhoneSidebar()
+const isCollapsed = computed(() => props.collapsed && !isPhone.value)
+
 const route = useRoute()
+watch(() => route.fullPath, () => closeMobile())
+function onKey(e) { if (e.key === 'Escape' && isPhone.value && mobileOpen.value) closeMobile() }
+onMounted(()   => window.addEventListener('keydown', onKey))
+onUnmounted(() => { window.removeEventListener('keydown', onKey); closeMobile() })
 const router = useRouter()
 const auth  = useAuthStore()
 const theme = useThemeStore()
@@ -288,6 +307,23 @@ function go(to) { if (route.path !== to) router.push(to) }
   transition: width 220ms ease, min-width 220ms ease, padding 220ms ease;
 }
 .nsb-collapsed { width: var(--sb-collapsed); min-width: var(--sb-collapsed); }
+
+/* Phone (≤ 768px): off-canvas drawer over the page, out of the flex flow so the
+   page gets the full width. Hidden (slid left) until opened from the header. */
+.nsb-phone {
+  position: fixed; top: 0; bottom: 0; left: 0; z-index: 120;
+  width: min(var(--sb-width), 86vw); min-width: 0;
+  transform: translateX(-105%);
+  transition: transform 220ms ease;
+  box-shadow: none;
+}
+.nsb-phone-open { transform: translateX(0); box-shadow: 0 0 40px rgba(0, 0, 0, 0.35); }
+.nsb-backdrop {
+  position: fixed; inset: 0; z-index: 110;
+  background: rgba(0, 0, 0, 0.45);
+}
+.nsb-fade-enter-active, .nsb-fade-leave-active { transition: opacity 200ms ease; }
+.nsb-fade-enter-from, .nsb-fade-leave-to { opacity: 0; }
 
 /* Sticky top (logo + POS/SRV + dashboard) */
 .nsb-sticky-top {

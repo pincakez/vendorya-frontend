@@ -6,6 +6,8 @@
   "nav": {
     "dashboard": "Dashboard",
     "overview": "Overview",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu",
     "store_settings_btn": "Store Settings",
     "log_out": "Log Out",
     "logout_confirm_title": "Log out?",
