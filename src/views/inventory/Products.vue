@@ -503,11 +503,16 @@
             </div>
           </div>
 
-          <!-- Attributes -->
-          <div v-if="attributes.length" class="pm2-attrs">
+          <!-- s168 Upgrade 9: the category's spec set (kept in its own component) -->
+          <ProductSpecFields v-model="prodModal.attrs" :category-id="prodModal.category || null"
+                             :attributes="attributes" :show-errors="prodModal.specErrors" allow-add-option
+                             @state="st => (prodSpecState = st)" @add-option="openAddOption" />
+
+          <!-- Attributes (those not already asked for by the spec set above) -->
+          <div v-if="otherAttributes.length" class="pm2-attrs">
             <div class="pm2-section">{{ t('inventory.products.product_modal.attributes_label') }}</div>
             <div class="pm2-attrs-grid">
-              <div v-for="def in attributes" :key="def.id" class="pm2-field">
+              <div v-for="def in otherAttributes" :key="def.id" class="pm2-field">
                 <label class="pm2-label">{{ def.name }}</label>
                 <div v-if="def.options && def.options.length" class="pm2-attr-row">
                   <div class="pm2-sel-wrap" style="flex:1">
@@ -643,6 +648,8 @@ function tierCell(p, col) {
 import AppModal from '@/components/ui/AppModal.vue'
 import ReasonModal from '@/components/ui/ReasonModal.vue'
 import ProductLabelsModal from '@/components/inventory/ProductLabelsModal.vue'
+import ProductSpecFields from '@/components/inventory/ProductSpecFields.vue'
+import { specSaveError, attributesPayload } from '@/utils/specs'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -1208,8 +1215,11 @@ function saveDefaults() {
 const prodModal = reactive({
   open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
   base_price: null, cost_price: null, sell_price: null, reorder_level: null, initial_stock: 1, attrs: {}, saving: false, error: '',
-  units: [], sell_base_unit: true, sku2: '',
+  units: [], sell_base_unit: true, sku2: '', specErrors: false,
 })
+// s168 Upgrade 9: which attributes the category's spec set shows (+ which required ones are empty).
+const prodSpecState = ref({ ids: [], missing: [] })
+const otherAttributes = computed(() => attributes.value.filter(d => !prodSpecState.value.ids.includes(d.id)))
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
 function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
 
@@ -1278,7 +1288,7 @@ function openAddProduct() {
     reorder_level: prodDefaults.reorder_enabled ? prodDefaults.reorder_value : null,
     initial_stock: prodDefaults.stock_enabled ? prodDefaults.stock_value : 1,
     units: [], sell_base_unit: true, sku2: '',
-    saving: false, error: '',
+    saving: false, error: '', specErrors: false,
   })
   resetAttrs()
   nameAC.results = []; nameAC.open = false
@@ -1310,7 +1320,7 @@ async function confirmAddOption() {
 }
 
 async function openEditProduct(p) {
-  Object.assign(prodModal, { open: true, id: p.id, saving: false, error: '' })
+  Object.assign(prodModal, { open: true, id: p.id, saving: false, error: '', specErrors: false })
   resetAttrs()
   try {
     const { data } = await api.get(`/api/inventory/products/${p.id}/`)
@@ -1336,10 +1346,14 @@ async function openEditProduct(p) {
 function addUnitRow() { prodModal.units.push({ name: '', factor: null, sell_price: 0, barcode: '' }) }
 
 async function saveProduct() {
-  prodModal.error = ''; prodModal.saving = true
-  const attributes_payload = Object.entries(prodModal.attrs)
-    .filter(([, v]) => v !== '' && v != null)
-    .map(([definition, value]) => ({ definition, value }))
+  prodModal.error = ''
+  if (prodSpecState.value.missing.length) {   // s168: the category's required specs come first
+    prodModal.specErrors = true
+    prodModal.error = t('inventory.specs.err_missing', { names: prodSpecState.value.missing.join(', ') })
+    return
+  }
+  prodModal.saving = true
+  const attributes_payload = attributesPayload(prodModal.attrs, !!prodModal.id)
   const payload = {
     name: prodModal.name.trim(),
     description: prodModal.description || '',
@@ -1406,6 +1420,7 @@ async function saveProduct() {
       ? t('inventory.products.product_modal.err_barcode_taken', { code: d.barcode_code[0], name: d.barcode_owner[0] })
       : t('inventory.products.product_modal.err_barcode_twice', { code: d.barcode_code[0] }))
     prodModal.error = barcodeErr
+      || specSaveError(d, t)
       || d.detail
       || d.supplier?.[0]
       || d.sku2?.[0]

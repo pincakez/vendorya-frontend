@@ -355,11 +355,15 @@
             <label class="form-label">{{ t('inventory.product_detail.reorder_level') }}</label>
             <input v-model.number="editModal.reorder_level" class="form-input" type="number" min="0" step="1" />
           </div>
-          <!-- Attributes -->
-          <div v-if="editAttributes.length" class="prod-attrs-section">
+          <!-- s168 Upgrade 9: the category's spec set (kept in its own component) -->
+          <ProductSpecFields v-model="editModal.attrs" :category-id="editModal.category || null"
+                             :attributes="editAttributes" :show-errors="editModal.specErrors"
+                             @state="st => (editSpecState = st)" />
+          <!-- Attributes (those not already asked for by the spec set above) -->
+          <div v-if="otherEditAttributes.length" class="prod-attrs-section">
             <div class="form-label" style="margin-bottom:8px;">{{ t('inventory.product_detail.attributes') }}</div>
             <div class="prod-attrs-grid">
-              <div v-for="def in editAttributes" :key="def.id">
+              <div v-for="def in otherEditAttributes" :key="def.id">
                 <label class="form-label">{{ def.name }}</label>
                 <select v-if="def.options && def.options.length" v-model="editModal.attrs[def.id]" class="form-input">
                   <option value="">—</option>
@@ -462,6 +466,8 @@ import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import ProductLabelsModal from '@/components/inventory/ProductLabelsModal.vue'
+import ProductSpecFields from '@/components/inventory/ProductSpecFields.vue'
+import { specSaveError, attributesPayload } from '@/utils/specs'
 import { showSuccessToast } from '@/utils/toast'
 import { decomposeStock, headlineLabel, formatBreakdown, unitConversionLine } from '@/utils/units'
 import { formatWeight } from '@/utils/format'
@@ -717,7 +723,7 @@ const editModal = reactive({
   open: false, name: '', description: '', category: '',
   supplierName: '', base_price: 0, cost_price: 0, sell_price: 0,
   reorder_level: 0, attrs: {}, unit: 'pcs', units: [], track_expiry: false,
-  selling_mode: 'UNIT', saving: false, error: '',
+  selling_mode: 'UNIT', saving: false, error: '', specErrors: false,
   // §MU-MB: per-product POS-tier toggles. show_strip → Strip row's `sellable`;
   // show_unit → product.sell_base_unit. Pack (biggest) is always sellable.
   show_strip: true, show_unit: true, autofilled: false,
@@ -751,6 +757,9 @@ function addUnitRow() {
 function removeUnitRow(i) { editModal.units.splice(i, 1) }
 const editCategories = ref([])
 const editAttributes = ref([])
+// s168 Upgrade 9: which attributes the category's spec set shows (+ which required ones are empty).
+const editSpecState = ref({ ids: [], missing: [] })
+const otherEditAttributes = computed(() => editAttributes.value.filter(d => !editSpecState.value.ids.includes(d.id)))
 
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
 
@@ -758,6 +767,7 @@ async function openEditModal() {
   if (!product.value) return
   editModal.error = ''
   editModal.saving = false
+  editModal.specErrors = false
 
   // Lazy-load categories and attributes if not yet loaded
   if (!editCategories.value.length) {
@@ -831,10 +841,13 @@ async function openEditModal() {
 
 async function saveEdit() {
   editModal.error = ''
+  if (editSpecState.value.missing.length) {   // s168: the category's required specs come first
+    editModal.specErrors = true
+    editModal.error = t('inventory.specs.err_missing', { names: editSpecState.value.missing.join(', ') })
+    return
+  }
   editModal.saving = true
-  const attributes_payload = Object.entries(editModal.attrs)
-    .filter(([, val]) => val !== '' && val != null)
-    .map(([definition, value]) => ({ definition, value }))
+  const attributes_payload = attributesPayload(editModal.attrs, true)
   const stripRow = stripRowOf(editModal.units)
   const payload = {
     name: editModal.name.trim(),
@@ -872,6 +885,7 @@ async function saveEdit() {
       ? t('inventory.products.product_modal.err_barcode_taken', { code: d.barcode_code[0], name: d.barcode_owner[0] })
       : t('inventory.products.product_modal.err_barcode_twice', { code: d.barcode_code[0] }))
     editModal.error = barcodeErr
+      || specSaveError(d, t)
       || d.detail
       || d.selling_units?.[0]
       || t('inventory.product_detail.err_save')

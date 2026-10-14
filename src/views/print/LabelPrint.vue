@@ -32,6 +32,8 @@
       >
         <div v-if="preset.show_store_name" class="lbl-store">{{ label.store_name }}</div>
         <div v-if="preset.show_product_name" class="lbl-name">{{ label.product_name }}</div>
+        <!-- s168 Upgrade 9: the category's specs on one line, when the preset (or this print) asks for it -->
+        <div v-if="preset.show_specs && label.specs" class="lbl-name lbl-specs" data-testid="label-specs">{{ label.specs }}</div>
         <svg v-if="preset.show_barcode" :ref="el => { if (el) barcodeSvgs[i] = el }" class="lbl-barcode" />
         <div v-if="preset.show_sku || preset.show_price" class="lbl-footer">
           <span v-if="preset.show_sku" class="lbl-sku">{{ label.sku }}</span>
@@ -231,6 +233,7 @@ onMounted(() => {
 
 .lbl-store  { font-size: 5.5pt; font-weight: 700; text-transform: uppercase; color: #475569; letter-spacing: .04em; }
 .lbl-name   { font-size: 6.5pt; font-weight: 600; text-align: center; line-height: 1.2; color: #0f172a; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lbl-specs  { font-size: 5pt; font-weight: 500; }
 .lbl-barcode { width: 100%; max-height: 40%; }
 .lbl-footer { display: flex; justify-content: space-between; width: 100%; gap: 4px; }
 .lbl-sku    { font-size: 5pt; color: #64748b; font-family: monospace; }

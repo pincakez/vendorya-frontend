@@ -38,7 +38,9 @@
             >
               <Tag :size="14" class="mrow-icon cat" />
               <span class="mrow-name">{{ cat.name }}</span>
+              <span v-if="cat.spec_count" class="mrow-badge" :title="t('inventory.specs.count_hint', { n: cat.spec_count })">{{ cat.spec_count }}</span>
               <span class="mrow-actions">
+                <span v-if="canManageSpecs" class="row-action" data-testid="cat-specs" :title="t('inventory.specs.manage')" @click.stop="openSpecs(cat)"><ListChecks :size="12" /></span>
                 <span class="row-action" :title="t('common.edit')" @click.stop="openEdit(cat)"><Pencil :size="12" /></span>
                 <span class="row-action danger" :title="t('common.delete')" @click.stop="del(cat)"><Trash2 :size="12" /></span>
               </span>
@@ -133,6 +135,69 @@
       </template>
     </AppModal>
 
+    <!-- s168 (PROLINE-PARITY Upgrade 9): the category's SPEC SET — inherited lines + its own, presets -->
+    <AppModal :open="specModal.open" :title="t('inventory.specs.modal_title', { name: specModal.name })" width="620px" @close="specModal.open = false">
+      <div class="spec-body">
+        <p class="field-hint" style="margin:0;">{{ t('inventory.specs.modal_hint') }}</p>
+        <div v-if="specModal.loading" class="mcol-note">{{ t('inventory.specs.loading') }}</div>
+        <template v-else>
+          <div v-if="canApplyPreset && presets.length" class="spec-block">
+            <div class="spec-list-title">{{ t('inventory.specs.presets_label') }}</div>
+            <div class="spec-presets">
+              <BaseButton v-for="p in presets" :key="p.key" variant="secondary" size="sm"
+                          :data-testid="`spec-preset-${p.key}`" :title="presetFields(p)"
+                          :disabled="specModal.dirty || specModal.busy" @click="applyPreset(p)">
+                <Sparkles :size="13" /> {{ presetName(p) }}
+              </BaseButton>
+            </div>
+            <p class="field-hint" style="margin:0;">{{ specModal.dirty ? t('inventory.specs.save_before_preset') : t('inventory.specs.presets_hint') }}</p>
+          </div>
+
+          <div v-if="specModal.inherited.length" class="spec-block">
+            <div class="spec-list-title">{{ t('inventory.specs.inherited_title') }}</div>
+            <div v-for="s in specModal.inherited" :key="s.definition" class="spec-line inherited">
+              <span class="spec-name">{{ s.name }}</span>
+              <span class="spec-meta">{{ typeLabel(s) }}</span>
+              <span class="spec-from">{{ t('inventory.specs.from', { name: s.inherited_from.name }) }}</span>
+              <span v-if="s.required" class="spec-req">{{ t('inventory.specs.required_badge') }}</span>
+            </div>
+          </div>
+
+          <div class="spec-block">
+            <div class="spec-list-title">{{ t('inventory.specs.own_title') }}</div>
+            <div v-if="!specModal.own.length" class="mcol-note">{{ t('inventory.specs.own_empty') }}</div>
+            <div v-for="(s, i) in specModal.own" :key="s.definition" class="spec-line" data-testid="spec-own-line">
+              <span class="spec-name">{{ s.name }}</span>
+              <span class="spec-meta">{{ typeLabel(s) }}</span>
+              <label class="spec-req-toggle">
+                <input v-model="s.required" type="checkbox" @change="specModal.dirty = true" />
+                {{ t('inventory.specs.required_label') }}
+              </label>
+              <span class="spec-tools">
+                <BaseButton variant="ghost" size="sm" :disabled="i === 0" :title="t('inventory.specs.move_up')" @click="moveSpec(i, -1)"><ArrowUp :size="13" /></BaseButton>
+                <BaseButton variant="ghost" size="sm" :disabled="i === specModal.own.length - 1" :title="t('inventory.specs.move_down')" @click="moveSpec(i, 1)"><ArrowDown :size="13" /></BaseButton>
+                <BaseButton variant="ghost" size="sm" :title="t('inventory.specs.remove')" @click="removeSpec(i)"><X :size="13" /></BaseButton>
+              </span>
+            </div>
+            <div class="spec-add">
+              <BaseSelect v-model="specModal.addId" class="spec-add-select" :options="addableOptions"
+                          :placeholder="t('inventory.specs.add_placeholder')" :disabled="!addableOptions.length" />
+              <BaseButton size="sm" :disabled="!specModal.addId" @click="addSpec"><Plus :size="13" /> {{ t('inventory.specs.add') }}</BaseButton>
+            </div>
+            <p v-if="!addableOptions.length" class="field-hint" style="margin:0;">{{ t('inventory.specs.no_more_attrs') }}</p>
+          </div>
+          <p v-if="specModal.notice" class="spec-notice">{{ specModal.notice }}</p>
+        </template>
+        <p v-if="specModal.error" class="form-error">{{ specModal.error }}</p>
+      </div>
+      <template #footer>
+        <BaseButton variant="ghost" @click="specModal.open = false">{{ t('common.cancel') }}</BaseButton>
+        <BaseButton data-testid="spec-save" :disabled="!specModal.dirty || specModal.busy" @click="saveSpecs">
+          {{ specModal.busy ? t('common.saving') : t('inventory.specs.save') }}
+        </BaseButton>
+      </template>
+    </AppModal>
+
     <!-- Delete a non-empty category: move up vs purge -->
     <AppModal :open="resolve.open" :title="t('inventory.categories.resolve_title', { name: resolve.name })" width="470px" @close="closeResolve">
       <div v-if="resolve.step === 'choose'" style="display:flex;flex-direction:column;gap:12px;">
@@ -194,13 +259,18 @@
 <script setup>
 import { ref, reactive, computed, nextTick, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Plus, Pencil, Trash2, Tag, Package, FolderTree, ChevronRight, CornerUpLeft } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Tag, Package, FolderTree, ChevronRight, CornerUpLeft,
+         ListChecks, ArrowUp, ArrowDown, X, Sparkles } from 'lucide-vue-next'
 import api from '@/api/axios'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
+import { useAuthStore } from '@/stores/auth'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openNew)
 import AppModal from '@/components/ui/AppModal.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const auth = useAuthStore()
 const MAX_DEPTH = 4
 
 const categories = ref([])
@@ -221,11 +291,13 @@ const hover      = ref(null)     // { product, x, y }
 // Show the pharmacy-relevant attributes first, then anything else.
 const ATTR_ORDER = ['active_ing', 'active_ing_ar', 'brand', 'brand_ar', 'manufacturer']
 
+const allAttrs = ref([])         // the shop's attribute definitions (spec-set picker too)
 async function loadAttrLabels() {
   try {
     const res = await api.get('/api/inventory/attributes/')
+    allAttrs.value = res.data.results ?? res.data
     const m = {}
-    for (const a of (res.data.results ?? res.data)) m[a.key] = a.name
+    for (const a of allAttrs.value) m[a.key] = a.name
     attrLabels.value = m
   } catch { /* labels fall back to the prettified key */ }
 }
@@ -417,6 +489,98 @@ async function del(row) {
   })
 }
 
+// --- spec sets (s168, PROLINE-PARITY Upgrade 9) -----------------------------
+// Same gates as the server: editing a set = MANAGER (like editing a category); a preset may create
+// attributes = ADMIN (like creating an attribute).
+const canManageSpecs = computed(() => auth.hasRole('MANAGER'))
+const canApplyPreset = computed(() => auth.hasRole('ADMIN'))
+const presets = ref([])
+const specModal = reactive({
+  open: false, id: null, name: '', loading: false, busy: false, dirty: false,
+  inherited: [], own: [], addId: '', error: '', notice: '',
+})
+
+function fillSpecs(data) {
+  specModal.inherited = data.inherited || []
+  specModal.own = (data.own || []).map(s => ({ ...s }))
+  specModal.dirty = false
+  specModal.addId = ''
+  const c = byId.value[specModal.id]
+  if (c) c.spec_count = specModal.own.length
+}
+
+async function openSpecs(cat) {
+  Object.assign(specModal, { open: true, id: cat.id, name: cat.name, loading: true, busy: false, dirty: false,
+                             inherited: [], own: [], addId: '', error: '', notice: '' })
+  try {
+    const [specRes] = await Promise.all([
+      api.get(`/api/inventory/categories/${cat.id}/specs/`),
+      presets.value.length ? null : api.get('/api/inventory/categories/spec-presets/').then(r => { presets.value = r.data }),
+      allAttrs.value.length ? null : loadAttrLabels(),
+    ])
+    fillSpecs(specRes.data)
+  } catch { specModal.error = t('inventory.specs.err_load') }
+  finally { specModal.loading = false }
+}
+
+const TYPE_KEYS = { TEXT: 'type_text', NUMBER: 'type_number', SELECT: 'type_select' }
+function typeLabel(s) {
+  const kind = t(`inventory.specs.${TYPE_KEYS[s.input_type] || 'type_text'}`)
+  return s.unit ? `${kind} · ${s.unit}` : kind
+}
+const isAr = () => String(locale.value).startsWith('ar')
+const presetName = p => p.name[isAr() ? 'ar' : 'en'] || p.name.en
+const presetFields = p => p.fields.map(f => f.name[isAr() ? 'ar' : 'en'] || f.name.en).join(' · ')
+
+const addableOptions = computed(() => {
+  const used = new Set([...specModal.inherited, ...specModal.own].map(s => s.definition))
+  return allAttrs.value
+    .filter(a => !used.has(a.id))
+    .map(a => ({ value: a.id, label: a.name }))
+})
+function addSpec() {
+  const a = allAttrs.value.find(x => x.id === specModal.addId)
+  if (!a) return
+  specModal.own.push({ definition: a.id, name: a.name, key: a.key, input_type: a.input_type,
+                       options: a.options || [], unit: a.unit || '', required: false, inherited_from: null })
+  specModal.addId = ''
+  specModal.dirty = true
+}
+function moveSpec(i, d) {
+  const j = i + d
+  if (j < 0 || j >= specModal.own.length) return
+  const list = specModal.own
+  ;[list[i], list[j]] = [list[j], list[i]]
+  specModal.dirty = true
+}
+function removeSpec(i) { specModal.own.splice(i, 1); specModal.dirty = true }
+
+async function saveSpecs() {
+  specModal.busy = true; specModal.error = ''; specModal.notice = ''
+  try {
+    const items = specModal.own.map(s => ({ definition: s.definition, required: !!s.required }))
+    const { data } = await api.put(`/api/inventory/categories/${specModal.id}/specs/`, { items })
+    fillSpecs(data)
+    specModal.notice = t('inventory.specs.saved')
+  } catch (e) {
+    specModal.error = e.response?.status === 403 ? t('inventory.specs.err_role') : t('inventory.specs.err_save')
+  } finally { specModal.busy = false }
+}
+
+async function applyPreset(p) {
+  specModal.busy = true; specModal.error = ''; specModal.notice = ''
+  try {
+    const { data } = await api.post(`/api/inventory/categories/${specModal.id}/apply-preset/`, { preset: p.key })
+    fillSpecs(data)
+    if (data.created?.length) await loadAttrLabels()   // the preset made new attributes in this shop
+    specModal.notice = data.attached?.length
+      ? t('inventory.specs.preset_done', { n: data.attached.length, name: presetName(p) })
+      : t('inventory.specs.preset_nothing', { name: presetName(p) })
+  } catch (e) {
+    specModal.error = e.response?.status === 403 ? t('inventory.specs.err_role') : t('inventory.specs.err_preset')
+  } finally { specModal.busy = false }
+}
+
 async function doMove() {
   busy.value = true; error.value = ''
   try {
@@ -462,6 +626,7 @@ async function doPurge() {
 .mrow-caret   { color:var(--text-muted); flex-shrink:0; opacity:.55; }
 .mrow.active .mrow-caret { color:var(--accent); opacity:1; }
 
+.mrow-badge   { font-size:10px; font-weight:700; min-width:18px; padding:1px 6px; border-radius:999px; text-align:center; color:var(--accent); background:var(--accent-soft, var(--bg-app)); flex-shrink:0; font-variant-numeric:tabular-nums; }
 .mrow-actions { display:flex; gap:1px; opacity:0; transition:opacity 90ms; flex-shrink:0; }
 .mrow:hover .mrow-actions { opacity:1; }
 .row-action   { width:24px; height:24px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 90ms,color 90ms; }
@@ -507,4 +672,21 @@ async function doPurge() {
 .resolve-opt-text  { display:flex; flex-direction:column; gap:2px; }
 .resolve-opt-title { font-size:13px; font-weight:700; }
 .resolve-opt-sub   { font-size:11.5px; color:var(--text-muted); font-weight:400; }
+
+/* Spec-set modal (s168) */
+.spec-body       { display:flex; flex-direction:column; gap:14px; }
+.spec-block      { display:flex; flex-direction:column; gap:6px; }
+.spec-list-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
+.spec-presets    { display:flex; flex-wrap:wrap; gap:6px; }
+.spec-line       { display:flex; align-items:center; gap:10px; padding:6px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); }
+.spec-line.inherited { background:var(--bg-app); }
+.spec-name       { font-size:13px; font-weight:600; color:var(--text-primary); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.spec-meta       { font-size:11.5px; color:var(--text-muted); white-space:nowrap; }
+.spec-from       { font-size:11px; color:var(--text-secondary); white-space:nowrap; }
+.spec-req        { font-size:10px; font-weight:700; padding:1px 7px; border-radius:999px; color:var(--accent); background:var(--accent-soft, var(--bg-app)); }
+.spec-req-toggle { display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--text-secondary); cursor:pointer; white-space:nowrap; }
+.spec-tools      { display:inline-flex; gap:2px; }
+.spec-add        { display:flex; align-items:center; gap:8px; margin-top:4px; }
+.spec-add-select { flex:1; min-width:0; }
+.spec-notice     { font-size:12.5px; color:var(--text-secondary); margin:0; }
 </style>

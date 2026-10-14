@@ -392,6 +392,7 @@
                   <span v-if="p.show_sku"> · {{ t('settings.store.label_fields.sku') }}</span>
                   <span v-if="p.show_barcode"> · {{ t('settings.store.label_fields.barcode') }}</span>
                   <span v-if="p.show_price"> · {{ t('settings.store.label_fields.price') }}</span>
+                  <span v-if="p.show_specs"> · {{ t('settings.store.label_fields.specs') }}</span>
                 </td>
                 <td><span v-if="p.is_default" class="badge-cash">{{ t('settings.store.default') }}</span><span v-else class="text-muted-sm">—</span></td>
                 <td>
@@ -851,6 +852,8 @@
           <label class="check-row"><input type="checkbox" v-model="presetModal.show_sku" /> {{ t('settings.store.cb_sku') }}</label>
           <label class="check-row"><input type="checkbox" v-model="presetModal.show_barcode" /> {{ t('settings.store.cb_barcode') }}</label>
           <label class="check-row"><input type="checkbox" v-model="presetModal.show_price" /> {{ t('settings.store.cb_price') }}</label>
+          <!-- s168 Upgrade 9: the product's category specs on one line ("i7 · 16GB · 512GB SSD") -->
+          <label class="check-row"><input type="checkbox" v-model="presetModal.show_specs" data-testid="preset-show-specs" /> {{ t('settings.store.cb_specs') }}</label>
         </div>
         <div class="toggle-row" style="padding:0;">
           <div class="toggle-item" style="padding:0;">
@@ -952,6 +955,7 @@ function buildLabelPreview(p) {
   const parts = ['<div class="dp-label">']
   if (p.show_store_name)   parts.push('<div class="dp-lstore">My Store</div>')
   if (p.show_product_name) parts.push('<div class="dp-lname">Product Name</div>')
+  if (p.show_specs)        parts.push('<div class="dp-lsku">i7 · 16GB · 512GB SSD</div>')
   if (p.show_barcode)      parts.push('<div class="dp-lbarcode">|||||||||||||||</div>')
   if (p.show_sku)          parts.push('<div class="dp-lsku">SKU-001</div>')
   if (p.show_price)        parts.push('<div class="dp-lprice">150.00 EGP</div>')
@@ -966,6 +970,7 @@ function labelPresetDesc(p) {
   if (p.show_barcode)      fields.push(t('settings.store.label_fields.barcode'))
   if (p.show_sku)          fields.push(t('settings.store.label_fields.sku'))
   if (p.show_price)        fields.push(t('settings.store.label_fields.price'))
+  if (p.show_specs)        fields.push(t('settings.store.label_fields.specs'))
   return `${p.width_mm}×${p.height_mm} mm · ${fields.join(', ')}`
 }
 
@@ -1316,18 +1321,18 @@ async function deletePM(id) {
 const presets       = ref([])
 const presetsLoading = ref(false)
 const presetSaving  = ref(false)
-const presetModal   = reactive({ open: false, id: null, name: '', width_mm: 40, height_mm: 20, show_store_name: true, show_product_name: true, show_sku: true, show_barcode: true, show_price: true, is_default: false })
+const presetModal   = reactive({ open: false, id: null, name: '', width_mm: 40, height_mm: 20, show_store_name: true, show_product_name: true, show_sku: true, show_barcode: true, show_price: true, show_specs: false, is_default: false })
 
 async function fetchPresets() {
   presetsLoading.value = true
   try { const res = await api.get('/api/core/label-presets/'); presets.value = res.data.results ?? res.data } finally { presetsLoading.value = false }
 }
-function openNewPreset() { Object.assign(presetModal, { open: true, id: null, name: '', width_mm: 40, height_mm: 20, show_store_name: true, show_product_name: true, show_sku: true, show_barcode: true, show_price: true, is_default: false }) }
-function openEditPreset(p) { Object.assign(presetModal, { open: true, id: p.id, name: p.name, width_mm: p.width_mm, height_mm: p.height_mm, show_store_name: p.show_store_name, show_product_name: p.show_product_name, show_sku: p.show_sku, show_barcode: p.show_barcode, show_price: p.show_price, is_default: p.is_default }) }
+function openNewPreset() { Object.assign(presetModal, { open: true, id: null, name: '', width_mm: 40, height_mm: 20, show_store_name: true, show_product_name: true, show_sku: true, show_barcode: true, show_price: true, show_specs: false, is_default: false }) }
+function openEditPreset(p) { Object.assign(presetModal, { open: true, id: p.id, name: p.name, width_mm: p.width_mm, height_mm: p.height_mm, show_store_name: p.show_store_name, show_product_name: p.show_product_name, show_sku: p.show_sku, show_barcode: p.show_barcode, show_price: p.show_price, show_specs: !!p.show_specs, is_default: p.is_default }) }
 async function savePreset() {
   presetSaving.value = true
   try {
-    const payload = { name: presetModal.name, width_mm: presetModal.width_mm, height_mm: presetModal.height_mm, show_store_name: presetModal.show_store_name, show_product_name: presetModal.show_product_name, show_sku: presetModal.show_sku, show_barcode: presetModal.show_barcode, show_price: presetModal.show_price, is_default: presetModal.is_default }
+    const payload = { name: presetModal.name, width_mm: presetModal.width_mm, height_mm: presetModal.height_mm, show_store_name: presetModal.show_store_name, show_product_name: presetModal.show_product_name, show_sku: presetModal.show_sku, show_barcode: presetModal.show_barcode, show_price: presetModal.show_price, show_specs: presetModal.show_specs, is_default: presetModal.is_default }
     presetModal.id ? await api.patch(`/api/core/label-presets/${presetModal.id}/`, payload) : await api.post('/api/core/label-presets/', payload)
     presetModal.open = false; fetchPresets()
   } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.generic')) } finally { presetSaving.value = false }

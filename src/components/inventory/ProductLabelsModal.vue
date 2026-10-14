@@ -30,6 +30,12 @@
         </label>
       </div>
 
+      <!-- s168 Upgrade 9: the category's specs on the sticker — starts as the preset says, changeable per print -->
+      <label v-if="hasSpecs" class="pl-check">
+        <input v-model="withSpecs" type="checkbox" data-testid="labels-with-specs" />
+        <span>{{ t('inventory.labels.with_specs') }}</span>
+      </label>
+
       <p class="pl-summary" data-testid="labels-summary">{{ t('inventory.labels.summary', { n: formatNumber(totalLabels, { decimals: 0 }), items: formatNumber(items.length, { decimals: 0 }) }) }}</p>
       <p v-if="mode === 'stock' && hasWeight" class="pl-note">{{ t('inventory.labels.weight_note') }}</p>
       <p v-if="totalLabels > LABEL_BATCH" class="pl-note">{{ t('inventory.labels.batch_note', { max: LABEL_BATCH }) }}</p>
@@ -74,6 +80,9 @@ const mode       = ref('one')   // 'one' = 1 label per item · 'stock' = 1 per u
 const qtyOf = i => (mode.value === 'stock' ? i.stock_labels : i.quantity) || 1
 const totalLabels = computed(() => items.value.reduce((s, i) => s + qtyOf(i), 0))
 const hasWeight   = computed(() => items.value.some(i => i.by_weight))
+const hasSpecs    = computed(() => items.value.some(i => i.specs))
+const withSpecs   = ref(false)
+watch(selectedId, id => { withSpecs.value = !!presets.value.find(p => p.id === id)?.show_specs })
 const canPrint    = computed(() => !loading.value && !!selectedId.value && items.value.length > 0)
 
 async function load() {
@@ -93,6 +102,7 @@ async function load() {
     presets.value = pr.data.results ?? pr.data
     const def = presets.value.find(p => p.is_default) || presets.value[0]
     selectedId.value = def ? def.id : null
+    withSpecs.value = !!def?.show_specs
     items.value = ld.data.items || []
     storeName.value = ld.data.store_name
   } catch {
@@ -109,7 +119,7 @@ function print() {
   if (!preset) return
   labelsStore.setJob({
     source: 'products',
-    preset,
+    preset: { ...preset, show_specs: hasSpecs.value && withSpecs.value },
     store_name: storeName.value,
     items: items.value.map(i => ({ ...i, quantity: qtyOf(i) })),
   })
@@ -129,6 +139,7 @@ function print() {
 .pl-section-title { margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
 .pl-summary { margin: 8px 0 0; font-size: 13px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 .pl-note { margin: 0; font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.pl-check { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: var(--text-primary); cursor: pointer; }
 .pl-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
 /* Same look as the purchase label picker (Purchases.vue) */
 .preset-option { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:border-color 100ms,background 100ms; }

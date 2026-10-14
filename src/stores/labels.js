@@ -10,7 +10,8 @@ export const useLabelsStore = defineStore('labels', {
   state: () => ({
     job: null,
     // job shape: { source: 'purchase' | 'products', preset: { width_mm, height_mm, show_* }, store_name,
-    //              items: [{ product_name, sku, sku2, barcode, sell_price, quantity }] }
+    //              items: [{ product_name, sku, sku2, barcode, sell_price, quantity, specs }] }
+    // `specs` (s168) = the category's spec values on one line; printed only when preset.show_specs.
     // Filled by Purchases.vue (a received purchase) and ProductLabelsModal.vue (product list / product page).
   }),
   actions: {

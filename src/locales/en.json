@@ -526,7 +526,8 @@
       "batch": "Batch {i} of {n} · labels {from}–{to}",
       "print_batch": "Print this batch",
       "sending": "Sending…",
-      "no_job": "No labels to print. Open a received purchase or the Products list and click \"Print labels\"."
+      "no_job": "No labels to print. Open a received purchase or the Products list and click \"Print labels\".",
+      "with_specs": "Print the specs on the label"
     },
     "purchases": {
       "title": "Purchases",
@@ -788,6 +789,44 @@
       "title_trade": "Brands containing {ing}",
       "chip_ing": "SAME INGREDIENT",
       "chip_trade": "BY INGREDIENT"
+    },
+    "specs": {
+      "form_title": "Specs",
+      "form_sub": "This category asks for these details.",
+      "required": "Required",
+      "err_missing": "Please fill in the required specs: {names}",
+      "err_number": "\"{name}\" must be a number.",
+      "manage": "Spec set",
+      "count_hint": "Spec set: {n} of its own",
+      "modal_title": "Spec set — {name}",
+      "modal_hint": "The details a product in this category is asked for, in this order. Its sub-categories ask for them too.",
+      "loading": "Loading…",
+      "presets_label": "Start from a preset",
+      "presets_hint": "Adds the preset's specs (and creates any attribute the shop doesn't have yet). Nothing is added twice.",
+      "save_before_preset": "Save your changes first, then apply a preset.",
+      "inherited_title": "From the parent categories",
+      "from": "from {name}",
+      "required_badge": "Required",
+      "own_title": "This category's own specs",
+      "own_empty": "No specs of its own yet.",
+      "required_label": "Required",
+      "move_up": "Move up",
+      "move_down": "Move down",
+      "remove": "Remove",
+      "add_placeholder": "Choose an attribute…",
+      "add": "Add",
+      "no_more_attrs": "Every attribute is already in this set. Create more on the Attributes page.",
+      "save": "Save spec set",
+      "saved": "Spec set saved.",
+      "err_load": "Couldn't load the spec set.",
+      "err_save": "Couldn't save the spec set.",
+      "err_preset": "Couldn't apply the preset.",
+      "err_role": "Your role can't change this.",
+      "preset_done": "{name}: {n} specs added.",
+      "preset_nothing": "{name}: everything was already there.",
+      "type_text": "Text",
+      "type_number": "Number",
+      "type_select": "List"
     }
   },
   "finance": {
@@ -2518,7 +2557,8 @@
         "name": "name",
         "barcode": "barcode",
         "sku": "SKU",
-        "price": "price"
+        "price": "price",
+        "specs": "specs"
       },
       "designs": {
         "classic_name": "Classic",
@@ -2561,7 +2601,8 @@
       "confirm_delete_pm": "Delete this payment method?",
       "confirm_delete_preset": "Delete this label preset?",
       "save_service": "Save Service Settings",
-      "lang_hint": "Printed receipts always use this language, whoever prints them. Notifications show in each person's own screen language."
+      "lang_hint": "Printed receipts always use this language, whoever prints them. Notifications show in each person's own screen language.",
+      "cb_specs": "Specs (from the category)"
     },
     "changelog": {
       "title": "What's New",
