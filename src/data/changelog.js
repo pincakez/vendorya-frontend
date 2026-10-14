@@ -12,6 +12,25 @@
 
 export const changelog = [
   {
+    version: '1.39.14',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'Cashiers only see the buttons they can use',
+      points: [
+        'On the Products page, a cashier no longer sees "Add Product", the edit pencil or the hide-from-till eye — those were refused when pressed. Managers and owners still have them.',
+        'On a product’s page, a cashier no longer sees "Edit Product" or the add/remove photo buttons.',
+      ],
+    },
+    ar: {
+      title: 'الكاشير بيشوف بس الزراير اللي يقدر يستخدمها',
+      points: [
+        'في صفحة المنتجات، الكاشير مبقاش بيشوف "إضافة منتج" ولا قلم التعديل ولا عين الإخفاء من الكاشير — كانت بترفض لما يدوس عليها. المدير والمالك لسه عندهم.',
+        'في صفحة المنتج، الكاشير مبقاش بيشوف "تعديل المنتج" ولا زراير إضافة/حذف الصور.',
+      ],
+    },
+  },
+  {
     version: '1.39.13',
     date: '2026-10-14',
     tag: 'Improved',
