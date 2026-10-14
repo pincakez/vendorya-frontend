@@ -1,9 +1,9 @@
 // §MB-TWIN — Memory Base autocomplete source + twin ranking, in a real browser (s166, laptops edition).
 // Khodair + its drugs are off dev, so this uses the GATES shop's 18 MEMORY_BASE laptop rows, each of
 // which also has a received STORE twin with the same name.
-//   (a) source = Memory Base  → type a laptop family → MB rows appear in the New Purchase dropdown
-//   (b) a received laptop     → its STORE row is the TOP row (picking it fills the real SKU); the MB
-//                                twin is still listed BELOW it (by design: "no raw dedup", TODO §MB-TWIN)
+//   (a) source = Memory Base  → type a laptop family → every GATES laptop is owned, so ONLY its STORE
+//                                rows appear (s166, Yakot: "hide the copy" — the MB twin is no longer listed)
+//   (b) a received laptop     → exactly ONE row, the STORE one (picking it fills the real SKU)
 //   (c) source = Store History → only STORE products; 0 results → the faint "not in your history" hint
 //
 // Runs against the DEV app (Vite :4456 → Django :8001). Never point it at prod.
@@ -89,11 +89,11 @@ try {
   const famApi = await ac(famQ)
   const famMb = famApi.results.filter(r => r.source === 'MEMORY_BASE').length
   const famStore = famApi.results.filter(r => r.source === 'STORE').length
-  check(famMb > 0 && famStore > 0, `API "${famQ}": ${famStore} STORE + ${famMb} MEMORY_BASE rows`)
+  check(famMb === 0 && famStore > 0, `API "${famQ}": ${famStore} STORE + ${famMb} MEMORY_BASE rows (owned → MB copies hidden)`)
   const twinApi = await ac(twinQ)
   check(twinApi.results[0]?.source === 'STORE', `API "${twinQ}": row 1 = ${twinApi.results[0]?.source} (want STORE)`)
-  check(twinApi.results.length === 2 && twinApi.results[1]?.source === 'MEMORY_BASE',
-    `API "${twinQ}": ${twinApi.results.length} rows — STORE then its MB twin (${twinApi.results.map(r => r.source).join(', ')})`)
+  check(twinApi.results.length === 1,
+    `API "${twinQ}": ${twinApi.results.length} row(s) — the STORE row only, MB twin hidden (${twinApi.results.map(r => r.source).join(', ')})`)
 
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } })
   await ctx.addInitScript(([u]) => { try { localStorage.setItem('vendorya_user', u) } catch { /* noop */ } }, [JSON.stringify(me.data)])
@@ -104,12 +104,12 @@ try {
   page.on('pageerror', e => pageErrors.push(e.message))
 
   // ---- (a) Memory Base: MB rows appear ----------------------------------------------------------
-  console.log('a) source = Memory Base → type a laptop family → MB rows appear')
+  console.log('a) source = Memory Base → type a laptop family → owned laptops show once (STORE)')
   let input = await openNewPurchase(page)
   const aData = await typeQuery(page, input, famQ)
   const aNames = await dropdownNames(page)
   const aMb = aData.results.filter(r => r.source === 'MEMORY_BASE' && r.default_variant_id).length
-  check(aMb > 0, `the UI's response carries ${aMb} MEMORY_BASE rows`)
+  check(aMb === 0, `the UI's response carries ${aMb} MEMORY_BASE rows (copies of owned laptops hidden)`)
   check(aNames.length === aData.results.filter(r => r.default_variant_id).length && aNames.length === famApi.results.length,
     `dropdown shows ${aNames.length} rows (= ${famStore} STORE + ${famMb} MB)`)
   check(aNames.every(n => /ZBook/i.test(n)), 'every row is a ZBook')
@@ -120,8 +120,8 @@ try {
   const bData = await typeQuery(page, input, twinQ)
   const bNames = await dropdownNames(page)
   check(bData.results[0]?.source === 'STORE', `row 1 in the UI response = ${bData.results[0]?.source}`)
-  check(bNames.length === 2 && bNames.every(n => n.trim() === `Dell ${twinQ}`),
-    `dropdown: ${bNames.length} rows named "Dell ${twinQ}" (STORE + MB twin, both listed — no dedup by design)`)
+  check(bNames.length === 1 && bNames[0].trim() === `Dell ${twinQ}`,
+    `dropdown: ${bNames.length} row named "Dell ${twinQ}" (the MB twin is hidden — s166)`)
   await page.screenshot({ path: `${SHOTS}/mbtwin-b-twin-dropdown.png` })
   await page.locator('.ac-dropdown .ac-item').first().dispatchEvent('mousedown')
   const sku = page.locator('.cell-sku .sku-val').first()
