@@ -60,7 +60,7 @@
               <div class="it-sku">{{ it.sku }}</div>
               <div v-if="Number(it.discount_amount) > 0" class="it-disc">Disc: − <Money :value="it.discount_amount" /></div>
             </td>
-            <td class="ta-right">{{ formatQty(it.quantity) }}</td>
+            <td class="ta-right">{{ lineQty(it) }}</td>
             <td class="ta-right"><Money :value="it.unit_price" /></td>
             <td class="ta-right"><Money :value="it.tax_amount" /></td>
             <td class="ta-right"><Money :value="it.total" /></td>
@@ -99,7 +99,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Printer } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
-import { formatQty } from '@/utils/format'
+import { formatQty, formatWeight } from '@/utils/format'
 import { useQZTray } from '@/composables/useQZTray'
 
 const { t }  = useI18n()
@@ -113,13 +113,17 @@ const error   = ref('')
 const receiptPrinterName = ref('')
 const inv = reactive({
   invoice: {}, store: {}, branch: null, customer: null,
-  legal: {}, currency: null, items: [], payments: [],
+  legal: {}, currency: null, items: [], payments: [], weight_unit: 'KG',
 })
 
 const balance = computed(() => Number(inv.invoice.grand_total || 0) - Number(inv.invoice.paid_amount || 0))
 const headerLines = computed(() => (inv.legal.receipt_header || '').split('\n').map(l => l.trim()).filter(Boolean))
 const footerLines = computed(() => (inv.legal.receipt_footer || '').split('\n').map(l => l.trim()).filter(Boolean))
 const storeLocation = computed(() => [inv.store.city, inv.store.country].filter(Boolean).join(', '))
+// §WT: weight lines read "250 g" / "0.25 kg" in the invoice's store weight unit; others a plain qty.
+function lineQty(it) {
+  return it.is_weight ? formatWeight(it.quantity, inv.weight_unit) : formatQty(it.quantity)
+}
 
 function fmtDate(d) {
   if (!d) return '—'
@@ -194,7 +198,8 @@ function buildInvoiceESCPOS() {
   for (const it of inv.items) {
     const name  = String(it.name || '').slice(0, COLS - 12)
     const total = esc_money(it.total)
-    out += (name + ' x' + it.quantity).padEnd(COLS - total.length - 1) + ' ' + total + LF
+    const qty   = it.is_weight ? ' ' + formatWeight(it.quantity, inv.weight_unit) : ' x' + it.quantity
+    out += (name + qty).padEnd(COLS - total.length - 1) + ' ' + total + LF
     if (Number(it.discount_amount) > 0) {
       const disc = '- ' + esc_money(it.discount_amount)
       out += '  Disc:'.padEnd(COLS - disc.length - 1) + ' ' + disc + LF

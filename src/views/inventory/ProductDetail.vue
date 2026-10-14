@@ -118,7 +118,7 @@
           <div class="quick-stat">
             <div class="qs-label">{{ t('inventory.product_detail.total_stock') }}</div>
             <div class="qs-val" :title="stockBreakdown.hasTiers ? formatBreakdown(stockBreakdown.parts) : ''">
-              {{ stockBreakdown.hasTiers ? headlineLabel(stockBreakdown.headline) : totalStock }}
+              {{ stockBreakdown.isWeight ? formatWeight(totalStock) : (stockBreakdown.hasTiers ? headlineLabel(stockBreakdown.headline) : totalStock) }}
             </div>
           </div>
           <div class="quick-stat">
@@ -457,6 +457,7 @@ import Money from '@/components/ui/Money.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { showSuccessToast } from '@/utils/toast'
 import { decomposeStock, headlineLabel, formatBreakdown, unitConversionLine } from '@/utils/units'
+import { formatWeight } from '@/utils/format'
 import { renderRichText } from '@/utils/richText'
 
 const { t } = useI18n()
@@ -525,6 +526,7 @@ const conversionLine = computed(() => unitConversionLine(sellingUnits.value))
 // Per-variant breakdown for the variants table (reuses the product ladder).
 function variantStock(v) {
   const d = decomposeStock(v.total_stock || 0, sellingUnits.value)
+  if (d.isWeight) return { label: formatWeight(v.total_stock || 0), title: '' }   // §WT
   return d.hasTiers
     ? { label: headlineLabel(d.headline), title: formatBreakdown(d.parts) }
     : { label: String(v.total_stock ?? 0), title: '' }

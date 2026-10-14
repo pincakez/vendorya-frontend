@@ -10,6 +10,7 @@
  *  - separator: StoreSettings.thousands_separator  (default off)
  *  - symbol:    Store.currency.symbol      (e.g. "EGP", "LE", "$")
  *  - position:  Store.currency.position    (PREFIX → "$100", SUFFIX → "100 LE")
+ *  - weight:    StoreSettings.default_weight_unit (KG | G) — see formatWeight below
  *
  * Never appends the symbol twice — pure number formatters return digits only.
  */
@@ -72,4 +73,59 @@ export function formatQty(value, opts) {
   const [intPart, fracPart] = fixed.split('.')
   const withSep = Number(intPart).toLocaleString('en-US')
   return fracPart ? `${withSep}.${fracPart}` : withSep
+}
+
+
+/* ── Weight (§WT) ─────────────────────────────────────────────────────────────
+ * A weight product's stock/qty is ALWAYS kilograms, stored to the gram (3 dp).
+ * Grams are only a ×0.001 display tier over that kg base — like packs over
+ * pills — chosen store-wide by StoreSettings.default_weight_unit ('KG' | 'G').
+ * Every screen shows/reads weights through these helpers; none converts inline.
+ */
+
+function resolveWeightUnit(unit) {
+  let u = unit
+  if (u == null) {
+    try { u = useFormatStore().weightUnit } catch { /* outside Pinia ctx */ }
+  }
+  return String(u || 'KG').toUpperCase() === 'G' ? 'G' : 'KG'
+}
+
+/** 'kg' or 'g' — the short label for the store's (or the given) weight unit. */
+export function weightUnitLabel(unit) {
+  return resolveWeightUnit(unit) === 'G' ? 'g' : 'kg'
+}
+
+/** True when weights are shown/typed in grams. */
+export function isGramUnit(unit) {
+  return resolveWeightUnit(unit) === 'G'
+}
+
+/** Stored kg → number in the display unit (0.25 kg → 250 in g mode), gram-rounded. */
+export function fromBaseKg(kg, unit) {
+  const n = Number(kg)
+  if (!Number.isFinite(n)) return 0
+  const grams = Math.round(n * 1000)
+  return resolveWeightUnit(unit) === 'G' ? grams : grams / 1000
+}
+
+/** A typed weight in the display unit → kg to store (250 in g mode → 0.25). NaN if not a number. */
+export function toBaseKg(value, unit) {
+  const n = typeof value === 'number' ? value : parseFloat(String(value ?? '').replace(',', '.'))
+  if (!Number.isFinite(n)) return NaN
+  const kg = resolveWeightUnit(unit) === 'G' ? n / 1000 : n
+  return Math.round(kg * 1000) / 1000
+}
+
+/** "250 g" / "0.25 kg" — a stored kg quantity in the store's weight unit. */
+export function formatWeight(kg, unit) {
+  const u = resolveWeightUnit(unit)
+  const v = fromBaseKg(kg, u)
+  const { separator } = resolveOpts()
+  const digits = v.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: u === 'G' ? 0 : 3,
+    useGrouping: !!separator,
+  })
+  return `${digits} ${weightUnitLabel(u)}`
 }

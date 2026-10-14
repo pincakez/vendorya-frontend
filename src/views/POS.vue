@@ -176,7 +176,7 @@
               <div class="pcr-main">
                 <span class="pcr-name">
                   <span class="pcr-name-txt">{{ item.name }}</span>
-                  <span v-if="item.unit_name" class="pcr-unit-badge">{{ item.unit_name }}</span>
+                  <span v-if="item.unit_name" class="pcr-unit-badge">{{ item.is_weight ? weightUnitLabel() : item.unit_name }}</span>
                   <ChevronDown v-if="(item.units?.length || 0) > 1" :size="12" class="pcr-name-caret" />
                 </span>
                 <div v-if="lineTags(item).length" class="pcr-tags">
@@ -184,9 +184,9 @@
                 </div>
               </div>
               <div class="pcr-qty-ctrl">
-                <!-- Weight line: click the value to re-enter the kg off the scale -->
+                <!-- Weight line: click the value to re-enter the weight off the scale (kg or g per store) -->
                 <button v-if="item.is_weight" class="pcr-weight-val" @click.stop="openWeightEntry(item.key)">
-                  {{ fmtQty(item.qty) }} kg
+                  {{ formatWeight(item.qty) }}
                 </button>
                 <template v-else>
                   <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.key, item.qty - 1)">−</button>
@@ -343,7 +343,8 @@
         </div>
       </div>
     </Transition>
-    <!-- Weight entry: type the kg off the scale for a per-kg product -->
+    <!-- Weight entry: type the weight off the scale for a per-kg product, in the store's
+         weight unit (g mode: 250 → 0.250 kg stored). Price stays per kg. -->
     <div v-if="weightEntry" class="pos-unit-overlay" @click.self="confirmWeightEntry" @keydown.esc.stop.prevent="confirmWeightEntry">
       <div class="pos-unit-card pos-weight-card">
         <button class="pos-modal-x" tabindex="-1" :aria-label="t('common.close')" @click="confirmWeightEntry"><X :size="20" /></button>
@@ -351,14 +352,15 @@
         <div class="pos-unit-sub">{{ t('pos.weight.enter') }} · {{ fmtNum(weightEntry.price) }}{{ t('pos.weight.per_kg') }}</div>
         <div class="pos-weight-display">
           <input ref="weightInputEl" v-model="weightEntry.value" class="pos-weight-input"
-                 inputmode="decimal" @keyup.enter="confirmWeightEntry"
-                 :placeholder="t('pos.weight.kg_placeholder')" />
-          <span class="pos-weight-unit">kg</span>
+                 :inputmode="isGramUnit() ? 'numeric' : 'decimal'" @keyup.enter="confirmWeightEntry"
+                 :placeholder="isGramUnit() ? t('pos.weight.g_placeholder') : t('pos.weight.kg_placeholder')" />
+          <span class="pos-weight-unit">{{ weightUnitLabel() }}</span>
         </div>
-        <div class="pos-weight-total">= {{ fmtNum((parseFloat(weightEntry.value) || 0) * weightEntry.price) }}</div>
+        <div class="pos-weight-total">= {{ fmtNum((toBaseKg(weightEntry.value) || 0) * weightEntry.price) }}</div>
         <div class="pos-weight-pad">
           <button v-for="k in ['7','8','9','4','5','6','1','2','3','.','0','C']" :key="k"
                   class="pos-weight-key" :class="{ 'pos-weight-key--c': k === 'C' }"
+                  :disabled="k === '.' && isGramUnit()"
                   @click="weightKey(k)">{{ k }}</button>
         </div>
         <button class="pos-unit-cancel pos-weight-ok" @click="confirmWeightEntry">{{ t('common.done') }}</button>
@@ -432,6 +434,7 @@ import {
   Sun, Moon, LogOut,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
+import { formatWeight, weightUnitLabel, isGramUnit, toBaseKg, fromBaseKg } from '@/utils/format'
 import { useAuthStore }  from '@/stores/auth'
 import { useCartStore }  from '@/stores/cart'
 import { usePosStore }   from '@/stores/pos'
@@ -1100,18 +1103,19 @@ const weightEntry = ref(null)
 function openWeightEntry(key) {
   const item = cart.items.find(i => i.key === key)
   if (!item) return
-  weightEntry.value = { key, name: item.name, price: item.price, value: String(item.qty || '') }
+  // Line qty is stored kg; the pad shows it in the store's unit (0.25 kg → "250" in g mode).
+  weightEntry.value = { key, name: item.name, price: item.price, value: item.qty ? String(fromBaseKg(item.qty)) : '' }
   nextTick(() => weightInputEl.value?.focus())
 }
 function weightKey(d) {
   if (!weightEntry.value) return
   if (d === 'C') { weightEntry.value.value = ''; return }
-  if (d === '.' && weightEntry.value.value.includes('.')) return
+  if (d === '.' && (isGramUnit() || weightEntry.value.value.includes('.'))) return   // grams are whole
   weightEntry.value.value = (weightEntry.value.value + d).slice(0, 10)
 }
 function confirmWeightEntry() {
   if (!weightEntry.value) return
-  const kg = parseFloat(weightEntry.value.value)
+  const kg = toBaseKg(weightEntry.value.value)   // typed in kg or g → kg to the gram
   if (!Number.isFinite(kg) || kg <= 0) { cart.removeItem(weightEntry.value.key) }
   else cart.updateQty(weightEntry.value.key, kg)
   weightEntry.value = null
@@ -1316,10 +1320,7 @@ function playBeep() {
 function fmtNum(n) {
   return parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
-// Weight qty: up to 3 decimals (gram precision), trailing zeros trimmed (0.250 → 0.25).
-function fmtQty(n) {
-  return (parseFloat(n) || 0).toFixed(3).replace(/\.?0+$/, '') || '0'
-}
+// Weight qty display/entry goes through utils/format.js (formatWeight / toBaseKg / fromBaseKg, §WT).
 </script>
 
 <style scoped>
@@ -1410,6 +1411,7 @@ function fmtQty(n) {
 .pos-weight-key:hover { background: var(--accent-soft); border-color: var(--accent); }
 .pos-weight-key:active { transform: scale(0.9); }
 .pos-weight-key--c { color: var(--danger, #dc2626); }
+.pos-weight-key:disabled { opacity: .35; cursor: default; pointer-events: none; }
 .pos-weight-ok { background: var(--accent); color: #fff; border-color: var(--accent); }
 .pcr-weight-val {
   padding: 4px 10px; border-radius: 7px; border: 1px solid var(--accent);
