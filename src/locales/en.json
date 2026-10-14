@@ -1291,6 +1291,24 @@
         "delete_confirm": "Delete this payment? The sales it paid will show as unpaid again.",
         "deleted": "Payment deleted",
         "delete_failed": "Could not delete the payment."
+      },
+      "stmt": {
+        "title": "Account statement",
+        "customer": "Customer",
+        "opening": "Opening balance",
+        "sale": "Sale",
+        "payment": "Payment",
+        "receipt": "Payment received",
+        "receipt_part": "Received {amount} — part of it was on a sale that is no longer active",
+        "paid_other": "Paid (no payment record)",
+        "return": "Return",
+        "return_fee": "Restocking fee",
+        "paid_back": "Money handed back",
+        "store_credit": "to their store credit",
+        "on_sale": "Sale #{num}",
+        "debit": "Sold (Debit)",
+        "credit": "Paid (Credit)",
+        "balance_hint": "Balance = what this customer still owes you. A minus balance means you owe them."
       }
     },
     "supplier_detail": {

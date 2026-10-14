@@ -139,6 +139,29 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Account statement (كشف حساب, s167) — managers and up, same as the server -->
+      <div v-if="isManagerPlus" class="stmt-section">
+        <h2 class="section-title">{{ t('people.customer_detail.stmt.title') }}</h2>
+        <AccountStatement
+          v-model:date-from="stmtFrom"
+          v-model:date-to="stmtTo"
+          :party-label="t('people.customer_detail.stmt.customer')"
+          :party-name="customer.name"
+          :party-meta="customer.phone_number || ''"
+          :lines="stmtRows"
+          :opening-balance="stmt?.opening_balance || 0"
+          :closing-balance="stmt?.closing_balance || 0"
+          :totals="stmt?.totals"
+          :debit-label="t('people.customer_detail.stmt.debit')"
+          :credit-label="t('people.customer_detail.stmt.credit')"
+          :balance-hint="t('people.customer_detail.stmt.balance_hint')"
+          :loading="stmtLoading"
+          :error="stmtError"
+          :filename="`statement-${(customer.phone_number || customer.name || 'customer').replace(/\s+/g, '-')}-${stmtFrom || 'all'}-${stmtTo || 'now'}`"
+          @refresh="fetchStatement"
+        />
+      </div>
     </div>
 
     <!-- Receive payment (one lump sum → oldest sales first, then the opening balance) -->
@@ -233,12 +256,14 @@ import { ChevronLeft, Pencil, HandCoins, Trash2 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import AccountStatement from '@/components/finance/AccountStatement.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseSelect from '@/components/base/BaseSelect.vue'
 import { useAuthStore } from '@/stores/auth'
 import { showSuccessToast, showErrorToast } from '@/utils/toast'
+import { formatCurrency } from '@/utils/format'
 
 const { t } = useI18n()
 const props = defineProps({ id: String })
@@ -305,8 +330,60 @@ async function saveEdit() {
     })
     customer.value = r.data
     editModal.open = false
+    fetchStatement()   // the opening balance is the statement's first line
   } catch {} finally { editModal.saving = false }
 }
+
+// ── Account statement (كشف حساب, s167) — default range: this year, like the supplier one ──
+const stmtFrom = ref(`${new Date().getFullYear()}-01-01`)
+const stmtTo = ref((() => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+})())
+const stmt = ref(null)
+const stmtLoading = ref(false)
+const stmtError = ref('')
+
+async function fetchStatement() {
+  if (!isManagerPlus.value) return
+  stmtLoading.value = true
+  stmtError.value = ''
+  try {
+    const params = {}
+    if (stmtFrom.value) params.date_from = stmtFrom.value
+    if (stmtTo.value) params.date_to = stmtTo.value
+    const r = await api.get(`/api/auth/customers/${props.id}/statement/`, { params })
+    stmt.value = r.data
+  } catch (e) {
+    const d = e?.response?.data
+    stmtError.value = d?.date_from || d?.date_to || t('finance.statement.load_failed')
+  } finally { stmtLoading.value = false }
+}
+
+const S = 'people.customer_detail.stmt.'
+const stmtRows = computed(() => (stmt.value?.lines || []).map((l, i) => {
+  const onSale = l.invoice_number ? t(S + 'on_sale', { num: l.invoice_number }) : ''
+  let type = t(S + l.kind)
+  let note = l.note || ''
+  if (l.kind === 'payment' || l.kind === 'receipt') type = [type, l.method].filter(Boolean).join(' · ')
+  if (l.kind === 'paid_back' && l.refund_method === 'STORE_CREDIT') type = `${type} ${t(S + 'store_credit')}`
+  if (['return', 'return_fee', 'paid_back'].includes(l.kind)) note = onSale
+  if (l.kind === 'receipt' && Number(l.receipt_amount) !== Number(l.credit)) {
+    note = [t(S + 'receipt_part', { amount: formatCurrency(l.receipt_amount) }), note].filter(Boolean).join(' — ')
+  }
+  return {
+    key: `${l.kind}-${l.link_id || ''}-${i}`,
+    date: l.date,
+    type,
+    ref: l.ref,
+    note,
+    debit: l.debit,
+    credit: l.credit,
+    running_balance: l.running_balance,
+    // sales, payments and returns all point at the sale; a receipt / the opening balance has no page
+    to: l.link_id && l.kind !== 'receipt' && l.kind !== 'opening' ? `/finance/invoices?highlight=${l.link_id}` : null,
+  }
+}))
 
 // ── Receive payment (s167): one lump sum, spread by the server oldest sale first ──
 const receipts = ref([])
@@ -368,7 +445,7 @@ async function saveReceive() {
     })
     recModal.result = r.data.summary
     showSuccessToast(t('people.customer_detail.receive.done'))
-    await Promise.all([fetchCustomer(), fetchInvoices(page.value), fetchReceipts()])
+    await Promise.all([fetchCustomer(), fetchInvoices(page.value), fetchReceipts(), fetchStatement()])
   } catch (e) {
     const d = e?.response?.data || {}
     const first = v => (Array.isArray(v) ? v[0] : v)   // a field error comes as a list or a plain string
@@ -381,7 +458,7 @@ async function deleteReceipt(r) {
   if (!confirm(t('people.customer_detail.receive.delete_confirm'))) return
   try {
     await api.delete(`/api/finance/customer-receipts/${r.id}/`)
-    await Promise.all([fetchCustomer(), fetchInvoices(page.value), fetchReceipts()])
+    await Promise.all([fetchCustomer(), fetchInvoices(page.value), fetchReceipts(), fetchStatement()])
     showSuccessToast(t('people.customer_detail.receive.deleted'))
   } catch { showErrorToast(t('people.customer_detail.receive.delete_failed')) }
 }
@@ -395,7 +472,7 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-onMounted(() => { fetchCustomer(); fetchInvoices(); fetchReceipts() })
+onMounted(() => { fetchCustomer(); fetchInvoices(); fetchReceipts(); fetchStatement() })
 </script>
 
 <style scoped>
@@ -442,6 +519,7 @@ onMounted(() => { fetchCustomer(); fetchInvoices(); fetchReceipts() })
 .s-void   { background:rgba(220,38,38,0.10); color:var(--danger); }
 
 .header-right { display:flex; align-items:center; gap:8px; }
+.stmt-section { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:14px 18px 18px; display:flex; flex-direction:column; gap:12px; }
 .field-hint { font-size:12px; color:var(--text-muted); margin:6px 0 0; }
 
 .rec-row { border-bottom:1px solid var(--border); }
