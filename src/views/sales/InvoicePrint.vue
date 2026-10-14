@@ -83,6 +83,10 @@
         <div v-for="(p, i) in inv.payments" :key="i" class="pay-row">
           <span>{{ p.method }}</span><Money :value="p.amount" />
         </div>
+        <template v-if="changeGiven > 0">
+          <div class="pay-row"><span>Cash received</span><Money :value="cashReceived" /></div>
+          <div class="pay-row"><span>Change</span><Money :value="changeGiven" /></div>
+        </template>
       </div>
 
       <footer v-if="footerLines.length" class="inv-foot">
@@ -117,6 +121,10 @@ const inv = reactive({
 })
 
 const balance = computed(() => Number(inv.invoice.grand_total || 0) - Number(inv.invoice.paid_amount || 0))
+// s167 split payment: cash change handed back — the cash payment lines hold only the money KEPT.
+const changeGiven  = computed(() => Number(inv.invoice.change_given || 0))
+const cashReceived = computed(() =>
+  inv.payments.filter(p => p.is_cash).reduce((s, p) => s + Number(p.amount || 0), 0) + changeGiven.value)
 const headerLines = computed(() => (inv.legal.receipt_header || '').split('\n').map(l => l.trim()).filter(Boolean))
 const footerLines = computed(() => (inv.legal.receipt_footer || '').split('\n').map(l => l.trim()).filter(Boolean))
 const storeLocation = computed(() => [inv.store.city, inv.store.country].filter(Boolean).join(', '))
@@ -222,6 +230,10 @@ function buildInvoiceESCPOS() {
   if (inv.payments.length) {
     out += esc_dashes()
     for (const p of inv.payments) out += esc_two(p.method + ':', esc_money(p.amount))
+    if (changeGiven.value > 0) {
+      out += esc_two('Cash received:', esc_money(cashReceived.value))
+      out += BOLD_ON + esc_two('Change:', esc_money(changeGiven.value)) + BOLD_OFF
+    }
   }
 
   // Footer

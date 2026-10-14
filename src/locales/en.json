@@ -1119,7 +1119,8 @@
       "title": "Sale Complete",
       "invoice": "Invoice #{num}",
       "print": "Print",
-      "new_sale": "New Sale"
+      "new_sale": "New Sale",
+      "change": "Change to give back: {amount}"
     },
     "held": {
       "title": "Held Carts ({n})",
@@ -1162,7 +1163,19 @@
       "err_failed": "Payment failed. Please try again.",
       "err_expired": "Blocked: this sale would draw from expired stock ({names}). Adjust or remove the expired batch.",
       "incl_vat": "incl. VAT {amount}",
-      "agel_needs_customer": "Credit (Ajel) needs a named customer — close this, pick the customer, then pay."
+      "agel_needs_customer": "Credit (Ajel) needs a named customer — close this, pick the customer, then pay.",
+      "store_credit": "Store credit",
+      "add_line": "Add payment",
+      "rest": "Rest",
+      "rest_hint": "Fill this line with what is still to pay",
+      "remove_line": "Remove this payment",
+      "left_to_pay": "Left to pay",
+      "on_account": "The rest goes on {name}'s account",
+      "agel_off": "Credit (Ajel) sales are turned off for this shop — collect the full amount.",
+      "err_noncash_over": "Card, bank and store credit can't be more than the total — only cash can (the extra is change).",
+      "err_sc_over": "Only {amount} store credit is available.",
+      "err_negative": "An amount cannot be below zero.",
+      "keys_hint": "Enter = pay · Alt+1…9 = pick a method · Add payment to split"
     },
     "choose_unit": "Choose a unit",
     "change_unit": "Change unit",

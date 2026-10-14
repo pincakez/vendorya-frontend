@@ -435,6 +435,9 @@
           <div class="psc-label">{{ t('pos.success.title') }}</div>
           <div class="psc-num">{{ t('pos.success.invoice', { num: successInvoice.invoice_number }) }}</div>
           <div class="psc-amount">{{ auth.currencySymbol }} {{ fmtNum(successInvoice.grand_total) }}</div>
+          <div v-if="Number(successInvoice.change_given) > 0" class="psc-change">
+            {{ t('pos.success.change', { amount: `${auth.currencySymbol} ${fmtNum(successInvoice.change_given)}` }) }}
+          </div>
           <div class="psc-actions">
             <button class="psc-print" @click="printInvoice(successInvoice.id)">
               <Printer :size="16" /> {{ t('pos.success.print') }}
@@ -1950,6 +1953,7 @@ function fmtNum(n) {
 .psc-label  { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em; }
 .psc-num    { font-size: 22px; font-weight: 900; color: var(--text-primary); }
 .psc-amount { font-size: 34px; font-weight: 900; color: var(--text-primary); }
+.psc-change { font-size: 18px; font-weight: 800; color: var(--success); }   /* s167: cash change after a split / overpaid sale */
 .psc-actions { display: flex; gap: 12px; margin-top: 10px; }
 .psc-print {
   display: flex; align-items: center; gap: 8px;
