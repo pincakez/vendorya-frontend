@@ -79,21 +79,21 @@
               <th>{{ t('inventory.storage.col_product') }}</th>
               <th>{{ t('inventory.storage.col_sku') }}</th>
               <th style="text-align:right;">{{ t('inventory.storage.col_qty') }}</th>
-              <th style="text-align:right;">{{ t('inventory.storage.col_cost') }}</th>
-              <th style="text-align:right;">{{ t('inventory.storage.col_value') }}</th>
+              <th v-if="seesCost" style="text-align:right;">{{ t('inventory.storage.col_cost') }}</th>
+              <th v-if="seesCost" style="text-align:right;">{{ t('inventory.storage.col_value') }}</th>
               <th style="text-align:right;">{{ t('inventory.storage.col_days') }}</th>
               <th v-if="canManage" style="text-align:right;">{{ t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="!contentsLoc">
-              <td :colspan="canManage ? 7 : 6" class="table-empty">
+              <td :colspan="(canManage ? 7 : 6) - (seesCost ? 0 : 2)" class="table-empty">
                 <Boxes :size="32" style="opacity:.3;margin-bottom:8px;" />
                 <div>{{ t('inventory.storage.pick_location') }}</div>
               </td>
             </tr>
             <tr v-else-if="contents.length === 0">
-              <td :colspan="canManage ? 7 : 6" class="table-empty">
+              <td :colspan="(canManage ? 7 : 6) - (seesCost ? 0 : 2)" class="table-empty">
                 <Boxes :size="32" style="opacity:.3;margin-bottom:8px;" />
                 <div>{{ t('inventory.storage.empty_location') }}</div>
               </td>
@@ -102,8 +102,8 @@
               <td class="col-name">{{ s.product_name }}</td>
               <td class="col-ref">{{ s.variant_sku }}</td>
               <td style="text-align:right;font-variant-numeric:tabular-nums;">{{ formatQty(s.quantity_remaining) }}</td>
-              <td style="text-align:right;"><Money :value="s.cost_at_move" /></td>
-              <td style="text-align:right;"><Money :value="layerValue(s)" /></td>
+              <td v-if="seesCost" style="text-align:right;"><Money :value="s.cost_at_move" /></td>
+              <td v-if="seesCost" style="text-align:right;"><Money :value="layerValue(s)" /></td>
               <td style="text-align:right;">
                 <span class="days-pill" :class="{ 'days-old': s.days_in_storage >= 180 }">{{ s.days_in_storage }}</span>
               </td>
@@ -326,6 +326,8 @@ async function deleteLocation(l) {
 /* ── Contents ──────────────────────────────────────────────── */
 const contentsLoc = ref('')
 const contents = ref([])
+// The server leaves cost out for a role the shop hides it from (cashier by default) — s167.
+const seesCost = computed(() => !contents.value.length || 'cost_at_move' in contents.value[0])
 const contentsLoading = ref(false)
 async function fetchContents() {
   if (!contentsLoc.value) { contents.value = []; return }

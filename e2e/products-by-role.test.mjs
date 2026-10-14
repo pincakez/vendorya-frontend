@@ -1,4 +1,5 @@
-// Products + product detail show only the buttons the server lets this role use (s167).
+// Products + product detail show only the buttons the server lets this role use (s167),
+// and a cashier gets no cost (S button gone — the server leaves cost out).
 // Server rule (inventory ProductViewSet.role_map): list/retrieve = CASHIER, add/edit/ghost/photos = MANAGER+.
 // The test reads the logged-in role, then expects:
 //   CASHIER  → no Add, no ghost/edit column, Ctrl+N opens nothing, no Edit / photo buttons on the detail page
@@ -63,6 +64,7 @@ try {
   check((await page.locator('.edit-prod-btn').count() > 0) === manager, `Edit Product button ${manager ? 'shown' : 'hidden'}`)
   check((await page.locator('.sc-add').count() > 0) === manager, `add photo / video buttons ${manager ? 'shown' : 'hidden'}`)
   check((await page.locator('.sc-settings').count() > 0) === manager, `showcase settings ${manager ? 'shown' : 'hidden'}`)
+  check((await page.locator('.s-btn').count() > 0) === manager, `S (cost + supplier) button ${manager ? 'shown' : 'hidden'} (s167 — the server sends no cost to a cashier)`)
 
   check(forbidden.length === 0, `no 403 from the server on either page${forbidden.length ? ': ' + forbidden.join(' · ') : ''}`)
 } catch (e) {

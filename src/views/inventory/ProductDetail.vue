@@ -21,7 +21,7 @@
           <Pencil :size="14" /> {{ t('inventory.product_detail.edit_product_btn') }}
         </button>
         <!-- Secret S button — reveals cost/supplier panel -->
-        <button class="s-btn" :class="{ active: showSecret }" @click="showSecret = !showSecret" :title="t('inventory.product_detail.show_cost_title')">S</button>
+        <button v-if="seesCost" class="s-btn" :class="{ active: showSecret }" @click="showSecret = !showSecret" :title="t('inventory.product_detail.show_cost_title')">S</button>
       </div>
     </div>
 
@@ -238,7 +238,7 @@
               <th class="dt-th">{{ t('inventory.product_detail.sku_col') }}</th>
               <th v-if="hasSku2" class="dt-th">{{ t('inventory.product_detail.sku2_col') }}</th>
               <th class="dt-th">{{ t('inventory.product_detail.attrs_col') }}</th>
-              <th class="dt-th">{{ t('inventory.product_detail.cost_col') }}</th>
+              <th v-if="seesCost" class="dt-th">{{ t('inventory.product_detail.cost_col') }}</th>
               <th class="dt-th">{{ t('inventory.product_detail.sell_price_col') }}</th>
               <th class="dt-th">{{ t('inventory.product_detail.reorder_col') }}</th>
               <th class="dt-th">{{ t('inventory.product_detail.stock_col') }}</th>
@@ -247,7 +247,7 @@
           </thead>
           <tbody>
             <tr v-if="product.variants.length === 0">
-              <td :colspan="hasSku2 ? 8 : 7" class="dt-empty">{{ t('inventory.product_detail.no_variants') }}</td>
+              <td :colspan="(hasSku2 ? 8 : 7) - (seesCost ? 0 : 1)" class="dt-empty">{{ t('inventory.product_detail.no_variants') }}</td>
             </tr>
             <tr v-for="v in product.variants" :key="v.id" class="dt-row">
               <td class="mono">{{ v.sku }}</td>
@@ -256,7 +256,7 @@
                 <span v-for="a in v.attributes" :key="a.id" class="attr-tag">{{ a.definition_name }}: {{ a.value }}</span>
                 <span v-if="!v.attributes.length" class="text-muted">—</span>
               </td>
-              <td class="text-muted"><Money :value="v.cost_price" /></td>
+              <td v-if="seesCost" class="text-muted"><Money :value="v.cost_price" /></td>
               <td class="fw6"><Money :value="v.sell_price" /></td>
               <td class="text-muted">{{ v.reorder_level ?? 0 }}</td>
               <td class="fw6" :title="variantStock(v).title">{{ variantStock(v).label }}</td>
@@ -466,6 +466,8 @@ const props = defineProps({ id: String })
 const auth = useAuthStore()
 // Edit + photos + showcase settings = MANAGER and up on the server — a cashier only looks (s167).
 const canManage = computed(() => !!auth.userRole && !auth.isCashier)
+// The server leaves cost out for a role the shop hides it from (cashier by default) — s167. Follow the data.
+const seesCost = computed(() => !!product.value && 'base_price' in product.value)
 
 const product = ref(null)
 const loading = ref(true)
