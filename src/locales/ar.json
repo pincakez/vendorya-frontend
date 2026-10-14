@@ -2776,6 +2776,8 @@
     }
   },
   "receipt": {
+    "cash_received": "النقدية المستلمة",
+    "change_given": "الباقي",
     "invoice": "فاتورة",
     "invoice_no": "فاتورة رقم {number}",
     "tel": "هاتف: {phone}",

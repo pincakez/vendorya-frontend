@@ -85,8 +85,8 @@
           <span dir="auto">{{ p.method }}</span><Money :value="p.amount" />
         </div>
         <template v-if="changeGiven > 0">
-          <div class="pay-row"><span>Cash received</span><Money :value="cashReceived" /></div>
-          <div class="pay-row"><span>Change</span><Money :value="changeGiven" /></div>
+          <div class="pay-row"><span dir="auto">{{ st('receipt.cash_received') }}</span><Money :value="cashReceived" /></div>
+          <div class="pay-row"><span dir="auto">{{ st('receipt.change_given') }}</span><Money :value="changeGiven" /></div>
         </template>
       </div>
 
@@ -241,8 +241,8 @@ function buildInvoiceESCPOS() {
     out += esc_dashes()
     for (const p of inv.payments) out += esc_two(p.method + ':', esc_money(p.amount))
     if (changeGiven.value > 0) {
-      out += esc_two('Cash received:', esc_money(cashReceived.value))
-      out += BOLD_ON + esc_two('Change:', esc_money(changeGiven.value)) + BOLD_OFF
+      out += esc_two(rt('receipt.cash_received') + ':', esc_money(cashReceived.value))
+      out += BOLD_ON + esc_two(rt('receipt.change_given') + ':', esc_money(changeGiven.value)) + BOLD_OFF
     }
   }
 
