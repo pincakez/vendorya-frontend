@@ -1026,6 +1026,7 @@ function addToCartFromFav(fav) {
     name:                  fav.product_name,
     default_variant_price: fav.default_variant_price ?? fav.product_price,
     default_variant_stock: fav.default_variant_stock ?? 999,
+    track_serials:         !!fav.track_serials,   // New 7: → the serial picker, like every other add path
   })
 }
 

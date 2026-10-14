@@ -85,6 +85,9 @@ export const useCartStore = defineStore('cart', {
       if (this._history.length > 50) this._history.shift()
     },
     addItem(variant) {
+      // Backstop (New 7): a serial-tracked unit never enters the cart without its serial — the till's add
+      // paths all route through the serial picker; this catches any path that forgets.
+      if (variant.track_serials && !(Array.isArray(variant.serials) && variant.serials.length)) return
       this._snapshot()
       // A line is identified by variant + chosen unit, so the same product sold
       // as a Pack and as a single Tablet sit on separate lines. unit_id null =
