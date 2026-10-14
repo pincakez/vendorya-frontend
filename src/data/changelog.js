@@ -12,6 +12,116 @@
 
 export const changelog = [
   {
+    version: '1.39.13',
+    date: '2026-10-14',
+    tag: 'Improved',
+    en: {
+      title: 'The till on a phone',
+      points: [
+        'On a phone the till now has its own small menu button (☰) at the top left, so you can reach any page without leaving the sale.',
+        'The till’s top bar now fits a phone screen — no more buttons cut off at the edge.',
+      ],
+    },
+    ar: {
+      title: 'الكاشير على الموبايل',
+      points: [
+        'على الموبايل بقى للكاشير زرار منيو صغير (☰) فوق على الشمال، تقدر توصل منه لأي صفحة من غير ما تسيب البيعة.',
+        'الشريط اللي فوق في الكاشير بقى مظبوط على شاشة الموبايل — مفيش زراير متقصوصة على الطرف تاني.',
+      ],
+    },
+  },
+  {
+    version: '1.39.12',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'The top bar fits your phone',
+      points: [
+        'On a phone, the notifications, settings, dark mode, language and sign-out buttons were pushed off the screen. They all fit now.',
+        'If your shop logo can’t be loaded, your shop’s name is shown instead of a broken picture.',
+      ],
+    },
+    ar: {
+      title: 'الشريط اللي فوق مظبوط على الموبايل',
+      points: [
+        'على الموبايل كانت زراير الإشعارات والإعدادات والوضع الليلي واللغة والخروج بتطلع برّه الشاشة. دلوقتي كلها باينة.',
+        'لو لوجو محلك ماتحملش، بيظهر اسم المحل بدل صورة مكسورة.',
+      ],
+    },
+  },
+  {
+    version: '1.39.11',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'Weights on the sale page',
+      points: [
+        'A sale page now shows a weighed item as “250 g” or “0.25 kg” — the same as the printed receipt — instead of a bare number.',
+      ],
+    },
+    ar: {
+      title: 'الأوزان في صفحة الفاتورة',
+      points: [
+        'صفحة الفاتورة بقت بتعرض الصنف الموزون كده “250 g” أو “0.25 kg” — زي الإيصال المطبوع بالظبط — بدل رقم لوحده.',
+      ],
+    },
+  },
+  {
+    version: '1.39.10',
+    date: '2026-10-14',
+    tag: 'Improved',
+    en: {
+      title: 'Each product shows once when you buy stock',
+      points: [
+        'When you type a product name in a new purchase, a product you already have now shows ONCE — its reference copy no longer sits right under it. Picking it always uses your real product, so no duplicates.',
+        'Clearer wording in Settings about what “Memory Base” searches.',
+      ],
+    },
+    ar: {
+      title: 'كل صنف بيظهر مرة واحدة وانت بتشتري بضاعة',
+      points: [
+        'لما تكتب اسم صنف في فاتورة شراء جديدة، الصنف اللي عندك أصلًا بقى بيظهر مرة واحدة بس — النسخة المرجعية بتاعته مابقتش تحته. ولما تختاره بيتسجل على صنفك الحقيقي، فمفيش تكرار.',
+        'كلام أوضح في الإعدادات عن “قاعدة الذاكرة” بتدوّر في إيه.',
+      ],
+    },
+  },
+  {
+    version: '1.39.9',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'Hidden products stay out of the till’s search',
+      points: [
+        'Products you hid from the till no longer take up places in its search list, so the products you really sell always show up.',
+      ],
+    },
+    ar: {
+      title: 'الأصناف المخفية مابقتش بتزحم بحث الكاشير',
+      points: [
+        'الأصناف اللي خبيتها من الكاشير مابقتش بتاخد أماكن في قايمة البحث، فالأصناف اللي بتبيعها فعلًا دايمًا بتظهر.',
+      ],
+    },
+  },
+  {
+    version: '1.39.8',
+    date: '2026-10-14',
+    tag: 'Improved',
+    en: {
+      title: 'Your catalog file imports back cleanly',
+      points: [
+        'A catalog file you export can now be imported into another shop even when some products have no category.',
+        'Products with several versions (for example two colours) come back as ONE product with all its versions, using the new optional P_REF column.',
+      ],
+    },
+    ar: {
+      title: 'ملف الأصناف بيرجع يتستورد من غير مشاكل',
+      points: [
+        'ملف الأصناف اللي بتصدّره بقى ينفع يتستورد في محل تاني حتى لو فيه أصناف من غير فئة.',
+        'الأصناف اللي ليها أكتر من نوع (مثلًا لونين) بترجع صنف واحد بكل أنواعه، عن طريق العمود الاختياري الجديد P_REF.',
+      ],
+    },
+  },
+  {
     version: '1.39.7',
     date: '2026-10-14',
     tag: 'Improved',
