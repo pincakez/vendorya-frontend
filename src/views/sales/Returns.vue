@@ -106,7 +106,9 @@
                     :aria-checked="(item.serials || []).includes(s)"
                     @click="toggleReturnSerial(item, s)" @keydown.enter.prevent="toggleReturnSerial(item, s)">{{ s }}</span>
             </template>
-            <BaseInput v-else-if="!modal.original_invoice" v-model="item.serials_text" :placeholder="t('serials.return_text_ph')" />
+            <!-- units sold BEFORE tracking was on have no serial: they may come back with none, or with one typed now -->
+            <span v-if="unserialedLeft(item) > 0 && soldSerials(item).length" class="restock-label">{{ t('serials.return_unserialed', { n: formatQty(unserialedLeft(item)) }) }}</span>
+            <BaseInput v-if="showTypedSerials(item)" v-model="item.serials_text" :placeholder="t('serials.return_text_ph')" />
           </div>
         </div>
         <button class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ line: '', variant: '', unit: null, quantity: 1, refund_amount: '', restock_inventory: true, serials: [], serials_text: '' })">
@@ -213,7 +215,7 @@ async function saveReturn() {
         refund_amount: Number(i.refund_amount),
         restock_inventory: i.restock_inventory,
         // New 7: the serials coming back (picked from the invoice, or typed when there is none)
-        serial_numbers: (i.serials && i.serials.length) ? i.serials : parseSerials(i.serials_text),
+        serial_numbers: [...(i.serials || []), ...parseSerials(i.serials_text)],
       })),
     })
     closeModal()
@@ -241,6 +243,7 @@ watch(() => modal.original_invoice, async (id) => {
       quantity: Number(l.quantity),
       total: Number(l.total),
       serials: l.serial_numbers || [],   // New 7: the units sold on this line
+      track_serials: !!l.track_serials,
       label: `${l.name} — ${formatQty(l.quantity)}${l.unit_name ? ' ' + l.unit_name : ''}`,
     }))
   } catch {}
@@ -263,7 +266,19 @@ function soldSerials(item) {
 function toggleReturnSerial(item, s) {
   const list = item.serials || []
   item.serials = list.includes(s) ? list.filter(x => x !== s) : [...list, s]
-  if (item.serials.length) { item.quantity = item.serials.length; pickLine(item) }   // one unit per serial
+  // one unit per serial; a line with units sold before tracking keeps any extra (serial-less) units typed
+  const n = item.serials.length + parseSerials(item.serials_text).length
+  if (n) { item.quantity = unserialedLeft(item) > 0 ? Math.max(Number(item.quantity) || 0, n) : n; pickLine(item) }
+}
+// Units on the picked sale line that were sold with no serial (before tracking was switched on).
+function unserialedLeft(item) {
+  const l = invoiceLines.value.find(x => x.key === item.line)
+  return l && l.track_serials ? Math.max(l.quantity - l.serials.length, 0) : 0
+}
+// The optional "type serials" box: a tracked product with no sale picked, or a sale line with serial-less units.
+function showTypedSerials(item) {
+  if (!modal.original_invoice) return !!variants.value.find(v => v.id === item.variant)?.track_serials
+  return unserialedLeft(item) > 0
 }
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '—' }

@@ -3121,6 +3121,7 @@
       "serial_weight": "A product sold by weight cannot track serial numbers.",
       "serial_base_unit": "A product with serial numbers is sold one unit at a time — keep selling single units on.",
       "serial_still_in_stock": "Units with a serial are still in stock — sell them, write them off or remove their serials before switching tracking off."
-    }
+    },
+    "return_unserialed": "{n} unit(s) on this line were sold before serial tracking — they can come back without a serial (or type one below)."
   }
 }
