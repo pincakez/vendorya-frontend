@@ -850,7 +850,15 @@ async function saveEdit() {
     editModal.open = false
     await fetchProduct()
   } catch (e) {
-    editModal.error = e.response?.data?.detail || t('inventory.product_detail.err_save')
+    const d = e.response?.data || {}
+    // Barcode unique per shop: the server names the code (+ the product already using it).
+    const barcodeErr = d.barcode_code?.[0] && (d.barcode_owner?.[0]
+      ? t('inventory.products.product_modal.err_barcode_taken', { code: d.barcode_code[0], name: d.barcode_owner[0] })
+      : t('inventory.products.product_modal.err_barcode_twice', { code: d.barcode_code[0] }))
+    editModal.error = barcodeErr
+      || d.detail
+      || d.selling_units?.[0]
+      || t('inventory.product_detail.err_save')
   } finally { editModal.saving = false }
 }
 
