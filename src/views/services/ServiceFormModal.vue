@@ -2,7 +2,7 @@
   <AppModal
     :open="open"
     :title="serviceId ? t('core.svcform.edit_title', { n: form.serial_number || t('core.services.service') }) : t('core.services.new_service')"
-    width="760px"
+    width="860px"
     no-backdrop-close
     @close="$emit('close')"
   >
@@ -64,6 +64,34 @@
             <div class="sfm-row">
               <label class="form-label">{{ t('core.svcform.client_phone') }} <span class="sfm-opt">({{ t('common.optional') }})</span></label>
               <input v-model="form.client_phone" class="form-input" placeholder="e.g. 01012345678" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ FULL WIDTH: Device + technician (Upgrade 13) ══ -->
+        <div class="sfm-full sfm-section">
+          <div class="sfm-section-title">{{ t('core.svcdesk.device_section') }}</div>
+          <div class="sfm-subrow">
+            <div class="sfm-row">
+              <label class="form-label">{{ t('core.svcdesk.device') }} <span class="sfm-opt">({{ t('common.optional') }})</span></label>
+              <input v-model="form.device" class="form-input" :placeholder="t('core.svcdesk.device_ph')" />
+            </div>
+            <div class="sfm-row">
+              <label class="form-label">{{ t('core.svcdesk.device_serial') }} <span class="sfm-opt">({{ t('common.optional') }})</span></label>
+              <input v-model="form.device_serial" class="form-input" :placeholder="t('core.svcdesk.device_serial_ph')" dir="ltr" />
+            </div>
+          </div>
+          <div class="sfm-subrow">
+            <div class="sfm-row">
+              <label class="form-label">{{ t('core.svcdesk.damage') }} <span class="sfm-opt">({{ t('common.optional') }})</span></label>
+              <textarea v-model="form.damage" class="form-input" rows="2" :placeholder="t('core.svcdesk.damage_ph')" />
+            </div>
+            <div class="sfm-row">
+              <label class="form-label">{{ t('core.svcdesk.technician') }}</label>
+              <select v-model="form.technician" class="form-input">
+                <option :value="null">{{ t('core.svcdesk.no_technician') }}</option>
+                <option v-for="u in technicians" :key="u.id" :value="u.id">{{ u.name }}</option>
+              </select>
             </div>
           </div>
         </div>
@@ -142,20 +170,91 @@
             />
             <p class="sfm-hint">{{ t('core.svcform.items_hint') }}</p>
           </div>
+        </div>
 
-          <!-- Cost -->
+      </div>
+
+      <!-- ══ Charges + parts (Upgrade 13) ══ -->
+      <div class="sfm-section">
+        <div class="sfm-section-title">{{ t('core.svcdesk.charges_section') }}</div>
+        <p v-if="locked" class="sfm-locked">{{ t('core.svcdesk.parts_locked') }}</p>
+        <div class="sfm-charges">
           <div class="sfm-row">
-            <label class="form-label">{{ t('core.services.col_cost') }}</label>
-            <input
-              v-model.number="form.cost"
-              type="number" min="0" step="0.01"
-              class="form-input"
-              placeholder="0.00"
-            />
+            <label class="form-label">{{ t('core.svcdesk.detection_fee') }}</label>
+            <input v-model.number="form.detection_fee" type="number" min="0" step="0.01" class="form-input" placeholder="0.00" :disabled="locked" />
+            <p class="sfm-hint">{{ t('core.svcdesk.detection_hint') }}</p>
+          </div>
+          <div class="sfm-row">
+            <label class="form-label">{{ t('core.svcdesk.repair_charge') }}</label>
+            <input v-model.number="form.cost" type="number" min="0" step="0.01" class="form-input" placeholder="0.00" :disabled="locked" />
             <p class="sfm-hint">{{ t('core.svcform.cost_hint') }}</p>
+          </div>
+          <div class="sfm-row">
+            <label class="form-label">{{ t('core.svcdesk.warranty_days') }}</label>
+            <input v-model.number="form.warranty_days" type="number" min="0" step="1" class="form-input" placeholder="0" />
+            <p class="sfm-hint">{{ t('core.svcdesk.warranty_hint') }}</p>
+          </div>
+        </div>
+        <label class="sfm-print-cb" :class="{ disabled: locked }">
+          <input type="checkbox" v-model="form.is_warranty" :disabled="locked" />
+          <span>{{ t('core.svcdesk.is_warranty') }}</span>
+        </label>
+        <p class="sfm-hint">{{ t('core.svcdesk.is_warranty_hint') }}</p>
+
+        <div class="sfm-section-title sfm-parts-title">{{ t('core.svcdesk.parts_section') }}</div>
+        <p class="sfm-hint">{{ t('core.svcdesk.parts_hint') }}</p>
+        <div v-if="!locked" class="sfm-customer-search">
+          <input
+            v-model="partQuery"
+            class="form-input"
+            :placeholder="t('core.svcdesk.parts_search_ph')"
+            @input="searchParts"
+            @focus="showPartDropdown = true"
+          />
+          <div v-if="showPartDropdown && partResults.length" class="sfm-dropdown">
+            <button
+              v-for="p in partResults" :key="p.id"
+              type="button" class="sfm-dropdown-item"
+              @click="addPart(p)"
+            >
+              <span class="sfm-dd-name" dir="auto">{{ p.name }}</span>
+              <span class="sfm-dd-phone">
+                {{ p.sku_display || '' }} · {{ t('core.svcdesk.in_stock', { n: formatQty(p.default_variant_stock) }) }}
+              </span>
+            </button>
           </div>
         </div>
 
+        <div v-if="form.parts.length" class="sfm-parts">
+          <div class="sfm-part-row sfm-part-head">
+            <span>{{ t('core.svcdesk.col_part') }}</span>
+            <span>{{ t('core.svcdesk.col_qty') }}</span>
+            <span>{{ t('core.svcdesk.col_price') }}</span>
+            <span>{{ t('core.svcdesk.col_total') }}</span>
+            <span></span>
+          </div>
+          <div v-for="(p, i) in form.parts" :key="p.id || p.key" class="sfm-part-row">
+            <span class="sfm-part-name">
+              <span dir="auto">{{ p.product_name }}</span>
+              <span class="sfm-dd-phone">
+                {{ p.sku || '' }}<template v-if="p.unit_cost != null"> · {{ t('core.svcdesk.col_unit_cost') }} <Money :value="p.unit_cost" /></template>
+              </span>
+            </span>
+            <input v-model.number="p.quantity" type="number" min="0.001" step="1" class="form-input sfm-part-num" :disabled="locked" />
+            <input v-model.number="p.unit_price" type="number" min="0" step="0.01" class="form-input sfm-part-num" :disabled="locked" />
+            <span class="sfm-part-total"><Money :value="lineTotal(p)" /></span>
+            <button v-if="!locked" type="button" class="sfm-clear-btn sfm-part-remove" :title="t('core.svcdesk.remove_part')" @click="form.parts.splice(i, 1)">×</button>
+            <span v-else></span>
+          </div>
+        </div>
+        <p v-else class="sfm-hint">{{ t('core.svcdesk.no_parts') }}</p>
+
+        <div class="sfm-totals">
+          <span>{{ t('core.svcdesk.labour') }} <strong><Money :value="labourTotal" /></strong></span>
+          <span>{{ t('core.svcdesk.parts_total') }} <strong><Money :value="partsTotal" /></strong></span>
+          <span>{{ t('core.svcdesk.est_total') }} <strong><Money :value="estTotal" /></strong></span>
+        </div>
+        <p class="sfm-hint">{{ form.is_warranty ? t('core.svcdesk.free_warranty') : t('core.svcdesk.tax_note') }}</p>
       </div>
 
       <!-- Print options -->
@@ -193,7 +292,9 @@
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppModal from '@/components/ui/AppModal.vue'
+import Money from '@/components/ui/Money.vue'
 import api from '@/api/axios'
+import { formatQty, formatNumber } from '@/utils/format'
 import { useAuthStore } from '@/stores/auth'
 import { useQZTray } from '@/composables/useQZTray'
 import { useShopLocale } from '@/composables/useShopLocale'
@@ -247,7 +348,64 @@ const form = reactive({
   keeping:      '',
   cost:         0,
   serial_number: '',
+  // Upgrade 13 — service desk
+  device:        '',
+  device_serial: '',
+  damage:        '',
+  technician:    null,
+  detection_fee: 0,
+  warranty_days: 0,
+  is_warranty:   false,
+  parts:         [],
+  status:        'OPEN',
 })
+
+// A job that is no longer open (billed) keeps its charges + parts as they were — the server refuses changes.
+const locked = computed(() => !!props.serviceId && form.status !== 'OPEN')
+
+/* ── technicians (active users of this shop) ─────────────────────── */
+const technicians = ref([])
+async function loadTechnicians() {
+  try {
+    const { data } = await api.get('/api/services/technicians/')
+    technicians.value = data
+  } catch { technicians.value = [] }
+}
+
+/* ── parts from stock (search like the POS) ──────────────────────── */
+const partQuery        = ref('')
+const partResults      = ref([])
+const showPartDropdown = ref(false)
+let partTimer = null
+let partKey = 0
+function searchParts() {
+  clearTimeout(partTimer)
+  if (partQuery.value.trim().length < 2) { partResults.value = []; return }
+  partTimer = setTimeout(async () => {
+    try {
+      const { data } = await api.get('/api/inventory/products/autocomplete/', {
+        params: { q: partQuery.value.trim(), pos: 1 },
+      })
+      partResults.value = (data.results ?? data).filter(p => p.default_variant_id).slice(0, 8)
+    } catch { partResults.value = [] }
+  }, 250)
+}
+function addPart(p) {
+  const same = form.parts.find(x => x.variant === p.default_variant_id)
+  if (same) same.quantity = (Number(same.quantity) || 0) + 1
+  else form.parts.push({
+    key: `n${++partKey}`, variant: p.default_variant_id, product_name: p.name, sku: p.sku_display || '',
+    quantity: 1, unit_price: Number(p.default_variant_price) || 0, unit_cost: null,
+  })
+  partQuery.value = ''
+  partResults.value = []
+  showPartDropdown.value = false
+}
+const round2 = n => Math.round((Number(n) || 0) * 100) / 100
+function lineTotal(p) { return round2((Number(p.quantity) || 0) * (Number(p.unit_price) || 0)) }
+const labourTotal = computed(() => form.is_warranty ? 0 : round2((Number(form.detection_fee) || 0) + (Number(form.cost) || 0)))
+const partsTotal  = computed(() => form.is_warranty ? 0 : round2(form.parts.reduce((s, p) => s + lineTotal(p), 0)))
+const estTotal    = computed(() => round2(labourTotal.value + partsTotal.value))
 
 function todayStr() {
   return new Date().toISOString().split('T')[0]
@@ -298,7 +456,10 @@ watch(() => props.open, (val) => {
   errorMsg.value = ''
   clearCustomer()
   customerResults.value = []
+  partQuery.value = ''
+  partResults.value = []
   loadPrintDefaults()
+  loadTechnicians()
 
   if (props.serviceData) {
     const s = props.serviceData
@@ -318,6 +479,19 @@ watch(() => props.open, (val) => {
       keeping:      s.keeping ?? '',
       cost:         parseFloat(s.cost) || 0,
       serial_number: s.serial_number ?? '',
+      device:        s.device ?? '',
+      device_serial: s.device_serial ?? '',
+      damage:        s.damage ?? '',
+      technician:    s.technician ?? null,
+      detection_fee: parseFloat(s.detection_fee) || 0,
+      warranty_days: s.warranty_days ?? 0,
+      is_warranty:   !!s.is_warranty,
+      status:        s.status ?? 'OPEN',
+      parts: (s.parts ?? []).map(p => ({
+        id: p.id, variant: p.variant, product_name: p.product_name, sku: p.sku || '',
+        quantity: parseFloat(p.quantity) || 0, unit_price: parseFloat(p.unit_price) || 0,
+        unit_cost: p.unit_cost ?? null,
+      })),
     })
     if (form.client) customerQuery.value = form.clientName
   } else {
@@ -328,6 +502,8 @@ watch(() => props.open, (val) => {
       receive_date: todayStr(),
       no_eta: true, eta_days: null, eta_hours: null,
       info: '', keeping: '', cost: 0, serial_number: '',
+      device: '', device_serial: '', damage: '', technician: null,
+      detection_fee: 0, warranty_days: 0, is_warranty: false, parts: [], status: 'OPEN',
     })
   }
 })
@@ -341,6 +517,14 @@ async function loadPrintDefaults() {
   } catch {
     // keep safe fallbacks
   }
+}
+
+// First readable message in a DRF error body (nested parts errors are lists of objects).
+function firstError(v) {
+  if (typeof v === 'string') return v
+  if (Array.isArray(v)) { for (const x of v) { const m = firstError(x); if (m) return m } return '' }
+  if (v && typeof v === 'object') { for (const x of Object.values(v)) { const m = firstError(x); if (m) return m } }
+  return ''
 }
 
 /* ── save ────────────────────────────────────────────────────────── */
@@ -359,7 +543,20 @@ async function save() {
     no_eta:       form.no_eta,
     info:         form.info.trim(),
     keeping:      form.keeping.trim(),
-    cost:         form.cost || 0,
+    device:        form.device.trim(),
+    device_serial: form.device_serial.trim(),
+    damage:        form.damage.trim(),
+    technician:    form.technician || null,
+    warranty_days: Math.max(0, parseInt(form.warranty_days) || 0),
+  }
+  // Charges + parts only while the job is open (a billed job keeps what its invoice says).
+  if (!locked.value) {
+    payload.cost          = form.cost || 0
+    payload.detection_fee = form.detection_fee || 0
+    payload.is_warranty   = form.is_warranty
+    payload.parts = form.parts.map(p => ({
+      id: p.id, variant: p.variant, quantity: p.quantity || 0, unit_price: p.unit_price || 0,
+    }))
   }
 
   if (!form.no_eta) {
@@ -391,8 +588,7 @@ async function save() {
   } catch (err) {
     const data = err?.response?.data
     if (data) {
-      const msgs = Object.values(data).flat()
-      errorMsg.value = msgs[0] || t('core.svcform.err_save')
+      errorMsg.value = firstError(data) || t('core.svcform.err_save')
     } else {
       errorMsg.value = t('core.svcform.err_save')
     }
@@ -436,9 +632,20 @@ function ticketFields(tr) {
                    : tr('receipt.svc_eta_value', { d: form.eta_days || 0, h: form.eta_hours || 0 }),
     info:        form.info || '—',
     keeping:     form.keeping || '—',
-    cost:        `${auth.currencySymbol || ''} ${form.cost || 0}`,
+    // Upgrade 13 — device, technician, parts, the price split and the repair warranty
+    device:      form.device || '',
+    serialNo:    form.device_serial || '',
+    damage:      form.damage || '',
+    technician:  technicians.value.find(u => u.id === form.technician)?.name || '',
+    parts:       form.parts.map(p => ({ name: p.product_name || '', qty: formatQty(p.quantity), total: money(form.is_warranty ? 0 : lineTotal(p)) })),
+    detection:   money(form.is_warranty ? 0 : form.detection_fee),
+    repair:      money(form.is_warranty ? 0 : form.cost),
+    total:       money(estTotal.value),
+    warranty:    Number(form.warranty_days) > 0 ? tr('receipt.svc_warranty_days', { n: Number(form.warranty_days) }) : '',
+    warrantyJob: form.is_warranty ? tr('receipt.svc_warranty_job') : '',
   }
 }
+function money(n) { return `${auth.currencySymbol || ''} ${formatNumber(Number(n) || 0)}`.trim() }
 
 function buildServiceESCPOS(copyKey) {
   const f = ticketFields(rt)
@@ -458,8 +665,20 @@ function buildServiceESCPOS(copyKey) {
   out += _two(lbl('receipt.svc_eta'), f.etaStr.slice(0, _COLS - 6))
   out += _two(lbl('receipt.svc_items_kept'), f.keeping.slice(0, _COLS - 12))
   if (f.info && f.info !== '—') out += _two(lbl('receipt.svc_description'), f.info.slice(0, _COLS - 13))
+  if (f.device)     out += _two(lbl('receipt.svc_device'), f.device.slice(0, _COLS - 10))
+  if (f.serialNo)   out += _two(lbl('receipt.svc_serial_no'), f.serialNo.slice(0, _COLS - 10))
+  if (f.damage)     out += _two(lbl('receipt.svc_damage'), f.damage.slice(0, _COLS - 10))
+  if (f.technician) out += _two(lbl('receipt.svc_technician'), f.technician.slice(0, _COLS - 14))
   out += _dashes()
-  out += _BOLD_ON + _two(rt('receipt.svc_cost').toUpperCase() + ':', f.cost) + _BOLD_OFF
+  if (f.parts.length) {
+    out += _BOLD_ON + _ln(rt('receipt.svc_parts')) + _BOLD_OFF
+    for (const p of f.parts) out += _two(`${p.qty} x ${p.name}`.slice(0, _COLS - p.total.length - 2), p.total)
+  }
+  out += _two(lbl('receipt.svc_detection'), f.detection)
+  out += _two(lbl('receipt.svc_repair'), f.repair)
+  out += _BOLD_ON + _two(rt('receipt.svc_total_est').toUpperCase() + ':', f.total) + _BOLD_OFF
+  if (f.warrantyJob) out += _ln(f.warrantyJob)
+  if (f.warranty)    out += _two(lbl('receipt.svc_warranty'), f.warranty)
   out += _dashes()
   out += _CENTER + _ln(rt('receipt.svc_thanks', { store: f.storeName })) + _LEFT
   out += _LF + _LF + _LF + _CUT
@@ -489,7 +708,19 @@ function printReceiptCSS(copies = 2) {
         <tr><td class="r-lbl">${esc(st('receipt.svc_eta'))}</td><td dir="auto">${esc(f.etaStr)}</td></tr>
         <tr><td class="r-lbl">${esc(st('receipt.svc_items_kept'))}</td><td dir="auto">${esc(f.keeping)}</td></tr>
         <tr><td class="r-lbl">${esc(st('receipt.svc_description'))}</td><td dir="auto">${esc(f.info)}</td></tr>
-        <tr><td class="r-lbl">${esc(st('receipt.svc_cost'))}</td><td><strong>${esc(f.cost)}</strong></td></tr>
+        ${f.device ? `<tr><td class="r-lbl">${esc(st('receipt.svc_device'))}</td><td dir="auto">${esc(f.device)}</td></tr>` : ''}
+        ${f.serialNo ? `<tr><td class="r-lbl">${esc(st('receipt.svc_serial_no'))}</td><td dir="ltr">${esc(f.serialNo)}</td></tr>` : ''}
+        ${f.damage ? `<tr><td class="r-lbl">${esc(st('receipt.svc_damage'))}</td><td dir="auto">${esc(f.damage)}</td></tr>` : ''}
+        ${f.technician ? `<tr><td class="r-lbl">${esc(st('receipt.svc_technician'))}</td><td dir="auto">${esc(f.technician)}</td></tr>` : ''}
+      </table>
+      ${f.parts.length ? `<div class="r-sub">${esc(st('receipt.svc_parts'))}</div>
+      <table class="r-table">${f.parts.map(p => `<tr><td dir="auto">${esc(p.qty)} × ${esc(p.name)}</td><td class="r-amt">${esc(p.total)}</td></tr>`).join('')}</table>` : ''}
+      <table class="r-table">
+        <tr><td class="r-lbl">${esc(st('receipt.svc_detection'))}</td><td class="r-amt">${esc(f.detection)}</td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_repair'))}</td><td class="r-amt">${esc(f.repair)}</td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_total_est'))}</td><td class="r-amt"><strong>${esc(f.total)}</strong></td></tr>
+        ${f.warrantyJob ? `<tr><td colspan="2" dir="auto"><strong>${esc(f.warrantyJob)}</strong></td></tr>` : ''}
+        ${f.warranty ? `<tr><td class="r-lbl">${esc(st('receipt.svc_warranty'))}</td><td dir="auto">${esc(f.warranty)}</td></tr>` : ''}
       </table>
       <div class="r-footer" dir="auto">${esc(st('receipt.svc_thanks', { store: f.storeName }))}</div>
     </div>`
@@ -509,6 +740,8 @@ function printReceiptCSS(copies = 2) {
     .r-table  { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
     .r-table td { padding: 1.5mm 1mm; vertical-align: top; font-size: 10px; line-height: 1.4; overflow-wrap: anywhere; }
     .r-lbl    { color: #444; width: 30%; white-space: nowrap; font-weight: bold; }
+    .r-amt    { text-align: right; white-space: nowrap; }
+    .r-sub    { font-size: 10px; font-weight: bold; border-top: 1px dashed #999; padding-top: 2mm; }
     .r-footer { text-align: center; font-size: 9px; color: #666; border-top: 1px dashed #999; padding-top: 3mm; margin-top: 2mm; }
     html[lang="ar"] .r-store, html[lang="ar"] .r-serial { letter-spacing: 0; }
     @media screen { body { background: #e5e5e5; width: auto; padding: 10px 0; } .receipt { border: 1px dashed #aaa; margin: 10px auto; background: #fff; } }
@@ -627,6 +860,31 @@ async function doServicePrint(copies = 2) {
 .sfm-clear-btn {
   background: none; border: none; cursor: pointer;
   color: var(--accent); font-size: 16px; line-height: 1; padding: 0;
+}
+
+/* ── Upgrade 13: device / charges / parts ── */
+.sfm-section { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+.sfm-section-title { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; }
+.sfm-parts-title { margin-top: 6px; }
+.sfm-locked { font-size: 12px; color: var(--warning); background: var(--warning-soft); border-radius: 8px; padding: 8px 12px; margin: 0; }
+.sfm-charges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 16px; }
+.sfm-parts { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.sfm-part-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 90px 110px 110px 28px;
+  gap: 10px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--border);
+}
+.sfm-part-row:first-child { border-top: none; }
+.sfm-part-head { background: var(--bg-app); font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+.sfm-part-name { display: flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 600; color: var(--text-primary); min-width: 0; }
+.sfm-part-num { padding: 5px 8px; font-size: 13px; }
+.sfm-part-total { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.sfm-part-remove { color: var(--danger); font-size: 18px; }
+.sfm-totals { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: flex-end; font-size: 13px; color: var(--text-secondary); }
+.sfm-totals strong { color: var(--text-primary); margin-left: 4px; }
+@media (max-width: 600px) {
+  .sfm-charges { grid-template-columns: 1fr; }
+  .sfm-part-row { grid-template-columns: minmax(0, 1fr) 70px 90px 28px; }
+  .sfm-part-row > :nth-child(4) { display: none; }
 }
 
 .sfm-checkbox-row { display: flex; align-items: center; gap: 8px; }

@@ -25,6 +25,12 @@
           <span v-if="tab.count != null" class="tab-badge">{{ tab.count }}</span>
         </button>
       </div>
+      <div class="svc-filters">
+      <select v-model="techFilter" class="svc-search svc-tech-select" @change="setTab(activeTab)">
+        <option value="">{{ t('core.svcdesk.all_technicians') }}</option>
+        <option value="none">{{ t('core.svcdesk.unassigned') }}</option>
+        <option v-for="u in technicians" :key="u.id" :value="String(u.id)">{{ u.name }}</option>
+      </select>
       <div class="svc-search-wrap">
         <Search :size="14" class="svc-search-icon" />
         <input
@@ -33,6 +39,7 @@
           :placeholder="t('core.services.search_ph')"
           @input="debouncedFetch"
         />
+      </div>
       </div>
     </div>
 
@@ -64,7 +71,14 @@
                 <span v-if="s.client_display_phone" class="client-phone">{{ s.client_display_phone }}</span>
               </div>
             </td>
-            <td>{{ s.service_type || '—' }}</td>
+            <td>
+              <div class="col-client">
+                <span>{{ s.service_type || '—' }}</span>
+                <span v-if="s.device || s.technician_name" class="client-phone" dir="auto">
+                  {{ [s.device, s.technician_name].filter(Boolean).join(' · ') }}
+                </span>
+              </div>
+            </td>
             <td>{{ fmtDate(s.receive_date) }}</td>
             <td>
               <span v-if="s.no_eta || !s.eta_label" class="eta-none">—</span>
@@ -72,7 +86,7 @@
                 {{ s.eta_label === 'overdue' ? t('core.services.overdue') : s.eta_label }}
               </span>
             </td>
-            <td><Money :value="s.cost" /></td>
+            <td><Money :value="jobTotal(s)" /></td>
             <td style="text-align:center;" @click.stop>
               <button
                 class="bell-btn"
@@ -95,7 +109,7 @@
                 <button class="row-action" :title="t('core.services.archive')" @click="confirmArchive(s)"><Archive :size="13" /></button>
               </template>
               <!-- Return button for DONE -->
-              <template v-if="s.status === 'DONE'">
+              <template v-if="s.status === 'DONE' && canReturn">
                 <button class="row-action" :title="t('core.services.return_svc')" @click="confirmReturn(s)"><RotateCcw :size="13" /></button>
               </template>
               <!-- Invoice link for DONE -->
@@ -123,10 +137,11 @@
     <!-- Confirm: Mark Done -->
     <AppModal :open="confirm.done" :title="t('core.services.done_title')" @close="confirm.done = false">
       <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
-        {{ t('core.services.done_body_a') }} <strong><Money :value="confirm.target?.cost" /></strong> {{ t('core.services.done_body_b') }} <strong>{{ confirm.target?.serial_number }}</strong>.
+        {{ t('core.services.done_body_a') }} <strong><Money :value="jobTotal(confirm.target)" /></strong> {{ t('core.services.done_body_b') }} <strong>{{ confirm.target?.serial_number }}</strong>.
       </p>
+      <p class="done-note">{{ confirm.target?.is_warranty ? t('core.svcdesk.free_warranty') : t('core.svcdesk.tax_note') }}</p>
       <!-- How the customer paid (Yakot, s156) — not asked for a free job -->
-      <div v-if="Number(confirm.target?.cost) > 0" class="done-pay">
+      <div v-if="jobTotal(confirm.target) > 0" class="done-pay">
         <div class="done-pay-lbl">{{ t('core.services.paid_how') }}</div>
         <div class="done-pay-methods">
           <button
@@ -138,7 +153,7 @@
       </div>
       <template #footer>
         <button class="btn-ghost" @click="confirm.done = false">{{ t('common.cancel') }}</button>
-        <button class="btn-primary" :disabled="confirm.busy || (Number(confirm.target?.cost) > 0 && !confirm.method)" @click="executeDone">
+        <button class="btn-primary" :disabled="confirm.busy || (jobTotal(confirm.target) > 0 && !confirm.method)" @click="executeDone">
           {{ confirm.busy ? t('core.services.processing') : t('core.services.done_confirm') }}
         </button>
       </template>
@@ -175,6 +190,17 @@
       <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
         {{ t('core.services.return_body_a') }} <strong>{{ confirm.target?.serial_number }}</strong>{{ t('core.services.return_body_b') }}
       </p>
+      <div v-if="confirm.target?.invoice" class="done-pay">
+        <div class="done-pay-lbl">{{ t('core.svcdesk.return_money') }}</div>
+        <div class="done-pay-methods">
+          <button type="button" :class="confirm.refundMethod === 'CASH' ? 'btn-primary' : 'btn-ghost'" @click="confirm.refundMethod = 'CASH'">{{ t('core.svcdesk.refund_cash') }}</button>
+          <button v-if="confirm.target?.client" type="button" :class="confirm.refundMethod === 'STORE_CREDIT' ? 'btn-primary' : 'btn-ghost'" @click="confirm.refundMethod = 'STORE_CREDIT'">{{ t('core.svcdesk.refund_store_credit') }}</button>
+        </div>
+        <label v-if="(confirm.target?.parts || []).length" class="done-check">
+          <input type="checkbox" v-model="confirm.restockParts" />
+          <span>{{ t('core.svcdesk.restock_parts') }}</span>
+        </label>
+      </div>
       <template #footer>
         <button class="btn-ghost" @click="confirm.return = false">{{ t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="confirm.busy" @click="executeReturn">
@@ -209,14 +235,38 @@
           </div>
           <div class="det-field det-full"><span class="det-lbl">{{ t('common.description') }}</span><span class="det-val">{{ detail.service.info || '—' }}</span></div>
           <div class="det-field det-full"><span class="det-lbl">{{ t('core.services.items_kept') }}</span><span class="det-val">{{ detail.service.keeping || '—' }}</span></div>
+          <div class="det-field"><span class="det-lbl">{{ t('core.svcdesk.device') }}</span><span class="det-val" dir="auto">{{ detail.service.device || '—' }}</span></div>
+          <div class="det-field"><span class="det-lbl">{{ t('core.svcdesk.device_serial') }}</span><span class="det-val" dir="ltr">{{ detail.service.device_serial || '—' }}</span></div>
+          <div class="det-field det-full"><span class="det-lbl">{{ t('core.svcdesk.damage') }}</span><span class="det-val" dir="auto">{{ detail.service.damage || '—' }}</span></div>
+          <div class="det-field"><span class="det-lbl">{{ t('core.svcdesk.technician') }}</span><span class="det-val">{{ detail.service.technician_name || t('core.svcdesk.unassigned') }}</span></div>
+          <div class="det-field"><span class="det-lbl">{{ t('core.svcdesk.warranty_label') }}</span>
+            <span class="det-val">
+              {{ Number(detail.service.warranty_days) > 0 ? t('core.svcdesk.warranty_value', { n: detail.service.warranty_days }) : '—' }}
+              <span v-if="detail.service.is_warranty" class="eta-badge ok">{{ t('core.svcdesk.warranty_job') }}</span>
+            </span>
+          </div>
+          <div class="det-field"><span class="det-lbl">{{ t('core.svcdesk.detection_fee') }}</span><span class="det-val"><Money :value="detail.service.detection_fee" /></span></div>
           <div class="det-field">
-            <span class="det-lbl">{{ t('core.services.col_cost') }}</span>
+            <span class="det-lbl">{{ t('core.svcdesk.repair_charge') }}</span>
             <input
               v-model.number="detail.editCost"
               type="number" min="0" step="0.01"
               class="form-input det-cost-input"
               placeholder="0.00"
+              :disabled="detail.service.status !== 'OPEN'"
             />
+          </div>
+          <div v-if="(detail.service.parts || []).length" class="det-field det-full">
+            <span class="det-lbl">{{ t('core.svcdesk.parts_section') }}</span>
+            <div v-for="p in detail.service.parts" :key="p.id" class="det-part">
+              <span dir="auto">{{ formatQty(p.quantity) }} × {{ p.product_name }}</span>
+              <Money :value="p.line_total" />
+            </div>
+          </div>
+          <div class="det-field det-full det-totals">
+            <span>{{ t('core.svcdesk.est_total') }} <strong><Money :value="jobTotal(detail.service)" /></strong></span>
+            <span v-if="detail.service.invoice_number" class="det-ref">{{ t('core.svcdesk.invoice_no', { n: detail.service.invoice_number }) }}</span>
+            <span v-if="detail.service.refund_number" class="det-ref">{{ t('core.svcdesk.refund_no', { n: detail.service.refund_number }) }}</span>
           </div>
           <div class="det-field det-full det-diagnosis">
             <span class="det-lbl det-diagnosis-lbl">
@@ -229,6 +279,20 @@
               rows="3"
               :placeholder="t('core.services.diagnosis_ph')"
             />
+          </div>
+
+          <!-- Job notes timeline (Proline tb_Ser_Service_Tasks) -->
+          <div class="det-field det-full det-diagnosis">
+            <span class="det-lbl">{{ t('core.svcdesk.notes_section') }}</span>
+            <div v-if="!(detail.service.notes || []).length" class="det-val det-muted">{{ t('core.svcdesk.notes_empty') }}</div>
+            <div v-for="n in detail.service.notes" :key="n.id" class="det-note">
+              <div class="det-note-meta">{{ fmtDateTime(n.created_at) }} · {{ n.user_name || '—' }}</div>
+              <div class="det-val" dir="auto">{{ n.body }}</div>
+            </div>
+            <div class="det-note-add">
+              <input v-model="detail.newNote" class="form-input" :placeholder="t('core.svcdesk.note_ph')" @keydown.enter.prevent="addNote" />
+              <button class="btn-ghost" :disabled="detail.noteBusy || !detail.newNote.trim()" @click="addNote">{{ t('core.svcdesk.add_note') }}</button>
+            </div>
           </div>
         </div>
       </div>
@@ -269,11 +333,30 @@ useCtrlN(openNew)
 import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import Money from '@/components/ui/Money.vue'
+import { formatQty } from '@/utils/format'
+import { useAuthStore } from '@/stores/auth'
 import ServiceFormModal from './ServiceFormModal.vue'
 import AppTable from '@/components/ui/AppTable.vue'
 
 const { t } = useI18n()
 const router = useRouter()
+const auth = useAuthStore()
+// Returning a billed job gives money back — manager and above, like a normal return.
+const canReturn = computed(() => auth.hasRole('MANAGER'))
+
+// What the job bills before tax: labour (detection fee + repair) + parts; 0 for a warranty job.
+function jobTotal(s) {
+  if (!s || s.is_warranty) return 0
+  const n = (Number(s.labour_total ?? s.cost) || 0) + (Number(s.parts_total) || 0)
+  return Math.round(n * 100) / 100
+}
+
+/* ── technicians (filter) ────────────────────────────────────────── */
+const technicians = ref([])
+const techFilter  = ref('')
+async function fetchTechnicians() {
+  try { technicians.value = (await api.get('/api/services/technicians/')).data } catch { technicians.value = [] }
+}
 
 /* ── status tabs ─────────────────────────────────────────────────── */
 const statusTabs = reactive([
@@ -304,10 +387,11 @@ const modal = reactive({ open: false, serviceId: null, data: null })
 const confirm = reactive({
   done: false, cancel: false, archive: false, return: false,
   target: null, busy: false, method: null,
+  refundMethod: 'CASH', restockParts: true,
 })
 
 /* ── detail modal ────────────────────────────────────────────────── */
-const detail = reactive({ open: false, service: null, editCost: 0, editDiagnosis: '', busy: false })
+const detail = reactive({ open: false, service: null, editCost: 0, editDiagnosis: '', busy: false, newNote: '', noteBusy: false })
 const detail_costChanged      = computed(() => detail.service && parseFloat(detail.editCost) !== parseFloat(detail.service.cost))
 const detail_diagnosisChanged = computed(() => detail.service && detail.editDiagnosis.trim() !== (detail.service.diagnosis || '').trim())
 const detail_hasChanges       = computed(() => detail_costChanged.value || detail_diagnosisChanged.value)
@@ -316,6 +400,10 @@ const detail_hasChanges       = computed(() => detail_costChanged.value || detai
 function fmtDate(d) {
   if (!d) return '—'
   return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+function fmtDateTime(d) {
+  if (!d) return '—'
+  return new Date(d).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
 /* ── fetch ───────────────────────────────────────────────────────── */
@@ -328,6 +416,7 @@ async function fetchItems() {
       page_size: pageSize.value,
     }
     if (search.value.trim()) params.search = search.value.trim()
+    if (techFilter.value) params.technician = techFilter.value
     const { data } = await api.get('/api/services/', { params })
     items.value = data.results ?? data
     total.value = data.count   ?? (data.results?.length ?? data.length)
@@ -466,12 +555,16 @@ function viewInvoice(s) {
 /* ── return service ──────────────────────────────────────────────── */
 function confirmReturn(s) {
   confirm.target = s
+  confirm.refundMethod = 'CASH'
+  confirm.restockParts = true
   confirm.return = true
 }
 async function executeReturn() {
   confirm.busy = true
   try {
-    await api.post(`/api/services/${confirm.target.id}/return/`)
+    await api.post(`/api/services/${confirm.target.id}/return/`, {
+      refund_method: confirm.refundMethod, restock_parts: confirm.restockParts,
+    })
     confirm.return = false
     fetchItems(); fetchCounts()
   } catch (e) {
@@ -486,6 +579,20 @@ function openDetail(s) {
   detail.editDiagnosis = s.diagnosis || ''
   detail.open          = true
   detail.busy          = false
+  detail.newNote       = ''
+}
+
+async function addNote() {
+  const body = detail.newNote.trim()
+  if (!body || detail.noteBusy) return
+  detail.noteBusy = true
+  try {
+    const { data } = await api.post(`/api/services/${detail.service.id}/notes/`, { body })
+    detail.service.notes = [...(detail.service.notes || []), data]
+    detail.newNote = ''
+  } catch (e) {
+    alert(e?.response?.data?.detail ?? e?.response?.data?.body?.[0] ?? t('core.svcdesk.err_note'))
+  } finally { detail.noteBusy = false }
 }
 
 async function _saveChangesIfAny() {
@@ -535,6 +642,7 @@ onMounted(() => {
   fetchItems()
   fetchCounts()
   fetchServiceTypes()
+  fetchTechnicians()
 })
 </script>
 
@@ -614,6 +722,11 @@ onMounted(() => {
 }
 
 .col-client { display: flex; flex-direction: column; gap: 2px; }
+.svc-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.svc-tech-select { width: 180px; padding-left: 10px; }
+.done-note { font-size: 12px; color: var(--text-muted); margin: 6px 0 0; }
+.done-check { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+.done-check input { accent-color: var(--accent); }
 .done-pay { margin-top: 14px; }
 .done-pay-lbl { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
 .done-pay-methods { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -668,6 +781,15 @@ onMounted(() => {
 .det-val   { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
 .det-cost-input { max-width: 140px; padding: 6px 10px; font-size: 14px; font-weight: 600; }
 
+.det-part { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--text-primary); padding: 3px 0; border-bottom: 1px dashed var(--border); }
+.det-totals { flex-direction: row; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 13px; color: var(--text-secondary); }
+.det-totals strong { color: var(--text-primary); margin-left: 4px; }
+.det-ref { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.det-muted { color: var(--text-muted); }
+.det-note { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+.det-note-meta { font-size: 11px; color: var(--text-muted); }
+.det-note-add { display: flex; gap: 8px; margin-top: 6px; }
+.det-note-add .form-input { flex: 1; }
 .det-diagnosis { margin-top: 4px; border-top: 1px dashed var(--border); padding-top: 12px; }
 .det-diagnosis-lbl { display: flex; align-items: center; gap: 8px; }
 .det-diagnosis-hint { font-size: 10px; font-weight: 400; color: var(--text-muted); text-transform: none; letter-spacing: 0; }
