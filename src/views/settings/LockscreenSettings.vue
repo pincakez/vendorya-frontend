@@ -25,18 +25,6 @@
         <div v-if="savedTimeout" class="saved-msg">{{ t('common.saved') }}</div>
       </div>
 
-      <!-- ── Store Type ───────────────────────────────────────────── -->
-      <div class="settings-card">
-        <div class="section-label">{{ t('settings.lockscreen.store_type_title') }}</div>
-        <p class="section-muted">{{ t('settings.lockscreen.store_type_desc') }}</p>
-        <BaseSelect
-          v-model="storeType"
-          :options="storeTypeOptions"
-          :label="t('settings.lockscreen.store_type_label')"
-          @change="saveStoreType"
-        />
-        <div v-if="savedStoreType" class="saved-msg">{{ t('common.saved') }}</div>
-      </div>
 
       <!-- ── Lock Screen Logo ─────────────────────────────────────── -->
       <div class="settings-card">
@@ -172,11 +160,9 @@ const loading = ref(true)
 const form = reactive({ lock_timeout_minutes: 0, lock_facts_bank: [] })
 const logoUrl  = ref(null)
 const pinSet   = ref(false)
-const storeType = ref('GENERAL')
 
 // Timer
 const savedTimeout  = ref(false)
-const savedStoreType = ref(false)
 
 // Logo
 const logoUploading = ref(false)
@@ -205,14 +191,6 @@ const timeoutOptions = [
   { value: 240, label: t('settings.lockscreen.timeout_4h') },
 ]
 
-const storeTypeOptions = [
-  { value: 'GENERAL',     label: t('settings.lockscreen.type_general') },
-  { value: 'PHARMACY',    label: t('settings.lockscreen.type_pharmacy') },
-  { value: 'GROCERY',     label: t('settings.lockscreen.type_grocery') },
-  { value: 'ELECTRONICS', label: t('settings.lockscreen.type_electronics') },
-  { value: 'CLOTHING',    label: t('settings.lockscreen.type_clothing') },
-]
-
 const canSetPin = computed(() => {
   if (!newPin.value || newPin.value.length < 4) return false
   if (newPin.value !== confirmPin.value) return false
@@ -226,11 +204,8 @@ const canSetPin = computed(() => {
 async function load() {
   loading.value = true
   try {
-    const [storeRes, settingsRes] = await Promise.all([
-      api.get('/api/core/store/'),
-      api.get('/api/core/settings/'),
-    ])
-    storeType.value                  = storeRes.data.store_type || 'GENERAL'
+    // s168: the AI-era "Store type — used to generate facts" picker is gone (the AI was removed in s152).
+    const settingsRes = await api.get('/api/core/settings/')
     form.lock_timeout_minutes        = settingsRes.data.lock_timeout_minutes ?? 0
     form.lock_facts_bank             = settingsRes.data.lock_facts_bank ?? []
     logoUrl.value                    = settingsRes.data.lock_logo_url || null
@@ -245,12 +220,6 @@ async function saveTimeout() {
   refreshSettings({ lock_timeout_minutes: form.lock_timeout_minutes })
   savedTimeout.value = true
   setTimeout(() => { savedTimeout.value = false }, 2000)
-}
-
-async function saveStoreType() {
-  await api.patch('/api/core/store/', { store_type: storeType.value })
-  savedStoreType.value = true
-  setTimeout(() => { savedStoreType.value = false }, 2000)
 }
 
 async function uploadLogo(e) {

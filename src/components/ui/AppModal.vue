@@ -21,11 +21,11 @@
             <div v-if="showWarning" class="modal-warn-overlay" @keydown="onWarningKey">
               <div class="modal-warn-card">
                 <AlertTriangle class="modal-warn-icon" :size="28" />
-                <p class="modal-warn-title">Unsaved changes</p>
-                <p class="modal-warn-msg">You have unsaved changes. Closing will discard them.</p>
+                <p class="modal-warn-title">{{ t('common.unsaved.title') }}</p>
+                <p class="modal-warn-msg">{{ t('common.unsaved.msg') }}</p>
                 <div class="modal-warn-actions">
-                  <button ref="cancelBtnRef" class="warn-btn warn-btn--primary" @click="dismissWarning">Cancel</button>
-                  <button class="warn-btn warn-btn--ghost" @click="confirmClose">Discard &amp; close</button>
+                  <button ref="cancelBtnRef" class="warn-btn warn-btn--primary" @click="dismissWarning">{{ t('common.cancel') }}</button>
+                  <button class="warn-btn warn-btn--ghost" @click="confirmClose">{{ t('common.unsaved.discard') }}</button>
                 </div>
               </div>
             </div>
@@ -39,6 +39,8 @@
 <script setup>
 import { X, AlertTriangle } from 'lucide-vue-next'
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 const props = defineProps({
   open: Boolean,

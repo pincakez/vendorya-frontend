@@ -232,8 +232,8 @@ function closeModal() {
 // ── slideshow ────────────────────────────────────────────
 const slides = [
   {
-    title: 'AI that runs the back office with you',
-    desc:  'Vendorya ships with a built-in AI admin that understands your stock, your invoices, and your numbers. Ask it a question, give it a task, and watch it work — like having an accountant and an analyst on staff. It doesn\'t replace you; it makes one person move like a whole team.'
+    title: 'Money you can trust, down to the last pound',
+    desc:  'Split a payment between cash, card and store credit at the till. Print a customer or supplier statement in one click. Every return is checked against what was really sold and paid, so your drawer, your stock and every balance stay right — without an accountant chasing the numbers.'
   },
   {
     title: 'Built for the Egyptian store, down to the last detail',

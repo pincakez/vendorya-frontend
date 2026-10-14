@@ -1,9 +1,9 @@
 <template>
   <div class="dash-page">
 
-    <!-- ── AI Advice Strip ─────────────────────────────────── -->
+    <!-- ── At a Glance strip (plain computed text — the AI was removed in s152) ─────────────────────────────────── -->
     <div class="ai-strip">
-      <span class="ai-label">V-Agent</span>
+      <span class="ai-label">{{ t('core.dash.at_glance') }}</span>
       <div class="ai-ticker-wrap">
         <Transition name="ticker">
           <p :key="tickerIdx" class="ai-text">{{ insights[tickerIdx] }}</p>

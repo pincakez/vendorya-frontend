@@ -145,7 +145,12 @@
     "export": "Export",
     "pg_info": "{from}–{to} of {total}",
     "on": "On",
-    "off": "Off"
+    "off": "Off",
+    "unsaved": {
+      "title": "Unsaved changes",
+      "msg": "You have unsaved changes. Closing will discard them.",
+      "discard": "Discard & close"
+    }
   },
   "inventory": {
     "products": {
