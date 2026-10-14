@@ -54,7 +54,7 @@
         <button v-if="canEdit && !editing" class="dt-filter" :title="t('inventory.products.toolbar.assign_layouts')" @click="openAssign">
           <UserCog :size="14" />
         </button>
-        <button v-if="!editing" class="dt-add" @click="openAddProduct">
+        <button v-if="canManage && !editing" class="dt-add" @click="openAddProduct">
           <Plus :size="15" /> {{ t('inventory.products.toolbar.add_product') }}
         </button>
       </div>
@@ -151,7 +151,7 @@
                   </span>
                   <span class="dt-resize" @mousedown.stop.prevent="startResize(col.key, $event)" @click.stop></span>
                 </th>
-                <th class="dt-th ta-right dt-actcol">{{ t('inventory.products.table.actions') }}</th>
+                <th v-if="canManage" class="dt-th ta-right dt-actcol">{{ t('inventory.products.table.actions') }}</th>
               </tr>
             </thead>
 
@@ -169,7 +169,7 @@
                       <span v-if="col.key === 'product' && p.hide_from_pos" class="ghost-tag" :title="t('inventory.products.table.ghost_hint')"><EyeOff :size="11" /></span>{{ cellText(col, p) }}
                     </template>
                   </td>
-                  <td class="ta-right dt-actcol">
+                  <td v-if="canManage" class="ta-right dt-actcol">
                     <button class="row-action" :title="p.hide_from_pos ? t('inventory.products.table.unghost_hint') : t('inventory.products.table.ghost_action')" @click.stop="toggleGhost(p)">
                       <component :is="p.hide_from_pos ? EyeOff : Eye" :size="14" />
                     </button>
@@ -177,7 +177,7 @@
                   </td>
                 </tr>
                 <tr v-if="!loading && !products.length">
-                  <td :colspan="displayColumns.length + (bulkMode ? 2 : 1)" class="dt-empty">
+                  <td :colspan="displayColumns.length + (bulkMode ? 1 : 0) + (canManage ? 1 : 0)" class="dt-empty">
                     <Package :size="40" class="dt-empty-icon" />
                     <div class="dt-empty-title">{{ t('inventory.products.table.empty_title') }}</div>
                     <div class="dt-empty-sub">{{ t('inventory.products.table.empty_sub') }}</div>
@@ -612,7 +612,7 @@ import { decomposeStock, headlineLabel, formatBreakdown } from '@/utils/units'
 import { showSuccessToast, showWarningToast } from '@/utils/toast'
 import { useFormDirty } from '@/composables/useFormDirty'
 import { useCtrlN } from '@/composables/useCtrlN'
-useCtrlN(openAddProduct)
+useCtrlN(() => { if (canManage.value) openAddProduct() })
 
 // Stock badge: lead with the biggest unit (packs) for tiered products; plain
 // base number for everything else. Full ladder shows on hover.
@@ -757,6 +757,9 @@ const displayColumns = computed(() =>
 const chooserOrder = computed(() => working.order.filter(k => colByKey.value[k]))
 const tableMin = computed(() => displayColumns.value.reduce((a, c) => a + colWidths[c.key], 0))
 const canEdit = computed(() => ['OWNER', 'ADMIN'].includes(auth.userRole) || auth.isSuperadmin)
+// Add / edit / ghost a product = MANAGER and up on the server (ProductViewSet.role_map) —
+// a cashier only looks (s167: the buttons used to show, then the save got a 403).
+const canManage = computed(() => !!auth.userRole && !auth.isCashier)
 
 function cellText(col, p) {
   if (col.isTier) return tierCell(p, col)

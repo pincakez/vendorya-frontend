@@ -17,7 +17,7 @@
       </div>
       <div v-if="product" style="display:flex;gap:8px;align-items:center;">
         <!-- Edit Product button -->
-        <button class="edit-prod-btn" @click="openEditModal" :title="t('inventory.product_detail.edit_product_btn')">
+        <button v-if="canManage" class="edit-prod-btn" @click="openEditModal" :title="t('inventory.product_detail.edit_product_btn')">
           <Pencil :size="14" /> {{ t('inventory.product_detail.edit_product_btn') }}
         </button>
         <!-- Secret S button — reveals cost/supplier panel -->
@@ -59,18 +59,18 @@
           <button v-if="videoMedia" class="sc-thumb" :class="{ on: activeIsVideo }" @click="showVideo()">
             <img v-if="videoMedia.poster_url" :src="videoMedia.poster_url" alt="" />
             <span class="sc-thumb-play"><Play :size="13" /></span>
-            <span class="sc-thumb-x" @click.stop="removeMedia(videoMedia)"><X :size="11" /></span>
+            <span v-if="canManage" class="sc-thumb-x" @click.stop="removeMedia(videoMedia)"><X :size="11" /></span>
           </button>
           <button v-for="(im, i) in displayImages" :key="im.id || 'legacy'" class="sc-thumb"
                   :class="{ on: !activeIsVideo && i === slideIdx }" @click="showImage(i)">
             <img :src="im.file_url" alt="" />
-            <span class="sc-thumb-x" @click.stop="removeMedia(im)"><X :size="11" /></span>
+            <span v-if="canManage" class="sc-thumb-x" @click.stop="removeMedia(im)"><X :size="11" /></span>
           </button>
-          <button v-if="imageCount < (specs.max_images || 5)" class="sc-add"
+          <button v-if="canManage && imageCount < (specs.max_images || 5)" class="sc-add"
                   :title="t('inventory.product_detail.showcase.add_photos')" @click="pickImages">
             <ImagePlus :size="17" />
           </button>
-          <button v-if="!videoMedia" class="sc-add"
+          <button v-if="canManage && !videoMedia" class="sc-add"
                   :title="t('inventory.product_detail.showcase.add_video')" @click="pickVideo">
             <Video :size="17" />
           </button>
@@ -83,7 +83,7 @@
         </div>
 
         <!-- showcase display settings: two radios -->
-        <div class="sc-settings">
+        <div v-if="canManage" class="sc-settings">
           <div class="sc-set-row">
             <span class="sc-set-label">{{ t('inventory.product_detail.showcase.lead') }}</span>
             <div class="sc-seg">
@@ -105,7 +105,7 @@
         </div>
 
         <!-- specs / info note -->
-        <div class="sc-note">
+        <div v-if="canManage" class="sc-note">
           <Info :size="13" />
           <span>{{ specsLine }}</span>
         </div>
@@ -459,9 +459,13 @@ import { showSuccessToast } from '@/utils/toast'
 import { decomposeStock, headlineLabel, formatBreakdown, unitConversionLine } from '@/utils/units'
 import { formatWeight } from '@/utils/format'
 import { renderRichText } from '@/utils/richText'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const props = defineProps({ id: String })
+const auth = useAuthStore()
+// Edit + photos + showcase settings = MANAGER and up on the server — a cashier only looks (s167).
+const canManage = computed(() => !!auth.userRole && !auth.isCashier)
 
 const product = ref(null)
 const loading = ref(true)
@@ -878,7 +882,7 @@ async function loadSpecs() {
   } catch { /* keep defaults */ }
 }
 onMounted(() => {
-  loadSpecs()
+  if (canManage.value) loadSpecs()   // media-specs is manager-only (a cashier got a 403)
   fetchProduct()
   document.addEventListener('keydown', handleKey)
 })
