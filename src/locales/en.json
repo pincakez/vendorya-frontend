@@ -880,6 +880,7 @@
         "branch_label": "Branch",
         "open_btn": "Open Shift"
       },
+      "err_already_open": "You already have an open shift — close it before opening a new one.",
       "close_modal": {
         "title": "Close Shift",
         "starting_cash": "Starting Cash",

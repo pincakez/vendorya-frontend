@@ -172,7 +172,8 @@ async function openShift() {
     focusLine(activeKey.value)
   } catch (e) {
     const d = e?.response?.data
-    showErrorToast(typeof d?.detail === 'string' ? d.detail : (Array.isArray(d) && d[0]) || t('pos.payment.err_shift_open'), 3500)
+    showErrorToast(d?.code === 'shift_already_open' ? t('finance.shifts.err_already_open')
+      : (typeof d?.detail === 'string' ? d.detail : (Array.isArray(d) && d[0]) || t('pos.payment.err_shift_open')), 3500)
   } finally {
     shiftOpening.value = false
   }

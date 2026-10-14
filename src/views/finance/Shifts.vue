@@ -76,7 +76,7 @@
       </div>
       <template #footer>
         <button class="btn-ghost" @click="openModal = false">{{ t('common.cancel') }}</button>
-        <button class="btn-primary" @click="openShiftAction">{{ t('finance.shifts.open_modal.open_btn') }}</button>
+        <button class="btn-primary" :disabled="opening" @click="openShiftAction">{{ t('finance.shifts.open_modal.open_btn') }}</button>
       </template>
     </AppModal>
 
@@ -181,7 +181,11 @@ async function startOpen() {
   openModal.value = true
 }
 
+// Busy guard: a double-click sent two "open" requests (the server now refuses the 2nd too — 2026-10-14).
+const opening = ref(false)
 async function openShiftAction() {
+  if (opening.value) return
+  opening.value = true
   try {
     await api.post('/api/finance/shifts/', {
       starting_cash: startingCash.value || 0,
@@ -189,8 +193,12 @@ async function openShiftAction() {
     })
   } catch (e) {
     const d = e?.response?.data
-    showErrorToast(typeof d?.detail === 'string' ? d.detail : (Array.isArray(d) && d[0]) || t('pos.payment.err_shift_open'), 3500)
+    showErrorToast(d?.code === 'shift_already_open' ? t('finance.shifts.err_already_open')
+      : (typeof d?.detail === 'string' ? d.detail : (Array.isArray(d) && d[0]) || t('pos.payment.err_shift_open')), 3500)
+    await fetchOpenShift()
     return
+  } finally {
+    opening.value = false
   }
   openModal.value = false
   startingCash.value = ''

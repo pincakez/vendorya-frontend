@@ -206,13 +206,6 @@
           <label class="form-label">{{ t('sales.invoices.new_modal.discount_label') }}</label>
           <input v-model="modal.discount" type="number" min="0" step="0.01" class="form-input" placeholder="0.00" />
         </div>
-        <div>
-          <label class="form-label">{{ t('sales.invoices.new_modal.status_label') }}</label>
-          <select v-model="modal.status" class="form-input">
-            <option value="DRAFT">{{ t('sales.invoices.new_modal.status_draft') }}</option>
-            <option value="POSTED">{{ t('sales.invoices.new_modal.status_post_now') }}</option>
-          </select>
-        </div>
       </div>
 
       <div style="margin-top:18px;">
@@ -519,7 +512,8 @@ async function saveInvoice() {
   try {
     await api.post('/api/finance/invoices/', {
       customer: modal.customer, branch: auth.user?.store?.id, date: modal.date,
-      discount: modal.discount || 0, status: modal.status,
+      // A new sale is always a draft (2026-10-14) — a manager posts it from the list (same rules as the till).
+      discount: modal.discount || 0, status: 'DRAFT',
       items: modal.items.map(i => ({ variant: i.variant, quantity: Number(i.quantity), unit_price: Number(i.unit_price), discount_amount: Number(i.discount_amount) || 0 })),
     })
     closeModal(); fetchInvoices(1)
