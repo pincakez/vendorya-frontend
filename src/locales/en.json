@@ -93,6 +93,7 @@
     }
   },
   "common": {
+    "done": "Done",
     "cancel": "Cancel",
     "save": "Save",
     "saving": "Saving…",
