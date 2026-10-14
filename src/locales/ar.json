@@ -2877,7 +2877,12 @@
       "refund_cash": "نقدًا / بطريقة الدفع الأصلية",
       "refund_store_credit": "رصيد في المتجر",
       "restock_parts": "إرجاع القطع إلى المخزون",
-      "return_manager_only": "إرجاع الخدمة للمدير فقط."
+      "return_manager_only": "إرجاع الخدمة للمدير فقط.",
+      "subtotal": "الإجمالي الفرعي",
+      "tax": "الضريبة",
+      "grand_total": "الإجمالي المستحق",
+      "quote_failed": "تعذّر حساب إجمالي الخدمة.",
+      "loading_total": "جارٍ حساب الإجمالي…"
     }
   },
   "receipt": {
@@ -2945,7 +2950,10 @@
     "svc_total_est": "الإجمالي (قبل الضريبة)",
     "svc_warranty": "الضمان",
     "svc_warranty_days": "{n} يوم",
-    "svc_warranty_job": "داخل الضمان - بدون مقابل"
+    "svc_warranty_job": "داخل الضمان - بدون مقابل",
+    "svc_subtotal": "الإجمالي الفرعي",
+    "svc_tax": "الضريبة",
+    "svc_grand_total": "الإجمالي"
   },
   "notif": {
     "low_stock": {

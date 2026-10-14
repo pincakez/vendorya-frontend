@@ -581,7 +581,7 @@ async function save() {
     // Print before closing — fill in the backend-generated serial first.
     if (printReceipt.value) {
       if (res?.data?.serial_number) form.serial_number = res.data.serial_number
-      await doServicePrint(doublePrint.value ? 2 : 1)
+      await doServicePrint(doublePrint.value ? 2 : 1, res?.data?.id)
     }
     emit('saved')
     emit('close')
@@ -640,7 +640,11 @@ function ticketFields(tr) {
     parts:       form.parts.map(p => ({ name: p.product_name || '', qty: formatQty(p.quantity), total: money(form.is_warranty ? 0 : lineTotal(p)) })),
     detection:   money(form.is_warranty ? 0 : form.detection_fee),
     repair:      money(form.is_warranty ? 0 : form.cost),
-    total:       money(estTotal.value),
+    // Totals = the server quote of the SAVED job (same tax rule as the invoice Done makes), when there is one.
+    hasQuote:    !!ticketQuote.value,
+    subtotal:    money(ticketQuote.value ? ticketQuote.value.subtotal : estTotal.value),
+    tax:         money(ticketQuote.value ? ticketQuote.value.tax_total : 0),
+    total:       money(ticketQuote.value ? ticketQuote.value.grand_total : estTotal.value),
     warranty:    Number(form.warranty_days) > 0 ? tr('receipt.svc_warranty_days', { n: Number(form.warranty_days) }) : '',
     warrantyJob: form.is_warranty ? tr('receipt.svc_warranty_job') : '',
   }
@@ -676,7 +680,13 @@ function buildServiceESCPOS(copyKey) {
   }
   out += _two(lbl('receipt.svc_detection'), f.detection)
   out += _two(lbl('receipt.svc_repair'), f.repair)
-  out += _BOLD_ON + _two(rt('receipt.svc_total_est').toUpperCase() + ':', f.total) + _BOLD_OFF
+  if (f.hasQuote) {
+    out += _two(lbl('receipt.svc_subtotal'), f.subtotal)
+    out += _two(lbl('receipt.svc_tax'), f.tax)
+    out += _BOLD_ON + _two(rt('receipt.svc_grand_total').toUpperCase() + ':', f.total) + _BOLD_OFF
+  } else {
+    out += _BOLD_ON + _two(rt('receipt.svc_total_est').toUpperCase() + ':', f.total) + _BOLD_OFF
+  }
   if (f.warrantyJob) out += _ln(f.warrantyJob)
   if (f.warranty)    out += _two(lbl('receipt.svc_warranty'), f.warranty)
   out += _dashes()
@@ -718,7 +728,10 @@ function printReceiptCSS(copies = 2) {
       <table class="r-table">
         <tr><td class="r-lbl">${esc(st('receipt.svc_detection'))}</td><td class="r-amt">${esc(f.detection)}</td></tr>
         <tr><td class="r-lbl">${esc(st('receipt.svc_repair'))}</td><td class="r-amt">${esc(f.repair)}</td></tr>
-        <tr><td class="r-lbl">${esc(st('receipt.svc_total_est'))}</td><td class="r-amt"><strong>${esc(f.total)}</strong></td></tr>
+        ${f.hasQuote ? `<tr><td class="r-lbl">${esc(st('receipt.svc_subtotal'))}</td><td class="r-amt">${esc(f.subtotal)}</td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_tax'))}</td><td class="r-amt">${esc(f.tax)}</td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_grand_total'))}</td><td class="r-amt"><strong>${esc(f.total)}</strong></td></tr>`
+          : `<tr><td class="r-lbl">${esc(st('receipt.svc_total_est'))}</td><td class="r-amt"><strong>${esc(f.total)}</strong></td></tr>`}
         ${f.warrantyJob ? `<tr><td colspan="2" dir="auto"><strong>${esc(f.warrantyJob)}</strong></td></tr>` : ''}
         ${f.warranty ? `<tr><td class="r-lbl">${esc(st('receipt.svc_warranty'))}</td><td dir="auto">${esc(f.warranty)}</td></tr>` : ''}
       </table>
@@ -758,7 +771,14 @@ function printReceiptCSS(copies = 2) {
   setTimeout(() => { w.print() }, 400)
 }
 
-async function doServicePrint(copies = 2) {
+const ticketQuote = ref(null)
+// `jobId` = the saved job (the edit's id, or the new job's id right after Create). The ticket's totals come from
+// its server quote, so the printed total is the taxed amount Done will bill.
+async function doServicePrint(copies = 2, jobId = props.serviceId) {
+  ticketQuote.value = null
+  if (jobId) {
+    try { ticketQuote.value = (await api.get(`/api/services/${jobId}/quote/`)).data } catch { /* pre-tax fallback */ }
+  }
   try {
     const available = await isAvailable()
     if (available) {

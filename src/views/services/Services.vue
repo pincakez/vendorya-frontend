@@ -136,12 +136,21 @@
 
     <!-- Confirm: Mark Done -->
     <AppModal :open="confirm.done" :title="t('core.services.done_title')" @close="confirm.done = false">
-      <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
-        {{ t('core.services.done_body_a') }} <strong><Money :value="jobTotal(confirm.target)" /></strong> {{ t('core.services.done_body_b') }} <strong>{{ confirm.target?.serial_number }}</strong>.
-      </p>
-      <p class="done-note">{{ confirm.target?.is_warranty ? t('core.svcdesk.free_warranty') : t('core.svcdesk.tax_note') }}</p>
+      <!-- The exact invoice total (server quote: same tax rule as the invoice) — what the cashier collects. -->
+      <p v-if="!confirm.quote" class="done-note">{{ confirm.quoteError ? t('core.svcdesk.quote_failed') : t('core.svcdesk.loading_total') }}</p>
+      <template v-else>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
+          {{ t('core.services.done_body_a') }} <strong><Money :value="confirm.quote.grand_total" /></strong> {{ t('core.services.done_body_b') }} <strong>{{ confirm.target?.serial_number }}</strong>.
+        </p>
+        <div class="done-quote">
+          <span>{{ t('core.svcdesk.subtotal') }} <Money :value="confirm.quote.subtotal" /></span>
+          <span>{{ t('core.svcdesk.tax') }} <Money :value="confirm.quote.tax_total" /></span>
+          <span>{{ t('core.svcdesk.grand_total') }} <strong><Money :value="confirm.quote.grand_total" /></strong></span>
+        </div>
+        <p v-if="confirm.target?.is_warranty" class="done-note">{{ t('core.svcdesk.free_warranty') }}</p>
+      </template>
       <!-- How the customer paid (Yakot, s156) — not asked for a free job -->
-      <div v-if="jobTotal(confirm.target) > 0" class="done-pay">
+      <div v-if="quoteTotal > 0" class="done-pay">
         <div class="done-pay-lbl">{{ t('core.services.paid_how') }}</div>
         <div class="done-pay-methods">
           <button
@@ -153,7 +162,7 @@
       </div>
       <template #footer>
         <button class="btn-ghost" @click="confirm.done = false">{{ t('common.cancel') }}</button>
-        <button class="btn-primary" :disabled="confirm.busy || (jobTotal(confirm.target) > 0 && !confirm.method)" @click="executeDone">
+        <button class="btn-primary" :disabled="confirm.busy || !confirm.quote || (quoteTotal > 0 && !confirm.method)" @click="executeDone">
           {{ confirm.busy ? t('core.services.processing') : t('core.services.done_confirm') }}
         </button>
       </template>
@@ -388,6 +397,7 @@ const confirm = reactive({
   done: false, cancel: false, archive: false, return: false,
   target: null, busy: false, method: null,
   refundMethod: 'CASH', restockParts: true,
+  quote: null, quoteError: false,
 })
 
 /* ── detail modal ────────────────────────────────────────────────── */
@@ -498,20 +508,35 @@ async function loadPayMethods() {
     payMethods.value = data.results ?? data
   } catch { payMethods.value = [] }
 }
+// The exact amount Done will bill (tax included) — from the server, never re-computed here.
+const quoteTotal = computed(() => Number(confirm.quote?.grand_total) || 0)
+async function loadQuote(s) {
+  confirm.quote = null
+  confirm.quoteError = false
+  try {
+    const { data } = await api.get(`/api/services/${s.id}/quote/`)
+    if (confirm.target?.id === s.id) confirm.quote = data
+  } catch { confirm.quoteError = true }
+}
 function confirmDone(s) {
   confirm.target = s
   confirm.method = null
   confirm.done = true
   loadPayMethods()
+  loadQuote(s)
 }
 async function executeDone() {
   confirm.busy = true
   try {
-    await api.post(`/api/services/${confirm.target.id}/done/`, confirm.method ? { method: confirm.method } : {})
+    // expected_total: the server refuses (409) if the job changed since this window got its total.
+    const body = { expected_total: confirm.quote.grand_total }
+    if (confirm.method) body.method = confirm.method
+    await api.post(`/api/services/${confirm.target.id}/done/`, body)
     confirm.done = false
     fetchItems(); fetchCounts()
   } catch (e) {
     alert(e?.response?.data?.detail ?? t('core.services.err_done'))
+    if (e?.response?.status === 409) loadQuote(confirm.target)
   } finally { confirm.busy = false }
 }
 
@@ -725,6 +750,8 @@ onMounted(() => {
 .svc-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .svc-tech-select { width: 180px; padding-left: 10px; }
 .done-note { font-size: 12px; color: var(--text-muted); margin: 6px 0 0; }
+.done-quote { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 8px; font-size: 13px; color: var(--text-secondary); }
+.done-quote strong { color: var(--text-primary); }
 .done-check { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
 .done-check input { accent-color: var(--accent); }
 .done-pay { margin-top: 14px; }

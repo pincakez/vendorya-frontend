@@ -2877,7 +2877,12 @@
       "refund_cash": "Cash / original method",
       "refund_store_credit": "Store credit",
       "restock_parts": "Put the parts back in stock",
-      "return_manager_only": "Only a manager can return a job."
+      "return_manager_only": "Only a manager can return a job.",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "grand_total": "Total to pay",
+      "quote_failed": "Could not work out the job total.",
+      "loading_total": "Working out the total…"
     }
   },
   "receipt": {
@@ -2945,7 +2950,10 @@
     "svc_total_est": "Total (before tax)",
     "svc_warranty": "Warranty",
     "svc_warranty_days": "{n} days",
-    "svc_warranty_job": "Under warranty - no charge"
+    "svc_warranty_job": "Under warranty - no charge",
+    "svc_subtotal": "Subtotal",
+    "svc_tax": "Tax",
+    "svc_grand_total": "Total"
   },
   "notif": {
     "low_stock": {
