@@ -103,7 +103,7 @@
               <tr v-for="(item, i) in data.items" :key="i" class="dt-row">
                 <td>{{ item.name }}</td>
                 <td class="mono text-muted">{{ item.sku }}</td>
-                <td class="num-col">{{ item.quantity }}</td>
+                <td class="num-col">{{ lineQty(item) }}</td>
                 <td class="num-col"><Money :value="item.unit_price" /></td>
                 <td class="num-col text-muted"><Money :value="item.tax_amount" /></td>
                 <td class="num-col fw-bold"><Money :value="item.total" /></td>
@@ -137,6 +137,7 @@ import { ChevronLeft, Printer } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
+import { formatQty, formatWeight } from '@/utils/format'
 
 const { t } = useI18n()
 const props = defineProps({ id: String })
@@ -148,6 +149,10 @@ function statusLabel(s) {
 }
 
 const data = ref(null)
+// §WT (s166): weight lines read "250 g" / "0.25 kg" in the shop's weight unit — same as the receipt.
+function lineQty(it) {
+  return it.is_weight ? formatWeight(it.quantity, data.value?.weight_unit) : formatQty(it.quantity)
+}
 const loading = ref(true)
 
 onMounted(async () => {
