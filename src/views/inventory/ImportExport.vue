@@ -78,6 +78,7 @@
           <tr><td><code>Q_QTY</code></td><td>{{ t('inventory.import_export.row_qty') }}</td></tr>
           <tr><td><code>W_PRICE</code> · <code>R_PRICE</code> <span class="req">{{ t('inventory.import_export.required_badge') }}</span></td><td>{{ t('inventory.import_export.row_prices') }}</td></tr>
           <tr><td><code>P_NAME</code></td><td>{{ t('inventory.import_export.row_name') }}</td></tr>
+          <tr><td><code>P_REF</code></td><td>{{ t('inventory.import_export.row_ref') }}</td></tr>
         </table>
         <p class="help-note">{{ t('inventory.import_export.format_note') }}</p>
       </div>

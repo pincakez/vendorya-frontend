@@ -651,12 +651,13 @@
       "required_badge": "required",
       "row_supp": "Existing supplier name (the file can't create suppliers)",
       "row_branch": "Branch for the stock (defaults to {main})",
-      "row_cat": "Main category",
+      "row_cat": "Main category (leave empty for no category)",
       "row_subcats": "Sub-categories (max 4 tiers total)",
       "row_attrs": "Attributes: Dropdown · Free-text · Number (e.g. {example})",
       "row_qty": "Opening stock quantity (defaults to 0)",
       "row_prices": "Wholesale (cost) · Retail (sell)",
-      "row_name": "Optional — otherwise name = Brand + Model"
+      "row_name": "Optional — otherwise name = Brand + Model",
+      "row_ref": "Optional — rows with the same number are the variants of ONE product (same supplier, name and categories)"
     },
     "reports": {
       "title": "Inventory Reports",
