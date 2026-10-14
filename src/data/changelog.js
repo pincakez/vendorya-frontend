@@ -12,6 +12,107 @@
 
 export const changelog = [
   {
+    version: '1.42.0',
+    date: '2026-10-14',
+    tag: 'New',
+    en: {
+      title: 'Account statements (كشف حساب)',
+      points: [
+        'Every supplier now has a Statement tab: each purchase and each payment in date order, with the running balance, an opening line, totals and the closing balance.',
+        'Pick any date range. The balance you owed before that range shows as the opening line.',
+        'Print it or download it as a spreadsheet (CSV) with one click.',
+      ],
+    },
+    ar: {
+      title: 'كشف الحساب',
+      points: [
+        'كل مورد بقى ليه تبويب "كشف حساب": كل فاتورة شراء وكل دفعة بالترتيب بالتاريخ، والرصيد بعد كل حركة، وسطر رصيد أول المدة، والإجماليات، ورصيد آخر المدة.',
+        'اختار أي فترة. اللي كان عليك قبل الفترة دي بيظهر في سطر رصيد أول المدة.',
+        'تقدر تطبعه أو تنزّله شيت (CSV) بضغطة واحدة.',
+      ],
+    },
+  },
+  {
+    version: '1.41.0',
+    date: '2026-10-14',
+    tag: 'New',
+    en: {
+      title: 'Collect a customer’s debt in one go',
+      points: [
+        'On a customer’s page, press "Receive payment" and type what they paid. Vendorya pays off their oldest unpaid sales first, then what they owed from before, and shows you exactly where the money went.',
+        'You can now enter a customer’s opening balance — what they owed you before you started using Vendorya — and collect it like any other debt.',
+        'Every payment is listed on the customer’s page. A wrong one can be deleted by an admin, and the debt comes back exactly as it was.',
+        'Cash you receive this way counts in your cash drawer, so the drawer still balances at closing.',
+      ],
+    },
+    ar: {
+      title: 'تحصيل مديونية العميل مرة واحدة',
+      points: [
+        'من صفحة العميل دوس "استلام دفعة" واكتب المبلغ اللي دفعه. Vendorya بيسدد أقدم فواتيره الأول، وبعدين اللي كان عليه من قبل، ويوريك الفلوس راحت فين بالظبط.',
+        'دلوقتي تقدر تكتب رصيد أول المدة للعميل — اللي كان عليه قبل ما تبدأ تستخدم Vendorya — وتحصّله زي أي مديونية.',
+        'كل دفعة بتظهر في صفحة العميل. لو في دفعة غلط، الأدمن يقدر يمسحها والمديونية ترجع زي ما كانت بالظبط.',
+        'الكاش اللي بتستلمه بالطريقة دي بيتحسب في درج الكاشير، فالدرج يفضل مظبوط وقت التقفيل.',
+      ],
+    },
+  },
+  {
+    version: '1.40.0',
+    date: '2026-10-14',
+    tag: 'Improved',
+    en: {
+      title: 'Sell from a phone',
+      points: [
+        'On a phone the till now shows the cart across the whole screen, with the total and a big PAY button fixed at the bottom.',
+        'The keypad and the action buttons (Hold, Discount, Returns, Customer, Reprint, Note) slide up from the bottom when you need them.',
+        'Computers and tablets look exactly as before.',
+      ],
+    },
+    ar: {
+      title: 'البيع من الموبايل',
+      points: [
+        'على الموبايل الكاشير بقى بيعرض السلة على الشاشة كلها، والإجمالي وزرار "دفع" كبير ثابتين تحت.',
+        'لوحة الأرقام وزراير العمليات (تعليق، خصم، مرتجعات، عميل، إعادة طباعة، ملاحظة) بتطلع من تحت لما تحتاجها.',
+        'الكمبيوتر والتابلت زي ما هم بالظبط.',
+      ],
+    },
+  },
+  {
+    version: '1.39.17',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'Import / Export shows only what you can use',
+      points: [
+        'Managers see the Export button; importing a catalog is shown only to the shop’s admins and owner — no more buttons that end in "not allowed".',
+      ],
+    },
+    ar: {
+      title: 'صفحة الاستيراد والتصدير بتعرض اللي تقدر تستخدمه بس',
+      points: [
+        'المدير بيشوف زرار التصدير؛ واستيراد المنتجات بيظهر للأدمن وصاحب المحل بس — مفيش زراير تاني بتقول "غير مسموح".',
+      ],
+    },
+  },
+  {
+    version: '1.39.16',
+    date: '2026-10-14',
+    tag: 'Improved',
+    en: {
+      title: 'Update prices from a spreadsheet',
+      points: [
+        'Export your catalog, change prices or names in the file, and import it back: Vendorya updates those products instead of saying "already exists".',
+        'Before anything changes you see the list: which products, old price → new price. Stock is never changed by a file — use a stock adjustment for that.',
+      ],
+    },
+    ar: {
+      title: 'تحديث الأسعار من شيت',
+      points: [
+        'صدّر منتجاتك، غيّر الأسعار أو الأسامي في الملف، واستورده تاني: Vendorya بيحدّث المنتجات دي بدل ما يقول "موجود قبل كده".',
+        'قبل أي تغيير بتشوف القايمة: أنهي منتجات، والسعر القديم ← الجديد. الملف عمره ما بيغيّر المخزون — استخدم تسوية مخزون لده.',
+      ],
+    },
+  },
+  {
     version: '1.39.15',
     date: '2026-10-14',
     tag: 'Improved',
