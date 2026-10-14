@@ -12,6 +12,25 @@
 
 export const changelog = [
   {
+    version: '1.39.15',
+    date: '2026-10-14',
+    tag: 'Improved',
+    en: {
+      title: 'Cost prices stay private from cashiers',
+      points: [
+        'A cashier no longer sees what you paid for a product — not on the product page (the "S" button is gone for them), not in Storage, and not anywhere behind the scenes either.',
+        'Managers and owners still see every cost. If your shop wants cashiers to see cost, the products-table settings still let you show it — and then it shows everywhere.',
+      ],
+    },
+    ar: {
+      title: 'سعر التكلفة بقى سر عن الكاشير',
+      points: [
+        'الكاشير مبقاش يشوف إنت اشتريت المنتج بكام — لا في صفحة المنتج (زرار "S" اختفى عنده)، ولا في المخزن، ولا في أي حتة من ورا الشاشة.',
+        'المدير والمالك لسه بيشوفوا كل التكاليف. ولو محلك عايز الكاشير يشوف التكلفة، إعدادات جدول المنتجات لسه بتسمح بده — ووقتها تظهر في كل حتة.',
+      ],
+    },
+  },
+  {
     version: '1.39.14',
     date: '2026-10-14',
     tag: 'Fixed',
