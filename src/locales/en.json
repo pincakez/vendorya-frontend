@@ -1042,6 +1042,11 @@
       "online": "Online",
       "offline": "Offline"
     },
+    "phone": {
+      "handle": "Keypad · Actions",
+      "open": "Open the keypad and actions",
+      "close": "Close the keypad and actions"
+    },
     "stock": {
       "block": "Not enough stock — can't sell more than what's available",
       "warn": "Selling more than what's in stock"

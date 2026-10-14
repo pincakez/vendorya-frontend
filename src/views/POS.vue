@@ -232,10 +232,18 @@
         </div>
       </div>
 
-      <!-- RIGHT — Actions + Keypad (scroll) · Total + PAY (pinned) -->
-      <div class="pos-right">
+      <!-- RIGHT — Actions + Keypad (scroll) · Total + PAY (pinned).
+           Phone (< 768px, s167): the same panel becomes a bottom sheet opened from the pay bar. -->
+      <div class="pos-right" :class="{ 'pos-right--open': tillSheetOpen }">
+        <div v-if="tillPhone" class="pos-sheet-head">
+          <span class="pos-sheet-title">{{ t('pos.phone.handle') }}</span>
+          <button class="pos-sheet-x" :aria-label="t('pos.phone.close')" :title="t('pos.phone.close')" @click="closeTillSheet">
+            <ChevronDown :size="18" />
+          </button>
+        </div>
         <div class="pos-right-scroll">
-          <div class="pos-actions-grid">
+          <!-- A tap on any action closes the phone sheet (its modal / panel / field takes over) -->
+          <div class="pos-actions-grid" @click="closeTillSheet">
             <button class="pac" :class="{ 'pac--held': cart.heldCarts.length }" :data-tip="actionTip('hold')" @click="holdOrResume">
               <Pause :size="15" />
               <span>{{ t('pos.actions.hold') }}<span v-if="cart.heldCarts.length" class="pac-badge">{{ cart.heldCarts.length }}</span></span>
@@ -293,11 +301,44 @@
             <span>{{ hardBlock ? t('pos.stock.block') : t('pos.stock.warn') }}</span>
           </div>
 
-          <button class="pos-pay-btn" :class="{ 'pos-pay-btn--block': hardBlock }" :disabled="cart.isEmpty || hardBlock" @click="openPayment">
+          <!-- On a phone PAY lives in the pay bar below (always in reach), not in the sheet -->
+          <button v-if="!tillPhone" class="pos-pay-btn" :class="{ 'pos-pay-btn--block': hardBlock }" :disabled="cart.isEmpty || hardBlock" @click="openPayment">
             <span>{{ t('pos.pay') }}</span>
             <span class="pos-pay-amount">{{ auth.currencySymbol }} {{ fmtNum(cart.grandTotal) }}</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- ─── Phone only (< 768px, s167, Yakot's "cart first + pay bar"): TOTAL + PAY always in reach;
+         the handle slides the keypad + actions up as a bottom sheet. ─── -->
+    <div v-if="tillPhone && tillSheetOpen" class="pos-sheet-backdrop" @click="closeTillSheet" />
+    <div v-if="tillPhone" class="pos-paybar">
+      <button
+        class="pos-paybar-handle"
+        :aria-expanded="tillSheetOpen ? 'true' : 'false'"
+        :aria-label="tillSheetOpen ? t('pos.phone.close') : t('pos.phone.open')"
+        @click="toggleTillSheet"
+      >
+        <Calculator :size="14" />
+        <span>{{ t('pos.phone.handle') }}</span>
+        <ChevronUp :size="15" class="pos-paybar-caret" :class="{ 'is-open': tillSheetOpen }" />
+      </button>
+      <div class="pos-paybar-row">
+        <div class="pos-paybar-sum">
+          <div class="pps-line">
+            <span class="pps-label">{{ t('pos.summary.total') }}</span>
+            <span v-if="anyOver" class="pps-warn" :class="{ 'pps-warn--block': hardBlock }" :title="hardBlock ? t('pos.stock.block') : t('pos.stock.warn')">
+              <AlertTriangle :size="12" />
+              <span>{{ hardBlock ? t('pos.stock.block') : t('pos.stock.warn') }}</span>
+            </span>
+            <span v-else class="pps-items">{{ t('pos.items_count', { n: cart.itemCount }, cart.itemCount) }}</span>
+          </div>
+          <span class="pps-amount">{{ auth.currencySymbol }} {{ fmtNum(cart.grandTotal) }}</span>
+        </div>
+        <button class="pos-pay-btn pos-paybar-pay" :class="{ 'pos-pay-btn--block': hardBlock }" :disabled="cart.isEmpty || hardBlock" @click="openPayment">
+          {{ t('pos.pay') }}
+        </button>
       </div>
     </div>
 
@@ -443,7 +484,7 @@ import { useI18n } from 'vue-i18n'
 import {
   Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
   Printer, FileText, ShoppingCart, CheckCircle2, ArrowLeft, ChevronDown, AlertTriangle,
-  Sun, Moon, LogOut, Menu,
+  Sun, Moon, LogOut, Menu, ChevronUp, Calculator,
 } from 'lucide-vue-next'
 import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
 import api from '@/api/axios'
@@ -1257,6 +1298,9 @@ function onGlobalKey(e) {
   // keys (ESC, arrows, Enter). Without this the cart/search reacted behind them.
   if (anyModalOpen.value) return
 
+  // Phone: Esc closes the keypad/actions sheet first
+  if (tillSheetOpen.value && e.key === 'Escape') { e.preventDefault(); closeTillSheet(); return }
+
   const tag = document.activeElement?.tagName
   const inInput = tag === 'INPUT' || tag === 'TEXTAREA'
 
@@ -1317,6 +1361,24 @@ function onGlobalKey(e) {
   // Any printable key → focus search (barcode scanner compatible)
   if (k.length === 1) { searchInputEl.value?.focus() }
 }
+
+// ── Phone till (< 768px, s167 — Yakot's "cart first + pay bar") ───────────────
+// The cart takes the full width, TOTAL + PAY sit in a bar at the bottom, and the right panel
+// (actions + keypad + subtotal lines) becomes a bottom sheet opened from that bar. 768px and up
+// keeps the 3-column till untouched (the ☰ button's isPhone is ≤ 768 — this one is < 768 on purpose).
+const tillMq = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(max-width: 767px)') : null
+const tillPhone     = ref(!!tillMq?.matches)
+const tillSheetOpen = ref(false)
+function onTillMq(e) {
+  tillPhone.value = e.matches
+  if (!e.matches) tillSheetOpen.value = false   // back to desktop → no stale sheet
+}
+onMounted(() => tillMq?.addEventListener?.('change', onTillMq))
+onUnmounted(() => tillMq?.removeEventListener?.('change', onTillMq))
+function toggleTillSheet() { tillSheetOpen.value = !tillSheetOpen.value }
+function closeTillSheet()  { tillSheetOpen.value = false }
+// Anything that opens a modal or the held-carts panel (a tap OR a shortcut like F8/F9) closes the sheet.
+watch(() => anyModalOpen.value || showHeldPanel.value, open => { if (open) tillSheetOpen.value = false })
 
 // ── Beep ──────────────────────────────────────────────────────
 function playBeep() {
@@ -1935,4 +1997,101 @@ function fmtNum(n) {
 .php-empty  { padding: 16px; text-align: center; font-size: 13px; color: var(--text-muted); }
 .held-slide-enter-active, .held-slide-leave-active { transition: all 200ms ease; }
 .held-slide-enter-from, .held-slide-leave-to { opacity: 0; transform: translateY(-10px); }
+
+/* ── Phone till (< 768px, s167): cart full width · pay bar · keypad/actions bottom sheet ──
+   Everything below is phone-only; 768px and up is the 3-column till exactly as before.
+   Sizes are in the .pos-scale space (drawn at 0.78). */
+@media (max-width: 767px) {
+  .pos-scale { --pos-paybar-h: 96px; --pos-foot-h: 34px; --pos-dock-h: calc(var(--pos-paybar-h) + var(--pos-foot-h)); }
+  .pos-left { display: none; }
+  .pos-body { padding: 8px; }
+  /* Slimmer discount / price / ✕ columns → more room for the item name */
+  .pos-cart-header, .pos-cart-row { grid-template-columns: 1fr 96px 52px 84px 28px; }
+  .pos-cart-header { padding: 7px 12px; }
+  .pos-cart-row { padding: 9px 10px; margin: 5px 6px; }
+
+  /* The right panel → bottom sheet sitting on top of the pay bar */
+  .pos-right {
+    position: absolute; left: 0; right: 0; bottom: var(--pos-dock-h); z-index: 41;
+    width: auto; min-width: 0; height: auto;
+    max-height: calc(100% - 54px - 16px - var(--pos-dock-h));
+    padding: 0 12px 12px;
+    border-radius: 20px 20px 0 0; border-bottom: none;
+    box-shadow: 0 -12px 32px rgba(0,0,0,0.22);
+    transform: translateY(calc(100% + var(--pos-dock-h))); visibility: hidden;
+    transition: transform 280ms var(--ease-in-out), visibility 0s linear 280ms;
+  }
+  .pos-right.pos-right--open {
+    transform: none; visibility: visible;
+    transition: transform 280ms var(--ease-in-out), visibility 0s;
+  }
+  .pos-right-scroll { flex: 0 1 auto; }
+  .pos-actions-grid { grid-template-columns: repeat(6, 1fr); }
+  .pac { padding: 8px 2px; font-size: 10.5px; }
+  .pac[data-tip]:hover::after { display: none; }   /* no sticky hover tooltips on touch */
+
+  .pos-sheet-head {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+    height: 44px; position: relative;
+  }
+  .pos-sheet-head::before {   /* grab bar */
+    content: ''; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 44px; height: 5px; border-radius: 3px; background: var(--border);
+  }
+  .pos-sheet-title { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); padding-top: 8px; }
+  .pos-sheet-x {
+    width: 34px; height: 34px; margin-top: 6px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg-app); color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .pos-sheet-x:active { transform: scale(0.92); }
+
+  .pos-sheet-backdrop {
+    position: absolute; left: 0; right: 0; top: 54px; bottom: var(--pos-dock-h); z-index: 40;
+    background: rgba(0,0,0,0.45);
+    animation: pos-sheet-fade 200ms var(--ease-out);
+  }
+
+  /* Pay bar — TOTAL + PAY, above the status strip; in the page flow, so it never covers a cart row */
+  .pos-paybar {
+    flex-shrink: 0; height: var(--pos-paybar-h); position: relative; z-index: 42;
+    display: flex; flex-direction: column;
+    padding: 0 10px 10px; background: var(--bg-card); border-top: 1px solid var(--border);
+  }
+  .pos-paybar-handle {
+    align-self: center; height: 30px; padding: 0 16px; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 7px;
+    border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px;
+    background: var(--bg-app); color: var(--text-secondary); cursor: pointer;
+    font-size: 12px; font-weight: 800; letter-spacing: 0.02em;
+  }
+  .pos-paybar-handle[aria-expanded="true"] { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pos-paybar-handle:active { transform: scale(0.96); }
+  .pos-paybar-caret { transition: transform 200ms var(--ease-out); }
+  .pos-paybar-caret.is-open { transform: rotate(180deg); }
+  .pos-paybar-row { flex: 1; min-height: 0; display: flex; align-items: center; gap: 12px; }
+  .pos-paybar-sum { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .pps-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .pps-label { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); flex-shrink: 0; }
+  .pps-items { font-size: 11.5px; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
+  .pps-warn {
+    display: flex; align-items: center; gap: 4px; min-width: 0;
+    font-size: 11px; font-weight: 800; color: var(--warning);
+  }
+  .pps-warn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pps-warn--block { color: var(--danger); }
+  .pps-amount {
+    font-size: 22px; font-weight: 900; color: var(--text-primary);
+    font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .pos-paybar-pay { width: auto; flex: 0 0 42%; height: 52px; padding: 0 12px; justify-content: center; font-size: 19px; }
+
+  /* Status strip: keep lines · units · online; the key hints and the total (now in the pay bar) go */
+  .pos-footer { position: relative; z-index: 42; padding: 0 12px; }
+  .pos-foot-hint, .pos-foot-total { display: none; }
+
+  /* Held-carts panel (outside the scaled till): was pinned 280px from the right — off-screen on a phone */
+  .pos-held-panel { left: 12px; right: 12px; top: 52px; min-width: 0; }
+}
+@keyframes pos-sheet-fade { from { opacity: 0; } to { opacity: 1; } }
 </style>
