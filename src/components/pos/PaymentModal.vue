@@ -112,6 +112,7 @@ import { useCartStore } from '@/stores/cart'
 import { usePosStore } from '@/stores/pos'
 import { useAuthStore } from '@/stores/auth'
 import { formatNumber } from '@/utils/format'
+import { serialErrorText } from '@/utils/serials'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const { t } = useI18n()
@@ -321,7 +322,9 @@ async function confirm() {
     })
   } catch (e) {
     const data = e?.response?.data
-    if (data?.expired) {
+    if (data?.serial_code) {
+      error.value = serialErrorText(t, data)   // New 7: serial not on the shelf here / wrong count …
+    } else if (data?.expired) {
       const names = data.expired.map(x => x.name).join(', ')
       error.value = t('pos.payment.err_expired', { names })
     } else if (typeof data?.detail === 'string') {

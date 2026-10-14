@@ -194,11 +194,21 @@
                 <div v-if="lineTags(item).length" class="pcr-tags">
                   <span v-for="(tg, ti) in lineTags(item)" :key="ti" class="pcr-tag">{{ tg }}</span>
                 </div>
+                <!-- New 7: the exact units being sold (serial / IMEI) -->
+                <div v-if="item.track_serials" class="pcr-tags">
+                  <span v-for="s in (item.serials || [])" :key="s" class="pcr-tag" dir="ltr">{{ s }}</span>
+                  <span v-if="!(item.serials || []).length" class="pcr-tag pcr-tag--warn">{{ t('serials.pick_needed') }}</span>
+                </div>
               </div>
               <div class="pcr-qty-ctrl">
                 <!-- Weight line: click the value to re-enter the weight off the scale (kg or g per store) -->
                 <button v-if="item.is_weight" class="pcr-weight-val" @click.stop="openWeightEntry(item.key)">
                   {{ formatWeight(item.qty) }}
+                </button>
+                <!-- New 7: a serial-tracked line's qty = its serials; click to pick / unpick units -->
+                <button v-else-if="item.track_serials" class="pcr-weight-val" :title="t('serials.pick_edit')"
+                        @click.stop="openSerialPickerForLine(item)">
+                  {{ formatQty(item.qty) }}
                 </button>
                 <template v-else>
                   <button class="pcr-qty-btn" @click.stop="cart.updateQty(item.key, item.qty - 1)">−</button>
@@ -367,6 +377,9 @@
     <!-- ─── Modals ─────────────────────────────────────────── -->
     <BranchPickerModal v-if="showBranchPicker" @selected="onBranchSelected" />
     <PaymentModal      v-if="showPayment"   :server-totals="serverTotals" @close="showPayment = false"   @success="onPaymentSuccess" />
+    <SerialPickerModal v-if="serialPicker" :product-name="serialPicker.product.name"
+                       :variant-id="serialPicker.product.default_variant_id" :branch-id="pos.branchId"
+                       :initial="serialPicker.initial" @confirm="onSerialsPicked" @close="closeSerialPicker" />
     <DiscountModal     v-if="showDiscount"  :context="discountCtx" @close="showDiscount = false" />
 
     <!-- Unit picker: choose Pack / Strip / Tablet for a multi-unit product -->
@@ -491,7 +504,7 @@ import {
 } from 'lucide-vue-next'
 import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
 import api from '@/api/axios'
-import { formatWeight, weightUnitLabel, isGramUnit, toBaseKg, fromBaseKg } from '@/utils/format'
+import { formatQty, formatWeight, weightUnitLabel, isGramUnit, toBaseKg, fromBaseKg } from '@/utils/format'
 import { useAuthStore }  from '@/stores/auth'
 import { useCartStore }  from '@/stores/cart'
 import { usePosStore }   from '@/stores/pos'
@@ -499,6 +512,7 @@ import { useUIStore }    from '@/stores/ui'
 import { useThemeStore } from '@/stores/theme'
 import BranchPickerModal   from '@/components/pos/BranchPickerModal.vue'
 import PaymentModal        from '@/components/pos/PaymentModal.vue'
+import SerialPickerModal   from '@/components/pos/SerialPickerModal.vue'
 import DiscountModal       from '@/components/pos/DiscountModal.vue'
 import PosNumpad           from '@/components/pos/PosNumpad.vue'
 import CustomerFormModal   from '@/components/shared/CustomerFormModal.vue'
@@ -781,6 +795,18 @@ async function addToCart(product, unit = null) {
     alert(t('pos.alert_no_variant', { name: product.name || t('pos.alert_no_variant_fallback') }))
     return
   }
+  // New 7: a serial-tracked product sells one unit at a time, each by its serial. A scanned serial (the
+  // server names it in `scan_serial`) goes straight onto the line; otherwise the cashier picks the units.
+  if (product.track_serials) {
+    const sameBranch = !product.scan_serial_branch || product.scan_serial_branch === pos.branchId
+    if (product.scan_serial && sameBranch) {
+      addSerialLine(product, [product.scan_serial])
+    } else {
+      const line = cart.items.find(i => i.key === `${product.default_variant_id}|base`)
+      serialPicker.value = { product, initial: line ? [...(line.serials || [])] : [], replaceKey: line?.key || null }
+    }
+    return
+  }
   const units = Array.isArray(product.selling_units)
     ? product.selling_units.filter(u => u.sellable !== false)
     : []
@@ -825,6 +851,66 @@ async function addToCart(product, unit = null) {
     searchFocused.value = true  // calling .focus() on an already-focused input won't re-fire @focus, so we set this explicitly
   })
   schedulePatch()
+}
+
+// ── New 7: serial-tracked lines ──────────────────────────────
+// serialPicker = { product, initial: [serials], replaceKey } while the picker is open.
+const serialPicker = ref(null)
+const serialBase = (product) => (product.selling_units || []).find(u => u.is_base) || null
+
+function addSerialLine(product, serials) {
+  const base = serialBase(product)
+  cart.addItem({
+    id:    product.default_variant_id,
+    name:  product.name,
+    price: base ? base.price : product.default_variant_price,
+    stock: product.default_variant_stock,
+    unit_id: null, unit_factor: 1, unit_name: '', is_weight: false,
+    units: [],                 // base unit only — no pack picker, no rollup
+    attributes: product.attributes_summary || null,
+    category:   product.category_name || '',
+    track_serials: true,
+    serials,
+  })
+  searchQuery.value = ''
+  searchResults.value = []
+  pos.triggerScan()
+  playBeep()
+  selectedRow.value = cart.items.findIndex(i => i.key === `${product.default_variant_id}|base`)
+  nextTick(() => { searchInputEl.value?.focus(); searchFocused.value = true })
+  schedulePatch()
+}
+
+function openSerialPickerForLine(item) {
+  serialPicker.value = {
+    product: {
+      default_variant_id: item.variant_id, name: item.name, default_variant_price: item.price,
+      default_variant_stock: item.stock, selling_units: [{ is_base: true, price: item.price }],
+      attributes_summary: item.attributes, category_name: item.category, track_serials: true,
+    },
+    initial: [...(item.serials || [])],
+    replaceKey: item.key,
+  }
+}
+
+function onSerialsPicked(serials) {
+  const p = serialPicker.value
+  serialPicker.value = null
+  if (!p) return
+  if (p.replaceKey && cart.items.some(i => i.key === p.replaceKey)) {
+    cart.setLineSerials(p.replaceKey, serials)
+    schedulePatch()
+    nextTick(() => searchInputEl.value?.focus())
+  } else if (serials.length) {
+    addSerialLine(p.product, serials)
+  }
+}
+
+function closeSerialPicker() {
+  serialPicker.value = null
+  searchQuery.value = ''
+  searchResults.value = []
+  nextTick(() => searchInputEl.value?.focus())
 }
 
 // Re-open the unit picker for a line already in the cart so the cashier can
@@ -902,6 +988,7 @@ function commitQty(e, item) {
 // Whole multi-unit row opens the unit picker; single-unit rows just select.
 function onRowClick(item, idx) {
   selectedRow.value = idx
+  if (item.track_serials) { openSerialPickerForLine(item); return }
   if ((item.units?.length || 0) > 1) openUnitChange(item)
 }
 
@@ -966,6 +1053,7 @@ async function syncInvoice() {
       quantity: i.qty,
       unit_price: i.price,
       discount_amount: cart.lineDiscount(i),
+      serial_numbers: i.track_serials ? (i.serials || []) : [],   // New 7: checked again at checkout
     })),
   }
   try {
@@ -980,7 +1068,7 @@ async function syncInvoice() {
   } catch { /* best-effort */ }
 }
 
-watch(() => cart.items.map(i => `${i.key}:${i.qty}:${i.discType || ''}:${i.discValue || 0}`).join(), schedulePatch)
+watch(() => cart.items.map(i => `${i.key}:${i.qty}:${i.discType || ''}:${i.discValue || 0}:${(i.serials || []).join('/')}`).join(), schedulePatch)
 watch(() => cart.customerId, schedulePatch)
 watch(() => `${cart.invDiscType || ''}:${cart.invDiscValue}:${cart.additive}`, schedulePatch)
 
@@ -1127,7 +1215,7 @@ async function openAlternatives(q) {
 const anyModalOpen = computed(() =>
   showPayment.value || showDiscount.value || showBranchPicker.value ||
   !!unitPicker.value || !!weightEntry.value || showAddCustomer.value ||
-  showServiceModal.value || !!successInvoice.value || altModal.open
+  showServiceModal.value || !!successInvoice.value || altModal.open || !!serialPicker.value
 )
 
 // ── Unit picker keyboard nav ─────────────────────────────────
@@ -1778,6 +1866,7 @@ function fmtNum(n) {
   background: var(--bg-app); border: 1px solid var(--border);
   padding: 0 6px; border-radius: 5px; line-height: 16px; white-space: nowrap;
 }
+.pcr-tag--warn { color: var(--danger); border-color: var(--danger); }   /* New 7: serial still to pick */
 .pcr-qty-ctrl { display: flex; align-items: center; justify-content: center; gap: 5px; }
 .pcr-qty-btn {
   width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border);

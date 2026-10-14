@@ -177,6 +177,13 @@
                   <span>{{ t('inventory.purchases.track_expiry_new') }}</span>
                 </label>
               </div>
+              <!-- New 7: onboard a brand-new product as serial-tracked (laptop, phone…) -->
+              <div class="ie-field ie-track-expiry">
+                <label class="ie-check">
+                  <input type="checkbox" v-model="row.track_serials" />
+                  <span>{{ t('serials.track_new') }}</span>
+                </label>
+              </div>
             </div>
           </Transition>
 
@@ -201,6 +208,20 @@
               <div class="ie-field">
                 <label class="ie-label">{{ t('inventory.purchases.batch_number') }}</label>
                 <BaseInput v-model="row.batch_number" :placeholder="t('common.optional')" />
+              </div>
+            </div>
+          </Transition>
+
+          <!-- New 7: one serial / IMEI per unit for a serial-tracked product (scan, type or paste a column) -->
+          <Transition name="expand">
+            <div v-if="row.track_serials && (row.variant || (row.name || '').trim())" class="item-extra item-expiry">
+              <div class="ie-field" style="flex:1;">
+                <label class="ie-label" :style="serialCountOff(row) ? 'color:var(--danger)' : ''">
+                  {{ t('serials.serials_label') }} · {{ t('serials.count_of', { n: formatQty(parseSerials(row.serials_text).length), need: formatQty(Number(row.quantity) || 0) }) }}
+                </label>
+                <textarea v-if="!readOnly" v-model="row.serials_text" class="form-input" rows="3"
+                          :placeholder="t('serials.paste_hint')" />
+                <div v-else class="ie-label" style="text-transform:none;">{{ parseSerials(row.serials_text).join(', ') || '—' }}</div>
               </div>
             </div>
           </Transition>
@@ -359,7 +380,8 @@ import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseSelect from '@/components/base/BaseSelect.vue'
-import { formatNumber } from '@/utils/format'
+import { formatNumber, formatQty } from '@/utils/format'
+import { parseSerials, serialErrorText } from '@/utils/serials'
 
 const { t }       = useI18n()
 const labelsStore = useLabelsStore()
@@ -474,8 +496,20 @@ function statusLabel(s) {
 
 async function receivePurchase(p) {
   if (!confirm(t('inventory.purchases.confirm_receive', { supplier: p.supplier_name || p.supplier }))) return
-  await api.post(`/api/finance/purchases/${p.id}/receive/`)
+  try {
+    await api.post(`/api/finance/purchases/${p.id}/receive/`)
+  } catch (e) { alert(purchaseErr(e)) }
   fetchPurchases(page.value)
+}
+
+// A save / receive error in the user's language: serial problems (New 7) first, then the server's text.
+function purchaseErr(e) {
+  const d = e?.response?.data
+  return serialErrorText(t, d) || d?.detail || t('inventory.purchases.err_save')
+}
+// New 7: the serials typed don't match the quantity yet (receive will refuse) → the label turns red.
+function serialCountOff(row) {
+  return parseSerials(row.serials_text).length !== (Number(row.quantity) || 0)
 }
 
 async function deletePurchase(p) {
@@ -517,6 +551,7 @@ function blankRow() {
   // whenever the store master switch is on (superfix §5).
   return { kind: 'new', variant: '', sku: '', name: '', quantity: 1, base_price: '', retail_price: '',
            track_expiry: expiryEnabled.value, expiry_date: '', batch_number: '',
+           track_serials: false, serials_text: '',
            unit: '', _units: [],
            category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _noHistory: false, _timer: null, _ac: null,
            _justFilled: false, _collapsed: false, _lastEnter: 0 }
@@ -542,6 +577,7 @@ function loadModal(p) {
     rows.push({ kind: 'existing', variant: it.variant, sku: it.sku, name: it.product_name,
                 quantity: Number(it.quantity), base_price: it.unit_cost, retail_price: it.retail_price,
                 track_expiry: !!it.track_expiry, expiry_date: it.expiry_date || '', batch_number: it.batch_number || '',
+                track_serials: !!it.track_serials, serials_text: (it.serial_numbers || []).join('\n'),
                 unit: it.unit || '', _units: it.selling_units || [],
                 category: '', subcategory: '', _attrs: {}, _results: [], _open: false, _noHistory: false, _timer: null, _ac: null,
                 _collapsed: false, _lastEnter: 0 })
@@ -551,6 +587,7 @@ function loadModal(p) {
     for (const a of (d.attributes || [])) _attrs[a.definition] = a.value
     rows.push({ kind: 'new', variant: '', sku: '', name: d.name, quantity: Number(d.quantity),
                 base_price: d.base_price, retail_price: d.retail_price,
+                track_serials: !!d.track_serials, serials_text: (d.serial_numbers || []).join('\n'),
                 category: d.category || '', subcategory: d.subcategory || '',
                 _attrs, _results: [], _open: false, _noHistory: false, _timer: null, _ac: null,
             _collapsed: false, _lastEnter: 0 })
@@ -668,6 +705,7 @@ function pickProduct(row, r) {
   row.sku = r.sku_display
   row.name = r.name
   row.track_expiry = !!r.track_expiry   // drives the expiry capture row below
+  row.track_serials = !!r.track_serials // New 7: drives the serial capture row below
   row._units = r.selling_units || []    // base + any pack/strip units → unit picker
   row.unit = ''                         // default to base unit (factor 1)
   if (row.retail_price === '' || row.retail_price == null) row.retail_price = r.default_variant_price
@@ -743,7 +781,7 @@ async function submitInlineAdd() {
     }
     inlineAdd.open = false
   } catch (e) {
-    alert(e.response?.data?.detail || t('inventory.purchases.err_save'))
+    alert(purchaseErr(e))
   } finally { inlineAdd.saving = false }
 }
 
@@ -764,6 +802,7 @@ function rowsToLines() {
         base.expiry_date = r.expiry_date || null
         base.batch_number = r.batch_number || ''
       }
+      if (r.track_serials) base.serial_numbers = parseSerials(r.serials_text)   // New 7
       // Existing line received in a pack/strip → send the chosen unit (NULL = base).
       if (r.variant) return { variant: r.variant, unit: r.unit || null, ...base }
       const attributes = Object.entries(r._attrs || {})
@@ -772,7 +811,7 @@ function rowsToLines() {
       // New product: tell the backend to onboard it as expiry-tracked from its first
       // receipt (closes the inline-new-product gap). Ignored unless the store switch is on.
       return { name: r.name.trim(), category: r.category || null, subcategory: r.subcategory || null,
-               attributes, track_expiry: !!r.track_expiry, ...base }
+               attributes, track_expiry: !!r.track_expiry, track_serials: !!r.track_serials, ...base }
     })
 }
 
@@ -798,7 +837,7 @@ async function saveDraft() {
     loadModal(data)          // reload in place → SKUs + purchase number now visible
     fetchPurchases(page.value)
   } catch (e) {
-    alert(e.response?.data?.detail || t('inventory.purchases.err_save'))
+    alert(purchaseErr(e))
   } finally { saving.value = false }
 }
 
@@ -818,7 +857,7 @@ async function savePurchase() {
     if (wantInvoice) window.open(`/inventory/purchases/${data.id}/print?auto=1`, '_blank')
     if (wantPrint) await startLabelPrint(data.id, copies)
   } catch (e) {
-    alert(e.response?.data?.detail || t('inventory.purchases.err_save'))
+    alert(purchaseErr(e))
   } finally { saving.value = false }
 }
 

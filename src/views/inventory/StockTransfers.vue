@@ -110,7 +110,14 @@
             <tbody>
               <tr v-for="(item, idx) in modal.items" :key="item.variantId">
                 <td class="col-ref">{{ item.sku }}</td>
-                <td>{{ item.productName }}</td>
+                <td>
+                  {{ item.productName }}
+                  <!-- New 7: a serial-tracked product travels by serial — one per unit -->
+                  <div v-if="item.trackSerials" style="margin-top:6px;">
+                    <label class="form-label">{{ i18n.t('serials.transfer_label') }} · {{ i18n.t('serials.count_of', { n: formatQty(parseSerials(item.serialsText).length), need: formatQty(item.quantity || 0) }) }}</label>
+                    <textarea v-model="item.serialsText" class="form-input" rows="2" :placeholder="i18n.t('serials.paste_hint')" />
+                  </div>
+                </td>
                 <td>
                   <input
                     v-model.number="item.quantity"
@@ -195,6 +202,10 @@ import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openModal)
 import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
+import { useI18n } from 'vue-i18n'
+import { formatQty } from '@/utils/format'
+import { parseSerials, serialErrorText } from '@/utils/serials'
+const i18n = useI18n()   // named i18n: `t` is a loop variable in this file's template
 
 const transfers = ref([])
 const branches  = ref([])
@@ -257,13 +268,15 @@ async function searchProducts() {
       id: v.id,
       sku: v.sku,
       product_name: v.product_name ?? v.sku,
+      track_serials: !!v.track_serials,
     }))
   }, 280)
 }
 
 function addItem(v) {
   if (modal.items.find(i => i.variantId === v.id)) { modal.results = []; modal.search = ''; return }
-  modal.items.push({ variantId: v.id, sku: v.sku, productName: v.product_name, quantity: 1 })
+  modal.items.push({ variantId: v.id, sku: v.sku, productName: v.product_name, quantity: 1,
+                    trackSerials: !!v.track_serials, serialsText: '' })
   modal.results = []
   modal.search = ''
 }
@@ -281,14 +294,15 @@ async function submit() {
       from_branch: modal.fromBranch,
       to_branch: modal.toBranch,
       notes: modal.notes,
-      items: modal.items.map(i => ({ variant: i.variantId, quantity: i.quantity })),
+      items: modal.items.map(i => ({ variant: i.variantId, quantity: i.quantity,
+                                     ...(i.trackSerials ? { serial_numbers: parseSerials(i.serialsText) } : {}) })),
     })
     closeModal()
     load()
   } catch (err) {
     const d = err.response?.data
-    modal.error = typeof d === 'string' ? d
-      : d?.detail ?? d?.non_field_errors?.[0] ?? JSON.stringify(d) ?? 'Transfer failed.'
+    modal.error = serialErrorText(i18n.t, d) || (typeof d === 'string' ? d
+      : d?.detail ?? d?.non_field_errors?.[0] ?? JSON.stringify(d) ?? 'Transfer failed.')
   } finally {
     modal.saving = false
   }

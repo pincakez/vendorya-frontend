@@ -97,7 +97,8 @@
       "whats_new": "الجديد",
       "shop_export": "تصدير بياناتي",
       "expiry": "الصلاحية والدفعات",
-      "lockscreen": "شاشة القفل"
+      "lockscreen": "شاشة القفل",
+      "serials": "البحث بالسيريال"
     }
   },
   "common": {
@@ -2967,7 +2968,11 @@
     "svc_warranty_job": "داخل الضمان - بدون مقابل",
     "svc_subtotal": "الإجمالي الفرعي",
     "svc_tax": "الضريبة",
-    "svc_grand_total": "الإجمالي"
+    "svc_grand_total": "الإجمالي",
+    "serial_no": "السيريال: {serials}",
+    "condition": "الحالة: {condition}",
+    "warranty": "الضمان: {months} شهر",
+    "warranty_until": "الضمان: {months} شهر — حتى {date}"
   },
   "notif": {
     "low_stock": {
@@ -3024,6 +3029,98 @@
     "words": {
       "walk_in": "عميل نقدي",
       "service": "خدمة"
+    }
+  },
+  "serials": {
+    "track_label": "تتبع الأرقام التسلسلية",
+    "track_hint": "لكل قطعة سيريال / IMEI / سيرفس تاج خاص بها، يُسجَّل عند الشراء ويُختار عند البيع",
+    "track_new": "تتبع الأرقام التسلسلية (سيريال لكل قطعة)",
+    "condition_label": "الحالة",
+    "condition_none": "غير محددة",
+    "condition": {
+      "NEW": "جديد",
+      "IMPORTED_INSPECTED": "مستورد، مفحوص",
+      "USED": "مستعمل"
+    },
+    "warranty_label": "الضمان (بالشهور)",
+    "warranty_hint": "0 = بدون ضمان. يُطبع على الإيصال مع تاريخ انتهائه.",
+    "months": "شهر",
+    "opening_label": "أرقام سيريال القطع الموجودة لديك الآن",
+    "serials_label": "الأرقام التسلسلية",
+    "paste_hint": "امسح أو اكتب سيريال واحد في كل سطر — يمكنك لصق عمود كامل",
+    "count": "تم إدخال {n}",
+    "count_of": "{n} من {need}",
+    "section_title": "الأرقام التسلسلية",
+    "none_yet": "لا توجد أرقام تسلسلية بعد.",
+    "register_btn": "تسجيل سيريالات",
+    "register_title": "تسجيل سيريالات لمخزون موجود بالفعل",
+    "register_hint": "للقطع الموجودة على الرف وليس لها سيريال بعد (مخزون من قبل تشغيل التتبع). هذا لا يغيّر كمية المخزون.",
+    "remove_btn": "حذف",
+    "remove_confirm": "حذف السيريال {serial}؟ ستبقى القطعة في المخزون بدون سيريال.",
+    "toast_registered": "تم تسجيل السيريالات",
+    "err_generic": "حدث خطأ — حاول مرة أخرى.",
+    "col_serial": "السيريال / IMEI",
+    "col_product": "المنتج",
+    "col_status": "الحالة",
+    "col_branch": "الفرع",
+    "col_sale": "البيع",
+    "col_purchase": "الشراء",
+    "col_warranty_end": "نهاية الضمان",
+    "status": {
+      "IN_STOCK": "في المخزون",
+      "SOLD": "مُباع",
+      "RETURNED": "مُرتجع (لم يُعد للمخزون)",
+      "WRITTEN_OFF": "مُستبعد"
+    },
+    "move": {
+      "RECEIVED": "استلام",
+      "SOLD": "بيع",
+      "RETURNED": "إرجاع من العميل",
+      "VOIDED": "إلغاء البيع",
+      "ADJUSTED_IN": "إضافة بتسوية مخزون",
+      "ADJUSTED_OUT": "خصم بتسوية مخزون",
+      "TRANSFERRED": "تحويل",
+      "REGISTERED": "تسجيل على مخزون موجود",
+      "REMOVED": "حذف السيريال"
+    },
+    "lookup_title": "البحث بالسيريال",
+    "lookup_sub": "ابحث عن أي قطعة بالسيريال أو IMEI أو السيرفس تاج — ما هي، وأين هي، ومن اشتراها، وحالة ضمانها.",
+    "lookup_ph": "امسح أو اكتب السيريال / IMEI…",
+    "lookup_start": "اكتب حرفين على الأقل من السيريال.",
+    "lookup_none": "لا توجد قطعة بهذا السيريال في متجرك.",
+    "lookup_truncated": "يتم عرض أول 200 نتيجة — اكتب جزءًا أكبر من السيريال لتضييق البحث.",
+    "history": "السجل",
+    "loading": "جارٍ التحميل…",
+    "warranty_active": "داخل الضمان",
+    "warranty_ended": "انتهى الضمان",
+    "warranty_months_until": "{months} شهر — حتى {date}",
+    "return_no": "مرتجع رقم {n}",
+    "pick_title": "اختيار القطع — {product}",
+    "pick_scan_ph": "امسح أو اكتب السيريال / IMEI ثم Enter",
+    "pick_none_here": "لا توجد قطع لها سيريال في مخزون هذا الفرع.",
+    "pick_not_here": "{serial} غير موجود في مخزون هذا الفرع.",
+    "pick_confirm": "إضافة للبيع",
+    "pick_edit": "اختيار السيريالات",
+    "pick_needed": "اختر السيريال",
+    "return_pick": "القطع المرتجعة:",
+    "return_text_ph": "أرقام سيريال القطع المرتجعة (للمنتجات التي لها سيريال فقط)",
+    "adjust_in_label": "سيريالات القطع المضافة",
+    "adjust_out_label": "سيريالات القطع المخصومة",
+    "transfer_label": "سيريالات القطع المحوّلة",
+    "err": {
+      "serial_too_long": "سيريال أطول من المسموح: {serials}",
+      "serial_duplicate": "سيريال مُدخل مرتين: {serials}",
+      "serial_unit": "{product} له أرقام تسلسلية — يُشترى ويُباع قطعة قطعة، وليس بالعبوة.",
+      "serial_whole": "{product} له أرقام تسلسلية — استخدم قطعًا كاملة.",
+      "serial_count": "{product} يحتاج {need} سيريال بالضبط، واحد لكل قطعة — تم إدخال {got}.",
+      "serial_in_stock": "موجود بالفعل في مخزون المتجر: {serials}",
+      "serial_not_available": "غير موجود في المخزون هنا: {serials}",
+      "serial_not_sold": "لم يُبع في هذه الفاتورة: {serials}",
+      "serial_off": "{product} لا يتتبع الأرقام التسلسلية.",
+      "serial_register_cap": "يوجد {room} قطعة فقط من {product} في هذا الفرع بدون سيريال — أدخلت {got}. استلم فاتورة شراء أو اعمل تسوية مخزون لإضافة قطع.",
+      "serial_weight": "المنتج الذي يُباع بالوزن لا يمكنه تتبع الأرقام التسلسلية.",
+      "serial_base_unit": "المنتج الذي له أرقام تسلسلية يُباع قطعة قطعة — اترك البيع بالقطعة مفعّلًا.",
+      "serial_still_in_stock": "ما زالت هناك قطع لها سيريال في المخزون — بِعها أو استبعدها أو احذف سيريالاتها قبل إيقاف التتبع."
     }
   }
 }

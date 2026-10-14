@@ -60,6 +60,10 @@
               <div class="it-name" dir="auto">{{ it.name }}<span v-if="it.unit_name"> · {{ it.unit_name }}</span></div>
               <div class="it-sku">{{ it.sku }}</div>
               <div v-if="Number(it.discount_amount) > 0" class="it-disc">{{ st('receipt.disc') }} − <Money :value="it.discount_amount" /></div>
+              <!-- New 7/8: serials, condition, warranty — only when the line has them -->
+              <div v-if="it.serial_numbers?.length" class="it-sku">{{ st('receipt.serial_no', { serials: it.serial_numbers.join(', ') }) }}</div>
+              <div v-if="it.condition" class="it-sku">{{ st('receipt.condition', { condition: st(conditionKey(it.condition)) }) }}</div>
+              <div v-if="it.warranty_months > 0" class="it-sku">{{ warrantyLine(it, st) }}</div>
             </td>
             <td class="ta-right">{{ lineQty(it) }}</td>
             <td class="ta-right"><Money :value="it.unit_price" /></td>
@@ -107,6 +111,7 @@ import { useFormatStore } from '@/stores/format'
 import { formatQty, formatWeight } from '@/utils/format'
 import { useQZTray } from '@/composables/useQZTray'
 import { useShopLocale, printDate } from '@/composables/useShopLocale'
+import { conditionKey } from '@/utils/serials'
 
 const { t }  = useI18n()
 const route  = useRoute()
@@ -133,6 +138,13 @@ const storeLocation = computed(() => [inv.store.city, inv.store.country].filter(
 // §WT: weight lines read "250 g" / "0.25 kg" in the invoice's store weight unit; others a plain qty.
 function lineQty(it) {
   return it.is_weight ? formatWeight(it.quantity, inv.weight_unit) : formatQty(it.quantity)
+}
+// New 8: "Warranty: 12 months — until 2027-10-14" (the end date is frozen per line at checkout).
+function warrantyLine(it, tr) {
+  const months = formatQty(it.warranty_months)
+  return it.warranty_ends_on
+    ? tr('receipt.warranty_until', { months, date: it.warranty_ends_on })
+    : tr('receipt.warranty', { months })
 }
 
 // s167: the document speaks the shop's language (print-data store.default_language).
@@ -222,6 +234,10 @@ function buildInvoiceESCPOS() {
       const disc = '- ' + esc_money(it.discount_amount)
       out += ('  ' + rt('receipt.disc')).padEnd(COLS - disc.length - 1) + ' ' + disc + LF
     }
+    // New 7/8 (raw thermal = English, see rt above)
+    if (it.serial_numbers?.length) out += esc_line('  ' + rt('receipt.serial_no', { serials: it.serial_numbers.join(', ') }))
+    if (it.condition) out += esc_line('  ' + rt('receipt.condition', { condition: rt(conditionKey(it.condition)) }))
+    if (it.warranty_months > 0) out += esc_line('  ' + warrantyLine(it, rt))
   }
   out += esc_dashes()
 

@@ -491,7 +491,7 @@
               <input v-model.number="prodModal.reorder_level" class="pm2-input" type="number" min="0" step="1"
                      placeholder="0" :title="t('inventory.products.product_modal.reorder_hint')" />
             </div>
-            <div v-if="!prodModal.id" class="pm2-field">
+            <div v-if="!prodModal.id && !prodModal.track_serials" class="pm2-field">
               <div class="pm2-fh">
                 <label class="pm2-label">{{ t('inventory.products.product_modal.initial_stock_label') }}</label>
                 <button type="button" class="pm2-pin" :class="{ on: prodDefaults.stock_enabled }"
@@ -501,6 +501,36 @@
               <input v-model.number="prodModal.initial_stock" class="pm2-input" type="number" min="0" step="1"
                      placeholder="1" :title="t('inventory.products.product_modal.initial_stock_hint')" />
             </div>
+          </div>
+
+          <!-- New 8: condition + warranty (printed on the receipt when set) -->
+          <div class="pm2-stock-row">
+            <div class="pm2-field">
+              <div class="pm2-fh"><label class="pm2-label">{{ t('serials.condition_label') }}</label></div>
+              <select v-model="prodModal.condition" class="pm2-input">
+                <option value="">{{ t('serials.condition_none') }}</option>
+                <option v-for="c in CONDITIONS" :key="c" :value="c">{{ t(conditionKey(c)) }}</option>
+              </select>
+            </div>
+            <div class="pm2-field">
+              <div class="pm2-fh"><label class="pm2-label">{{ t('serials.warranty_label') }}</label></div>
+              <input v-model.number="prodModal.warranty_months" class="pm2-input" type="number" min="0" step="1"
+                     placeholder="0" :title="t('serials.warranty_hint')" />
+            </div>
+          </div>
+
+          <!-- New 7: serial / IMEI per unit -->
+          <label class="pm2-base-toggle">
+            <input type="checkbox" v-model="prodModal.track_serials" />
+            <span>{{ t('serials.track_label') }} — {{ t('serials.track_hint') }}</span>
+          </label>
+          <div v-if="prodModal.track_serials && !prodModal.id" class="pm2-field" style="margin-top:8px;">
+            <div class="pm2-fh">
+              <label class="pm2-label">{{ t('serials.opening_label') }}</label>
+              <span class="pm2-label">{{ t('serials.count', { n: formatQty(openingSerials.length) }) }}</span>
+            </div>
+            <textarea v-model="prodModal.opening_serials" class="pm2-input pm2-textarea" rows="3"
+                      :placeholder="t('serials.paste_hint')" />
           </div>
 
           <!-- s168 Upgrade 9: the category's spec set (kept in its own component) -->
@@ -620,6 +650,7 @@ import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
 import { formatQty, formatWeight } from '@/utils/format'
+import { parseSerials, CONDITIONS, conditionKey } from '@/utils/serials'
 import { decomposeStock, headlineLabel, formatBreakdown } from '@/utils/units'
 import { showSuccessToast, showWarningToast } from '@/utils/toast'
 import { useFormDirty } from '@/composables/useFormDirty'
@@ -1216,10 +1247,12 @@ const prodModal = reactive({
   open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
   base_price: null, cost_price: null, sell_price: null, reorder_level: null, initial_stock: 1, attrs: {}, saving: false, error: '',
   units: [], sell_base_unit: true, sku2: '', specErrors: false, origCategory: '',
+  track_serials: false, condition: '', warranty_months: 0, opening_serials: '',
 })
 // s168 Upgrade 9: which attributes the category's spec set shows (+ which required ones are empty).
 const prodSpecState = ref({ ids: [], missing: [] })
 const otherAttributes = computed(() => attributes.value.filter(d => !prodSpecState.value.ids.includes(d.id)))
+const openingSerials = computed(() => parseSerials(prodModal.opening_serials))
 function optText(o) { return typeof o === 'string' ? o : (o?.value ?? o?.label ?? String(o)) }
 function resetAttrs() { const a = {}; for (const d of attributes.value) a[d.id] = ''; prodModal.attrs = a }
 
@@ -1288,6 +1321,7 @@ function openAddProduct() {
     reorder_level: prodDefaults.reorder_enabled ? prodDefaults.reorder_value : null,
     initial_stock: prodDefaults.stock_enabled ? prodDefaults.stock_value : 1,
     units: [], sell_base_unit: true, sku2: '',
+    track_serials: false, condition: '', warranty_months: 0, opening_serials: '',
     saving: false, error: '', specErrors: false,
   })
   resetAttrs()
@@ -1337,6 +1371,10 @@ async function openEditProduct(p) {
     prodModal.sell_price  = v ? Number(v.sell_price || 0) : 0
     prodModal.reorder_level = v ? Number(v.reorder_level ?? 0) : 0
     prodModal.sku2 = v ? (v.sku2 || '') : ''
+    prodModal.track_serials   = !!data.track_serials
+    prodModal.condition       = data.condition || ''
+    prodModal.warranty_months = Number(data.warranty_months || 0)
+    prodModal.opening_serials = ''
     if (v && v.attributes) for (const a of v.attributes) prodModal.attrs[a.definition] = a.value
     prodModal.units = (data.selling_units || [])
       .filter(u => !u.is_base)
@@ -1367,7 +1405,12 @@ async function saveProduct() {
     sell_price: prodModal.sell_price || 0,
     reorder_level: prodModal.reorder_level ?? 0,
     attributes: attributes_payload,
+    track_serials: !!prodModal.track_serials,
+    condition: prodModal.condition || '',
+    warranty_months: Math.max(0, parseInt(prodModal.warranty_months, 10) || 0),
   }
+  // New 7: a serial-tracked product's opening stock = one unit per serial typed (none → no opening stock).
+  const openingQty = prodModal.track_serials ? openingSerials.value.length : prodModal.initial_stock
   if (storeSettings.sku2_state === 'ON') payload.sku2 = prodModal.sku2 || ''
   if (!prodModal.id) {
     payload.supplier = prodModal.supplier   // supplier locked on edit
@@ -1387,7 +1430,7 @@ async function saveProduct() {
       // Opening stock is NEVER a direct quantity write — it posts a ledgered
       // StockAdjustment (reason OPENING). If that entry can't be posted, the
       // product still exists but with 0 stock, so we warn instead of lying "saved".
-      if (prodModal.initial_stock > 0) {
+      if (openingQty > 0) {
         try {
           const [detailRes, branchRes] = await Promise.all([
             api.get(`/api/inventory/products/${created.id}/`),
@@ -1399,9 +1442,10 @@ async function saveProduct() {
             await api.post('/api/inventory/adjustments/', {
               variant: firstVariant.id,
               branch: branches[0].id,
-              quantity_change: prodModal.initial_stock,
+              quantity_change: openingQty,
               reason: 'OPENING',
               notes: 'Initial stock on creation',
+              ...(prodModal.track_serials ? { serial_numbers: openingSerials.value } : {}),
             })
           } else {
             stockWarning = true   // no variant or no branch to receive the stock
@@ -1429,6 +1473,7 @@ async function saveProduct() {
       || d.supplier?.[0]
       || d.sku2?.[0]
       || d.selling_units?.[0]
+      || (d.serial_code?.[0] ? t(`serials.err.${d.serial_code[0]}`) : '')
       || t('inventory.products.product_modal.err_save')
   } finally { prodModal.saving = false }
 }

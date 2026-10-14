@@ -315,6 +315,62 @@
       </div>
     </div>
 
+    <!-- ══ New 7: SERIAL NUMBERS (one per unit) ══ -->
+    <div v-if="product && product.track_serials" class="variants-card">
+      <div class="section-header">
+        <h2 class="section-title">{{ t('serials.section_title') }}</h2>
+        <span class="count-badge">{{ formatQty(serialRows.filter(s => s.status === 'IN_STOCK').length) }}</span>
+        <BaseButton v-if="canManage" variant="ghost" size="sm" style="margin-inline-start:auto;" @click="openRegister">
+          {{ t('serials.register_btn') }}
+        </BaseButton>
+      </div>
+      <div class="dt-xscroll">
+        <table class="dt">
+          <thead>
+            <tr>
+              <th class="dt-th">{{ t('serials.col_serial') }}</th>
+              <th class="dt-th">{{ t('serials.col_status') }}</th>
+              <th class="dt-th">{{ t('serials.col_branch') }}</th>
+              <th class="dt-th">{{ t('serials.col_warranty_end') }}</th>
+              <th class="dt-th"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="!serialRows.length">
+              <td colspan="5" class="dt-empty">{{ t('serials.none_yet') }}</td>
+            </tr>
+            <tr v-for="s in serialRows" :key="s.id" class="dt-row">
+              <td class="mono fw6"><router-link :to="{ path: '/inventory/serials', query: { q: s.serial } }">{{ s.serial }}</router-link></td>
+              <td>{{ t(`serials.status.${s.status}`) }}</td>
+              <td class="text-muted">{{ s.branch_name || '—' }}</td>
+              <td class="text-muted">{{ s.warranty_ends_on || '—' }}</td>
+              <td>
+                <BaseButton v-if="canManage && s.status === 'IN_STOCK'" variant="ghost" size="sm" @click="removeSerial(s)">
+                  {{ t('serials.remove_btn') }}
+                </BaseButton>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <AppModal v-if="product" :open="registerModal.open" :title="t('serials.register_title')" width="520px" @close="registerModal.open = false">
+      <p class="prod-units-hint" style="margin-bottom:12px;">{{ t('serials.register_hint') }}</p>
+      <BaseSelect v-model="registerModal.branch" :label="t('serials.col_branch')" :options="branchOptions" />
+      <div style="margin-top:12px;">
+        <label class="form-label">{{ t('serials.serials_label') }} · {{ t('serials.count', { n: formatQty(parseSerials(registerModal.text).length) }) }}</label>
+        <textarea v-model="registerModal.text" class="form-input" rows="6" :placeholder="t('serials.paste_hint')" />
+      </div>
+      <p v-if="registerModal.error" class="form-label" style="color:var(--danger);margin-top:8px;">{{ registerModal.error }}</p>
+      <template #footer>
+        <BaseButton variant="ghost" @click="registerModal.open = false">{{ t('common.cancel') }}</BaseButton>
+        <BaseButton :loading="registerModal.saving" :disabled="!registerModal.branch || !parseSerials(registerModal.text).length" @click="saveRegister">
+          {{ t('serials.register_btn') }}
+        </BaseButton>
+      </template>
+    </AppModal>
+
     <!-- ══ EDIT PRODUCT MODAL ══ -->
     <ProductLabelsModal v-if="product" :open="labelsOpen" :product-ids="[product.id]" @close="labelsOpen = false" />
 
@@ -401,6 +457,24 @@
         </label>
       </div>
 
+      <!-- ══ New 8: condition + warranty · New 7: serial per unit ══ -->
+      <div class="prod-expiry-row" style="flex-wrap:wrap;gap:12px;">
+        <div style="flex:1;min-width:180px;">
+          <BaseSelect v-model="editModal.condition" :label="t('serials.condition_label')" :options="conditionOptions" />
+        </div>
+        <div style="flex:1;min-width:180px;">
+          <BaseInput v-model="editModal.warranty_months" type="number" min="0" step="1"
+                     :label="t('serials.warranty_label')" :suffix="t('serials.months')" />
+        </div>
+        <label class="prod-expiry-toggle" style="width:100%;">
+          <input type="checkbox" v-model="editModal.track_serials" />
+          <span>
+            <span class="form-label" style="margin-bottom:2px;">{{ t('serials.track_label') }}</span>
+            <span class="prod-units-hint">{{ t('serials.track_hint') }}</span>
+          </span>
+        </label>
+      </div>
+
       <!-- ══ Selling units (opt-in multi-UoM) — hidden in weight mode (mutually exclusive) ══ -->
       <div v-if="!isWeightMode" class="prod-units-section">
         <div class="prod-units-head">
@@ -470,7 +544,11 @@ import ProductSpecFields from '@/components/inventory/ProductSpecFields.vue'
 import { specSaveError, attributesPayload } from '@/utils/specs'
 import { showSuccessToast } from '@/utils/toast'
 import { decomposeStock, headlineLabel, formatBreakdown, unitConversionLine } from '@/utils/units'
-import { formatWeight } from '@/utils/format'
+import { formatWeight, formatQty } from '@/utils/format'
+import { parseSerials, serialErrorText, CONDITIONS, conditionKey } from '@/utils/serials'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
 import { renderRichText } from '@/utils/richText'
 import { useAuthStore } from '@/stores/auth'
 
@@ -579,8 +657,60 @@ async function fetchProduct() {
     const r = await api.get(`/api/inventory/products/${props.id}/`)
     product.value = r.data
     hydrateShowcase()
+    fetchSerials()
   } catch { product.value = null }
   finally { loading.value = false }
+}
+
+// ── New 7: serial numbers of this product ──
+const serialRows = ref([])
+const branchOptions = ref([])
+const registerModal = reactive({ open: false, branch: '', text: '', saving: false, error: '' })
+const conditionOptions = computed(() => [
+  { value: '', label: t('serials.condition_none') },
+  ...CONDITIONS.map(c => ({ value: c, label: t(conditionKey(c)) })),
+])
+async function fetchSerials() {
+  if (!product.value?.track_serials) { serialRows.value = []; return }
+  try {
+    const { data } = await api.get('/api/inventory/serials/', { params: { product: props.id } })
+    serialRows.value = data.results || []
+  } catch { serialRows.value = [] }
+}
+async function openRegister() {
+  Object.assign(registerModal, { open: true, text: '', saving: false, error: '' })
+  if (!branchOptions.value.length) {
+    try {
+      const { data } = await api.get('/api/core/branches/')
+      branchOptions.value = (data.results ?? data).map(b => ({ value: b.id, label: b.name }))
+    } catch { branchOptions.value = [] }
+  }
+  if (!registerModal.branch && branchOptions.value.length) registerModal.branch = branchOptions.value[0].value
+}
+async function saveRegister() {
+  const variant = product.value?.variants?.[0]
+  if (!variant) return
+  registerModal.saving = true; registerModal.error = ''
+  try {
+    await api.post('/api/inventory/serials/register/', {
+      variant: variant.id, branch: registerModal.branch, serial_numbers: parseSerials(registerModal.text),
+    })
+    registerModal.open = false
+    showSuccessToast(t('serials.toast_registered'))
+    fetchSerials()
+  } catch (e) {
+    const d = e.response?.data || {}
+    registerModal.error = serialErrorText(t, d) || d.detail || d.variant?.[0] || d.branch?.[0] || t('serials.err_generic')
+  } finally { registerModal.saving = false }
+}
+async function removeSerial(s) {
+  if (!confirm(t('serials.remove_confirm', { serial: s.serial }))) return
+  try {
+    await api.post(`/api/inventory/serials/${s.id}/remove/`, {})
+    fetchSerials()
+  } catch (e) {
+    alert(serialErrorText(t, e.response?.data) || t('serials.err_generic'))
+  }
 }
 
 // ── Showcase gallery actions ──
@@ -724,6 +854,7 @@ const editModal = reactive({
   supplierName: '', base_price: 0, cost_price: 0, sell_price: 0,
   reorder_level: 0, attrs: {}, unit: 'pcs', units: [], track_expiry: false,
   selling_mode: 'UNIT', saving: false, error: '', specErrors: false,
+  track_serials: false, condition: '', warranty_months: 0,   // New 7 / New 8
   // §MU-MB: per-product POS-tier toggles. show_strip → Strip row's `sellable`;
   // show_unit → product.sell_base_unit. Pack (biggest) is always sellable.
   show_strip: true, show_unit: true, autofilled: false,
@@ -804,6 +935,9 @@ async function openEditModal() {
   editModal.unit = p.unit || 'pcs'
   editModal.track_expiry = !!p.track_expiry
   editModal.selling_mode = p.selling_mode || 'UNIT'
+  editModal.track_serials = !!p.track_serials
+  editModal.condition = p.condition || ''
+  editModal.warranty_months = Number(p.warranty_months || 0)
   // Opt-in alternate units come back in selling_units; the base unit (is_base)
   // is implicit and excluded from the editable rows.
   editModal.units = (p.selling_units || [])
@@ -860,6 +994,9 @@ async function saveEdit() {
     reorder_level: editModal.reorder_level ?? 0,
     track_expiry: editModal.track_expiry,
     selling_mode: editModal.selling_mode,
+    track_serials: !!editModal.track_serials,
+    condition: editModal.condition || '',
+    warranty_months: Math.max(0, parseInt(editModal.warranty_months, 10) || 0),
     // §MU-MB: "show Unit" tier = whether the base unit itself is sellable at the POS.
     sell_base_unit: editModal.show_unit,
     attributes: attributes_payload,
@@ -889,6 +1026,7 @@ async function saveEdit() {
       || specSaveError(d, t)
       || d.detail
       || d.selling_units?.[0]
+      || (d.serial_code?.[0] ? t(`serials.err.${d.serial_code[0]}`) : '')
       || t('inventory.product_detail.err_save')
   } finally { editModal.saving = false }
 }

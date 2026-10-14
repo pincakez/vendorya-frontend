@@ -97,7 +97,8 @@
       "whats_new": "What's New",
       "shop_export": "Export My Data",
       "expiry": "Expiry & Batches",
-      "lockscreen": "Lock Screen"
+      "lockscreen": "Lock Screen",
+      "serials": "Serial Lookup"
     }
   },
   "common": {
@@ -2967,7 +2968,11 @@
     "svc_warranty_job": "Under warranty - no charge",
     "svc_subtotal": "Subtotal",
     "svc_tax": "Tax",
-    "svc_grand_total": "Total"
+    "svc_grand_total": "Total",
+    "serial_no": "S/N: {serials}",
+    "condition": "Condition: {condition}",
+    "warranty": "Warranty: {months} months",
+    "warranty_until": "Warranty: {months} months — until {date}"
   },
   "notif": {
     "low_stock": {
@@ -3024,6 +3029,98 @@
     "words": {
       "walk_in": "Walk-in",
       "service": "Service"
+    }
+  },
+  "serials": {
+    "track_label": "Track serial numbers",
+    "track_hint": "each unit has its own serial / IMEI / service tag, entered on purchase and picked on sale",
+    "track_new": "Track serial numbers (one per unit)",
+    "condition_label": "Condition",
+    "condition_none": "Not stated",
+    "condition": {
+      "NEW": "New",
+      "IMPORTED_INSPECTED": "Imported, inspected",
+      "USED": "Used"
+    },
+    "warranty_label": "Warranty (months)",
+    "warranty_hint": "0 = no warranty. Printed on the receipt with its end date.",
+    "months": "months",
+    "opening_label": "Serial numbers of the units you have now",
+    "serials_label": "Serial numbers",
+    "paste_hint": "Scan or type one serial per line — you can paste a whole column",
+    "count": "{n} entered",
+    "count_of": "{n} of {need}",
+    "section_title": "Serial numbers",
+    "none_yet": "No serial numbers yet.",
+    "register_btn": "Register serials",
+    "register_title": "Register serials on stock you already have",
+    "register_hint": "For units already on the shelf that have no serial yet (stock from before tracking was on). This does not change the stock count.",
+    "remove_btn": "Remove",
+    "remove_confirm": "Remove serial {serial}? The unit stays in stock without a serial.",
+    "toast_registered": "Serials registered",
+    "err_generic": "Something went wrong — please try again.",
+    "col_serial": "Serial / IMEI",
+    "col_product": "Product",
+    "col_status": "Status",
+    "col_branch": "Branch",
+    "col_sale": "Sold",
+    "col_purchase": "Bought",
+    "col_warranty_end": "Warranty ends",
+    "status": {
+      "IN_STOCK": "In stock",
+      "SOLD": "Sold",
+      "RETURNED": "Returned (not restocked)",
+      "WRITTEN_OFF": "Written off"
+    },
+    "move": {
+      "RECEIVED": "Received",
+      "SOLD": "Sold",
+      "RETURNED": "Returned by customer",
+      "VOIDED": "Sale voided",
+      "ADJUSTED_IN": "Added by stock adjustment",
+      "ADJUSTED_OUT": "Removed by stock adjustment",
+      "TRANSFERRED": "Transferred",
+      "REGISTERED": "Registered on existing stock",
+      "REMOVED": "Serial removed"
+    },
+    "lookup_title": "Serial Lookup",
+    "lookup_sub": "Find any unit by its serial, IMEI or service tag — what it is, where it is, who bought it and its warranty.",
+    "lookup_ph": "Scan or type a serial / IMEI…",
+    "lookup_start": "Type at least 2 characters of a serial.",
+    "lookup_none": "No unit with this serial in your shop.",
+    "lookup_truncated": "Showing the first 200 matches — type more of the serial to narrow it down.",
+    "history": "History",
+    "loading": "Loading…",
+    "warranty_active": "under warranty",
+    "warranty_ended": "warranty ended",
+    "warranty_months_until": "{months} months — until {date}",
+    "return_no": "return #{n}",
+    "pick_title": "Pick units — {product}",
+    "pick_scan_ph": "Scan or type the serial / IMEI, then Enter",
+    "pick_none_here": "No units with a serial are in stock at this branch.",
+    "pick_not_here": "{serial} is not in stock at this branch.",
+    "pick_confirm": "Add to sale",
+    "pick_edit": "Pick serials",
+    "pick_needed": "pick serial",
+    "return_pick": "Units coming back:",
+    "return_text_ph": "Serial numbers coming back (only for products with serials)",
+    "adjust_in_label": "Serials of the units added",
+    "adjust_out_label": "Serials of the units removed",
+    "transfer_label": "Serials of the units moving",
+    "err": {
+      "serial_too_long": "A serial is too long: {serials}",
+      "serial_duplicate": "Serial entered twice: {serials}",
+      "serial_unit": "{product} has serial numbers — it is bought and sold one unit at a time, not in packs.",
+      "serial_whole": "{product} has serial numbers — use whole units.",
+      "serial_count": "{product} needs exactly {need} serial number(s), one per unit — {got} entered.",
+      "serial_in_stock": "Already in stock in this shop: {serials}",
+      "serial_not_available": "Not in stock here: {serials}",
+      "serial_not_sold": "Not sold on this invoice: {serials}",
+      "serial_off": "{product} does not track serial numbers.",
+      "serial_register_cap": "Only {room} unit(s) of {product} at this branch have no serial yet — you entered {got}. Receive a purchase or make a stock adjustment to add more units.",
+      "serial_weight": "A product sold by weight cannot track serial numbers.",
+      "serial_base_unit": "A product with serial numbers is sold one unit at a time — keep selling single units on.",
+      "serial_still_in_stock": "Units with a serial are still in stock — sell them, write them off or remove their serials before switching tracking off."
     }
   }
 }

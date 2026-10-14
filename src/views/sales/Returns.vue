@@ -97,8 +97,19 @@
             {{ t('sales.returns.modal.restock') }}
           </label>
           <button class="row-action danger" @click="modal.items.splice(i, 1)"><Trash2 :size="13" /></button>
+          <!-- New 7: serial-tracked product → which units come back (tick the ones sold on that invoice) -->
+          <div v-if="item.variant" class="item-serials">
+            <template v-if="soldSerials(item).length">
+              <span class="restock-label">{{ t('serials.return_pick') }}</span>
+              <span v-for="s in soldSerials(item)" :key="s" class="serial-chip" dir="ltr"
+                    :class="{ on: (item.serials || []).includes(s) }" role="checkbox" tabindex="0"
+                    :aria-checked="(item.serials || []).includes(s)"
+                    @click="toggleReturnSerial(item, s)" @keydown.enter.prevent="toggleReturnSerial(item, s)">{{ s }}</span>
+            </template>
+            <BaseInput v-else-if="!modal.original_invoice" v-model="item.serials_text" :placeholder="t('serials.return_text_ph')" />
+          </div>
         </div>
-        <button class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ line: '', variant: '', unit: null, quantity: 1, refund_amount: '', restock_inventory: true })">
+        <button class="btn-ghost" style="margin-top:8px;" @click="modal.items.push({ line: '', variant: '', unit: null, quantity: 1, refund_amount: '', restock_inventory: true, serials: [], serials_text: '' })">
           <Plus :size="13" /> {{ t('sales.returns.modal.add_item') }}
         </button>
       </div>
@@ -119,6 +130,8 @@ import { formatQty } from '@/utils/format'
 import { useI18n } from 'vue-i18n'
 import { RotateCcw, Trash2, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
+import BaseInput from '@/components/base/BaseInput.vue'
+import { parseSerials, serialErrorText } from '@/utils/serials'
 import { useAuthStore } from '@/stores/auth'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
@@ -199,13 +212,15 @@ async function saveReturn() {
         quantity: Number(i.quantity),
         refund_amount: Number(i.refund_amount),
         restock_inventory: i.restock_inventory,
+        // New 7: the serials coming back (picked from the invoice, or typed when there is none)
+        serial_numbers: (i.serials && i.serials.length) ? i.serials : parseSerials(i.serials_text),
       })),
     })
     closeModal()
     fetchRefunds(1)
   } catch (e) {
     const d = e.response?.data
-    alert(d?.detail || (d ? JSON.stringify(d) : t('sales.returns.err_save')))
+    alert(serialErrorText(t, d) || d?.detail || (d ? JSON.stringify(d) : t('sales.returns.err_save')))
   } finally {
     saving.value = false
   }
@@ -215,7 +230,7 @@ async function saveReturn() {
 const invoiceLines = ref([])
 watch(() => modal.original_invoice, async (id) => {
   invoiceLines.value = []
-  modal.items.forEach(i => { i.line = ''; i.variant = ''; i.unit = null })
+  modal.items.forEach(i => { i.line = ''; i.variant = ''; i.unit = null; i.serials = [] })
   if (!id) return
   try {
     const { data } = await api.get(`/api/finance/invoices/${id}/print-data/`)
@@ -225,6 +240,7 @@ watch(() => modal.original_invoice, async (id) => {
       unit: l.unit,
       quantity: Number(l.quantity),
       total: Number(l.total),
+      serials: l.serial_numbers || [],   // New 7: the units sold on this line
       label: `${l.name} — ${formatQty(l.quantity)}${l.unit_name ? ' ' + l.unit_name : ''}`,
     }))
   } catch {}
@@ -232,10 +248,22 @@ watch(() => modal.original_invoice, async (id) => {
 function pickLine(item) {
   const l = invoiceLines.value.find(x => x.key === item.line)
   if (!l) return
+  if (item.variant !== l.variant || item.unit !== l.unit) item.serials = []
   item.variant = l.variant
   item.unit = l.unit
   // default refund = what one unit of this line was sold for × qty (the server caps it anyway)
   if (l.quantity > 0) item.refund_amount = (Math.round(l.total / l.quantity * Number(item.quantity || 0) * 100) / 100).toFixed(2)
+}
+
+// ── New 7: a serial-tracked line → tick which of the units sold on it come back (qty follows) ──
+function soldSerials(item) {
+  const l = invoiceLines.value.find(x => x.key === item.line)
+  return l ? l.serials : []
+}
+function toggleReturnSerial(item, s) {
+  const list = item.serials || []
+  item.serials = list.includes(s) ? list.filter(x => x !== s) : [...list, s]
+  if (item.serials.length) { item.quantity = item.serials.length; pickLine(item) }   // one unit per serial
 }
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '—' }
@@ -279,7 +307,11 @@ onMounted(() => {
 .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .section-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:10px; }
 
-.item-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+.item-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+.item-serials { flex-basis:100%; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.serial-chip { font-family:monospace; font-size:12px; font-weight:600; padding:2px 8px; border-radius:6px; cursor:pointer;
+  border:1px solid var(--border); background:var(--bg-app); color:var(--text-secondary); }
+.serial-chip.on { border-color:var(--accent); background:var(--accent-soft); color:var(--text-primary); }
 .item-variant { flex:2; min-width:0; }
 .item-qty   { width:70px; flex-shrink:0; }
 .item-price { width:100px; flex-shrink:0; }

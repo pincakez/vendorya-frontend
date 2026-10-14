@@ -95,7 +95,12 @@ export const useCartStore = defineStore('cart', {
       // Weight lines (sold per kg, decimal qty) don't auto-increment on re-add —
       // the cashier sets the exact weight; a fresh add seeds 1.000 kg to edit.
       const isWeight = !!variant.is_weight
-      if (existing && !isWeight) {
+      // New 7: a serial-tracked line's qty IS its picked serials (one per unit) — merge, never +1 blindly.
+      const serials = Array.isArray(variant.serials) ? variant.serials : null
+      if (existing && existing.track_serials && serials) {
+        existing.serials = [...new Set([...(existing.serials || []), ...serials])]
+        existing.qty = Math.max(existing.serials.length, 1)
+      } else if (existing && !isWeight) {
         existing.qty++
       } else if (existing && isWeight) {
         // already on the cart — leave its weight as-is for the cashier to edit
@@ -109,7 +114,9 @@ export const useCartStore = defineStore('cart', {
           is_weight: isWeight,
           name: variant.name,
           price: parseFloat(variant.price) || 0,
-          qty: 1,
+          qty: serials && serials.length ? serials.length : 1,
+          track_serials: !!variant.track_serials,   // New 7
+          serials: serials ? [...serials] : [],
           stock: variant.stock,
           attributes: variant.attributes || null,  // { key: [values] } from attributes_summary
           category: variant.category || '',
@@ -126,6 +133,16 @@ export const useCartStore = defineStore('cart', {
     removeItem(key) {
       this._snapshot()
       this.items = this.items.filter(i => i.key !== key)
+    },
+    // New 7: replace a serial-tracked line's picked serials; qty follows (none left → the line goes).
+    setLineSerials(key, serials) {
+      this._snapshot()
+      const item = this.items.find(i => i.key === key)
+      if (!item) return
+      const list = [...new Set(serials || [])]
+      if (!list.length) { this.items = this.items.filter(i => i.key !== key); return }
+      item.serials = list
+      item.qty = list.length
     },
     updateQty(key, qty) {
       this._snapshot()

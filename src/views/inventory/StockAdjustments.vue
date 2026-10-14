@@ -96,6 +96,15 @@
           </div>
         </div>
 
+        <!-- New 7: a serial-tracked product gains / loses exact units — one serial per unit -->
+        <div v-if="modal.trackSerials">
+          <label class="form-label">
+            {{ Number(modal.quantityChange) < 0 ? t('serials.adjust_out_label') : t('serials.adjust_in_label') }}
+            · {{ t('serials.count_of', { n: formatQty(parseSerials(modal.serialsText).length), need: formatQty(Math.abs(Number(modal.quantityChange) || 0)) }) }}
+          </label>
+          <textarea v-model="modal.serialsText" class="form-input" rows="3" :placeholder="t('serials.paste_hint')" />
+        </div>
+
         <div>
           <label class="form-label">{{ t('inventory.adjustments.notes_label') }} <span class="optional">{{ t('common.optional') }}</span></label>
           <textarea v-model="modal.notes" class="form-input" rows="2" :placeholder="t('inventory.adjustments.notes_placeholder')" />
@@ -124,6 +133,8 @@ useCtrlN(openModal)
 import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import BaseTable from '@/components/base/BaseTable.vue'
+import { formatQty } from '@/utils/format'
+import { parseSerials, serialErrorText } from '@/utils/serials'
 
 const { t } = useI18n()
 
@@ -163,6 +174,8 @@ const modal = reactive({
   reason: '',
   notes: '',
   search: '',
+  trackSerials: false,   // New 7
+  serialsText: '',
 })
 
 const canSave = computed(() =>
@@ -191,7 +204,7 @@ function searchVariants() {
     const products = res.data.results ?? res.data
     variantResults.value = products.flatMap(p =>
       p.default_variant_id
-        ? [{ id: p.default_variant_id, sku: p.attributes_summary ? Object.values(p.attributes_summary)[0]?.[0] || p.default_variant_id : p.default_variant_id, product_name: p.name }]
+        ? [{ id: p.default_variant_id, sku: p.attributes_summary ? Object.values(p.attributes_summary)[0]?.[0] || p.default_variant_id : p.default_variant_id, product_name: p.name, track_serials: !!p.track_serials }]
         : []
     ).slice(0, 8)
   }, 280)
@@ -200,6 +213,8 @@ function searchVariants() {
 async function selectVariant(v) {
   modal.variantId = v.id
   modal.search = `${v.product_name} — ${v.sku}`
+  modal.trackSerials = !!v.track_serials
+  modal.serialsText = ''
   variantResults.value = []
   // Fetch full variant to get real SKU
   try {
@@ -210,7 +225,8 @@ async function selectVariant(v) {
 }
 
 function openModal() {
-  Object.assign(modal, { open: true, variantId: '', branchId: '', quantityChange: '', reason: '', notes: '', search: '' })
+  Object.assign(modal, { open: true, variantId: '', branchId: '', quantityChange: '', reason: '', notes: '', search: '',
+                         trackSerials: false, serialsText: '' })
   variantResults.value = []
 }
 function closeModal() { modal.open = false; variantResults.value = [] }
@@ -224,12 +240,13 @@ async function saveAdjustment() {
       quantity_change: modal.quantityChange,
       reason: modal.reason,
       notes: modal.notes,
+      ...(modal.trackSerials ? { serial_numbers: parseSerials(modal.serialsText) } : {}),
     })
     closeModal()
     page.value = 1
     fetchAdjustments()
   } catch (e) {
-    alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving adjustment')
+    alert(serialErrorText(t, e.response?.data) || (e.response?.data ? JSON.stringify(e.response.data) : 'Error saving adjustment'))
   } finally { saving.value = false }
 }
 

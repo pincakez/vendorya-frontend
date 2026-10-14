@@ -139,7 +139,7 @@ import {
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight,
   Building2, KeyRound, Trash2, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
   BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles, CalendarClock,
-  Library, Barcode,
+  Library, Barcode, ScanBarcode,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -182,6 +182,7 @@ const groups = computed(() => [
   { id: 'inventory', title: t('nav.groups.inventory'), icon: Package, items: [
     { label: t('nav.items.products'),          to: '/inventory/products',    icon: Package },
     { label: t('nav.items.purchases'),         to: '/inventory/purchases',   icon: ShoppingCart },
+    { label: t('nav.items.serials'),           to: '/inventory/serials',     icon: ScanBarcode },   // New 7
     { label: t('nav.items.stock_adjustments'), to: '/inventory/adjustments', icon: SlidersHorizontal },
     { label: t('nav.items.stock_transfers'),   to: '/inventory/transfers',   icon: ArrowLeftRight },
     { label: t('nav.items.memory_base'),       to: '/inventory/memory-base', icon: Library },
