@@ -592,4 +592,20 @@ onUnmounted(() => {
 
 .lo-fade-enter-active, .lo-fade-leave-active { transition: opacity 180ms, transform 180ms; }
 .lo-fade-enter-from, .lo-fade-leave-to { opacity: 0; transform: scale(0.96); }
+
+/* ── Phone (≤768px, s166) ─────────────────────────────────────
+   At 390px the shop logo (+ its 100px margin), the PREMIUM badge and the role text pushed the
+   bell / settings / theme / language / sign-out buttons off the screen. On a phone: keep every
+   button, drop the decoration, let the search box take what is left. */
+@media (max-width: 768px) {
+  .nhdr { padding: 0 10px; gap: 6px; }
+  .nhdr-brand,
+  .header-role-badge,
+  .nhdr-kbd { display: none; }
+  .nhdr-search { flex: 1 1 auto; min-width: 0; max-width: none; }
+  .nhdr-search-input { padding-right: 10px; }
+  .nhdr-spacer { display: none; }
+  .header-icon-btn { width: 32px; height: 32px; flex-shrink: 0; }
+  .header-lang-btn { padding: 5px 7px; }
+}
 </style>

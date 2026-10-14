@@ -672,7 +672,8 @@ function headerLabel(key, fallback) {
 const tabs = computed(() => [
   { id: 'products', label: t('inventory.products.tabs.products'), icon: Package },
   // Categories now live on their own tree page (/inventory/categories).
-  { id: 'suppliers', label: t('inventory.products.tabs.suppliers'), icon: Truck },
+  // Suppliers are manager+ on the server (s166: a cashier got a 403 in the console on every visit).
+  ...(auth.isCashier ? [] : [{ id: 'suppliers', label: t('inventory.products.tabs.suppliers'), icon: Truck }]),
   { id: 'reports', label: t('inventory.products.tabs.reports'), icon: BarChart3 },
 ])
 const activeTab = ref('products')
@@ -1093,7 +1094,7 @@ async function fetchCategories() {
     cats.value = [{ id: null, name: 'All' }, ...categories.value.map(c => ({ id: c.id, name: c.name }))]
   } catch { /* noop */ }
 }
-async function fetchSuppliers() { try { const r = await api.get('/api/inventory/suppliers/'); suppliers.value = r.data.results ?? r.data } catch { /* noop */ } }
+async function fetchSuppliers() { if (auth.isCashier) return; try { const r = await api.get('/api/inventory/suppliers/'); suppliers.value = r.data.results ?? r.data } catch { /* noop */ } }
 
 function openEditCategory(c) { Object.assign(catModal, { open: true, id: c.id, name: c.name, parent: c.parent || '' }) }
 async function saveCategory() {
