@@ -11,7 +11,7 @@ import pw from '/home/ubuntu/vendorya-dev/vendorya-frontend/node_modules/playwri
 const { chromium } = pw
 
 const BASE = process.env.BASE || 'http://localhost:4456'
-const USER = process.env.E2E_TILL_USER || 's156cashier'          // CASHIER @ Khodair (dev only)
+const USER = process.env.E2E_TILL_USER || 'alexcashier'          // CASHIER @ GATES (dev only; s156cashier left with Khodair)
 const PASS = process.env.E2E_CASHIER_PASSWORD ||
   (readFileSync(new URL('../../vendorya-backend/.env', import.meta.url), 'utf8').match(/^E2E_CASHIER_PASSWORD=(.*)$/m) || [])[1]
 const SHOTS = process.env.SHOTS || '/tmp/vendorya-e2e'
