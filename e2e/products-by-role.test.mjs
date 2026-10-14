@@ -61,7 +61,7 @@ try {
   await page.waitForSelector('.showcase-layout', { timeout: 15000 })
   await page.waitForLoadState('networkidle').catch(() => {})
   await page.screenshot({ path: `${SHOTS}/product-detail-${role}.png` })
-  check((await page.locator('.edit-prod-btn').count() > 0) === manager, `Edit Product button ${manager ? 'shown' : 'hidden'}`)
+  check((await page.locator('.edit-prod-btn:not([data-testid="detail-print-labels"])').count() > 0) === manager, `Edit Product button ${manager ? 'shown' : 'hidden'}`)
   check((await page.locator('.sc-add').count() > 0) === manager, `add photo / video buttons ${manager ? 'shown' : 'hidden'}`)
   check((await page.locator('.sc-settings').count() > 0) === manager, `showcase settings ${manager ? 'shown' : 'hidden'}`)
   check((await page.locator('.s-btn').count() > 0) === manager, `S (cost + supplier) button ${manager ? 'shown' : 'hidden'} (s167 — the server sends no cost to a cashier)`)
