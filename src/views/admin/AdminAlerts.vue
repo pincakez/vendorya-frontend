@@ -7,6 +7,8 @@
       </div>
     </div>
 
+    <AdminMessageSound />
+
     <!-- Compose Card -->
     <div class="card compose-card">
       <div class="card-title">Send Admin Note</div>
@@ -111,6 +113,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { Search, Send } from 'lucide-vue-next'
 import api from '@/api/axios'
+import AdminMessageSound from '@/components/admin/AdminMessageSound.vue'
 
 const form = ref({
   title: '',

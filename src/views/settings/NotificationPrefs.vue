@@ -44,7 +44,7 @@
             </div>
           </div>
 
-          <!-- ADMIN — read-only (sudo controls it below) -->
+          <!-- ADMIN — read-only (sudo sets it in Admin → Alerts Center) -->
           <div class="pt-row">
             <div class="pt-type">
               <span class="pt-dot dot-admin"></span>
@@ -103,31 +103,6 @@
       </div>
     </div>
 
-    <!-- ── ADMIN MESSAGE SOUND (sudo only) ────────────────── -->
-    <div v-if="isSudo" class="settings-card section-card section-sudo">
-      <div class="section-head">
-        <h2 class="section-title">{{ t('settings.notif_prefs.sudo_title') }}</h2>
-        <p class="section-sub">{{ t('settings.notif_prefs.sudo_sub') }}</p>
-      </div>
-      <div class="def-item def-item--single">
-        <label class="form-label">{{ t('settings.notif_prefs.admin_label') }}</label>
-        <div class="pt-sound-row">
-          <select v-model="adminSound" class="sound-select">
-            <option v-for="s in soundOptions" :key="s.value" :value="s.value">{{ s.label }}</option>
-          </select>
-          <button class="preview-btn" :disabled="adminSound === 'mute'"
-                  :title="t('settings.notif_prefs.preview')" @click="preview(adminSound)">
-            <Play :size="14" />
-          </button>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button class="btn-primary" :disabled="savingAdmin" @click="saveAdminSound">
-          {{ savingAdmin ? t('common.saving') : t('settings.notif_prefs.save_admin') }}
-        </button>
-        <span v-if="savedAdmin" class="save-ok">{{ t('settings.notif_prefs.saved') }}</span>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -141,7 +116,6 @@ import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const auth = useAuthStore()
-const isSudo = computed(() => auth.isSuperadmin)
 const canManageStore = computed(() => ['OWNER', 'ADMIN'].includes(auth.userRole) && !!auth.user?.store)
 
 const loading = ref(true)
@@ -160,7 +134,6 @@ const prefs = ref({
 })
 
 const storeDefaults = ref({ default_info_sound: 's01', default_warning_sound: 's02', default_alert_sound: 's03' })
-const adminSound = ref('s01')
 
 const soundOptions = computed(() => [
   { value: 'mute', label: t('settings.notif_prefs.mute') },
@@ -189,12 +162,6 @@ async function load() {
       }
     } catch {}
   }
-  if (isSudo.value) {
-    try {
-      const res = await api.get('/api/notifications/admin-sound/')
-      adminSound.value = res.data.admin_sound
-    } catch {}
-  }
   loading.value = false
 }
 
@@ -218,19 +185,6 @@ async function saveDefaults() {
   savingDefaults.value = false
 }
 
-const savingAdmin = ref(false)
-const savedAdmin  = ref(false)
-async function saveAdminSound() {
-  savingAdmin.value = true
-  try {
-    const res = await api.put('/api/notifications/admin-sound/', { admin_sound: adminSound.value })
-    adminSound.value = res.data.admin_sound
-    prefs.value.admin_sound = res.data.admin_sound   // reflect in the read-only row above
-    savedAdmin.value = true; setTimeout(() => { savedAdmin.value = false }, 2000)
-  } catch {}
-  savingAdmin.value = false
-}
-
 onMounted(load)
 </script>
 
@@ -240,7 +194,6 @@ onMounted(load)
 .section-head  { margin-bottom:16px; }
 .section-title { font-size:15px; font-weight:700; color:var(--text-primary); margin:0; }
 .section-sub   { font-size:12.5px; color:var(--text-muted); margin:4px 0 0; line-height:1.5; }
-.section-sudo  { border-color:color-mix(in oklab, var(--admin-accent, #ef4444) 35%, var(--border)); }
 .loading-msg   { color:var(--text-muted); font-size:13px; padding:16px 0; }
 
 .pref-table { width:100%; }
