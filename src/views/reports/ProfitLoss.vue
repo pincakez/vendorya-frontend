@@ -15,16 +15,16 @@
         <div class="kpi-value"><Money :value="sum.revenue ?? 0" /></div>
       </div>
       <div class="kpi-card">
+        <div class="kpi-label">{{ t('reports.pnl.kpi.returns') }}</div>
+        <div class="kpi-value"><Money :value="sum.returns ?? 0" /></div>
+      </div>
+      <div class="kpi-card">
         <div class="kpi-label">{{ t('reports.pnl.kpi.cogs') }}</div>
         <div class="kpi-value"><Money :value="sum.cogs ?? 0" /></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">{{ t('reports.pnl.kpi.expenses') }}</div>
         <div class="kpi-value"><Money :value="sum.expenses ?? 0" /></div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">{{ t('reports.pnl.kpi.returns') }}</div>
-        <div class="kpi-value"><Money :value="sum.returns ?? 0" /></div>
       </div>
       <div class="kpi-card kpi-net" :class="netClass">
         <div class="kpi-label">{{ t('reports.pnl.kpi.net_profit') }}</div>
@@ -71,10 +71,10 @@ function money(v) { return formatCurrency(v ?? 0) }
 const columns = computed(() => [
   { key: 'period',       label: t('reports.pnl.cols.period'), type: 'date' },
   { key: 'revenue',      label: t('reports.pnl.cols.revenue'), type: 'currency', accent: 'money' },
+  { key: 'returns',      label: t('reports.pnl.cols.returns'), type: 'currency' },
   { key: 'cogs',         label: t('reports.pnl.cols.cogs'), type: 'currency' },
   { key: 'gross_profit', label: t('reports.pnl.cols.gross_profit'), type: 'currency' },
   { key: 'expenses',     label: t('reports.pnl.cols.expenses'), type: 'currency' },
-  { key: 'returns',      label: t('reports.pnl.cols.returns'), type: 'currency' },
   { key: 'net',          label: t('reports.pnl.cols.net'), type: 'currency', accent: 'sign' },
 ])
 
