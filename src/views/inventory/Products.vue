@@ -1215,7 +1215,7 @@ function saveDefaults() {
 const prodModal = reactive({
   open: false, id: null, name: '', description: '', category: '', supplier: '', supplierName: '',
   base_price: null, cost_price: null, sell_price: null, reorder_level: null, initial_stock: 1, attrs: {}, saving: false, error: '',
-  units: [], sell_base_unit: true, sku2: '', specErrors: false,
+  units: [], sell_base_unit: true, sku2: '', specErrors: false, origCategory: '',
 })
 // s168 Upgrade 9: which attributes the category's spec set shows (+ which required ones are empty).
 const prodSpecState = ref({ ids: [], missing: [] })
@@ -1327,6 +1327,7 @@ async function openEditProduct(p) {
     prodModal.name        = data.name || ''
     prodModal.description = data.description || ''
     prodModal.category    = data.category || ''
+    prodModal.origCategory = data.category || ''
     prodModal.supplier    = data.supplier || ''
     const sup = suppliers.value.find(s => s.id === data.supplier)
     prodModal.supplierName = sup ? `${sup.name} (${sup.code_prefix})` : '—'
@@ -1347,7 +1348,10 @@ function addUnitRow() { prodModal.units.push({ name: '', factor: null, sell_pric
 
 async function saveProduct() {
   prodModal.error = ''
-  if (prodSpecState.value.missing.length) {   // s168: the category's required specs come first
+  // s168: required specs block a NEW product or a move to another category — never a plain edit
+  // (an older product made before the spec set keeps saving; the * stays as a hint).
+  const specsEnforced = !prodModal.id || (prodModal.category || '') !== (prodModal.origCategory || '')
+  if (specsEnforced && prodSpecState.value.missing.length) {
     prodModal.specErrors = true
     prodModal.error = t('inventory.specs.err_missing', { names: prodSpecState.value.missing.join(', ') })
     return

@@ -826,7 +826,9 @@
       "preset_nothing": "{name}: كل شيء موجود بالفعل.",
       "type_text": "نص",
       "type_number": "رقم",
-      "type_select": "قائمة"
+      "type_select": "قائمة",
+      "also_inherited": "موجودة أيضًا في تصنيف أعلى",
+      "also_inherited_hint": "تصنيف أعلى يطلبها أيضًا. تبقى هنا، بهذا الترتيب، لهذا التصنيف."
     }
   },
   "finance": {

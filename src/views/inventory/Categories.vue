@@ -169,6 +169,7 @@
             <div v-for="(s, i) in specModal.own" :key="s.definition" class="spec-line" data-testid="spec-own-line">
               <span class="spec-name">{{ s.name }}</span>
               <span class="spec-meta">{{ typeLabel(s) }}</span>
+              <span v-if="s.also_inherited" class="spec-from" :title="t('inventory.specs.also_inherited_hint')">{{ t('inventory.specs.also_inherited') }}</span>
               <label class="spec-req-toggle">
                 <input v-model="s.required" type="checkbox" @change="specModal.dirty = true" />
                 {{ t('inventory.specs.required_label') }}

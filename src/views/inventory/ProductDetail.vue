@@ -841,7 +841,8 @@ async function openEditModal() {
 
 async function saveEdit() {
   editModal.error = ''
-  if (editSpecState.value.missing.length) {   // s168: the category's required specs come first
+  // s168: required specs block only a move to another category — never a plain edit of this product.
+  if ((editModal.category || '') !== (product.value?.category || '') && editSpecState.value.missing.length) {
     editModal.specErrors = true
     editModal.error = t('inventory.specs.err_missing', { names: editSpecState.value.missing.join(', ') })
     return

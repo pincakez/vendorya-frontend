@@ -826,7 +826,9 @@
       "preset_nothing": "{name}: everything was already there.",
       "type_text": "Text",
       "type_number": "Number",
-      "type_select": "List"
+      "type_select": "List",
+      "also_inherited": "also in a parent",
+      "also_inherited_hint": "A parent category asks for this too. It stays here, in this order, for this category."
     }
   },
   "finance": {
