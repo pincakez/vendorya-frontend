@@ -64,7 +64,8 @@
 
       <!-- Store brand: client logo + PREMIUM badge -->
       <div v-if="storeLogo || auth.isPremium" class="nhdr-brand">
-        <img v-if="storeLogo" :src="storeLogo" :alt="auth.storeName" class="nhdr-store-logo" />
+        <img v-if="storeLogo && !logoFailed" :src="storeLogo" :alt="auth.storeName" class="nhdr-store-logo" @error="logoFailed = true" />
+        <span v-else-if="storeLogo" class="nhdr-store-name">{{ auth.storeName }}</span>
         <span v-if="auth.isPremium" class="nhdr-premium-badge">PREMIUM</span>
       </div>
 
@@ -189,6 +190,9 @@ const storeLogo = computed(() => {
   return theme.dark ? (store.logo_dark_url || store.logo_light_url || null)
                     : (store.logo_light_url || store.logo_dark_url || null)
 })
+// s166: a logo file that is gone (404) showed a broken-image icon → show the shop's name instead.
+const logoFailed = ref(false)
+watch(storeLogo, () => { logoFailed.value = false })
 
 /* ── Global search (store) ──────────────────── */
 
@@ -528,6 +532,7 @@ onUnmounted(() => {
   transition: border-color 120ms, color 120ms, background 120ms;
 }
 .header-lang-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.nhdr-store-name { font-size: 14px; font-weight: 700; color: var(--text-primary); white-space: nowrap; }
 .nhdr-store-logo { height: 28px; width: auto; max-width: 160px; object-fit: contain; flex-shrink: 0; }
 .nhdr-premium-badge {
   flex-shrink: 0; font-size: 8.5px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 5px;
