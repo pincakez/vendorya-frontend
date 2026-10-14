@@ -1407,6 +1407,8 @@
         "recorded": "Payment recorded.",
         "save_failed": "Could not record the payment.",
         "amount_required": "Enter an amount greater than zero.",
+        "no_methods": "No payment methods — add one in Store Settings",
+        "method_required": "Choose how you paid the supplier.",
         "delete": "Delete",
         "delete_confirm": "Delete this payment? The supplier's balance will go back up.",
         "deleted": "Payment deleted.",
