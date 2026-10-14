@@ -95,6 +95,7 @@
     }
   },
   "common": {
+    "done": "Done",
     "cancel": "Cancel",
     "save": "Save",
     "saving": "Saving…",
@@ -1096,7 +1097,8 @@
     "weight": {
       "enter": "Enter weight",
       "per_kg": " / kg",
-      "kg_placeholder": "0.000"
+      "kg_placeholder": "0.000",
+      "g_placeholder": "0"
     }
   },
   "people": {
@@ -1974,7 +1976,11 @@
       "expiry_info": "When on, a tracked product's stock becomes a set of dated batches instead of one number, and sales automatically draw from the earliest expiry first. Turn it off and stock goes back to a single number — existing batch history stays in the database, just hidden, and reappears if you switch it back on.",
       "weight_title": "Weight-Based Selling",
       "weight_desc": "Sell products by weight — per kilogram or per 100 g, with decimal quantities (e.g. 0.350 kg).",
-      "weight_info": "Lets a product be priced and sold by weight instead of by piece (the base unit becomes a gram). The selling screen accepts decimal amounts. This switch reserves the feature; the per-product weight mode arrives in the next update.",
+      "weight_info": "Lets a product be priced per kilogram and sold by weight instead of by piece. Stock is kept in kilograms, exact to the gram. Turn on \"By Weight\" on each product that should use it; the selling screen then asks for the weight off the scale.",
+      "weight_unit_label": "Default weight unit",
+      "weight_unit_kg": "Kilograms (kg)",
+      "weight_unit_g": "Grams (g)",
+      "weight_unit_hint": "How weights are shown and typed on stock lists, the selling screen and receipts (e.g. {example}). Prices stay per kg, and stock is always kept to the gram.",
       "confirm_title": "Turn this off?",
       "confirm_multi_unit_enabled": "Turning off Multi-Unit Selling means only the base unit will be offered at the register. Any pack/strip units on your products will be hidden.",
       "confirm_expiry_tracking_enabled": "Turning off Expiry / Batch Tracking means stock goes back to a single number and FEFO stops. Expiry batches already recorded will be hidden.",

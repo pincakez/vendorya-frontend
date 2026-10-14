@@ -607,7 +607,7 @@ import {
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
-import { formatQty } from '@/utils/format'
+import { formatQty, formatWeight } from '@/utils/format'
 import { decomposeStock, headlineLabel, formatBreakdown } from '@/utils/units'
 import { showSuccessToast, showWarningToast } from '@/utils/toast'
 import { useFormDirty } from '@/composables/useFormDirty'
@@ -618,6 +618,7 @@ useCtrlN(openAddProduct)
 // base number for everything else. Full ladder shows on hover.
 function stockBadge(p) {
   const d = decomposeStock(p.total_stock, p.selling_units)
+  if (d.isWeight) return formatWeight(p.total_stock)   // §WT: "250 g" / "0.25 kg" per store unit
   return d.hasTiers ? headlineLabel(d.headline) : formatQty(p.total_stock)
 }
 function stockTitle(p) {

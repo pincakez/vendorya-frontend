@@ -146,6 +146,19 @@
               <span class="toggle-knob" />
             </button>
           </div>
+          <!-- Default weight unit (§WT) — display only; stock stays kg to the gram -->
+          <template v-if="form.weight_selling_enabled">
+            <div class="sub-block">
+              <div class="sub-label">{{ t('settings.capabilities.weight_unit_label') }}</div>
+              <div class="mode-row">
+                <button v-for="opt in weightUnitOptions" :key="opt.value"
+                  class="mode-btn" :class="{ active: form.default_weight_unit === opt.value }"
+                  @click="form.default_weight_unit = opt.value"
+                >{{ opt.label }}</button>
+              </div>
+              <div class="sub-muted unit-hint">{{ t('settings.capabilities.weight_unit_hint', { example: weightUnitExample }) }}</div>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -216,8 +229,11 @@ import { useI18n } from 'vue-i18n'
 import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
+import { useFormatStore } from '@/stores/format'
+import { formatWeight } from '@/utils/format'
 
 const { t } = useI18n()
+const fmt = useFormatStore()
 
 const loading   = ref(false)
 const saving    = ref(false)
@@ -235,12 +251,20 @@ const form = reactive({
   expired_sale_policy:     'WARN',
   expiry_alert_days:       60,
   weight_selling_enabled:  false,
+  default_weight_unit:     'KG',
   autocomplete_source:     'memory_base',
   mb_auto_register:        true,
 })
 
 // Switch → translation key for its store-type label
 const storeTypeLabel = computed(() => t(`settings.capabilities.types.${storeType.value}`))
+
+const weightUnitOptions = computed(() => [
+  { value: 'KG', label: t('settings.capabilities.weight_unit_kg') },
+  { value: 'G',  label: t('settings.capabilities.weight_unit_g') },
+])
+// Live example of the choice: a 250 g sale as it will read on stock, POS and receipts.
+const weightUnitExample = computed(() => formatWeight(0.25, form.default_weight_unit))
 
 const expiredPolicyOptions = computed(() => [
   { value: 'ALLOW', label: t('settings.policies.exp_allow') },
@@ -288,6 +312,7 @@ async function load() {
       expired_sale_policy:     settingsRes.data.expired_sale_policy || 'WARN',
       expiry_alert_days:       settingsRes.data.expiry_alert_days ?? 60,
       weight_selling_enabled:  settingsRes.data.weight_selling_enabled ?? false,
+      default_weight_unit:     settingsRes.data.default_weight_unit === 'G' ? 'G' : 'KG',
       autocomplete_source:     settingsRes.data.autocomplete_source || 'memory_base',
       mb_auto_register:        settingsRes.data.mb_auto_register ?? true,
     })
@@ -308,9 +333,11 @@ async function save() {
       expired_sale_policy:     form.expired_sale_policy,
       expiry_alert_days:       form.expiry_alert_days || 60,
       weight_selling_enabled:  form.weight_selling_enabled,
+      default_weight_unit:     form.default_weight_unit,
       autocomplete_source:     form.autocomplete_source,
       mb_auto_register:        form.mb_auto_register,
     })
+    fmt.apply({ default_weight_unit: form.default_weight_unit })
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
@@ -370,6 +397,7 @@ onMounted(load)
 .tier-input { width:150px; }
 .tier-count-override { color:var(--danger); margin-top:4px; }
 .sub-muted { font-size:12px; color:var(--text-muted); }
+.unit-hint { margin-top:8px; }
 .num-input { padding:7px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; outline:none; transition:border-color 120ms; }
 .num-input:focus { border-color:var(--accent); }
 .mode-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-app); color:var(--text-muted); font-size:12.5px; font-weight:600; cursor:pointer; transition:background 100ms,border-color 100ms,color 100ms; }
