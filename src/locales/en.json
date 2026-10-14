@@ -658,7 +658,7 @@
       "row_name": "Optional — otherwise name = Brand + Model",
       "row_ref": "Optional — rows with the same number are the variants of ONE product (same supplier, name and categories)",
       "import_and_update": "Import {n} new · update {m}",
-      "update_n": "Apply {n} updates",
+      "update_n": "Apply updates ({n})",
       "nothing_to_change": "Nothing to change",
       "import_done": "Done: {created} new products · {updated} updated ({prices} price changes, {names} name changes) · {unchanged} unchanged.",
       "stat_updated": "to update",
