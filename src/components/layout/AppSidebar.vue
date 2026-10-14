@@ -88,7 +88,7 @@
                 <PhysicalButton
                   v-for="it in g.items" :key="it.to"
                   variant="sidebar" :collapsed="isCollapsed" :active="itemActive(it.to)"
-                  :tooltip="it.label"
+                  :tooltip="it.label" :data-to="it.to"
                   @click="go(it.to)"
                 >
                   <template #icon><component :is="it.icon" :size="16" :class="itemActive(it.to) ? 'ic-active' : 'ic'" /></template>
@@ -130,6 +130,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { useCartStore } from '@/stores/cart'
 import PhysicalButton from '@/components/ui/PhysicalButton.vue'
+import { canOpen } from '@/router'
 import {
   LayoutDashboard, Calculator, Package, ShoppingCart, SlidersHorizontal, Tag, List,
   FileBarChart, Wallet, FileText, CornerDownLeft, Receipt, Clock, LineChart, TrendingUp,
@@ -230,7 +231,7 @@ const groups = computed(() => [
     { label: t('nav.items.capabilities'),    to: '/settings/capabilities',   icon: SlidersHorizontal },
     { label: t('nav.items.taxes'),           to: '/settings/taxes',          icon: Percent },
     { label: t('nav.items.notifications'),   to: '/settings/notifications',  icon: Bell },
-    { label: t('nav.items.billing'),         to: '/settings/billing',        icon: CreditCard, ownerOnly: true },
+    { label: t('nav.items.billing'),         to: '/settings/billing',        icon: CreditCard },
     { label: t('nav.items.pos_settings'),    to: '/settings/pos',            icon: Keyboard },
     { label: t('nav.items.profile'),         to: '/settings/profile',        icon: User },
     { label: t('nav.items.security'),        to: '/settings/security',       icon: Lock },
@@ -268,9 +269,12 @@ const adminGroups = computed(() => [
   ] },
 ])
 
-const canBilling = computed(() => auth.userRole === 'OWNER' || auth.isSuperadmin)
+// s167: show only the pages this role may open (each route's meta.minRole — router/index.js is the one
+// source); a group left with no pages disappears.
 const visibleGroups = computed(() =>
-  groups.value.map(g => ({ ...g, items: g.items.filter(it => !it.ownerOnly || canBilling.value) }))
+  groups.value
+    .map(g => ({ ...g, items: g.items.filter(it => canOpen(it.to)) }))
+    .filter(g => g.items.length)
 )
 
 // §PRIVACY-SUDO (s163): the admin sidebar never switches to a shop's menu ("acting as" is gone).

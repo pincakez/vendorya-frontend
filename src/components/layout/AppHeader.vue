@@ -168,6 +168,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { useNotifications } from '@/composables/useNotifications'
 import api from '@/api/axios'
+import { canOpen } from '@/router'
 
 defineProps({ sidebarCollapsed: Boolean, admin: Boolean })
 defineEmits(['toggleSidebar'])
@@ -277,7 +278,7 @@ const PAGES = computed(() => [
   { label: 'Auto-Lock Timer', parent: 'Lock Screen', path: '/settings/lockscreen', group: t('nav.groups.settings'), icon: Shield, kw: 'auto lock timer idle timeout minutes disable' },
   { label: 'PIN Code',        parent: 'Lock Screen', path: '/settings/lockscreen', group: t('nav.groups.settings'), icon: Shield, kw: 'pin code lock password digits set change' },
   { label: 'Lock Screen Logo',parent: 'Lock Screen', path: '/settings/lockscreen', group: t('nav.groups.settings'), icon: Shield, kw: 'lock logo image upload branding' },
-])
+].filter(p => canOpen(p.path)))   // s167: only pages this role may open (route meta.minRole)
 
 function fuzzyMatch(term, target) {
   let ti = 0
@@ -312,7 +313,8 @@ watch(q, (val) => {
     try {
       const res = await api.get('/api/core/nav-search/', { params: { q: term } })
       // decorate each hit with a Vue icon component
-      navResults.value = (res.data || []).map(r => ({
+      // s167: the server's page index knows nothing of roles — drop pages this role may not open.
+      navResults.value = (res.data || []).filter(r => canOpen(r.path)).map(r => ({
         ...r,
         icon: NAV_ICON_MAP[r.path] || Settings,
       }))

@@ -8,6 +8,11 @@
     "overview": "نظرة عامة",
     "open_menu": "فتح القائمة",
     "close_menu": "إغلاق القائمة",
+    "role_blocked": {
+      "MANAGER": "هذه الصفحة للمديرين",
+      "ADMIN": "هذه الصفحة للمسؤولين",
+      "OWNER": "هذه الصفحة لمالك المتجر"
+    },
     "store_settings_btn": "الإعدادات",
     "log_out": "تسجيل الخروج",
     "logout_confirm_title": "تسجيل الخروج؟",

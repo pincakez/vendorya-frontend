@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
 import LayoutSwitch from '@/layouts/LayoutSwitch.vue'
+import i18n from '@/i18n'
+import { showWarningToast } from '@/utils/toast'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,48 +17,51 @@ const router = createRouter({
       children: [
         { path: '', redirect: '/dashboard' },
 
-        // Store routes — visible to regular users always, to sudo only when a store is selected
+        // Store routes — visible to regular users always, to sudo only when a store is selected.
+        // s167 meta.minRole = the LOWEST role the server lets read this page's main data (the page's own
+        // ViewSet role_map 'list' / IsManagerOrAbove…). The ONE source for the guard below, the sidebar and
+        // the header page-search. No minRole = every store user (CASHIER and up).
         { path: 'dashboard',            component: () => import('@/views/Dashboard.vue'),                  meta: { store: true } },
         { path: 'inventory/products',           component: () => import('@/views/inventory/Products.vue'),       meta: { store: true } },
         { path: 'inventory/products/:id',       component: () => import('@/views/inventory/ProductDetail.vue'),  meta: { store: true }, props: true },
-        { path: 'inventory/purchases',  component: () => import('@/views/inventory/Purchases.vue'),        meta: { store: true } },
-        { path: 'inventory/adjustments',component: () => import('@/views/inventory/StockAdjustments.vue'), meta: { store: true } },
-        { path: 'inventory/transfers',  component: () => import('@/views/inventory/StockTransfers.vue'),  meta: { store: true } },
+        { path: 'inventory/purchases',  component: () => import('@/views/inventory/Purchases.vue'),        meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'inventory/adjustments',component: () => import('@/views/inventory/StockAdjustments.vue'), meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'inventory/transfers',  component: () => import('@/views/inventory/StockTransfers.vue'),  meta: { store: true, minRole: 'ADMIN' } },
         { path: 'inventory/memory-base', component: () => import('@/views/inventory/MemoryBase.vue'),       meta: { store: true } },
         { path: 'inventory/categories', component: () => import('@/views/inventory/Categories.vue'),       meta: { store: true } },
         { path: 'inventory/attributes', component: () => import('@/views/inventory/Attributes.vue'),       meta: { store: true } },
         { path: 'inventory/reports',    component: () => import('@/views/inventory/InventoryReports.vue'), meta: { store: true } },
-        { path: 'inventory/import-export', component: () => import('@/views/inventory/ImportExport.vue'),  meta: { store: true } },
+        { path: 'inventory/import-export', component: () => import('@/views/inventory/ImportExport.vue'),  meta: { store: true, minRole: 'MANAGER' } },
         { path: 'inventory/storage',    component: () => import('@/views/inventory/Storage.vue'),         meta: { store: true } },
         { path: 'finance/invoices',     component: () => import('@/views/sales/SalesInvoices.vue'),        meta: { store: true } },
         { path: 'finance/invoices/:id', component: () => import('@/views/sales/InvoiceDetail.vue'),        meta: { store: true }, props: true },
         { path: 'finance/returns',      component: () => import('@/views/sales/Returns.vue'),              meta: { store: true } },
-        { path: 'finance/expenses',     component: () => import('@/views/finance/Expenses.vue'),           meta: { store: true } },
+        { path: 'finance/expenses',     component: () => import('@/views/finance/Expenses.vue'),           meta: { store: true, minRole: 'MANAGER' } },
         { path: 'finance/shifts',           component: () => import('@/views/finance/Shifts.vue'),            meta: { store: true } },
         { path: 'finance/shifts/:id',       component: () => import('@/views/finance/ShiftDetail.vue'),     meta: { store: true }, props: true },
         { path: 'finance/cash-drawer',  component: () => import('@/views/finance/CashDrawer.vue'),         meta: { store: true } },
         // Reports v1
-        { path: 'reports/sales',        component: () => import('@/views/reports/SalesReport.vue'),         meta: { store: true } },
-        { path: 'reports/profit',       component: () => import('@/views/reports/ProfitMargin.vue'),        meta: { store: true } },
-        { path: 'reports/ar-aging',     component: () => import('@/views/reports/ReceivablesAging.vue'),    meta: { store: true } },
-        { path: 'reports/ap-aging',     component: () => import('@/views/reports/PayablesAging.vue'),       meta: { store: true } },
-        { path: 'reports/pnl',          component: () => import('@/views/reports/ProfitLoss.vue'),          meta: { store: true } },
-        { path: 'reports/expenses',     component: () => import('@/views/reports/ExpenseBreakdown.vue'),    meta: { store: true } },
-        { path: 'reports/stock-ledger', component: () => import('@/views/reports/StockLedger.vue'),         meta: { store: true } },
-        { path: 'reports/cashiers',     component: () => import('@/views/reports/CashierPerformance.vue'),  meta: { store: true } },
-        { path: 'reports/tax',          component: () => import('@/views/reports/TaxReport.vue'),           meta: { store: true } },
-        { path: 'reports/storage-aging',          component: () => import('@/views/reports/StorageAging.vue'),          meta: { store: true } },
-        { path: 'reports/storage-value',          component: () => import('@/views/reports/StorageValue.vue'),          meta: { store: true } },
-        { path: 'reports/storage-movements',      component: () => import('@/views/reports/StorageMovements.vue'),      meta: { store: true } },
-        { path: 'reports/storage-reconciliation', component: () => import('@/views/reports/StorageReconciliation.vue'), meta: { store: true } },
-        { path: 'reports/expiry',           component: () => import('@/views/reports/ExpiryReport.vue'),       meta: { store: true } },
+        { path: 'reports/sales',        component: () => import('@/views/reports/SalesReport.vue'),         meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/profit',       component: () => import('@/views/reports/ProfitMargin.vue'),        meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/ar-aging',     component: () => import('@/views/reports/ReceivablesAging.vue'),    meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/ap-aging',     component: () => import('@/views/reports/PayablesAging.vue'),       meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/pnl',          component: () => import('@/views/reports/ProfitLoss.vue'),          meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/expenses',     component: () => import('@/views/reports/ExpenseBreakdown.vue'),    meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/stock-ledger', component: () => import('@/views/reports/StockLedger.vue'),         meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/cashiers',     component: () => import('@/views/reports/CashierPerformance.vue'),  meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/tax',          component: () => import('@/views/reports/TaxReport.vue'),           meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/storage-aging',          component: () => import('@/views/reports/StorageAging.vue'),          meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/storage-value',          component: () => import('@/views/reports/StorageValue.vue'),          meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/storage-movements',      component: () => import('@/views/reports/StorageMovements.vue'),      meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/storage-reconciliation', component: () => import('@/views/reports/StorageReconciliation.vue'), meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'reports/expiry',           component: () => import('@/views/reports/ExpiryReport.vue'),       meta: { store: true, minRole: 'MANAGER' } },
         { path: 'people/customers',         component: () => import('@/views/people/Customers.vue'),          meta: { store: true } },
         { path: 'people/customers/:id',     component: () => import('@/views/people/CustomerDetail.vue'),   meta: { store: true }, props: true },
-        { path: 'people/suppliers',         component: () => import('@/views/people/Suppliers.vue'),          meta: { store: true } },
-        { path: 'people/suppliers/:id',     component: () => import('@/views/people/SupplierDetail.vue'),   meta: { store: true }, props: true },
-        { path: 'people/staff',         component: () => import('@/views/people/Staff.vue'),               meta: { store: true } },
+        { path: 'people/suppliers',         component: () => import('@/views/people/Suppliers.vue'),          meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'people/suppliers/:id',     component: () => import('@/views/people/SupplierDetail.vue'),   meta: { store: true, minRole: 'MANAGER' }, props: true },
+        { path: 'people/staff',         component: () => import('@/views/people/Staff.vue'),               meta: { store: true, minRole: 'MANAGER' } },
         { path: 'services',             component: () => import('@/views/services/Services.vue'),         meta: { store: true } },
-        { path: 'activity-log',         component: () => import('@/views/ActivityLog.vue'),                meta: { store: true } },
+        { path: 'activity-log',         component: () => import('@/views/ActivityLog.vue'),                meta: { store: true, minRole: 'MANAGER' } },
         { path: 'settings',             component: () => import('@/views/settings/StoreSettings.vue'),     meta: { store: true } },
         { path: 'settings/branches/:id', component: () => import('@/views/settings/BranchDetail.vue'),    meta: { store: true } },
         { path: 'settings/capabilities', component: () => import('@/views/settings/Capabilities.vue'),    meta: { store: true } },
@@ -64,8 +69,8 @@ const router = createRouter({
         { path: 'settings/profile',     component: () => import('@/views/settings/Profile.vue'),           meta: { store: true } },
         { path: 'settings/security',    component: () => import('@/views/settings/Security.vue'),          meta: { store: true } },
         { path: 'settings/changelog',   component: () => import('@/views/settings/Changelog.vue'),         meta: { store: true } },
-        { path: 'settings/billing',     component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
-        { path: 'settings/billing/invoices/:id',   component: () => import('@/views/settings/Billing.vue'),           meta: { store: true } },
+        { path: 'settings/billing',     component: () => import('@/views/settings/Billing.vue'),           meta: { store: true, minRole: 'OWNER' } },
+        { path: 'settings/billing/invoices/:id',   component: () => import('@/views/settings/Billing.vue'),           meta: { store: true, minRole: 'OWNER' } },
         { path: 'settings/notifications',         component: () => import('@/views/settings/NotificationPrefs.vue'), meta: { store: true } },
         { path: 'settings/pos',                    component: () => import('@/views/settings/PosSettings.vue'),       meta: { store: true } },
         { path: 'settings/lockscreen',             component: () => import('@/views/settings/LockscreenSettings.vue'), meta: { store: true } },
@@ -103,7 +108,7 @@ const router = createRouter({
     },
     // Bare printable pages — no app shell.
     { path: '/finance/invoices/:id/print', component: () => import('@/views/sales/InvoicePrint.vue'), meta: { requiresAuth: true } },
-    { path: '/inventory/purchases/:id/print', component: () => import('@/views/inventory/PurchaseInvoicePrint.vue'), meta: { requiresAuth: true } },
+    { path: '/inventory/purchases/:id/print', component: () => import('@/views/inventory/PurchaseInvoicePrint.vue'), meta: { requiresAuth: true, minRole: 'MANAGER' } },
     { path: '/print/labels',               component: () => import('@/views/print/LabelPrint.vue'),   meta: { requiresAuth: true } },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' }
   ]
@@ -152,7 +157,19 @@ router.beforeEach(async (to, from, next) => {
     return next('/admin/dashboard')
   }
 
+  // s167: a page the server would refuse this role (deep links too) → the dashboard + a small note why.
+  if (to.meta.minRole && !auth.isSuperadmin && !auth.hasRole(to.meta.minRole)) {
+    showWarningToast(i18n.global.t(`nav.role_blocked.${to.meta.minRole}`))
+    return next('/dashboard')
+  }
+
   next()
 })
+
+// s167: may the signed-in user open this path? Reads the route's meta.minRole — the sidebar and the
+// header page-search use it so a menu never offers a page the guard above would bounce.
+export function canOpen(path) {
+  return useAuthStore().hasRole(router.resolve(path).meta.minRole)
+}
 
 export default router

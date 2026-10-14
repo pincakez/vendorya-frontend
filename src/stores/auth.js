@@ -6,6 +6,9 @@ import { useFormatStore } from './format'
 import { applyUiPrefs } from '@/composables/applyUiPrefs'
 import i18n from '@/i18n'
 
+// Same ladder as the server (users/permissions.py ROLE_RANK): a higher number may do everything below it.
+export const ROLE_RANK = { CASHIER: 1, MANAGER: 2, ADMIN: 3, OWNER: 4 }
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     // Access token lives in memory only (api/token.js); this flag mirrors "do we
@@ -24,6 +27,8 @@ export const useAuthStore = defineStore('auth', {
     isCashier:       s => s.user?.role === 'CASHIER',
     isManager:       s => s.user?.role === 'MANAGER',
     isOwner:         s => s.user?.role === 'OWNER',
+    // s167: hasRole('MANAGER') → true for MANAGER, ADMIN, OWNER. No minRole = open to every store user.
+    hasRole:         s => minRole => !minRole || (ROLE_RANK[s.user?.role] || 0) >= (ROLE_RANK[minRole] || 99),
     currency:        s => s.user?.store?.currency || null,
     currencySymbol:  s => s.user?.store?.currency?.symbol || '',
     timezone:        s => s.user?.store?.timezone || 'Africa/Cairo',
