@@ -49,7 +49,7 @@
               <span><strong>{{ report.summary.category_paths }}</strong> {{ t('inventory.import_export.stat_category_branches') }}</span>
               <span><strong>{{ report.summary.attributes }}</strong> {{ t('inventory.import_export.stat_attributes') }}</span>
             </div>
-            <!-- s168: rows whose SKU is already in the shop update prices + names only -->
+            <!-- s167: rows whose SKU is already in the shop update prices + names only -->
             <div v-if="report.summary.updated || report.summary.unchanged" class="rep-stats">
               <span><strong>{{ report.summary.updated }}</strong> {{ t('inventory.import_export.stat_updated') }}</span>
               <span><strong>{{ report.summary.price_changes }}</strong> {{ t('inventory.import_export.stat_price_changes') }}</span>
@@ -125,7 +125,7 @@ const importing  = ref(false)
 const exporting  = ref(false)
 const busy = ref(false)
 
-// s168: a file can hold new products AND updates (rows with an existing SKU) — or nothing to change at all.
+// s167: a file can hold new products AND updates (rows with an existing SKU) — or nothing to change at all.
 const nothingToDo = computed(() => !!report.value?.ok &&
   !report.value.summary.products && !report.value.summary.updated)
 const importLabel = computed(() => {

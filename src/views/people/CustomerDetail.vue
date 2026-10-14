@@ -98,7 +98,7 @@
         <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchInvoices" />
       </div>
 
-      <!-- Payments received (lump sums, s168) — managers and up -->
+      <!-- Payments received (lump sums, s167) — managers and up -->
       <div v-if="isManagerPlus" class="section-card">
         <div class="section-header">
           <h2 class="section-title">{{ t('people.customer_detail.receipts_history') }}</h2>
@@ -308,7 +308,7 @@ async function saveEdit() {
   } catch {} finally { editModal.saving = false }
 }
 
-// ── Receive payment (s168): one lump sum, spread by the server oldest sale first ──
+// ── Receive payment (s167): one lump sum, spread by the server oldest sale first ──
 const receipts = ref([])
 const recLoading = ref(false)
 const methods = ref([])

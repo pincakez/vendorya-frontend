@@ -533,7 +533,7 @@ async function saveCustomer() {
       country:         modal.country.trim(),
       city:            modal.city.trim(),
       credit_limit:    modal.credit_limit            || null,
-      // Opening balance (s168): managers and up only — the server refuses a cashier who changes it.
+      // Opening balance (s167): managers and up only — the server refuses a cashier who changes it.
       ...(canSetOpening.value ? { opening_balance: modal.opening_balance || 0 } : {}),
     }
     if (isEdit) {

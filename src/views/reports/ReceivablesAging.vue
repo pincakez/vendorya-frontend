@@ -39,7 +39,7 @@ const meta = computed(() => asOf.value ? t('reports.ar_aging.as_of', { date: asO
 
 const columns = computed(() => [
   { key: 'name',     label: t('reports.ar_aging.cols.customer'), type: 'text' },
-  { key: 'opening',  label: t('reports.ar_aging.cols.opening'), type: 'currency' },   // debt from before Vendorya (s168)
+  { key: 'opening',  label: t('reports.ar_aging.cols.opening'), type: 'currency' },   // debt from before Vendorya (s167)
   { key: 'b0_30',    label: t('reports.ar_aging.cols.b0_30'), type: 'currency' },
   { key: 'b31_60',   label: t('reports.ar_aging.cols.b31_60'), type: 'currency' },
   { key: 'b61_90',   label: t('reports.ar_aging.cols.b61_90'), type: 'currency' },
