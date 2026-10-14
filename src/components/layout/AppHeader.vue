@@ -236,6 +236,7 @@ const NAV_ICON_MAP = {
   '/settings/lockscreen':     Shield,
   '/settings/notifications':  Bell,
   '/settings/billing':        CreditCard,
+  '/settings/export':         Archive,
   '/settings/changelog':      Sparkles,
 }
 
@@ -275,6 +276,7 @@ const PAGES = computed(() => [
   { label: t('nav.items.lockscreen'),       path: '/settings/lockscreen',     group: t('nav.groups.settings'),  icon: Shield,          kw: 'lock screen auto lock idle timeout pin code logo facts timer' },
   { label: 'Notifications',                 path: '/settings/notifications',  group: t('nav.groups.settings'),  icon: Bell,            kw: 'alerts push email sound notification prefs' },
   { label: 'Billing',                       path: '/settings/billing',        group: t('nav.groups.settings'),  icon: CreditCard,      kw: 'subscription plan payment invoice billing' },
+  { label: t('nav.items.shop_export'),      path: '/settings/export',         group: t('nav.groups.settings'),  icon: Archive,         kw: 'export download backup zip csv excel my data' },
   { label: t('nav.items.whats_new'),        path: '/settings/changelog',      group: t('nav.groups.settings'),  icon: Sparkles,        kw: 'updates version release new features' },
   // lockscreen child options (client-side fallback only — API returns these with parent field)
   { label: 'Auto-Lock Timer', parent: 'Lock Screen', path: '/settings/lockscreen', group: t('nav.groups.settings'), icon: Shield, kw: 'auto lock timer idle timeout minutes disable' },

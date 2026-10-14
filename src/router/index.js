@@ -69,6 +69,7 @@ const router = createRouter({
         { path: 'settings/profile',     component: () => import('@/views/settings/Profile.vue'),           meta: { store: true } },
         { path: 'settings/security',    component: () => import('@/views/settings/Security.vue'),          meta: { store: true } },
         { path: 'settings/changelog',   component: () => import('@/views/settings/Changelog.vue'),         meta: { store: true } },
+        { path: 'settings/export',      component: () => import('@/views/settings/ShopExport.vue'),        meta: { store: true, minRole: 'OWNER' } },   // GET /api/core/shop-export/ = role_map OWNER (s167)
         { path: 'settings/billing',     component: () => import('@/views/settings/Billing.vue'),           meta: { store: true, minRole: 'OWNER' } },
         { path: 'settings/billing/invoices/:id',   component: () => import('@/views/settings/Billing.vue'),           meta: { store: true, minRole: 'OWNER' } },
         { path: 'settings/notifications',         component: () => import('@/views/settings/NotificationPrefs.vue'), meta: { store: true } },
