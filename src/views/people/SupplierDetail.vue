@@ -136,7 +136,7 @@
               <tr v-for="p in payments" :key="p.id" class="dt-row">
                 <td class="text-muted">{{ fmtDate(p.date) }}</td>
                 <td><Money :value="p.amount" /></td>
-                <td>{{ p.method_display }}</td>
+                <td>{{ payMethodLabel(p) }}</td>
                 <td class="text-muted">{{ p.created_by_name || '—' }}</td>
                 <td class="text-muted">{{ p.note || '—' }}</td>
                 <td style="text-align:right">
@@ -158,15 +158,16 @@
                    :placeholder="'0.00'" :error="payErr" />
         <BaseInput v-model="payForm.date" type="date"
                    :label="t('people.supplier_detail.pay_form.date')" />
-        <BaseSelect v-model="payForm.method" :options="methodOptions"
-                    :label="t('people.supplier_detail.pay_form.method')" />
+        <BaseSelect v-model="payForm.payment_method" :options="methodOptions"
+                    :label="t('people.supplier_detail.pay_form.method')"
+                    :placeholder="methodOptions.length ? '' : t('people.supplier_detail.pay_form.no_methods')" />
         <BaseInput v-model="payForm.note"
                    :label="t('people.supplier_detail.pay_form.note')"
                    :placeholder="t('people.supplier_detail.pay_form.note_ph')" />
       </div>
       <template #footer>
         <BaseButton variant="ghost" @click="payOpen = false">{{ t('common.cancel') }}</BaseButton>
-        <BaseButton variant="primary" :loading="paySaving" @click="savePay">{{ t('people.supplier_detail.pay_form.save') }}</BaseButton>
+        <BaseButton variant="primary" :loading="paySaving" :disabled="!payForm.payment_method" @click="savePay">{{ t('people.supplier_detail.pay_form.save') }}</BaseButton>
       </template>
     </AppModal>
   </div>
@@ -189,9 +190,12 @@ import { showSuccessToast, showErrorToast } from '@/utils/toast'
 const { t } = useI18n()
 const props = defineProps({ id: String })
 
-const methodOptions = computed(() => ['CASH', 'BANK', 'CARD', 'OTHER'].map(v => ({
-  value: v, label: t('people.supplier_detail.methods.' + v.toLowerCase()),
-})))
+// PROLINE-PARITY Upgrade 6: the shop's OWN payment methods (the till's list) — minus Ajel (credit is not money
+// paid) and store credit (a customer's wallet; the list endpoint already hides it).
+const methods = ref([])
+const methodOptions = computed(() => methods.value
+  .filter(m => !m.is_agel && !m.is_store_credit)
+  .map(m => ({ value: m.id, label: m.name })))
 
 function purStatusLabel(s) {
   const key = (s || '').toLowerCase()
@@ -260,8 +264,13 @@ async function fetchStatement() {
   } finally { stmtLoading.value = false }
 }
 
-function methodLabel(m) {
-  return m ? t('people.supplier_detail.methods.' + m.toLowerCase()) : ''
+// How a payment was made: the shop's method name; an OLD payment that never got one (from before the switch,
+// e.g. "Bank Transfer" in a shop with no bank method) shows its old fixed label, translated.
+const LEGACY_METHODS = ['cash', 'bank', 'card', 'other']
+function payMethodLabel(p) {
+  if (p.payment_method) return p.payment_method_name || ''
+  const code = (p.method || '').toLowerCase()
+  return LEGACY_METHODS.includes(code) ? t('people.supplier_detail.methods.' + code) : (p.payment_method_name || '')
 }
 
 const stmtRows = computed(() => (stmt.value?.lines || []).map(l => {
@@ -274,7 +283,7 @@ const stmtRows = computed(() => (stmt.value?.lines || []).map(l => {
     date: l.date,
     type: isPurchase
       ? t('people.supplier_detail.stmt.purchase')
-      : [t('people.supplier_detail.stmt.payment'), methodLabel(l.method)].filter(Boolean).join(' · '),
+      : [t('people.supplier_detail.stmt.payment'), payMethodLabel(l)].filter(Boolean).join(' · '),
     ref: l.ref,
     note: [vendorNote, l.note].filter(Boolean).join(' — '),
     debit: l.debit,
@@ -290,7 +299,7 @@ const payLoading = ref(false)
 const payOpen = ref(false)
 const paySaving = ref(false)
 const payErr = ref('')
-const payForm = ref({ amount: '', date: '', method: 'CASH', note: '' })
+const payForm = ref({ amount: '', date: '', payment_method: '', note: '' })
 
 async function fetchPayments() {
   payLoading.value = true
@@ -301,30 +310,41 @@ async function fetchPayments() {
   finally { payLoading.value = false }
 }
 
-function openPay() {
+async function openPay() {
   payErr.value = ''
-  payForm.value = { amount: '', date: new Date().toISOString().slice(0, 10), method: 'CASH', note: '' }
+  payForm.value = { amount: '', date: new Date().toISOString().slice(0, 10), payment_method: '', note: '' }
   payOpen.value = true
+  if (!methods.value.length) {
+    try {
+      const r = await api.get('/api/finance/payment-methods/')
+      methods.value = r.data.results ?? r.data ?? []
+    } catch { methods.value = [] }
+  }
+  const cash = methods.value.find(m => m.is_cash && !m.is_agel)
+  payForm.value.payment_method = (cash ? cash.id : methodOptions.value[0]?.value) || ''
 }
 
 async function savePay() {
   payErr.value = ''
   const amt = Number(payForm.value.amount)
   if (!amt || amt <= 0) { payErr.value = t('people.supplier_detail.pay_form.amount_required'); return }
+  if (!payForm.value.payment_method) { showErrorToast(t('people.supplier_detail.pay_form.method_required')); return }
   paySaving.value = true
   try {
     await api.post('/api/finance/supplier-payments/', {
       supplier: props.id,
       amount: amt,
       date: payForm.value.date ? new Date(payForm.value.date).toISOString() : undefined,
-      method: payForm.value.method,
+      payment_method: payForm.value.payment_method,
       note: payForm.value.note || '',
     })
     payOpen.value = false
     showSuccessToast(t('people.supplier_detail.pay_form.recorded'))
     await Promise.all([fetchPayments(), fetchSupplier(), fetchStatement()])  // refresh history + outstanding
   } catch (e) {
-    showErrorToast(e?.response?.data?.amount?.[0] || t('people.supplier_detail.pay_form.save_failed'))
+    const d = e?.response?.data || {}
+    const first = v => (Array.isArray(v) ? v[0] : v)
+    showErrorToast(first(d.amount) || first(d.payment_method) || t('people.supplier_detail.pay_form.save_failed'))
   } finally { paySaving.value = false }
 }
 
