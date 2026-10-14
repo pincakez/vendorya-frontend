@@ -12,6 +12,156 @@
 
 export const changelog = [
   {
+    version: '1.39.7',
+    date: '2026-10-14',
+    tag: 'Improved',
+    en: {
+      title: 'Safer backups of your shop’s data',
+      points: [
+        'Every few hours a full copy of your data is now also locked with strong encryption and stored safely in a second place, away from the main server — so even a lost server would not lose your shop.',
+      ],
+    },
+    ar: {
+      title: 'نسخ احتياطية أأمن لبيانات محلك',
+      points: [
+        'كل كام ساعة بقت نسخة كاملة من بياناتك بتتقفل بتشفير قوي وتتحفظ في مكان تاني بعيد عن السيرفر الأساسي — يعني حتى لو السيرفر ضاع، محلك مش هيضيع.',
+      ],
+    },
+  },
+  {
+    version: '1.39.6',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'One barcode, one product',
+      points: [
+        'The system now stops you from giving the same barcode to two products (or two packs) in your shop, and tells you which product already uses it.',
+        'Barcodes of other shops never get in your way.',
+      ],
+    },
+    ar: {
+      title: 'باركود واحد لصنف واحد',
+      points: [
+        'السيستم دلوقتي بيمنعك تدّي نفس الباركود لصنفين (أو لعبوتين) في محلك، وبيقولك الصنف اللي واخده.',
+        'باركودات المحلات التانية عمرها ما هتعطلك.',
+      ],
+    },
+  },
+  {
+    version: '1.39.5',
+    date: '2026-10-14',
+    tag: 'Improved',
+    en: {
+      title: 'The menu fits your phone',
+      points: [
+        'On a phone the side menu now hides by itself and opens from a menu button at the top, so it never covers the page. Tap outside it, or pick a page, and it closes.',
+      ],
+    },
+    ar: {
+      title: 'القايمة بقت مناسبة للموبايل',
+      points: [
+        'على الموبايل القايمة الجانبية بقت بتستخبى لوحدها وبتفتح من زرار القايمة اللي فوق، فمبقتش بتغطي الصفحة. دوس بره أو اختار صفحة وهي تقفل.',
+      ],
+    },
+  },
+  {
+    version: '1.39.4',
+    date: '2026-10-14',
+    tag: 'Improved',
+    en: {
+      title: 'Scan a box, sell a box',
+      points: [
+        'Scanning the barcode printed on a pack or box at the till now adds one whole pack — not one piece.',
+        'Searching the product list by an exact code (SKU, second code or barcode) now puts that product first.',
+      ],
+    },
+    ar: {
+      title: 'اعمل سكان للكرتونة تتباع كرتونة',
+      points: [
+        'لما تعمل سكان لباركود العبوة أو الكرتونة في الكاشير، بيتضاف عبوة كاملة — مش قطعة واحدة.',
+        'لما تدوّر في قائمة الأصناف بكود مظبوط (الكود أو الكود التاني أو الباركود)، الصنف ده بيطلع الأول.',
+      ],
+    },
+  },
+  {
+    version: '1.39.3',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'Receipts and labels show the right details',
+      points: [
+        'A discounted line on a printed receipt now shows its discount under it.',
+        'Shelf labels printed on a label printer now use your shop’s own currency instead of always saying EGP.',
+      ],
+    },
+    ar: {
+      title: 'الفواتير والتيكيتات بتطبع التفاصيل الصح',
+      points: [
+        'السطر اللي عليه خصم في الفاتورة المطبوعة بقى بيظهر تحته الخصم.',
+        'التيكيتات اللي بتطلع من طابعة التيكيت بقت بتكتب عملة محلك بدل ما تكتب EGP دايمًا.',
+      ],
+    },
+  },
+  {
+    version: '1.39.2',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'Profit and tax reports count returns correctly',
+      points: [
+        'Profit & Loss: returned goods are now counted without tax, the restocking fee you keep counts as income, and the cost of items put back on the shelf is taken back out of your costs — so your profit is the real one.',
+        'Tax report: each sale keeps the tax rate it was sold with, so changing a product’s tax later never changes old reports.',
+      ],
+    },
+    ar: {
+      title: 'تقارير الربح والضرايب بتحسب المرتجعات صح',
+      points: [
+        'الأرباح والخسائر: المرتجع بقى بيتحسب من غير ضريبة، ورسوم إعادة التخزين اللي بتاخدها بتتحسب دخل، وتكلفة الحاجة اللي رجعت الرف بتترجع من التكاليف — فالربح اللي بتشوفه هو الربح الحقيقي.',
+        'تقرير الضرايب: كل بيعة بتحتفظ بنسبة الضريبة اللي اتباعت بيها، فلو غيّرت ضريبة صنف بعدين، التقارير القديمة مش هتتغير.',
+      ],
+    },
+  },
+  {
+    version: '1.39.1',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'Returns keep customer balances right',
+      points: [
+        'Returning a sale that was already paid no longer shows the customer as if you owe them money — their balance is correct.',
+        'A store-credit return gives back only what the customer actually paid; the unpaid part simply cancels their debt.',
+        'A return can no longer give back more money than the items were sold for.',
+      ],
+    },
+    ar: {
+      title: 'المرتجعات بقت بتظبط رصيد العميل',
+      points: [
+        'لما ترجّع بيعة كانت متدفعة، العميل مبقاش بيظهر كأنك مديون له — رصيده بقى مظبوط.',
+        'المرتجع كرصيد في المحل بيرجّع بس اللي العميل دفعه فعلًا؛ والجزء اللي مكانش متدفع بيتشال من مديونيته.',
+        'المرتجع مبقاش ينفع يرجّع فلوس أكتر من اللي الحاجة اتباعت بيه.',
+      ],
+    },
+  },
+  {
+    version: '1.39.0',
+    date: '2026-10-14',
+    tag: 'New',
+    en: {
+      title: 'Sell by grams or by kilos — your choice',
+      points: [
+        'Shops that sell by weight can now pick grams or kilos as their weight unit in Settings → Capabilities.',
+        'In grams mode you type 250 at the till for 250 g, and stock lists and receipts show “250 g”. Prices stay per kilo.',
+      ],
+    },
+    ar: {
+      title: 'بيع بالجرام أو بالكيلو — على راحتك',
+      points: [
+        'المحلات اللي بتبيع بالوزن تقدر دلوقتي تختار الجرام أو الكيلو كوحدة الوزن من الإعدادات ← الإمكانيات.',
+        'في وضع الجرام بتكتب 250 في الكاشير يعني 250 جرام، وقوايم المخزون والفواتير بتكتب «250 g». الأسعار فاضلة بالكيلو.',
+      ],
+    },
+  },
+  {
     version: '1.38.0',
     date: '2026-10-08',
     tag: 'New',
