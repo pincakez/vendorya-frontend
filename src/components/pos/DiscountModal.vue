@@ -127,8 +127,8 @@ function clear() {
 .dm-preview { font-size: 13px; color: var(--text-muted); text-align: center; }
 .dm-actions { display: flex; gap: 10px; }
 .dm-clear {
-  flex: 1; padding: 12px; border-radius: 12px; border: 2px solid var(--danger, #dc2626);
-  background: none; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--danger, #dc2626);
+  flex: 1; padding: 12px; border-radius: 12px; border: 2px solid var(--danger);
+  background: none; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--danger);
 }
 .dm-apply {
   flex: 2; padding: 12px; border-radius: 12px; border: none;

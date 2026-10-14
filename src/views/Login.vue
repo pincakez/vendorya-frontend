@@ -23,7 +23,7 @@
       <div class="glow-orb glow-orb-c"></div>
       <!-- Faint wave lines: wave-1 = orange, wave-2 = light grey -->
       <svg viewBox="0 0 1000 400" preserveAspectRatio="none" class="wave wave-1">
-        <path d="M0,200 C300,350 400,50 600,200 C800,350 900,50 1000,200" fill="none" stroke="#f78f1e" stroke-width="2" opacity="0.40"/>
+        <path d="M0,200 C300,350 400,50 600,200 C800,350 900,50 1000,200" fill="none" style="stroke: var(--accent)" stroke-width="2" opacity="0.40"/>
       </svg>
       <svg viewBox="0 0 1000 400" preserveAspectRatio="none" class="wave wave-2">
         <path d="M0,200 C200,50 400,350 700,200 C900,100 950,250 1000,200" fill="none" stroke="#c0c0c8" stroke-width="1.5" opacity="0.22"/>
@@ -471,8 +471,8 @@ async function handleOtp() {
   padding: 2px 0;
   transition: color 120ms;
 }
-.lang-btn:hover:not(:disabled) { color: #f78f1e; }
-.lang-btn.active { color: #f78f1e; cursor: default; }
+.lang-btn:hover:not(:disabled) { color: var(--accent); }
+.lang-btn.active { color: var(--accent); cursor: default; }
 .lang-sep { font-size: 11px; color: #3f3f46; }
 
 /* ── security notice ────────────────────────────────────── */
@@ -491,13 +491,13 @@ async function handleOtp() {
   transition: background 150ms;
 }
 .security-notice:hover { background: rgba(247,143,30,0.14); }
-.notice-icon  { color: #f78f1e; }
+.notice-icon  { color: var(--accent); }
 .notice-label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #f78f1e;
+  color: var(--accent);
   font-family: ui-monospace, monospace;
 }
 .notice-sub {
@@ -560,7 +560,7 @@ async function handleOtp() {
 }
 .login-input::placeholder { color: rgba(161,161,170,0.45); }
 .login-input:focus {
-  border-color: #f78f1e;
+  border-color: var(--accent);
   box-shadow: 0 0 20px rgba(247,143,30,0.35);
 }
 .login-input:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -599,7 +599,7 @@ async function handleOtp() {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-family: ui-monospace, monospace;
-  color: #f78f1e;
+  color: var(--accent);
   padding: 0;
   transition: color 120ms;
 }
@@ -627,7 +627,7 @@ async function handleOtp() {
   width: 100%;
   padding: 15px;
   border-radius: 12px;
-  background: #f78f1e;
+  background: var(--accent);
   border: none;
   color: #0F0F12;
   font-size: 14px;
@@ -746,7 +746,7 @@ async function handleOtp() {
   font-size: 18px;
   font-weight: 700;
   font-family: ui-monospace, monospace;
-  color: #f78f1e;
+  color: var(--accent);
   text-align: center;
   padding: 14px;
   border: 1px solid rgba(247,143,30,0.2);

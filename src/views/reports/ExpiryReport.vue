@@ -122,7 +122,7 @@ onMounted(fetchData)
 .exp-tile { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
 .exp-tile-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); margin-bottom:6px; }
 .exp-tile-val { font-size:22px; font-weight:700; color:var(--text-primary); }
-.exp-tile-val.danger { color:#dc2626; }
+.exp-tile-val.danger { color:var(--danger); }
 .exp-tile-val.warn { color:#d97706; }
 
 .sr-controls { display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px; margin-bottom:18px; }

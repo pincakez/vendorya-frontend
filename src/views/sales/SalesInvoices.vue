@@ -620,9 +620,9 @@ onMounted(() => { loadLayout(); fetchCustomers(); fetchVariants() })
 <style>
 .col-drag-ghost {
   position: fixed; pointer-events: none; z-index: 9999;
-  background: var(--bg-card, #fff); border: 1.5px solid var(--accent, #f78f1e);
+  background: var(--bg-card); border: 1.5px solid var(--accent);
   border-radius: 8px; padding: 6px 14px; font-size: 11px; font-weight: 800;
-  text-transform: uppercase; letter-spacing: .08em; color: var(--accent, #f78f1e);
+  text-transform: uppercase; letter-spacing: .08em; color: var(--accent);
   box-shadow: 0 8px 28px rgba(0,0,0,.18); white-space: nowrap;
   transform: rotate(-2deg) scale(1.04); transition: none;
 }

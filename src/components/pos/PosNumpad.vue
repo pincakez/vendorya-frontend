@@ -254,8 +254,8 @@ defineExpose({ feedKey, exitCalc })
 .np-key:active { transform: scale(0.92); box-shadow: none; transition-duration: var(--press-down); }
 
 .np-op    { color: var(--accent); }
-.np-clear { color: var(--danger, #dc2626); }
-.np-clear:hover { border-color: var(--danger, #dc2626); color: var(--danger, #dc2626); }
+.np-clear { color: var(--danger); }
+.np-clear:hover { border-color: var(--danger); color: var(--danger); }
 .np-eq    { background: var(--accent); color: #fff; border-color: var(--accent); }
 .np-eq:hover { color: #fff; opacity: 0.92; }
 

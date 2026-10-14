@@ -535,8 +535,6 @@ onUnmounted(() => {
   border-radius: 5px; background: var(--sb-badge-bg); color: var(--sb-badge-text);
 }
 
-/* ── AI toggle (admin) ───────── */
-.ai-toggle-btn.active { background: rgba(239,68,68,0.12); color: var(--admin-accent, #ef4444); }
 
 
 .dropdown-enter-active, .dropdown-leave-active { transition: opacity 150ms, transform 150ms; }
@@ -590,7 +588,7 @@ onUnmounted(() => {
   display: flex; align-items: center; justify-content: center; gap: 7px;
   background: var(--danger); color: #fff;
 }
-.lo-confirm:hover { background: #dc2626; }
+.lo-confirm:hover { background: var(--danger-hover); }
 .lo-confirm.focused { outline: 2px solid var(--danger); outline-offset: 2px; }
 
 .lo-fade-enter-active, .lo-fade-leave-active { transition: opacity 180ms, transform 180ms; }

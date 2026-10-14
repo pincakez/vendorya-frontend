@@ -250,11 +250,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
 /* Discard & close — ghost danger */
 .warn-btn--ghost {
   background: transparent;
-  color: var(--danger, #ef4444);
-  border: 1px solid var(--danger, #ef4444);
+  color: var(--danger);
+  border: 1px solid var(--danger);
 }
-.warn-btn--ghost:hover  { background: color-mix(in srgb, var(--danger, #ef4444) 10%, transparent); }
-.warn-btn--ghost:focus  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger, #ef4444) 25%, transparent); }
+.warn-btn--ghost:hover  { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.warn-btn--ghost:focus  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 25%, transparent); }
 
 /* Warning overlay transition */
 .warn-enter-active { transition: opacity 120ms, transform 120ms cubic-bezier(0.34,1.56,0.64,1); }

@@ -209,7 +209,7 @@ onMounted(async () => {
 .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px 8px; }
 .stat { text-align:center; }
 .stat-value { font-size:18px; font-weight:700; margin:0 0 2px; line-height:1; }
-.stat-value.accent { color:var(--admin-accent,#ef4444); }
+.stat-value.accent { color:var(--admin-accent); }
 .stat-label { font-size:10.5px; color:var(--text-muted); margin:0; text-transform:uppercase; letter-spacing:.04em; }
 .wide { grid-column:span 4; text-align:left; border-top:1px solid var(--border); padding-top:10px; }
 .wide .stat-value { font-size:20px; }

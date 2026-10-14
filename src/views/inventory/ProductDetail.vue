@@ -434,7 +434,7 @@
         </div>
       </div>
 
-      <p v-if="editModal.error" class="form-label" style="color:var(--danger,#dc2626);margin-top:4px;">{{ editModal.error }}</p>
+      <p v-if="editModal.error" class="form-label" style="color:var(--danger);margin-top:4px;">{{ editModal.error }}</p>
       <template #footer>
         <span style="font-size:11.5px;color:var(--text-muted);margin-right:auto;">{{ t('inventory.product_detail.alt_s_hint') }}</span>
         <button class="btn-ghost" @click="editModal.open = false">{{ t('common.cancel') }}</button>
@@ -1108,7 +1108,7 @@ onUnmounted(() => {
 .branch-chip { display:inline-block; padding:2px 8px; border-radius:6px; background:var(--border); color:var(--text-secondary); font-size:11.5px; font-weight:500; }
 
 .batch-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; }
-.batch-expired { background:#fee2e2; color:#dc2626; }
+.batch-expired { background:var(--danger-soft); color:var(--danger); }
 .batch-soon { background:#fef3c7; color:#d97706; }
 .batch-ok { background:#dcfce7; color:#16a34a; }
 .prod-expiry-row { border-top:1px solid var(--border); padding-top:14px; margin-top:4px; }
@@ -1150,5 +1150,5 @@ onUnmounted(() => {
   background: var(--bg-card); color: var(--text-muted); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
 }
-.pcr-del-sm:hover { color: var(--danger, #dc2626); border-color: var(--danger, #dc2626); }
+.pcr-del-sm:hover { color: var(--danger); border-color: var(--danger); }
 </style>

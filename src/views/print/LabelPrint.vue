@@ -176,7 +176,7 @@ onMounted(async () => {
   cursor: pointer; transition: transform 70ms;
 }
 .tb-btn:active  { transform: scale(0.95); }
-.tb-btn.primary { background: #f78f1e; border-color: #f78f1e; color: #fff; }
+.tb-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 .no-job {
   max-width: 500px; margin: 80px auto; text-align: center;
