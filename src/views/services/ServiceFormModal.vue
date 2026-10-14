@@ -78,7 +78,23 @@
             </div>
             <div class="sfm-row">
               <label class="form-label">{{ t('core.svcdesk.device_serial') }} <span class="sfm-opt">({{ t('common.optional') }})</span></label>
-              <input v-model="form.device_serial" class="form-input" :placeholder="t('core.svcdesk.device_serial_ph')" dir="ltr" />
+              <input v-model="form.device_serial" class="form-input" :placeholder="t('core.svcdesk.device_serial_ph')" dir="ltr"
+                     @input="lookupDevice()" @blur="lookupDevice(true)" />
+              <!-- s169: the serial is one of the shop's own units → what it is, where it was sold, its warranty -->
+              <div v-if="deviceUnit" class="sfm-unit">
+                <div class="sfm-unit-name">{{ t('core.svcdesk.unit_ours', { product: deviceUnit.product_name }) }}</div>
+                <div class="sfm-unit-meta">
+                  <span v-if="deviceUnit.sale">{{ t('core.svcdesk.unit_sold_on', { n: deviceUnit.sale.invoice_number ?? '—', date: fmtDate(deviceUnit.sale.date) }) }}</span>
+                  <span v-else>{{ t(`serials.status.${deviceUnit.status}`) }}</span>
+                  <span v-if="deviceUnit.warranty_ends_on" :class="deviceUnit.warranty_active ? 'sfm-unit-ok' : 'sfm-unit-off'">
+                    · {{ deviceUnit.warranty_active
+                      ? t('core.svcdesk.unit_warranty_until', { date: fmtDate(deviceUnit.warranty_ends_on) })
+                      : t('core.svcdesk.unit_warranty_ended', { date: fmtDate(deviceUnit.warranty_ends_on) }) }}
+                  </span>
+                  <span v-else-if="deviceUnit.sale" class="sfm-unit-off">· {{ t('core.svcdesk.unit_no_warranty') }}</span>
+                </div>
+                <div v-if="warrantyAuto" class="sfm-unit-meta">{{ t('core.svcdesk.unit_warranty_ticked') }}</div>
+              </div>
             </div>
           </div>
           <div class="sfm-subrow">
@@ -196,7 +212,7 @@
           </div>
         </div>
         <label class="sfm-print-cb" :class="{ disabled: locked }">
-          <input type="checkbox" v-model="form.is_warranty" :disabled="locked" />
+          <input type="checkbox" v-model="form.is_warranty" :disabled="locked" @change="warrantyTouched = true; warrantyAuto = false" />
           <span>{{ t('core.svcdesk.is_warranty') }}</span>
         </label>
         <p class="sfm-hint">{{ t('core.svcdesk.is_warranty_hint') }}</p>
@@ -372,6 +388,47 @@ async function loadTechnicians() {
   } catch { technicians.value = [] }
 }
 
+/* ── device serial → the shop's own unit (s169) ───────────────────── */
+// Looked up while typing (debounced) and on blur. Unknown serial = nothing shown; the text is kept as typed.
+const deviceUnit      = ref(null)
+const warrantyAuto    = ref(false)   // "under warranty" was ticked by the lookup, not by the user
+const warrantyTouched = ref(false)   // the user clicked the checkbox → the lookup never changes it again
+let deviceTimer = null
+let deviceSeq = 0
+let deviceAsked = ''
+function lookupDevice(now = false) {
+  clearTimeout(deviceTimer)
+  const serial = form.device_serial.replace(/\s+/g, '').toUpperCase()
+  if (serial.length < 3) { deviceAsked = ''; ++deviceSeq; applyDeviceUnit(null); return }
+  if (serial === deviceAsked) return
+  deviceTimer = setTimeout(async () => {
+    const seq = ++deviceSeq
+    deviceAsked = serial
+    let unit = null
+    try {
+      const { data } = await api.get('/api/services/device-lookup/', { params: { serial } })
+      unit = data?.unit ?? null
+    } catch { deviceAsked = '' }
+    if (seq === deviceSeq) applyDeviceUnit(unit)
+  }, now ? 0 : 400)
+}
+function applyDeviceUnit(unit) {
+  deviceUnit.value = unit
+  // A NEW job for a unit still under our warranty → pre-tick "under warranty" (the user may untick it).
+  if (props.serviceId || locked.value || warrantyTouched.value) return
+  if (unit?.warranty_active) {
+    if (!form.is_warranty) { form.is_warranty = true; warrantyAuto.value = true }
+  } else if (warrantyAuto.value) {
+    form.is_warranty = false
+    warrantyAuto.value = false
+  }
+}
+function fmtDate(d) {
+  if (!d) return '—'
+  const day = new Date(String(d).length === 10 ? `${d}T00:00:00` : d)
+  return isNaN(day) ? String(d) : day.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' })
+}
+
 /* ── parts from stock (search like the POS) ──────────────────────── */
 const partQuery        = ref('')
 const partResults      = ref([])
@@ -460,6 +517,12 @@ watch(() => props.open, (val) => {
   partResults.value = []
   loadPrintDefaults()
   loadTechnicians()
+  clearTimeout(deviceTimer)
+  ++deviceSeq
+  warrantyAuto.value = false
+  warrantyTouched.value = false
+  deviceUnit.value = props.serviceData?.device_unit ?? null
+  deviceAsked = (props.serviceData?.device_serial ?? '').replace(/\s+/g, '').toUpperCase()
 
   if (props.serviceData) {
     const s = props.serviceData
@@ -828,6 +891,11 @@ async function doServicePrint(copies = 2, jobId = props.serviceId) {
 .sfm-print-btn { color: var(--text-secondary); }
 .sfm-opt  { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
 .sfm-hint { font-size: 11px; color: var(--text-muted); margin: 3px 0 0; }
+.sfm-unit { margin-top: 6px; padding: 7px 10px; border-radius: 8px; background: var(--bg-app); border: 1px solid var(--border); }
+.sfm-unit-name { font-size: 12.5px; font-weight: 600; color: var(--text-primary); }
+.sfm-unit-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.sfm-unit-ok  { color: var(--success); font-weight: 600; }
+.sfm-unit-off { color: var(--text-muted); }
 .sfm-error { font-size: 12px; color: var(--danger); background: var(--danger-soft); border-radius: 8px; padding: 8px 12px; }
 
 .sfm-toggle-row { display: flex; gap: 8px; }
