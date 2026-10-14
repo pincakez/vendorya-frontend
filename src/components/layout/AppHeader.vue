@@ -440,7 +440,6 @@ onMounted(() => {
 })
 onUnmounted(() => {
   clearInterval(pollTimer)
-  clearTimeout(storeSearchTimer)
   document.removeEventListener('click', onDocClick)
   window.removeEventListener('keydown', onSearchKey)
   window.removeEventListener('keydown', onLoModalKey)
