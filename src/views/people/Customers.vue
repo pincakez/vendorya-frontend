@@ -233,6 +233,11 @@
             <label class="form-label">{{ t('people.customer_form.credit_limit_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
             <input v-model.number="modal.credit_limit" type="number" min="0" step="100" class="form-input" style="max-width:160px;" placeholder="0" />
           </div>
+          <div v-if="canSetOpening" class="pfm-row">
+            <label class="form-label">{{ t('people.customer_form.opening_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
+            <input v-model="modal.opening_balance" type="number" step="0.01" class="form-input" style="max-width:160px;" placeholder="0" />
+            <p class="pfm-hint">{{ t('people.customer_form.opening_hint') }}</p>
+          </div>
         </div>
         <p v-if="modal.errorMsg" class="pfm-error">{{ modal.errorMsg }}</p>
       </div>
@@ -300,6 +305,7 @@ const displayColumns = computed(() =>
 )
 const tableMin = computed(() => displayColumns.value.reduce((a, c) => a + colWidths[c.key], 0) + 96)
 const canEdit  = computed(() => ['OWNER', 'ADMIN'].includes(auth.userRole) || auth.isSuperadmin)
+const canSetOpening = computed(() => ['MANAGER', 'ADMIN', 'OWNER'].includes(auth.userRole))
 
 /* ── layout / presets ── */
 const baseConfig = ref(null)
@@ -482,7 +488,7 @@ const _custDefaults = () => ({
   open: false, expanded: false, id: null,
   name: '', phone_number: '', email: '',
   whatsapp_number: '', instagram: '', website: '',
-  country: 'Egypt', city: '', notes: '', credit_limit: null,
+  country: 'Egypt', city: '', notes: '', credit_limit: null, opening_balance: '',
   errorMsg: '',
 })
 const modal = reactive(_custDefaults())
@@ -505,6 +511,8 @@ function openEdit(c) {
   modal.city          = c.city          || ''
   modal.notes         = c.notes         || ''
   modal.credit_limit  = c.credit_limit  || null
+  modal.opening_balance = Number(c.opening_balance) ? c.opening_balance : ''
+  if (modal.opening_balance) modal.expanded = true
 }
 function closeModal() { modal.open = false }
 
@@ -525,6 +533,8 @@ async function saveCustomer() {
       country:         modal.country.trim(),
       city:            modal.city.trim(),
       credit_limit:    modal.credit_limit            || null,
+      // Opening balance (s168): managers and up only — the server refuses a cashier who changes it.
+      ...(canSetOpening.value ? { opening_balance: modal.opening_balance || 0 } : {}),
     }
     if (isEdit) {
       await api.patch(`/api/auth/customers/${modal.id}/`, payload)
@@ -612,6 +622,7 @@ onMounted(() => { loadLayout() })
 .pfm-expanded { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; border-top: 1px dashed var(--border); }
 .pfm-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .pfm-error { font-size: 12px; color: var(--danger); background: var(--danger-soft); border-radius: 8px; padding: 8px 12px; margin: 0; }
+.pfm-hint  { font-size: 12px; color: var(--text-muted); margin: 6px 0 0; }
 </style>
 
 <style>

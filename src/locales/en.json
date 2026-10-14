@@ -1224,7 +1224,8 @@
         "store_default": "Store default",
         "store_credit": "Store Credit",
         "none": "None",
-        "notes": "Notes"
+        "notes": "Notes",
+        "opening_balance": "Opening balance"
       },
       "owes": "Owes",
       "credit": "Credit",
@@ -1247,6 +1248,42 @@
         "credit_limit_label": "Credit Limit",
         "credit_limit_ph": "Leave blank for store default",
         "notes_label": "Notes"
+      },
+      "receive_payment": "Receive payment",
+      "receipts_history": "Payments received",
+      "no_receipts": "No payments received yet.",
+      "rec_cols": {
+        "date": "Date",
+        "amount": "Amount",
+        "method": "Method",
+        "to_sales": "To sales",
+        "to_opening": "To opening balance / credit",
+        "by": "By",
+        "note": "Note"
+      },
+      "receive": {
+        "owes_now": "They owe now",
+        "amount": "Amount received",
+        "method": "Paid by",
+        "no_methods": "No payment methods — add one in Store Settings",
+        "date": "Date",
+        "note": "Note",
+        "note_ph": "Optional — e.g. receipt number",
+        "keep_credit": "Keep the extra as credit for them:",
+        "hint": "The money pays their oldest unpaid sale first, then the next, then their opening balance.",
+        "amount_required": "Enter an amount above zero.",
+        "too_much": "That is more than they owe. Lower it, or tick \"Keep the extra as credit\".",
+        "save": "Receive",
+        "save_failed": "Could not save the payment.",
+        "done": "Payment received",
+        "to_sale": "Sale #{num}",
+        "to_opening": "Opening balance",
+        "to_credit": "Kept as credit",
+        "balance_after": "Balance now",
+        "delete": "Delete this payment",
+        "delete_confirm": "Delete this payment? The sales it paid will show as unpaid again.",
+        "deleted": "Payment deleted",
+        "delete_failed": "Could not delete the payment."
       }
     },
     "supplier_detail": {
@@ -1405,7 +1442,9 @@
       "notes_ph": "Any notes about this customer…",
       "err_save": "Could not save customer.",
       "save_changes": "Save Changes",
-      "add_customer": "Add Customer"
+      "add_customer": "Add Customer",
+      "opening_label": "Opening balance (what they owed before Vendorya)",
+      "opening_hint": "Debt carried over from your old system. Use a minus sign if you owed them."
     }
   },
   "reports": {
@@ -1516,7 +1555,8 @@
         "b31_60": "31–60 days",
         "b61_90": "61–90 days",
         "b90_plus": "90+ days",
-        "total_due": "Total Due"
+        "total_due": "Total Due",
+        "opening": "Opening balance"
       }
     },
     "ap_aging": {

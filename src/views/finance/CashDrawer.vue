@@ -64,7 +64,7 @@
               <tr v-for="(m, i) in moves" :key="i" class="dt-row">
                 <td>{{ fmtTime(m.time) }}</td>
                 <td>{{ m.kind === 'OUT' ? t('finance.cash_drawer.kind_out', { n: m.refund_number }) : t('finance.cash_drawer.kind_in') }}</td>
-                <td class="col-ref">{{ m.invoice_number ?? '—' }}</td>
+                <td class="col-ref">{{ m.invoice_number ?? m.customer ?? '—' }}</td>
                 <td :class="m.kind === 'OUT' ? 'col-amount col-out' : 'col-amount'"><Money :value="m.kind === 'OUT' ? -m.amount : m.amount" /></td>
               </tr>
             </tbody>
