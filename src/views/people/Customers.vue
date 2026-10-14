@@ -122,7 +122,7 @@
               </td>
               <td class="ta-right dt-actcol" @click.stop>
                 <button class="row-action" :title="t('people.customers.edit_title')" @click="openEdit(c)"><Pencil :size="14" /></button>
-                <button class="row-action danger" :title="t('people.customers.delete_title')" @click="deleteCustomer(c.id)"><Trash2 :size="14" /></button>
+                <button v-if="!c.is_walk_in" class="row-action danger" :title="t('people.customers.delete_title')" @click="deleteCustomer(c.id)"><Trash2 :size="14" /></button>
               </td>
             </tr>
           </tbody>

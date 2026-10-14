@@ -12,6 +12,23 @@
 
 export const changelog = [
   {
+    version: '1.44.1',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'The till starts on Walk-in again',
+      points: [
+        'If your shop’s "Walk-in" customer had been deleted, the till opened with no customer and a sale could not start until you picked one. It is back, and it can no longer be deleted.',
+      ],
+    },
+    ar: {
+      title: 'الكاشير بيبدأ على "عميل نقدي" تاني',
+      points: [
+        'لو عميل "نقدي" بتاع محلك كان اتمسح، الكاشير كان بيفتح من غير عميل والبيعة مبتبدأش غير لما تختار واحد. رجع تاني، ومبقاش ينفع يتمسح.',
+      ],
+    },
+  },
+  {
     version: '1.44.0',
     date: '2026-10-14',
     tag: 'New',
