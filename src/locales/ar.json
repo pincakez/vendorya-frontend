@@ -2552,7 +2552,8 @@
       },
       "confirm_delete_pm": "حذف طريقة الدفع هذه؟",
       "confirm_delete_preset": "حذف قالب الملصق هذا؟",
-      "save_service": "حفظ إعدادات الخدمات"
+      "save_service": "حفظ إعدادات الخدمات",
+      "lang_hint": "الإيصالات المطبوعة تظهر دائماً بهذه اللغة أياً كان من يطبعها. أما الإشعارات فتظهر بلغة شاشة كل مستخدم."
     },
     "changelog": {
       "title": "الجديد",
@@ -2772,6 +2773,117 @@
       "print_now": "طباعة الإيصال الآن",
       "create": "إنشاء خدمة",
       "err_save": "تعذّر حفظ الخدمة."
+    }
+  },
+  "receipt": {
+    "invoice": "فاتورة",
+    "invoice_no": "فاتورة رقم {number}",
+    "tel": "هاتف: {phone}",
+    "tax_id": "الرقم الضريبي: {id}",
+    "comm_reg": "السجل التجاري: {reg}",
+    "billed_to": "العميل",
+    "customer": "العميل",
+    "walk_in": "عميل نقدي",
+    "branch": "الفرع",
+    "col_item": "الصنف",
+    "col_qty": "الكمية",
+    "col_unit_price": "سعر الوحدة",
+    "col_tax": "الضريبة",
+    "col_total": "الإجمالي",
+    "disc": "خصم:",
+    "no_items": "لا توجد أصناف.",
+    "subtotal": "المجموع الفرعي",
+    "tax": "الضريبة",
+    "discount": "الخصم",
+    "grand_total": "الإجمالي النهائي",
+    "total": "الإجمالي",
+    "paid": "المدفوع",
+    "balance_due": "الرصيد المستحق",
+    "payments": "المدفوعات",
+    "svc_doc_title": "إيصال صيانة",
+    "svc_client_copy": "نسخة العميل",
+    "svc_store_copy": "نسخة المتجر",
+    "svc_no": "رقم الخدمة: {serial}",
+    "svc_client": "العميل",
+    "svc_service": "الخدمة",
+    "svc_received": "تاريخ الاستلام",
+    "svc_eta": "موعد التسليم",
+    "svc_no_eta": "بدون موعد",
+    "svc_eta_value": "{d} يوم و{h} ساعة من الاستلام",
+    "svc_items_kept": "الأصناف المستلمة",
+    "svc_description": "الوصف",
+    "svc_cost": "التكلفة",
+    "svc_walk_in": "عميل نقدي",
+    "svc_thanks": "شكراً لاختياركم {store}",
+    "purchase_invoice": "فاتورة شراء",
+    "supplier_inv_no": "رقم فاتورة المورّد: {ref}",
+    "supplier": "المورّد",
+    "col_base_cost": "التكلفة",
+    "col_retail": "سعر البيع",
+    "col_line_total": "إجمالي السطر",
+    "total_base_cost": "إجمالي التكلفة",
+    "total_retail": "إجمالي سعر البيع",
+    "notes": "ملاحظات",
+    "pur_status": {
+      "draft": "مسودة",
+      "received": "مستلم"
+    }
+  },
+  "notif": {
+    "low_stock": {
+      "title": "مخزون منخفض: {product} ({sku})",
+      "body": "متبقٍ {qty} فقط في فرع {branch}"
+    },
+    "invoice_voided": {
+      "title": "تم إلغاء الفاتورة رقم {number}",
+      "body": "الإجمالي: {total}"
+    },
+    "shift_over": {
+      "title": "أُغلقت الوردية بزيادة في النقدية"
+    },
+    "shift_short": {
+      "title": "أُغلقت الوردية بعجز في النقدية"
+    },
+    "shift_diff": {
+      "body": "الكاشير: {cashier} · الفرق: {diff}"
+    },
+    "credit_limit": {
+      "title": "تجاوز حد الائتمان: {customer}",
+      "body": "فاتورة رقم {number} — غير مدفوع {unpaid}. الرصيد الجديد {balance} يتجاوز الحد {limit}."
+    },
+    "expiry": {
+      "title": "تنبيه صلاحية: مخزون يحتاج إلى متابعة",
+      "body_both": "{expired} منتهي الصلاحية · {soon} تنتهي صلاحيته خلال {days} يوماً",
+      "body_expired": "{expired} منتهي الصلاحية",
+      "body_soon": "{soon} تنتهي صلاحيته خلال {days} يوماً"
+    },
+    "service_eta": {
+      "title": "موعد تسليم الخدمة: {serial}",
+      "body_hm": "{client} — {service} موعد تسليمها خلال {h} ساعة و{m} دقيقة.",
+      "body_m": "{client} — {service} موعد تسليمها خلال {m} دقيقة."
+    },
+    "service_both": {
+      "title": "الخدمة {serial} — تم تحديث التشخيص والتكلفة",
+      "body": "أُضيف التشخيص وتغيّرت التكلفة إلى {cost}."
+    },
+    "service_diagnosis": {
+      "title": "الخدمة {serial} — تم تحديث التشخيص"
+    },
+    "service_cost": {
+      "title": "الخدمة {serial} — تم تحديث التكلفة",
+      "body": "التكلفة الجديدة: {cost}"
+    },
+    "billing_invoice": {
+      "title": "فاتورة جديدة: {number}",
+      "body": "فاتورة بقيمة {amount} {currency}."
+    },
+    "billing_paid": {
+      "title": "تم استلام دفعة الفاتورة {number}",
+      "body": "شكراً لك — تم استلام {amount} {currency}."
+    },
+    "words": {
+      "walk_in": "عميل نقدي",
+      "service": "خدمة"
     }
   }
 }

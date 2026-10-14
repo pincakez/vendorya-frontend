@@ -94,8 +94,8 @@
             <button v-for="n in recent" :key="n.id" class="nd-item" @click="openNotif(n)">
               <span class="nd-dot" :class="`dot-${n.priority.toLowerCase()}`"></span>
               <div class="nd-body">
-                <div class="nd-item-title">{{ n.title }}</div>
-                <div v-if="n.body" class="nd-item-body">{{ n.body }}</div>
+                <div class="nd-item-title" dir="auto">{{ notifTitle(n) }}</div>
+                <div v-if="notifBody(n)" class="nd-item-body" dir="auto">{{ notifBody(n) }}</div>
                 <div class="nd-item-time">{{ timeAgo(n.created_at) }}</div>
               </div>
             </button>
@@ -156,6 +156,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useNotifText } from '@/composables/useNotifText'
 import {
   Bell, Sun, Moon, Search, Bot, LogOut,
   LayoutDashboard, Package, ShoppingCart, SlidersHorizontal, Tag, List, FileBarChart,
@@ -178,6 +179,7 @@ const theme  = useThemeStore()
 const router = useRouter()
 const { isPhone, mobileOpen, toggleMobile } = usePhoneSidebar()
 const { locale, t } = useI18n()
+const { notifTitle, notifBody } = useNotifText()   // s167: reader's language
 
 function toggleLocale() {
   const next = locale.value === 'ar' ? 'en' : 'ar'

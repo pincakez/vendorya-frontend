@@ -11,50 +11,50 @@
     <div v-else-if="error" class="print-state error">{{ error }}</div>
 
     <!-- The printable document -->
-    <div v-else class="invoice-sheet">
+    <div v-else class="invoice-sheet" :lang="shopLang"><!-- s167: labels in the SHOP language -->
       <header class="inv-head">
         <div class="inv-store">
-          <div class="store-name">{{ doc.store.name }}</div>
+          <div class="store-name" dir="auto">{{ doc.store.name }}</div>
           <div v-if="headerLines.length" class="store-meta">
-            <div v-for="(line, i) in headerLines" :key="i">{{ line }}</div>
+            <div v-for="(line, i) in headerLines" :key="i" dir="auto">{{ line }}</div>
           </div>
-          <div v-if="doc.store.phone_number" class="store-meta">Tel: {{ doc.store.phone_number }}</div>
+          <div v-if="doc.store.phone_number" class="store-meta" dir="auto">{{ st('receipt.tel', { phone: doc.store.phone_number }) }}</div>
           <div v-if="storeLocation" class="store-meta">{{ storeLocation }}</div>
         </div>
         <div class="inv-meta">
-          <div class="inv-title">PURCHASE INVOICE</div>
+          <div class="inv-title">{{ st('receipt.purchase_invoice') }}</div>
           <div class="inv-num">#{{ doc.purchase.purchase_number || '—' }}</div>
-          <div v-if="doc.purchase.vendor_reference" class="inv-date">Supplier Inv #: {{ doc.purchase.vendor_reference }}</div>
-          <div class="inv-date">{{ fmtDate(doc.purchase.date) }}</div>
-          <span class="inv-status" :class="'st-' + doc.purchase.status.toLowerCase()">{{ doc.purchase.status }}</span>
+          <div v-if="doc.purchase.vendor_reference" class="inv-date">{{ st('receipt.supplier_inv_no', { ref: doc.purchase.vendor_reference }) }}</div>
+          <div class="inv-date">{{ printDate(doc.purchase.date, shopLang) }}</div>
+          <span class="inv-status" :class="'st-' + doc.purchase.status.toLowerCase()">{{ statusText }}</span>
         </div>
       </header>
 
       <div class="inv-parties">
         <div>
-          <div class="party-label">Supplier</div>
-          <div class="party-name">{{ doc.supplier?.name || '—' }}</div>
+          <div class="party-label">{{ st('receipt.supplier') }}</div>
+          <div class="party-name" dir="auto">{{ doc.supplier?.name || '—' }}</div>
         </div>
         <div v-if="doc.branch" class="ta-right">
-          <div class="party-label">Branch</div>
-          <div class="party-name">{{ doc.branch.name }}</div>
+          <div class="party-label">{{ st('receipt.branch') }}</div>
+          <div class="party-name" dir="auto">{{ doc.branch.name }}</div>
         </div>
       </div>
 
       <table class="inv-items">
         <thead>
           <tr>
-            <th>Item</th>
-            <th class="ta-right">Qty</th>
-            <th class="ta-right">Base (Cost)</th>
-            <th class="ta-right">Retail</th>
-            <th class="ta-right">Line Total</th>
+            <th>{{ st('receipt.col_item') }}</th>
+            <th class="ta-right">{{ st('receipt.col_qty') }}</th>
+            <th class="ta-right">{{ st('receipt.col_base_cost') }}</th>
+            <th class="ta-right">{{ st('receipt.col_retail') }}</th>
+            <th class="ta-right">{{ st('receipt.col_line_total') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(it, i) in doc.items" :key="i">
             <td>
-              <div class="it-name">{{ it.name }}<span v-if="it.unit_name"> · {{ it.unit_name }}</span></div>
+              <div class="it-name" dir="auto">{{ it.name }}<span v-if="it.unit_name"> · {{ it.unit_name }}</span></div>
               <div class="it-sku">{{ it.sku }}</div>
             </td>
             <td class="ta-right">{{ formatQty(it.quantity) }}</td>
@@ -62,22 +62,22 @@
             <td class="ta-right"><Money :value="it.retail" /></td>
             <td class="ta-right"><Money :value="it.line_total" /></td>
           </tr>
-          <tr v-if="!doc.items.length"><td colspan="5" class="ta-center muted">No line items.</td></tr>
+          <tr v-if="!doc.items.length"><td colspan="5" class="ta-center muted">{{ st('receipt.no_items') }}</td></tr>
         </tbody>
       </table>
 
       <div class="inv-totals">
-        <div class="tot-row"><span>Total Base Cost</span><Money :value="doc.purchase.base_total" /></div>
-        <div class="tot-row grand"><span>Total Retail</span><Money :value="doc.purchase.retail_total" /></div>
+        <div class="tot-row"><span>{{ st('receipt.total_base_cost') }}</span><Money :value="doc.purchase.base_total" /></div>
+        <div class="tot-row grand"><span>{{ st('receipt.total_retail') }}</span><Money :value="doc.purchase.retail_total" /></div>
       </div>
 
       <div v-if="doc.purchase.notes" class="inv-notes">
-        <div class="party-label">Notes</div>
-        <div class="notes-body">{{ doc.purchase.notes }}</div>
+        <div class="party-label">{{ st('receipt.notes') }}</div>
+        <div class="notes-body" dir="auto">{{ doc.purchase.notes }}</div>
       </div>
 
       <footer v-if="footerLines.length" class="inv-foot">
-        <div v-for="(line, i) in footerLines" :key="i">{{ line }}</div>
+        <div v-for="(line, i) in footerLines" :key="i" dir="auto">{{ line }}</div>
       </footer>
     </div>
   </div>
@@ -91,6 +91,7 @@ import { ArrowLeft, Printer } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
 import { formatQty } from '@/utils/format'
+import { useShopLocale, printDate } from '@/composables/useShopLocale'
 
 const { t }  = useI18n()
 const route  = useRoute()
@@ -108,10 +109,12 @@ const headerLines = computed(() => (doc.legal.receipt_header || '').split('\n').
 const footerLines = computed(() => (doc.legal.receipt_footer || '').split('\n').map(l => l.trim()).filter(Boolean))
 const storeLocation = computed(() => [doc.store.city, doc.store.country].filter(Boolean).join(', '))
 
-function fmtDate(d) {
-  if (!d) return '—'
-  return new Date(d).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
+// s167: the document speaks the shop's language (print-data store.default_language).
+const { st, shopLang } = useShopLocale(() => doc.store.default_language)
+const statusText = computed(() => {
+  const s = String(doc.purchase.status || '').toLowerCase()
+  return s ? st(`receipt.pur_status.${s}`) : ''
+})
 
 async function load() {
   loading.value = true
@@ -180,6 +183,7 @@ onMounted(async () => {
 .inv-items th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#64748b;
   text-align:left; padding:8px 10px; border-bottom:1.5px solid #e2e8f0; }
 .inv-items td { padding:10px; border-bottom:1px solid #eef2f6; font-size:13px; vertical-align:top; }
+.inv-items th.ta-right { text-align:right; }   /* s167: number column headers line up with their values */
 .it-name { font-weight:600; }
 .it-sku  { font-size:11px; color:#94a3b8; font-variant-numeric:tabular-nums; }
 
@@ -195,6 +199,11 @@ onMounted(async () => {
 .ta-right { text-align:right; }
 .ta-center { text-align:center; }
 .muted { color:#94a3b8; }
+
+/* s167: Arabic letters must stay joined — no letter-spacing on an Arabic document. */
+.invoice-sheet:lang(ar) .inv-title,
+.invoice-sheet:lang(ar) .party-label,
+.invoice-sheet:lang(ar) .inv-items th { letter-spacing:0; }
 
 @media print {
   .print-page { background:#fff; padding:0; }

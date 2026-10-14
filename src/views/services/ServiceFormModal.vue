@@ -196,10 +196,14 @@ import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useQZTray } from '@/composables/useQZTray'
+import { useShopLocale } from '@/composables/useShopLocale'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const { sendRaw, isAvailable } = useQZTray()
+// s167: the ticket prints in the SHOP's language (signed-in shop's default_language); raw thermal = English.
+const { st, shopLang } = useShopLocale()
+const rt = (key, params = {}) => t(key, params, { locale: 'en' })
 
 const props = defineProps({
   open:         { type: Boolean, default: false },
@@ -415,72 +419,83 @@ function _ln(t = '') { return t + _LF }
 function _dashes() { return '-'.repeat(_COLS) + _LF }
 function _two(l, r) { return l + ' '.repeat(Math.max(1, _COLS - l.length - r.length)) + r + _LF }
 
-function buildServiceESCPOS(copy) {
-  const storeName  = auth.storeName || 'Store'
-  const clientName = form.freeText ? (form.client_name || 'Walk-in') : (form.clientName || 'Walk-in')
-  const clientPhone= form.freeText ? (form.client_phone || '') : ''
-  const serial     = form.serial_number || props.serviceId?.slice(0, 8) || '—'
-  const stype      = form.service_type === '__custom__' ? form.custom_type : (form.service_type || '—')
-  const rcvDate    = form.receive_date || '—'
-  const etaStr     = form.no_eta ? 'No ETA' : `${form.eta_days || 0}d ${form.eta_hours || 0}h from receive`
-  const info       = form.info || '—'
-  const keeping    = form.keeping || '—'
-  const cost       = `${auth.currencySymbol || ''} ${form.cost || 0}`
+// s167 (Upgrade 12): the ticket fields, worded by a translator — `rt` (English) for the RAW
+// thermal path (a raw ESC/POS printer can't join/right-to-left Arabic letters), `st` (the
+// SHOP's language) for the browser receipt, so it reads the same whoever prints it.
+function ticketFields(tr) {
+  const walkIn     = tr('receipt.svc_walk_in')
+  const clientName = form.freeText ? (form.client_name || walkIn) : (form.clientName || walkIn)
+  return {
+    storeName:   auth.storeName || 'Store',
+    clientName,
+    clientPhone: form.freeText ? (form.client_phone || '') : '',
+    serial:      form.serial_number || props.serviceId?.slice(0, 8) || '—',
+    stype:       form.service_type === '__custom__' ? form.custom_type : (form.service_type || '—'),
+    rcvDate:     form.receive_date || '—',
+    etaStr:      form.no_eta ? tr('receipt.svc_no_eta')
+                   : tr('receipt.svc_eta_value', { d: form.eta_days || 0, h: form.eta_hours || 0 }),
+    info:        form.info || '—',
+    keeping:     form.keeping || '—',
+    cost:        `${auth.currencySymbol || ''} ${form.cost || 0}`,
+  }
+}
+
+function buildServiceESCPOS(copyKey) {
+  const f = ticketFields(rt)
+  const lbl = (k) => rt(k) + ':'
 
   let out = _INIT
   out += _CENTER
-  out += _SIZE_2X + _BOLD_ON + _ln(storeName) + _SIZE_NRM + _BOLD_OFF
+  out += _SIZE_2X + _BOLD_ON + _ln(f.storeName) + _SIZE_NRM + _BOLD_OFF
   out += _dashes()
-  out += _BOLD_ON + _ln(copy) + _BOLD_OFF
-  out += _ln('SRV# ' + serial)
+  out += _BOLD_ON + _ln(rt(copyKey)) + _BOLD_OFF
+  out += _ln(rt('receipt.svc_no', { serial: f.serial }))
   out += _dashes()
   out += _LEFT
-  out += _two('Client:', (clientName + (clientPhone ? ' ' + clientPhone : '')).slice(0, _COLS - 10))
-  out += _two('Service:', stype.slice(0, _COLS - 10))
-  out += _two('Received:', rcvDate)
-  out += _two('ETA:', etaStr.slice(0, _COLS - 6))
-  out += _two('Items:', keeping.slice(0, _COLS - 8))
-  if (info && info !== '—') out += _two('Info:', info.slice(0, _COLS - 7))
+  out += _two(lbl('receipt.svc_client'), (f.clientName + (f.clientPhone ? ' ' + f.clientPhone : '')).slice(0, _COLS - 10))
+  out += _two(lbl('receipt.svc_service'), f.stype.slice(0, _COLS - 10))
+  out += _two(lbl('receipt.svc_received'), f.rcvDate)
+  out += _two(lbl('receipt.svc_eta'), f.etaStr.slice(0, _COLS - 6))
+  out += _two(lbl('receipt.svc_items_kept'), f.keeping.slice(0, _COLS - 12))
+  if (f.info && f.info !== '—') out += _two(lbl('receipt.svc_description'), f.info.slice(0, _COLS - 13))
   out += _dashes()
-  out += _BOLD_ON + _two('COST:', cost) + _BOLD_OFF
+  out += _BOLD_ON + _two(rt('receipt.svc_cost').toUpperCase() + ':', f.cost) + _BOLD_OFF
   out += _dashes()
-  out += _CENTER + _ln('Thank you for choosing ' + storeName) + _LEFT
+  out += _CENTER + _ln(rt('receipt.svc_thanks', { store: f.storeName })) + _LEFT
   out += _LF + _LF + _LF + _CUT
   return out
 }
 
-function printReceiptCSS(copies = 2) {
-  const storeName  = auth.storeName || 'Store'
-  const clientName = form.freeText ? (form.client_name || 'Walk-in') : (form.clientName || 'Walk-in')
-  const clientPhone = form.freeText ? (form.client_phone || '') : ''
-  const serial     = form.serial_number || props.serviceId?.slice(0, 8) || '—'
-  const stype      = form.service_type === '__custom__' ? form.custom_type : (form.service_type || '—')
-  const rcvDate    = form.receive_date || '—'
-  const etaStr     = form.no_eta ? 'No ETA' : `${form.eta_days || 0}d ${form.eta_hours || 0}h from receive`
-  const info       = form.info || '—'
-  const keeping    = form.keeping || '—'
-  const cost       = `${auth.currencySymbol || ''} ${form.cost || 0}`
+// Text typed by staff goes into a document.write() page — escape it.
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+}
 
-  const block = (title) => `
+function printReceiptCSS(copies = 2) {
+  const f = ticketFields(st)
+  const lang = shopLang.value
+
+  const block = (titleKey) => `
     <div class="receipt">
       <div class="r-header">
-        <div class="r-store">${storeName}</div>
-        <div class="r-type">${title}</div>
+        <div class="r-store" dir="auto">${esc(f.storeName)}</div>
+        <div class="r-type">${esc(st(titleKey))}</div>
       </div>
-      <div class="r-serial">SRV# ${serial}</div>
+      <div class="r-serial" dir="auto">${esc(st('receipt.svc_no', { serial: f.serial }))}</div>
       <table class="r-table">
-        <tr><td class="r-lbl">Client</td><td>${clientName}${clientPhone ? ' · ' + clientPhone : ''}</td></tr>
-        <tr><td class="r-lbl">Service</td><td>${stype}</td></tr>
-        <tr><td class="r-lbl">Received</td><td>${rcvDate}</td></tr>
-        <tr><td class="r-lbl">ETA</td><td>${etaStr}</td></tr>
-        <tr><td class="r-lbl">Items kept</td><td>${keeping}</td></tr>
-        <tr><td class="r-lbl">Description</td><td>${info}</td></tr>
-        <tr><td class="r-lbl">Cost</td><td><strong>${cost}</strong></td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_client'))}</td><td dir="auto">${esc(f.clientName)}${f.clientPhone ? ' · ' + esc(f.clientPhone) : ''}</td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_service'))}</td><td dir="auto">${esc(f.stype)}</td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_received'))}</td><td>${esc(f.rcvDate)}</td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_eta'))}</td><td dir="auto">${esc(f.etaStr)}</td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_items_kept'))}</td><td dir="auto">${esc(f.keeping)}</td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_description'))}</td><td dir="auto">${esc(f.info)}</td></tr>
+        <tr><td class="r-lbl">${esc(st('receipt.svc_cost'))}</td><td><strong>${esc(f.cost)}</strong></td></tr>
       </table>
-      <div class="r-footer">Thank you for choosing ${storeName}</div>
+      <div class="r-footer" dir="auto">${esc(st('receipt.svc_thanks', { store: f.storeName }))}</div>
     </div>`
 
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Service Receipt</title>
+  // Layout stays LTR (dir="ltr"); lang marks the text for fonts/shaping. Arabic: no letter-spacing.
+  const html = `<!DOCTYPE html><html lang="${lang}" dir="ltr"><head><meta charset="utf-8"><title>${esc(st('receipt.svc_doc_title'))}</title>
   <style>
     @page { size: 80mm auto; margin: 0; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -492,14 +507,15 @@ function printReceiptCSS(copies = 2) {
     .r-type   { font-size: 9px; background: #000; color: #fff; display: inline-block; padding: 1px 7px; margin-top: 2mm; }
     .r-serial { font-size: 13px; font-weight: bold; text-align: center; margin: 3mm 0; letter-spacing: .12em; }
     .r-table  { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
-    .r-table td { padding: 1.5mm 1mm; vertical-align: top; font-size: 10px; line-height: 1.4; }
+    .r-table td { padding: 1.5mm 1mm; vertical-align: top; font-size: 10px; line-height: 1.4; overflow-wrap: anywhere; }
     .r-lbl    { color: #444; width: 30%; white-space: nowrap; font-weight: bold; }
     .r-footer { text-align: center; font-size: 9px; color: #666; border-top: 1px dashed #999; padding-top: 3mm; margin-top: 2mm; }
+    html[lang="ar"] .r-store, html[lang="ar"] .r-serial { letter-spacing: 0; }
     @media screen { body { background: #e5e5e5; width: auto; padding: 10px 0; } .receipt { border: 1px dashed #aaa; margin: 10px auto; background: #fff; } }
     @media print  { body { background: #fff; margin: 0; } }
   </style></head><body>
-    ${block('CLIENT RECEIPT')}
-    ${copies >= 2 ? block('STORE RECEIPT') : ''}
+    ${block('receipt.svc_client_copy')}
+    ${copies >= 2 ? block('receipt.svc_store_copy') : ''}
   </body></html>`
 
   const w = window.open('', '_blank', 'width=340,height=580')
@@ -516,8 +532,8 @@ async function doServicePrint(copies = 2) {
       const settingsRes = await api.get('/api/core/settings/')
       const printerName = settingsRes.data.receipt_printer_name || ''
       if (printerName) {
-        await sendRaw(printerName, buildServiceESCPOS('CLIENT RECEIPT'))
-        if (copies >= 2) await sendRaw(printerName, buildServiceESCPOS('STORE RECEIPT'))
+        await sendRaw(printerName, buildServiceESCPOS('receipt.svc_client_copy'))
+        if (copies >= 2) await sendRaw(printerName, buildServiceESCPOS('receipt.svc_store_copy'))
         return
       }
     }

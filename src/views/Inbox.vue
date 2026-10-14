@@ -50,11 +50,11 @@
         </div>
         <div class="ii-body">
           <div class="ii-title">
-            {{ n.title }}
+            <span dir="auto">{{ notifTitle(n) }}</span>
             <span v-if="n.is_unread" class="ii-dot" />
             <span class="ii-priority-badge" :class="`badge-${n.priority.toLowerCase()}`">{{ t('core.inbox.priority.' + n.priority.toLowerCase()) }}</span>
           </div>
-          <div v-if="n.body" class="ii-text">{{ n.body }}</div>
+          <div v-if="notifBody(n)" class="ii-text" dir="auto">{{ notifBody(n) }}</div>
           <div class="ii-meta">
             <span>{{ timeAgo(n.created_at) }}</span>
             <span v-if="n.link" class="ii-link">{{ t('core.inbox.open') }}</span>
@@ -68,6 +68,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useNotifText } from '@/composables/useNotifText'
 import { useRouter } from 'vue-router'
 import {
   Inbox as InboxIcon, CheckCheck, RefreshCw,
@@ -76,6 +77,7 @@ import {
 import { useNotifications } from '@/composables/useNotifications'
 
 const { t } = useI18n()
+const { notifTitle, notifBody } = useNotifText()   // s167: reader's language
 const router = useRouter()
 const { fetchAll, markRead, markAllRead } = useNotifications()
 

@@ -2552,7 +2552,8 @@
       },
       "confirm_delete_pm": "Delete this payment method?",
       "confirm_delete_preset": "Delete this label preset?",
-      "save_service": "Save Service Settings"
+      "save_service": "Save Service Settings",
+      "lang_hint": "Printed receipts always use this language, whoever prints them. Notifications show in each person's own screen language."
     },
     "changelog": {
       "title": "What's New",
@@ -2772,6 +2773,117 @@
       "print_now": "Print receipt now",
       "create": "Create Service",
       "err_save": "Could not save service."
+    }
+  },
+  "receipt": {
+    "invoice": "INVOICE",
+    "invoice_no": "INVOICE #{number}",
+    "tel": "Tel: {phone}",
+    "tax_id": "Tax ID: {id}",
+    "comm_reg": "Comm. Reg: {reg}",
+    "billed_to": "Billed To",
+    "customer": "Customer",
+    "walk_in": "Walk-in customer",
+    "branch": "Branch",
+    "col_item": "Item",
+    "col_qty": "Qty",
+    "col_unit_price": "Unit Price",
+    "col_tax": "Tax",
+    "col_total": "Total",
+    "disc": "Disc:",
+    "no_items": "No line items.",
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "discount": "Discount",
+    "grand_total": "Grand Total",
+    "total": "TOTAL",
+    "paid": "Paid",
+    "balance_due": "Balance Due",
+    "payments": "Payments",
+    "svc_doc_title": "Service Receipt",
+    "svc_client_copy": "CLIENT RECEIPT",
+    "svc_store_copy": "STORE RECEIPT",
+    "svc_no": "SRV# {serial}",
+    "svc_client": "Client",
+    "svc_service": "Service",
+    "svc_received": "Received",
+    "svc_eta": "ETA",
+    "svc_no_eta": "No ETA",
+    "svc_eta_value": "{d}d {h}h from receive",
+    "svc_items_kept": "Items kept",
+    "svc_description": "Description",
+    "svc_cost": "Cost",
+    "svc_walk_in": "Walk-in",
+    "svc_thanks": "Thank you for choosing {store}",
+    "purchase_invoice": "PURCHASE INVOICE",
+    "supplier_inv_no": "Supplier Inv #: {ref}",
+    "supplier": "Supplier",
+    "col_base_cost": "Base (Cost)",
+    "col_retail": "Retail",
+    "col_line_total": "Line Total",
+    "total_base_cost": "Total Base Cost",
+    "total_retail": "Total Retail",
+    "notes": "Notes",
+    "pur_status": {
+      "draft": "Draft",
+      "received": "Received"
+    }
+  },
+  "notif": {
+    "low_stock": {
+      "title": "Low stock: {product} ({sku})",
+      "body": "Only {qty} left at {branch}"
+    },
+    "invoice_voided": {
+      "title": "Invoice #{number} was voided",
+      "body": "Total: {total}"
+    },
+    "shift_over": {
+      "title": "Shift closed with cash over"
+    },
+    "shift_short": {
+      "title": "Shift closed with cash short"
+    },
+    "shift_diff": {
+      "body": "Cashier: {cashier} · Difference: {diff}"
+    },
+    "credit_limit": {
+      "title": "Credit limit exceeded: {customer}",
+      "body": "Invoice #{number} — unpaid {unpaid}. New balance {balance} exceeds limit {limit}."
+    },
+    "expiry": {
+      "title": "Expiry alert: stock needs attention",
+      "body_both": "{expired} expired · {soon} expiring within {days} days",
+      "body_expired": "{expired} expired",
+      "body_soon": "{soon} expiring within {days} days"
+    },
+    "service_eta": {
+      "title": "Service ETA: {serial}",
+      "body_hm": "{client} — {service} is due in {h}h {m}m.",
+      "body_m": "{client} — {service} is due in {m}m."
+    },
+    "service_both": {
+      "title": "Service {serial} — diagnosis & cost updated",
+      "body": "Diagnosis added and cost changed to {cost}."
+    },
+    "service_diagnosis": {
+      "title": "Service {serial} — diagnosis updated"
+    },
+    "service_cost": {
+      "title": "Service {serial} — cost updated",
+      "body": "New cost: {cost}"
+    },
+    "billing_invoice": {
+      "title": "New invoice: {number}",
+      "body": "Invoice for {amount} {currency}."
+    },
+    "billing_paid": {
+      "title": "Payment received for {number}",
+      "body": "Thank you — {amount} {currency} received."
+    },
+    "words": {
+      "walk_in": "Walk-in",
+      "service": "Service"
     }
   }
 }

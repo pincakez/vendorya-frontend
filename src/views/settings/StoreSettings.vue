@@ -45,6 +45,7 @@
               <option value="ar">{{ t('settings.store.lang_ar') }}</option>
               <option value="en">{{ t('settings.store.lang_en') }}</option>
             </select>
+            <p class="form-hint" data-testid="lang-hint" style="max-width:320px;">{{ t('settings.store.lang_hint') }}</p>
           </div>
         </div>
 
@@ -1152,7 +1153,7 @@ async function saveStore() {
       decimals: settingsRes.data.decimals, thousands_separator: settingsRes.data.thousands_separator,
       item_noun: settingsRes.data.item_noun, category_level_names: settingsRes.data.category_level_names,
     })
-    if (auth.user?.store) { auth.user.store = { ...auth.user.store, currency: cur, timezone: storeRes.data.timezone }; localStorage.setItem('vendorya_user', JSON.stringify(auth.user)) }
+    if (auth.user?.store) { auth.user.store = { ...auth.user.store, currency: cur, timezone: storeRes.data.timezone, default_language: storeRes.data.default_language }; localStorage.setItem('vendorya_user', JSON.stringify(auth.user)) }
   } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.save')) } finally { storeSaving.value = false }
 }
 
