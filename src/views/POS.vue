@@ -723,6 +723,9 @@ async function addToCart(product, unit = null) {
   const units = Array.isArray(product.selling_units)
     ? product.selling_units.filter(u => u.sellable !== false)
     : []
+  // A pack/box barcode was scanned → the server names that pack (`scan_unit`): add 1 pack,
+  // not 1 piece, and skip the unit picker.
+  if (!unit && product.scan_unit) unit = units.find(u => u.id === product.scan_unit) || null
   // Multiple sellable units and none chosen yet → ask which (Pack/Strip/Tablet).
   // Single-unit products skip this entirely and add silently, exactly as before.
   if (!unit && units.length > 1) {

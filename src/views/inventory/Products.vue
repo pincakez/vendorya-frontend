@@ -1384,9 +1384,16 @@ async function saveProduct() {
     prodModal.open = false
     fetchProducts(prodModal.id ? page.value : 1)
   } catch (e) {
-    prodModal.error = e.response?.data?.detail
-      || e.response?.data?.supplier?.[0]
-      || e.response?.data?.sku2?.[0]
+    const d = e.response?.data || {}
+    // Barcode unique per shop: the server names the code (+ the product already using it).
+    const barcodeErr = d.barcode_code?.[0] && (d.barcode_owner?.[0]
+      ? t('inventory.products.product_modal.err_barcode_taken', { code: d.barcode_code[0], name: d.barcode_owner[0] })
+      : t('inventory.products.product_modal.err_barcode_twice', { code: d.barcode_code[0] }))
+    prodModal.error = barcodeErr
+      || d.detail
+      || d.supplier?.[0]
+      || d.sku2?.[0]
+      || d.selling_units?.[0]
       || t('inventory.products.product_modal.err_save')
   } finally { prodModal.saving = false }
 }

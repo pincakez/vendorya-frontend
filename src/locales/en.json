@@ -266,6 +266,8 @@
         "initial_stock_hint": "Starting stock quantity (0 = no initial stock)",
         "add_option_hint": "Add new option",
         "err_save": "Save failed. Make sure the supplier prefix is confirmed (locked).",
+        "err_barcode_taken": "Barcode {code} is already used by \"{name}\" in this shop.",
+        "err_barcode_twice": "Barcode {code} is used by two packs of this product.",
         "err_load": "Failed to load product details.",
         "toast_saved": "✓ Product saved",
         "toast_stock_failed": "Product saved, but the initial stock wasn't set. Add it from Inventory → Stock Adjustments.",
