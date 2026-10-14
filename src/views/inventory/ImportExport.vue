@@ -29,8 +29,8 @@
           <button class="btn-ghost" :disabled="!file || busy" @click="validate">
             {{ checking ? t('inventory.import_export.checking') : t('inventory.import_export.check_file') }}
           </button>
-          <button class="btn-primary" :disabled="!report || !report.ok || busy" @click="commit">
-            {{ importing ? t('inventory.import_export.importing') : (report && report.ok ? t('inventory.import_export.import_n_products', { n: report.summary.products }) : t('inventory.import_export.import_btn_generic')) }}
+          <button class="btn-primary" :disabled="!report || !report.ok || busy || nothingToDo" @click="commit">
+            {{ importing ? t('inventory.import_export.importing') : importLabel }}
           </button>
           <button v-if="file" class="btn-text" :disabled="busy" @click="reset">{{ t('inventory.import_export.clear') }}</button>
         </div>
@@ -49,6 +49,25 @@
               <span><strong>{{ report.summary.category_paths }}</strong> {{ t('inventory.import_export.stat_category_branches') }}</span>
               <span><strong>{{ report.summary.attributes }}</strong> {{ t('inventory.import_export.stat_attributes') }}</span>
             </div>
+            <!-- s168: rows whose SKU is already in the shop update prices + names only -->
+            <div v-if="report.summary.updated || report.summary.unchanged" class="rep-stats">
+              <span><strong>{{ report.summary.updated }}</strong> {{ t('inventory.import_export.stat_updated') }}</span>
+              <span><strong>{{ report.summary.price_changes }}</strong> {{ t('inventory.import_export.stat_price_changes') }}</span>
+              <span><strong>{{ report.summary.name_changes }}</strong> {{ t('inventory.import_export.stat_name_changes') }}</span>
+              <span><strong>{{ report.summary.unchanged }}</strong> {{ t('inventory.import_export.stat_unchanged') }}</span>
+            </div>
+            <template v-if="report.summary.changes && report.summary.changes.length">
+              <div class="rep-sub">{{ t('inventory.import_export.changes_title') }}</div>
+              <ul class="changes">
+                <li v-for="c in report.summary.changes" :key="c.row">
+                  <code>{{ c.sku }}</code> {{ c.name }}
+                  <span v-if="c.new_name"> · {{ t('inventory.import_export.change_name') }} → “{{ c.new_name }}”</span>
+                  <span v-if="c.cost"> · {{ t('inventory.import_export.change_cost') }} {{ formatNumber(c.cost[0]) }} → {{ formatNumber(c.cost[1]) }}</span>
+                  <span v-if="c.sell"> · {{ t('inventory.import_export.change_sell') }} {{ formatNumber(c.sell[0]) }} → {{ formatNumber(c.sell[1]) }}</span>
+                </li>
+                <li v-if="report.summary.changes_more">{{ t('inventory.import_export.changes_more', { n: report.summary.changes_more }) }}</li>
+              </ul>
+            </template>
           </div>
 
           <div v-if="report.warnings && report.warnings.length" class="rep-box rep-warn">
@@ -58,7 +77,9 @@
         </div>
 
         <div v-if="done" class="rep-box rep-ok">
-          <div class="rep-title"><CheckCircle2 :size="15" /> {{ t('inventory.import_export.imported_success', { n: done }) }}</div>
+          <div class="rep-title"><CheckCircle2 :size="15" /> {{ t('inventory.import_export.import_done', {
+            created: done.created || 0, updated: done.updated || 0, prices: done.price_changes || 0,
+            names: done.name_changes || 0, unchanged: done.unchanged || 0 }) }}</div>
         </div>
       </div>
     </div>
@@ -79,6 +100,7 @@
           <tr><td><code>W_PRICE</code> · <code>R_PRICE</code> <span class="req">{{ t('inventory.import_export.required_badge') }}</span></td><td>{{ t('inventory.import_export.row_prices') }}</td></tr>
           <tr><td><code>P_NAME</code></td><td>{{ t('inventory.import_export.row_name') }}</td></tr>
           <tr><td><code>P_REF</code></td><td>{{ t('inventory.import_export.row_ref') }}</td></tr>
+          <tr><td><code>SKU</code></td><td>{{ t('inventory.import_export.row_sku') }}</td></tr>
         </table>
         <p class="help-note">{{ t('inventory.import_export.format_note') }}</p>
       </div>
@@ -87,28 +109,41 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Upload, Download, FileText, XCircle, CheckCircle2, AlertTriangle, BookOpen } from 'lucide-vue-next'
 import api from '@/api/axios'
+import { formatNumber } from '@/utils/format'
 
 const { t } = useI18n()
 
 const file       = ref(null)
 const report     = ref(null)
-const done       = ref(0)
+const done       = ref(null)   // the committed import's summary (created / updated / … counts)
 const checking   = ref(false)
 const importing  = ref(false)
 const exporting  = ref(false)
 const busy = ref(false)
 
+// s168: a file can hold new products AND updates (rows with an existing SKU) — or nothing to change at all.
+const nothingToDo = computed(() => !!report.value?.ok &&
+  !report.value.summary.products && !report.value.summary.updated)
+const importLabel = computed(() => {
+  const s = report.value?.ok ? report.value.summary : null
+  if (!s) return t('inventory.import_export.import_btn_generic')
+  if (s.products && s.updated) return t('inventory.import_export.import_and_update', { n: s.products, m: s.updated })
+  if (s.updated) return t('inventory.import_export.update_n', { n: s.updated })
+  if (s.products) return t('inventory.import_export.import_n_products', { n: s.products })
+  return t('inventory.import_export.nothing_to_change')
+})
+
 function onPick(e) {
   file.value = e.target.files[0] || null
   report.value = null
-  done.value = 0
+  done.value = null
 }
 function reset() {
-  file.value = null; report.value = null; done.value = 0
+  file.value = null; report.value = null; done.value = null
 }
 
 function buildForm() {
@@ -122,7 +157,7 @@ const UPLOAD_CFG = { headers: { 'Content-Type': undefined } }
 
 async function validate() {
   if (!file.value) return
-  busy.value = true; checking.value = true; done.value = 0
+  busy.value = true; checking.value = true; done.value = null
   try {
     const { data } = await api.post('/api/inventory/catalog/import/validate/', buildForm(), UPLOAD_CFG)
     report.value = data
@@ -138,7 +173,7 @@ async function commit() {
   busy.value = true; importing.value = true
   try {
     const { data } = await api.post('/api/inventory/catalog/import/commit/', buildForm(), UPLOAD_CFG)
-    done.value = data.summary.created
+    done.value = data.summary
     report.value = null
     file.value = null
   } catch (e) {
@@ -188,7 +223,10 @@ async function doExport() {
 .rep-err  { background:var(--danger-soft); border-color:#fecaca; color:var(--danger-hover); }
 .rep-ok   { background:var(--success-soft); border-color:#bbf7d0; color:var(--success-hover); }
 .rep-warn { background:#fffbeb; border-color:#fde68a; color:var(--warning-hover); }
-.rep-stats { display:flex; gap:16px; margin-top:8px; font-size:12.5px; color:var(--text-secondary); }
+.rep-stats { display:flex; flex-wrap:wrap; gap:16px; margin-top:8px; font-size:12.5px; color:var(--text-secondary); }
+.rep-sub { margin-top:12px; font-size:12px; font-weight:700; color:var(--text-primary); }
+.changes { max-height:220px; overflow-y:auto; color:var(--text-secondary); }
+.changes code { font-size:11.5px; color:var(--text-primary); }
 
 .help { color:var(--text-secondary); font-size:13px; }
 .help p { margin:0 0 12px; }
