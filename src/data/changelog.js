@@ -12,6 +12,115 @@
 
 export const changelog = [
   {
+    version: '1.47.2',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: '"New" buttons are back on four pages',
+      points: [
+        'Taxes, Stock Adjustments, Expenses and Shifts now have their "New …" button in the page header again (it had gone missing). Each shows only to the people allowed to use it.',
+        'The "you have unsaved changes" warning in forms now speaks Arabic too.',
+        'Old leftovers of the removed AI assistant are gone from the login page, the dashboard strip and the Lock Screen settings.',
+      ],
+    },
+    ar: {
+      title: 'زراير "جديد" رجعت في 4 صفحات',
+      points: [
+        'الضرايب وتسويات المخزون والمصروفات والورديات رجع فيها زرار "جديد …" في أول الصفحة (كان اختفى). وكل زرار بيظهر بس للي مسموحله يستخدمه.',
+        'تحذير "عندك تغييرات مش محفوظة" في النماذج بقى بالعربي كمان.',
+        'بقايا المساعد الذكي القديم اتشالت من صفحة الدخول وشريط لوحة التحكم وإعدادات شاشة القفل.',
+      ],
+    },
+  },
+  {
+    version: '1.47.1',
+    date: '2026-10-14',
+    tag: 'Fixed',
+    en: {
+      title: 'Returns in packs and strips are counted right',
+      points: [
+        'When you pick the original sale in Returns, you now choose one of its lines — so a returned Pack puts the whole pack back on the shelf, not a single tablet.',
+        'You can return part of a pack (a strip, or loose units), and never more than was sold.',
+        'The Sales Invoices list: the status filter and the search box really filter now, and customer names show.',
+      ],
+    },
+    ar: {
+      title: 'المرتجع بالعلبة والشريط بيتحسب صح',
+      points: [
+        'لما تختار فاتورة البيع الأصلية في المرتجعات، بقيت تختار سطر من سطورها — فالعلبة المرتجعة بترجع العلبة كلها للرف، مش حباية واحدة.',
+        'تقدر ترجّع جزء من علبة (شريط، أو حبات فرط)، ومن غير ما ترجّع أكتر من اللي اتباع.',
+        'قائمة فواتير البيع: فلتر الحالة وخانة البحث بقوا بيفلتروا فعلاً، وأسامي العملاء بتظهر.',
+      ],
+    },
+  },
+  {
+    version: '1.47.0',
+    date: '2026-10-14',
+    tag: 'New',
+    en: {
+      title: 'Service desk for repair shops',
+      points: [
+        'A repair job now records the device, its serial number, the problem the customer reported and the technician on it — and you can filter jobs by technician.',
+        'Add parts from your stock to a job; they leave stock only when the job is Done.',
+        'Done makes a full sales invoice (repair + parts, with tax) and takes payment like the till — split payment and Ajel included. The Done window shows the exact total with tax.',
+        'If a paid job comes back, Returned refunds it through a normal return and the parts go back on the shelf.',
+        'Set a detection fee apart from the repair charge, a warranty in days (printed on the ticket), mark a repair "under warranty — no charge", and keep dated notes on each job.',
+      ],
+    },
+    ar: {
+      title: 'مكتب صيانة لمحلات التصليح',
+      points: [
+        'أمر الصيانة بقى بيسجل الجهاز والسيريال بتاعه والعطل اللي العميل قاله والفني اللي شغال عليه — وتقدر تفلتر الأوامر بالفني.',
+        'ضيف قطع غيار من مخزونك على الأمر؛ ومش بتخرج من المخزون غير لما الأمر يخلص.',
+        '"تم" بيعمل فاتورة بيع كاملة (الصيانة + القطع، بالضريبة) ويستلم الفلوس زي الكاشير — بالدفع المقسّم والآجل كمان. وشباك "تم" بيوريك الإجمالي بالظبط بالضريبة.',
+        'لو أمر مدفوع رجع، "مرتجع" بيرجّع الفلوس عن طريق مرتجع عادي والقطع بترجع للرف.',
+        'حدد رسوم كشف لوحدها غير قيمة التصليح، وضمان بالأيام (بيتطبع على الإيصال)، وعلّم التصليح "داخل الضمان — من غير فلوس"، وسجّل ملاحظات بتاريخها على كل أمر.',
+      ],
+    },
+  },
+  {
+    version: '1.46.0',
+    date: '2026-10-14',
+    tag: 'New',
+    en: {
+      title: 'Specs per category, with ready-made templates',
+      points: [
+        'Each category can have its own list of specs — e.g. Laptops → CPU, RAM, Storage, Screen. Sub-categories take them over automatically.',
+        'One click applies a ready template (Laptop, Phone, Monitor, Clothing, Pharmacy item); then add, remove or reorder anything.',
+        'Adding a product asks for exactly those specs. Older products are never blocked from a quick price edit.',
+        'Print a product’s specs on its price label (tick "Specs" in your label preset).',
+      ],
+    },
+    ar: {
+      title: 'مواصفات لكل تصنيف، بقوالب جاهزة',
+      points: [
+        'كل تصنيف بقى له قايمة مواصفات خاصة بيه — مثلاً اللابتوبات ← البروسيسور، الرامات، التخزين، الشاشة. والتصنيفات الفرعية بتاخدها لوحدها.',
+        'بضغطة واحدة تطبّق قالب جاهز (لابتوب، موبايل، شاشة، ملابس، صنف صيدلية)؛ وبعدها ضيف أو امسح أو رتّب زي ما تحب.',
+        'إضافة منتج بتسألك على المواصفات دي بالظبط. والمنتجات القديمة عمرها ما هتتمنع من تعديل سعر سريع.',
+        'اطبع مواصفات المنتج على ملصق السعر (علّم "المواصفات" في قالب الملصق).',
+      ],
+    },
+  },
+  {
+    version: '1.45.0',
+    date: '2026-10-14',
+    tag: 'New',
+    en: {
+      title: 'Pay suppliers with your own payment methods',
+      points: [
+        'When you record a payment to a supplier you now pick from your shop’s own payment methods (the same list as the till — Cash, InstaPay, your bank…) instead of a fixed list.',
+        'The payments list and the supplier’s account statement show exactly how each payment was made. Old payments keep their method.',
+      ],
+    },
+    ar: {
+      title: 'ادفع للموردين بطرق الدفع بتاعة محلك',
+      points: [
+        'لما تسجل دفعة لمورد بقيت تختار من طرق الدفع بتاعة محلك (نفس قايمة الكاشير — كاش، إنستاباي، البنك…) بدل قايمة ثابتة.',
+        'قايمة المدفوعات وكشف حساب المورد بيوضحوا كل دفعة اتدفعت إزاي. والدفعات القديمة محتفظة بطريقتها.',
+      ],
+    },
+  },
+  {
     version: '1.44.1',
     date: '2026-10-14',
     tag: 'Fixed',
