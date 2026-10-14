@@ -5,13 +5,16 @@
         <h1 class="page-title">{{ t('inventory.import_export.title') }}</h1>
         <p class="page-sub">{{ t('inventory.import_export.sub') }}</p>
       </div>
-      <button class="btn-ghost" :disabled="exporting" @click="doExport">
+      <button v-if="canExport" class="btn-ghost" :disabled="exporting" @click="doExport">
         <Download :size="15" /> {{ exporting ? t('inventory.import_export.exporting') : t('inventory.import_export.export_btn') }}
       </button>
     </div>
 
+    <!-- s167: export = MANAGER+, import = ADMIN+ on the server — show only what this role can use -->
+    <p v-if="!canImport" class="role-note">{{ canExport ? t('inventory.import_export.import_admin_only') : t('inventory.import_export.no_access') }}</p>
+
     <!-- IMPORT -->
-    <div class="card">
+    <div v-if="canImport" class="card">
       <div class="card-head">
         <Upload :size="16" /> <span>{{ t('inventory.import_export.import_card_title') }}</span>
       </div>
@@ -85,7 +88,7 @@
     </div>
 
     <!-- FORMAT HELP -->
-    <div class="card">
+    <div v-if="canImport" class="card">
       <div class="card-head"><BookOpen :size="16" /> <span>{{ t('inventory.import_export.format_card_title') }}</span></div>
       <div class="card-body help">
         <p>{{ t('inventory.import_export.format_intro') }}</p>
@@ -114,8 +117,13 @@ import { useI18n } from 'vue-i18n'
 import { Upload, Download, FileText, XCircle, CheckCircle2, AlertTriangle, BookOpen } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { formatNumber } from '@/utils/format'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
+const auth = useAuthStore()
+const RANK = { CASHIER: 1, MANAGER: 2, ADMIN: 3, OWNER: 4 }
+const canExport = computed(() => (RANK[auth.userRole] || 0) >= 2)   // CatalogExportView: IsManagerOrAbove
+const canImport = computed(() => (RANK[auth.userRole] || 0) >= 3)   // _CatalogImportBase: IsAdminOrAbove
 
 const file       = ref(null)
 const report     = ref(null)
@@ -199,6 +207,7 @@ async function doExport() {
 </script>
 
 <style scoped>
+.role-note { margin: 0 0 16px; padding: 12px 14px; border-radius: 10px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); font-size: 13px; }
 
 .card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; margin-top:20px; overflow:hidden; }
 .card-head { display:flex; align-items:center; gap:8px; padding:13px 16px; border-bottom:1px solid var(--border); font-size:13.5px; font-weight:700; color:var(--text-primary); }
