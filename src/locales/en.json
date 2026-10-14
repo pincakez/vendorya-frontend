@@ -745,6 +745,31 @@
     }
   },
   "finance": {
+    "statement": {
+      "title": "Account Statement",
+      "from": "From",
+      "to": "To",
+      "show": "Show",
+      "print": "Print",
+      "csv": "CSV",
+      "period": "Period",
+      "all_dates": "All dates",
+      "opening": "Opening balance",
+      "closing": "Closing balance",
+      "totals": "Totals",
+      "printed_on": "Printed {date}",
+      "empty": "No movements in this period.",
+      "load_failed": "Could not load the statement.",
+      "cols": {
+        "date": "Date",
+        "type": "Type",
+        "ref": "Ref",
+        "note": "Note",
+        "debit": "Debit",
+        "credit": "Credit",
+        "balance": "Balance"
+      }
+    },
     "shifts": {
       "title": "Work Shifts",
       "sub": "Open and close cashier sessions, track cash flow",
@@ -1271,6 +1296,19 @@
         "delete_confirm": "Delete this payment? The supplier's balance will go back up.",
         "deleted": "Payment deleted.",
         "delete_failed": "Could not delete the payment."
+      },
+      "tabs": {
+        "statement": "Statement",
+        "purchases": "Purchases",
+        "payments": "Payments"
+      },
+      "stmt": {
+        "purchase": "Purchase",
+        "payment": "Payment",
+        "supplier_inv": "Supplier inv. {ref}",
+        "debit": "Paid (Debit)",
+        "credit": "Purchased (Credit)",
+        "balance_hint": "Balance = what you still owe this supplier. A minus balance means you paid ahead."
       }
     },
     "staff": {

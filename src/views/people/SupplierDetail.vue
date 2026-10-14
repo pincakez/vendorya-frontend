@@ -50,7 +50,34 @@
         </div>
       </div>
 
-      <div class="section-card">
+      <div class="tab-bar">
+        <button v-for="tab in tabs" :key="tab.id" class="tab-btn" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id">
+          <component :is="tab.icon" :size="15" />
+          {{ t('people.supplier_detail.tabs.' + tab.id) }}
+        </button>
+      </div>
+
+      <AccountStatement
+        v-if="activeTab === 'statement'"
+        v-model:date-from="stmtFrom"
+        v-model:date-to="stmtTo"
+        :party-label="t('people.supplier_detail.supplier')"
+        :party-name="supplier.name"
+        :party-meta="[supplier.company_name, supplier.phone_number].filter(Boolean).join(' · ')"
+        :lines="stmtRows"
+        :opening-balance="stmt?.opening_balance || 0"
+        :closing-balance="stmt?.closing_balance || 0"
+        :totals="stmt?.totals"
+        :debit-label="t('people.supplier_detail.stmt.debit')"
+        :credit-label="t('people.supplier_detail.stmt.credit')"
+        :balance-hint="t('people.supplier_detail.stmt.balance_hint')"
+        :loading="stmtLoading"
+        :error="stmtError"
+        :filename="`statement-${supplier.code_prefix}-${stmtFrom || 'all'}-${stmtTo || 'now'}`"
+        @refresh="fetchStatement"
+      />
+
+      <div v-if="activeTab === 'purchases'" class="section-card">
         <div class="section-header">
           <h2 class="section-title">{{ t('people.supplier_detail.purchase_history') }}</h2>
           <span class="count-badge">{{ total }}</span>
@@ -84,7 +111,7 @@
         <AppPagination :page="page" :page-size="pageSize" :total="total" @update:page="fetchPurchases" />
       </div>
 
-      <div class="section-card">
+      <div v-if="activeTab === 'payments'" class="section-card">
         <div class="section-header">
           <h2 class="section-title">{{ t('people.supplier_detail.payments_history') }}</h2>
           <span class="count-badge">{{ payments.length }}</span>
@@ -148,9 +175,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronLeft, Lock, Plus, Trash2 } from 'lucide-vue-next'
+import { ChevronLeft, Lock, Plus, Trash2, ScrollText, Package, Wallet } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
+import AccountStatement from '@/components/finance/AccountStatement.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -199,6 +227,63 @@ async function fetchPurchases(p = 1) {
   finally { purLoading.value = false }
 }
 
+// ── Tabs ──────────────────────────────────────────────────────────────────
+const tabs = [
+  { id: 'statement', icon: ScrollText },
+  { id: 'purchases', icon: Package },
+  { id: 'payments',  icon: Wallet },
+]
+const activeTab = ref('statement')
+
+// ── Account statement (كشف حساب) — default range: this year ──────────────
+function localISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+const stmtFrom = ref(`${new Date().getFullYear()}-01-01`)
+const stmtTo = ref(localISO(new Date()))
+const stmt = ref(null)
+const stmtLoading = ref(false)
+const stmtError = ref('')
+
+async function fetchStatement() {
+  stmtLoading.value = true
+  stmtError.value = ''
+  try {
+    const params = {}
+    if (stmtFrom.value) params.date_from = stmtFrom.value
+    if (stmtTo.value) params.date_to = stmtTo.value
+    const r = await api.get(`/api/inventory/suppliers/${props.id}/statement/`, { params })
+    stmt.value = r.data
+  } catch (e) {
+    const d = e?.response?.data
+    stmtError.value = d?.date_from || d?.date_to || t('finance.statement.load_failed')
+  } finally { stmtLoading.value = false }
+}
+
+function methodLabel(m) {
+  return m ? t('people.supplier_detail.methods.' + m.toLowerCase()) : ''
+}
+
+const stmtRows = computed(() => (stmt.value?.lines || []).map(l => {
+  const isPurchase = l.kind === 'purchase'
+  // Our purchase # is the ref; the supplier's own invoice # goes in the note (unless it IS the ref).
+  const vendorNote = isPurchase && l.vendor_reference && l.vendor_reference !== l.ref
+    ? t('people.supplier_detail.stmt.supplier_inv', { ref: l.vendor_reference }) : ''
+  return {
+    key: `${l.kind}-${l.link_id}`,
+    date: l.date,
+    type: isPurchase
+      ? t('people.supplier_detail.stmt.purchase')
+      : [t('people.supplier_detail.stmt.payment'), methodLabel(l.method)].filter(Boolean).join(' · '),
+    ref: l.ref,
+    note: [vendorNote, l.note].filter(Boolean).join(' — '),
+    debit: l.debit,
+    credit: l.credit,
+    running_balance: l.running_balance,
+    to: isPurchase ? `/inventory/purchases/${l.link_id}/print` : null,
+  }
+}))
+
 // ── Supplier payments (running account) ──────────────────────────────────
 const payments = ref([])
 const payLoading = ref(false)
@@ -237,7 +322,7 @@ async function savePay() {
     })
     payOpen.value = false
     showSuccessToast(t('people.supplier_detail.pay_form.recorded'))
-    await Promise.all([fetchPayments(), fetchSupplier()])  // refresh history + outstanding
+    await Promise.all([fetchPayments(), fetchSupplier(), fetchStatement()])  // refresh history + outstanding
   } catch (e) {
     showErrorToast(e?.response?.data?.amount?.[0] || t('people.supplier_detail.pay_form.save_failed'))
   } finally { paySaving.value = false }
@@ -247,7 +332,7 @@ async function deletePay(p) {
   if (!confirm(t('people.supplier_detail.pay_form.delete_confirm'))) return
   try {
     await api.delete(`/api/finance/supplier-payments/${p.id}/`)
-    await Promise.all([fetchPayments(), fetchSupplier()])
+    await Promise.all([fetchPayments(), fetchSupplier(), fetchStatement()])
     showSuccessToast(t('people.supplier_detail.pay_form.deleted'))
   } catch { showErrorToast(t('people.supplier_detail.pay_form.delete_failed')) }
 }
@@ -257,7 +342,7 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-onMounted(() => { fetchSupplier(); fetchPurchases(); fetchPayments() })
+onMounted(() => { fetchSupplier(); fetchPurchases(); fetchPayments(); fetchStatement() })
 </script>
 
 <style scoped>
@@ -273,6 +358,10 @@ onMounted(() => { fetchSupplier(); fetchPurchases(); fetchPayments() })
 .lock-badge { display:inline-flex; align-items:center; gap:3px; padding:1px 7px; border-radius:20px; background:rgba(245,158,11,0.12); color:var(--warning-hover); font-size:11px; font-weight:600; }
 
 .detail-layout { display:flex; flex-direction:column; gap:20px; }
+.tab-bar { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:-6px; }
+.tab-btn { display:flex; align-items:center; gap:6px; padding:9px 16px; font-size:13.5px; font-weight:500; color:var(--text-muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 120ms,border-color 120ms; }
+.tab-btn:hover  { color:var(--text-primary); }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
 .skeleton-block { height:160px; border-radius:12px; background:var(--border); }
 .empty-state { text-align:center; padding:60px 20px; color:var(--text-muted); }
 
