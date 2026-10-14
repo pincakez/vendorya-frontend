@@ -242,6 +242,7 @@
 </template>
 
 <script setup>
+import { showErrorToast } from '@/utils/toast'
 import { ref, reactive, computed, onMounted } from 'vue'
 import {
   FileText, Search, X, CheckCircle, Ban, Trash2, Plus, Receipt, RotateCcw, Printer, Lock,
@@ -482,11 +483,22 @@ async function fetchVariants()  { try { const res = await api.get('/api/inventor
 /* ── actions ── */
 async function postInvoice(inv) {
   if (!confirm(t('sales.invoices.confirm_post', { name: inv.customer_name || inv.customer }))) return
-  await api.patch(`/api/finance/invoices/${inv.id}/`, { status: 'POSTED' }); fetchInvoices(page.value)
+  try {
+    await api.patch(`/api/finance/invoices/${inv.id}/`, { status: 'POSTED' }); fetchInvoices(page.value)
+  } catch (e) { showErrorToast(invoiceErr(e), 4000) }
 }
 async function voidInvoice(inv) {
   if (!confirm(t('sales.invoices.confirm_void'))) return
-  await api.post(`/api/finance/invoices/${inv.id}/void/`); fetchInvoices(page.value)
+  try {
+    await api.post(`/api/finance/invoices/${inv.id}/void/`); fetchInvoices(page.value)
+  } catch (e) { showErrorToast(invoiceErr(e), 4000) }
+}
+// s168: Post / Void refusals were swallowed (unhandled) — show them, in the screen's language when we know the code.
+function invoiceErr(e) {
+  const d = e?.response?.data
+  if (d?.code === 'void_has_returns') return t('sales.invoices.err_void_has_returns')
+  if (d?.code === 'shift_required')   return t('pos.payment.err_shift_required')
+  return (typeof d?.detail === 'string' && d.detail) || t('sales.invoices.err_save')
 }
 function printInvoice(inv) { router.push(`/finance/invoices/${inv.id}/print`) }
 

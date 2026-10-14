@@ -1033,7 +1033,8 @@
       },
       "confirm_post": "Post invoice for {name}?",
       "confirm_void": "Void this invoice? This cannot be undone.",
-      "err_save": "Failed to save invoice."
+      "err_save": "Failed to save invoice.",
+      "err_void_has_returns": "This sale already has a return, so it can't be voided. Return the rest of it instead."
     },
     "returns": {
       "title": "Returns",
