@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import api, { beginLogout, refreshAccessToken } from '@/api/axios'
-import { setAccessToken } from '@/api/token'
+import { setAccessToken, markAuthReady } from '@/api/token'
 import { useThemeStore } from './theme'
 import { useFormatStore } from './format'
 import { applyUiPrefs } from '@/composables/applyUiPrefs'
@@ -70,7 +70,7 @@ export const useAuthStore = defineStore('auth', {
     // silently exchange it for a fresh access token before the app renders.
     // Called from main.js, awaited before mount.
     async bootstrap() {
-      if (!this.user) return
+      if (!this.user) { markAuthReady(); return }
       try {
         const access = await refreshAccessToken()
         this.accessToken = access   // token.js already holds it; mirror for the guard
@@ -83,6 +83,9 @@ export const useAuthStore = defineStore('auth', {
         // guard routes to /login (keep theme prefs).
         this.user = null
         localStorage.removeItem('vendorya_user')
+      } finally {
+        // Open the axios gate — requests queued during boot now go out with the token.
+        markAuthReady()
       }
     },
     setUser(user) {

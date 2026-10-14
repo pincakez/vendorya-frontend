@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getAccessToken, setAccessToken } from './token'
+import { getAccessToken, setAccessToken, authReady } from './token'
 
 // Vite proxy handles /api in dev — always use relative URLs so any dev machine works.
 // Prod: empty string = same-origin (Django serves both).
@@ -50,7 +50,10 @@ const api = axios.create({
   withCredentials: true,
 })
 
-api.interceptors.request.use(config => {
+api.interceptors.request.use(async config => {
+  // Hold every request until the reload's silent token refresh has finished
+  // (see authReady in token.js) — no tokenless call, no 401 + retry.
+  await authReady
   const token = getAccessToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   // Send locale so Django returns validation errors in the right language.
