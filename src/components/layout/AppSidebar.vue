@@ -198,6 +198,7 @@ const groups = computed(() => [
     { label: t('nav.items.returns'),        to: '/finance/returns',      icon: CornerDownLeft },
     { label: t('nav.items.reservations'),   to: '/finance/reservations', icon: BookmarkCheck },   // s172: only with the switch on (canOpen)
     { label: t('nav.items.expenses'),       to: '/finance/expenses',     icon: Receipt },
+    { label: t('nav.items.due_dates'),      to: '/finance/due-dates',    icon: CalendarClock },   // s173: only with the switch on (canOpen)
     { label: t('nav.items.cheques'),        to: '/finance/cheques',      icon: Landmark },   // s171
     { label: t('nav.items.shifts'),         to: '/finance/shifts',       icon: Clock },
     { label: t('nav.items.cash_drawer'),    to: '/finance/cash-drawer',  icon: Wallet },

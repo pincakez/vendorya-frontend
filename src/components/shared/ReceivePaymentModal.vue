@@ -70,6 +70,8 @@ const props = defineProps({
   open:     { type: Boolean, default: false },
   // The customer as the API returns it — needs `id` and the live `balance` (positive = they owe the shop).
   customer: { type: Object, default: null },
+  // s173: start with this amount filled in (a payment due date being paid) — still editable.
+  amount:   { type: [String, Number], default: '' },
 })
 // `received` carries the server's answer (the receipt + its `summary`) — the caller refreshes what it shows.
 const emit = defineEmits(['close', 'received'])
@@ -97,7 +99,7 @@ const today = () => {
 watch(() => props.open, async (val) => {
   if (!val) return
   result.value = null
-  Object.assign(form, { amount: '', method: '', date: today(), note: '', allowAdvance: false, saving: false, error: '' })
+  Object.assign(form, { amount: props.amount || '', method: '', date: today(), note: '', allowAdvance: false, saving: false, error: '' })
   if (!methods.value.length) {
     try {
       const r = await api.get('/api/finance/payment-methods/')

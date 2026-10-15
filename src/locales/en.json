@@ -103,7 +103,8 @@
       "my_money": "My money",
       "supplier_returns": "Supplier Returns",
       "cheques": "Cheques",
-      "reservations": "Reservations"
+      "reservations": "Reservations",
+      "due_dates": "Due dates"
     }
   },
   "common": {
@@ -1784,6 +1785,88 @@
         "paid": "Paid to them",
         "balance_now": "Owed now"
       }
+    },
+    "dues": {
+      "title": "Due dates",
+      "sub": "When customers promised to pay — one date or instalments. A reminder only: what they owe stays their balance.",
+      "new": "New due date",
+      "customer": "Customer",
+      "pick": "Choose…",
+      "amount": "Amount",
+      "amount_total": "Amount (total)",
+      "due_date": "Due date",
+      "first_date": "First payment on",
+      "count": "Number of payments",
+      "every": "Every",
+      "unit": "Unit",
+      "units": {
+        "MONTH": "month(s)",
+        "WEEK": "week(s)",
+        "DAY": "day(s)"
+      },
+      "note": "Note",
+      "preview": "{n} payments",
+      "nth": "{n} of {of}",
+      "sale": "Sale",
+      "by": "Written by",
+      "reminder_hint": "On the day, you and the owner get a notification. Nothing is charged — the money comes in when you take the payment.",
+      "only_customer": "Only: {name}",
+      "empty": "No due dates here.",
+      "tabs": {
+        "open": "Open",
+        "late": "Late",
+        "today": "Today",
+        "soon": "This week",
+        "done": "Done",
+        "cancelled": "Cancelled",
+        "all": "All"
+      },
+      "cols": {
+        "plan": "Instalment",
+        "status": "Status"
+      },
+      "status": {
+        "OPEN": "Open",
+        "DONE": "Done",
+        "CANCELLED": "Cancelled"
+      },
+      "days_late": "{n} days late",
+      "due_today": "Due today",
+      "days_left": "in {n} days",
+      "alert": {
+        "late": "{n} late — {total}",
+        "today": "{n} due today — {total}",
+        "soon": "{n} due this week — {total}"
+      },
+      "take_payment": "Take payment",
+      "move": "Move / change",
+      "close_no_money": "Close without payment",
+      "cancel": "Cancel it",
+      "reason": "Why?",
+      "close_hint": "For money that came in another way (it is already recorded) — this only closes the reminder.",
+      "cancel_hint": "The promise is off. What the customer owes does not change.",
+      "paid_by_receipt": "Paid with a customer payment.",
+      "confirm": {
+        "move": "Save",
+        "close": "Close it",
+        "cancel": "Cancel it"
+      },
+      "err": {
+        "generic": "Couldn't save. Try again.",
+        "dues_off": "Due dates are switched off (Settings → Capabilities).",
+        "customer_required": "Choose the customer.",
+        "bad_amount": "Check the amount.",
+        "due_required": "Write the date.",
+        "bad_count": "Between 1 and 60 payments.",
+        "bad_every": "Choose how far apart.",
+        "bad_plan": "Check the number of payments.",
+        "not_open": "This due date is already closed.",
+        "reason_required": "Write why.",
+        "receipt_not_found": "That payment isn't this customer's.",
+        "invoice_not_found": "That sale isn't this customer's."
+      },
+      "owes_now": "They owe {amount} now.",
+      "owes_nothing": "They owe nothing right now — the reminder is still saved."
     }
   },
   "sales": {
@@ -2230,6 +2313,12 @@
         "debit": "Sold (Debit)",
         "credit": "Paid (Credit)",
         "balance_hint": "Balance = what this customer still owes you. A minus balance means you owe them."
+      },
+      "dues": {
+        "title": "Due dates",
+        "add": "Add due date",
+        "see_all": "See all",
+        "none": "No open due dates."
       }
     },
     "supplier_detail": {
@@ -3082,7 +3171,11 @@
       "reservations_title": "Reservations with a deposit",
       "reservations_desc": "Hold items for a customer who paid part of the price; turn it into a sale later, or cancel.",
       "reservations_info_on": "On: Finance → Reservations appears. Held items stay on the stock count but nobody else can sell them; the deposit is real money in the drawer or box.",
-      "reservations_info_off": "Off: the menu entry is hidden and no new reservation can be made. Open reservations keep holding their items and can still be finished."
+      "reservations_info_off": "Off: the menu entry is hidden and no new reservation can be made. Open reservations keep holding their items and can still be finished.",
+      "dues_title": "Payment due dates",
+      "dues_desc": "Write when a customer will pay you — one date or instalments — and get reminded on the day.",
+      "dues_info_on": "On: Finance → Due dates. Set a date (or split an amount into instalments every month, week or few days) on any customer. Late and due-soon ones show at the top of the page, and on the day the person who wrote it and the owner get a notification. A due date is only a reminder — it never changes what the customer owes; the money comes in with a normal payment.",
+      "dues_info_off": "Off: no menu and no new due dates or reminders. Dates already written are kept and come back when you turn it on again."
     },
     "policies": {
       "title": "Business Policies",
@@ -3907,6 +4000,13 @@
     "words": {
       "walk_in": "Walk-in",
       "service": "Service"
+    },
+    "payment_due": {
+      "title": "Payment due today: {customer}",
+      "late_title": "Payment late: {customer}",
+      "body": "{amount} — due {date}",
+      "many_title": "{count} payment dates reached",
+      "many_body": "Total {total} — see Finance → Due dates"
     }
   },
   "serials": {

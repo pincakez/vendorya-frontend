@@ -58,6 +58,30 @@
         </div>
       </div>
 
+      <!-- s173: payment due dates (managers+, with the shop switch on) — reminders, not money -->
+      <div v-if="fmt.paymentDuesEnabled && isManagerPlus" class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">{{ t('people.customer_detail.dues.title') }}</h2>
+          <span class="count-badge">{{ dues.length }}</span>
+          <div class="cd-dues-actions">
+            <BaseButton size="sm" variant="ghost" @click="$router.push({ path: '/finance/due-dates', query: { customer: customer.id } })">
+              {{ t('people.customer_detail.dues.see_all') }}
+            </BaseButton>
+            <BaseButton size="sm" @click="$router.push({ path: '/finance/due-dates', query: { customer: customer.id, new: 1 } })">
+              <CalendarClock :size="13" /> {{ t('people.customer_detail.dues.add') }}
+            </BaseButton>
+          </div>
+        </div>
+        <div v-if="!dues.length" class="cd-dues-none">{{ t('people.customer_detail.dues.none') }}</div>
+        <div v-for="d in dues" :key="d.id" class="cd-due" :class="{ late: d.days_to_due < 0 }">
+          <span class="cd-due-date">{{ fmtDate(d.due_date + 'T12:00:00') }}</span>
+          <span v-if="d.plan_count" class="cd-due-plan">{{ t('finance.dues.nth', { n: d.plan_seq, of: d.plan_count }) }}</span>
+          <span class="cd-due-when">{{ d.days_to_due < 0 ? t('finance.dues.days_late', { n: -d.days_to_due })
+            : d.days_to_due === 0 ? t('finance.dues.due_today') : t('finance.dues.days_left', { n: d.days_to_due }) }}</span>
+          <Money :value="d.amount" />
+        </div>
+      </div>
+
       <!-- Invoices -->
       <div class="section-card">
         <div class="section-header">
@@ -204,7 +228,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ChevronLeft, Pencil, HandCoins, Trash2 } from 'lucide-vue-next'
+import { ChevronLeft, Pencil, HandCoins, Trash2, CalendarClock } from 'lucide-vue-next'
 import api from '@/api/axios'
 import Money from '@/components/ui/Money.vue'
 import AppModal from '@/components/ui/AppModal.vue'
@@ -213,6 +237,7 @@ import AppPagination from '@/components/ui/AppPagination.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import ReceivePaymentModal from '@/components/shared/ReceivePaymentModal.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useFormatStore } from '@/stores/format'
 import { showSuccessToast, showErrorToast } from '@/utils/toast'
 import { formatCurrency } from '@/utils/format'
 
@@ -375,7 +400,18 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-onMounted(() => { fetchCustomer(); fetchInvoices(); fetchReceipts(); fetchStatement() })
+// s173: the customer's open payment due dates (a reminder list; the page Finance → Due dates does the work)
+const fmt = useFormatStore()
+const dues = ref([])
+async function fetchDues() {
+  if (!fmt.paymentDuesEnabled || !isManagerPlus.value) return
+  try {
+    const r = await api.get('/api/finance/payment-dues/', { params: { customer: props.id, status: 'OPEN', page_size: 50 } })
+    dues.value = Array.isArray(r.data) ? r.data : (r.data.results || [])
+  } catch { dues.value = [] }
+}
+
+onMounted(() => { fetchCustomer(); fetchInvoices(); fetchReceipts(); fetchStatement(); fetchDues() })
 </script>
 
 <style scoped>
@@ -432,4 +468,12 @@ onMounted(() => { fetchCustomer(); fetchInvoices(); fetchReceipts(); fetchStatem
 .form-label { font-size:12px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; display:block; margin-bottom:6px; }
 .form-input { width:100%; padding:8px 11px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; box-sizing:border-box; outline:none; }
 .form-input:focus { border-color:var(--accent); }
+.cd-dues-actions { margin-inline-start: auto; display: flex; gap: 8px; }
+.cd-dues-none { font-size: 13px; color: var(--text-muted); padding: 4px 0; }
+.cd-due { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13.5px; color: var(--text-primary); }
+.cd-due:first-of-type { border-top: none; }
+.cd-due-date { font-variant-numeric: tabular-nums; font-weight: 600; }
+.cd-due-plan, .cd-due-when { font-size: 12px; color: var(--text-muted); }
+.cd-due > :last-child { margin-inline-start: auto; }
+.cd-due.late .cd-due-when { color: var(--danger); font-weight: 600; }
 </style>
