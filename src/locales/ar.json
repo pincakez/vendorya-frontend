@@ -1662,7 +1662,8 @@
       "col_unit_price": "سعر الوحدة",
       "col_tax": "الضريبة",
       "col_total": "الإجمالي",
-      "payments": "المدفوعات"
+      "payments": "المدفوعات",
+      "info_sold_by": "البايع"
     },
     "invoice_print": {
       "back": "رجوع",
@@ -2298,7 +2299,9 @@
         "returns": "المرتجعات",
         "refunded": "المُسترد",
         "shifts": "الورديات",
-        "cash_diff": "فرق النقدية"
+        "cash_diff": "فرق النقدية",
+        "sold_count": "مبيعات عملها",
+        "sold_value": "قيمة اللي باعه"
       }
     },
     "stock_ledger": {

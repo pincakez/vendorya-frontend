@@ -41,6 +41,8 @@ const meta = computed(() => `${filters.value.date_from || ''} → ${filters.valu
 
 const columns = computed(() => [
   { key: 'name',            label: t('reports.cashier.cols.staff'), type: 'text' },
+  { key: 'sold_count',      label: t('reports.cashier.cols.sold_count'), type: 'number' },     // s171: as salesperson
+  { key: 'sold_value',      label: t('reports.cashier.cols.sold_value'), type: 'currency' },
   { key: 'sales_count',     label: t('reports.cashier.cols.sales'), type: 'number' },
   { key: 'sales_value',     label: t('reports.cashier.cols.collected'), type: 'currency', accent: 'money' },
   { key: 'returns_count',   label: t('reports.cashier.cols.returns'), type: 'number' },

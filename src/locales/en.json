@@ -1662,7 +1662,8 @@
       "col_unit_price": "Unit Price",
       "col_tax": "Tax",
       "col_total": "Total",
-      "payments": "Payments"
+      "payments": "Payments",
+      "info_sold_by": "Sold by"
     },
     "invoice_print": {
       "back": "Back",
@@ -2298,7 +2299,9 @@
         "returns": "Returns",
         "refunded": "Refunded",
         "shifts": "Shifts",
-        "cash_diff": "Cash Diff"
+        "cash_diff": "Cash Diff",
+        "sold_count": "Sales made",
+        "sold_value": "Value sold"
       }
     },
     "stock_ledger": {
