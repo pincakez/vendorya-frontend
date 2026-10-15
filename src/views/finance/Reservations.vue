@@ -161,11 +161,15 @@
             </button>
           </div>
           <div class="rs-grid">
-            <BaseSelect v-if="actForm.outcome === 'REFUNDED' && Number(detail.deposit_held) > 0" v-model="actForm.method"
+            <BaseSelect v-if="actForm.outcome === 'REFUNDED' && Number(detail.deposit_held) > 0 && depositSplit.length <= 1" v-model="actForm.method"
                         :options="moneyMethodOptions" :label="t('finance.reservations.give_back_by')" />
             <BaseInput v-model="actForm.reason" :label="t('finance.reservations.reason')" />
           </div>
           <p v-if="Number(detail.deposit_held) > 0" class="rs-hint">{{ t('finance.reservations.outcome_hint.' + actForm.outcome) }}</p>
+          <p v-if="actForm.outcome === 'REFUNDED' && depositSplit.length > 1" class="rs-hint">
+            {{ t('finance.reservations.give_back_split') }}
+            <template v-for="(p, i) in depositSplit" :key="p.method"><span v-if="i"> · </span><Money :value="p.amount" /> {{ p.name }}</template>
+          </p>
         </div>
         <p v-if="error" class="rs-error">{{ error }}</p>
       </template>
@@ -251,6 +255,19 @@ const customerOptions = computed(() => customers.value.filter(c => !c.is_walk_in
   .map(c => ({ value: c.id, label: c.phone_number ? `${c.name} · ${c.phone_number}` : c.name })))
 const branchOptions = computed(() => branches.value.map(b => ({ value: b.id, label: b.name })))
 // A deposit is real money: never Ajel or store credit.
+// s175: what is held per method (net of give-backs, taken off the methods paid last) — the server's own split, so a
+// deposit paid two ways is given back the way it came in.
+const depositSplit = computed(() => {
+  const order = [], net = {}, name = {}
+  for (const d of [...(detail.value?.deposits || [])].sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))) {
+    if (!(d.method in net)) { order.push(d.method); net[d.method] = 0; name[d.method] = d.method_name }
+    net[d.method] += Number(d.amount)
+  }
+  let short = -order.reduce((s, m) => s + Math.min(net[m], 0), 0)
+  const split = order.filter(m => net[m] > 0).map(m => ({ method: m, name: name[m], amount: net[m] }))
+  for (const row of [...split].reverse()) { const take = Math.min(row.amount, short); row.amount -= take; short -= take }
+  return split.filter(r => r.amount > 0.0001)
+})
 const moneyMethodOptions = computed(() => methods.value.filter(m => !m.is_agel && !m.is_store_credit)
   .map(m => ({ value: m.id, label: m.name })))
 const payMethodOptions = computed(() => methods.value.filter(m => !m.is_store_credit).map(m => ({ value: m.id, label: m.name })))

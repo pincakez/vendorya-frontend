@@ -1703,6 +1703,7 @@
         "KEPT": "The money stays in the shop and counts as other income (managers only)."
       },
       "give_back_by": "Give back by",
+      "give_back_split": "Given back the way it was paid:",
       "reason": "Why?",
       "pay_rest_with": "Pay the rest with",
       "convert_hint": "The deposit already counts as paid. The sale follows the till's normal rules (stock, credit limit, shift).",
