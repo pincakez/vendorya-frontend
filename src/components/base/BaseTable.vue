@@ -68,7 +68,7 @@
  * Sorting: client-side by default (sorts the loaded rows). For server-paginated
  * lists, set :serverSort and listen to @sort="{ key, dir }" to refetch with ordering.
  */
-import { ref, computed, useAttrs } from 'vue'
+import { ref, computed, getCurrentInstance } from 'vue'
 import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-vue-next'
 import { displayValue } from '@/composables/useExport'
 
@@ -92,8 +92,10 @@ const props = defineProps({
 
 const emit = defineEmits(['sort', 'row-click'])
 
-const attrs = useAttrs()
-const rowClickable = computed(() => !!attrs.onRowClick)
+// 'row-click' is a declared emit, so Vue keeps its listener OUT of $attrs — read it from the parent's vnode props
+// instead (s171: rows were never clickable, so @row-click never fired — Serial Lookup's detail included).
+const instance = getCurrentInstance()
+const rowClickable = computed(() => !!instance?.vnode.props?.onRowClick)
 
 const NUMERIC = ['number', 'currency', 'qty']
 const sortKey = ref(null)

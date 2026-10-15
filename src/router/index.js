@@ -39,6 +39,7 @@ const router = createRouter({
         { path: 'finance/invoices/:id', component: () => import('@/views/sales/InvoiceDetail.vue'),        meta: { store: true }, props: true },
         { path: 'finance/returns',      component: () => import('@/views/sales/Returns.vue'),              meta: { store: true } },
         { path: 'finance/expenses',     component: () => import('@/views/finance/Expenses.vue'),           meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'finance/cheques',      component: () => import('@/views/finance/Cheques.vue'),            meta: { store: true, minRole: 'MANAGER' } },   // s171
         { path: 'finance/shifts',           component: () => import('@/views/finance/Shifts.vue'),            meta: { store: true } },
         { path: 'finance/shifts/:id',       component: () => import('@/views/finance/ShiftDetail.vue'),     meta: { store: true }, props: true },
         { path: 'finance/cash-drawer',  component: () => import('@/views/finance/CashDrawer.vue'),         meta: { store: true } },

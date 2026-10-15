@@ -101,7 +101,8 @@
       "serials": "Serial Lookup",
       "treasury": "Treasury",
       "my_money": "My money",
-      "supplier_returns": "Supplier Returns"
+      "supplier_returns": "Supplier Returns",
+      "cheques": "Cheques"
     }
   },
   "common": {
@@ -1523,6 +1524,94 @@
           "other_income": "Other income",
           "net": "Net profit"
         }
+      }
+    },
+    "cheques": {
+      "title": "Cheques",
+      "sub": "Cheques you received from customers or gave to suppliers. A waiting cheque changes no balance until it clears.",
+      "new": "New cheque",
+      "empty": "No cheques here.",
+      "pick": "Choose…",
+      "customer": "Customer",
+      "supplier": "Supplier",
+      "amount": "Amount",
+      "number": "Cheque number",
+      "bank": "Bank",
+      "issue_date": "Written on",
+      "due_date": "Due date",
+      "method": "Paid through",
+      "method_later": "Choose when it clears",
+      "note": "Note",
+      "reason": "Why?",
+      "paid_from": "Paid from",
+      "box_auto": "Automatic (by the method)",
+      "cleared_on": "Cleared on",
+      "detail_title": "Cheque {n}",
+      "clear": "Mark as cleared",
+      "bounce": "Bounced",
+      "cancel": "Cancel cheque",
+      "pending_hint": "Nothing changes on the customer's or supplier's balance until you mark the cheque as cleared.",
+      "clear_hint": {
+        "RECEIVED": "It is recorded as the customer paying this amount (oldest sales first; any extra stays as their credit).",
+        "GIVEN": "It is recorded as a payment to the supplier, from the box you choose."
+      },
+      "bounce_hint": "This cheque was already cleared: bouncing it cancels that payment and the debt comes back.",
+      "confirm": {
+        "clear": "Clear it",
+        "bounce": "Mark bounced",
+        "cancel": "Cancel it"
+      },
+      "days_late": "{n} days late",
+      "due_today": "Due today",
+      "days_left": "in {n} days",
+      "tabs": {
+        "pending": "Waiting",
+        "soon": "Due this week",
+        "overdue": "Late",
+        "cleared": "Cleared",
+        "closed": "Bounced / cancelled",
+        "all": "All"
+      },
+      "cols": {
+        "direction": "Type",
+        "party": "From / to",
+        "status": "Status"
+      },
+      "dir": {
+        "RECEIVED": "In",
+        "GIVEN": "Out"
+      },
+      "dir_long": {
+        "RECEIVED": "Received from a customer",
+        "GIVEN": "Given to a supplier"
+      },
+      "status": {
+        "PENDING": "Waiting",
+        "CLEARED": "Cleared",
+        "BOUNCED": "Bounced",
+        "CANCELLED": "Cancelled"
+      },
+      "alert": {
+        "overdue_received": "{n} customer cheque(s) are late — {total}",
+        "overdue_given": "{n} of your cheques to suppliers are late — {total}",
+        "soon_received": "{n} customer cheque(s) due this week — {total}",
+        "soon_given": "{n} of your cheques to suppliers due this week — {total}"
+      },
+      "err": {
+        "generic": "Could not save. Please try again.",
+        "method_required": "Choose how the cheque is paid (e.g. a \"Cheque\" method that lands in the bank).",
+        "method_not_found": "Payment method not found.",
+        "method_not_cheque": "A cheque goes through a bank / cheque method — not cash, Ajel or store credit.",
+        "bad_direction": "Choose received or given.",
+        "customer_required": "Choose the customer who gave the cheque.",
+        "supplier_required": "Choose the supplier the cheque is for.",
+        "number_required": "Write the cheque number.",
+        "bad_amount": "The amount must be above zero.",
+        "due_required": "Write the due date.",
+        "not_pending": "Only a waiting cheque can do that.",
+        "not_open": "This cheque is already closed.",
+        "reason_required": "Write the reason.",
+        "box_required": "Choose the box (bank account) it was paid from."
       }
     }
   },
