@@ -464,6 +464,7 @@
       "sub": "Your reference pool of every product the store has ever seen — it powers autofill, but never appears in the POS or your sellable items.",
       "count": "{n} entries",
       "search_placeholder": "Search by name…",
+      "filter_all_cats": "All categories",
       "col_name": "Name",
       "col_active_ing": "Active Ingredient",
       "col_brand": "Brand",

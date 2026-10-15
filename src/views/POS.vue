@@ -132,6 +132,13 @@
               class="pos-customer-name"
               @click="openCustomerSearch"
             >{{ cart.customerObj.name }}</span>
+            <!-- The customer's card: details + balance; Manager+ also "Receive payment" (s169c) -->
+            <button
+              v-if="cart.customerObj && !cart.customerObj.is_walk_in && !customerFocused"
+              class="pos-customer-card-btn" type="button"
+              :title="t('people.customer_form.title_edit')" :aria-label="t('people.customer_form.title_edit')"
+              @click="openCustomerCard"
+            ><UserIcon :size="14" /></button>
             <input
               v-else
               ref="customerInputEl"
@@ -431,10 +438,12 @@
     </div>
     <CustomerFormModal
       :open="showAddCustomer"
+      :customer-id="editCustomerId"
       :prefill-name="addCustomerPrefill.name"
       :prefill-phone="addCustomerPrefill.phone"
-      @close="showAddCustomer = false"
+      @close="showAddCustomer = false; editCustomerId = null"
       @saved="onAddCustomerSaved"
+      @received="onAddCustomerSaved"
     />
 
     <!-- ─── Success overlay ────────────────────────────────── -->
@@ -1154,6 +1163,13 @@ function onCustomerKeydown(e) {
 function onAddCustomerSaved(customer) {
   selectCustomer(customer)
 }
+// Open the chosen customer's card (edit + balance + Manager+ "Receive payment") — not the add form.
+const editCustomerId = ref(null)
+function openCustomerCard() {
+  if (!cart.customerObj?.id) return
+  editCustomerId.value = String(cart.customerObj.id)
+  showAddCustomer.value = true
+}
 
 // ── Hold / Resume ────────────────────────────────────────────
 const showHeldPanel = ref(false)
@@ -1777,6 +1793,12 @@ function fmtNum(n) {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .pos-customer-name:hover { text-decoration: underline; }
+.pos-customer-card-btn {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 24px; height: 24px; margin-inline-start: 4px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); cursor: pointer;
+}
+.pos-customer-card-btn:hover { color: var(--accent); border-color: var(--accent); }
 .pos-customer-input {
   flex: 1; border: none; background: none; outline: none;
   font-size: 13px; color: var(--text-primary); font-weight: 600; min-width: 0;
