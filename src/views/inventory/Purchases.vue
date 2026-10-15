@@ -324,30 +324,13 @@
       </template>
     </AppModal>
 
-    <!-- Label preset picker -->
-    <AppModal :open="labelPicker.open" :title="t('inventory.purchases.label_picker_title')" width="400px" @close="labelPicker.open = false">
-      <div v-if="labelPicker.loading" style="text-align:center;padding:24px;color:var(--text-muted);">{{ t('inventory.purchases.loading') }}</div>
-      <div v-else-if="labelPicker.presets.length === 0" style="text-align:center;padding:24px;color:var(--text-muted);">
-        {{ t('inventory.purchases.label_picker_no_presets') }}
-      </div>
-      <div v-else>
-        <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">{{ t('inventory.purchases.label_picker_hint', { n: labelPicker.totalQty }, labelPicker.totalQty) }}</p>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <label v-for="p in labelPicker.presets" :key="p.id" class="preset-option" :class="{ selected: labelPicker.selectedId === p.id }">
-            <input type="radio" :value="p.id" v-model="labelPicker.selectedId" style="display:none;" />
-            <div class="preset-info">
-              <div class="preset-name">{{ p.name }}</div>
-              <div class="preset-size">{{ p.width_mm }} × {{ p.height_mm }} mm</div>
-            </div>
-            <div v-if="p.is_default" class="badge-cash" style="font-size:10px;">{{ t('inventory.purchases.label_default_badge') }}</div>
-          </label>
-        </div>
-      </div>
-      <template #footer>
-        <button class="btn-ghost" @click="labelPicker.open = false">{{ t('common.cancel') }}</button>
-        <button class="btn-primary" data-testid="purchase-labels-print" :disabled="!labelPicker.selectedId || labelPicker.loading" @click="printLabels"><Tag :size="14" /> {{ t('inventory.purchases.print_btn') }}</button>
-      </template>
-    </AppModal>
+    <!-- Label preset picker — the shared one (product list / product page use it too) -->
+    <ProductLabelsModal
+      :open="labelsModal.open"
+      :purchase-id="labelsModal.purchaseId"
+      :copies="labelsModal.copies"
+      @close="labelsModal.open = false"
+    />
 
     <!-- Inline add — new category / new attribute option, on the fly -->
     <AppModal :open="inlineAdd.open" :title="inlineAdd.type === 'category' ? t('inventory.purchases.add_category') : t('inventory.purchases.add_option')" width="400px" @close="inlineAdd.open = false">
@@ -371,21 +354,18 @@
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X, Lock, ChevronDown, ChevronLeft, ChevronRight, Printer } from 'lucide-vue-next'
-import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openNew)
-import { useLabelsStore } from '@/stores/labels'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import ProductLabelsModal from '@/components/inventory/ProductLabelsModal.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseSelect from '@/components/base/BaseSelect.vue'
 import { formatNumber, formatQty } from '@/utils/format'
 import { parseSerials, serialErrorText } from '@/utils/serials'
 
 const { t }       = useI18n()
-const labelsStore = useLabelsStore()
-const router      = useRouter()
 
 const purchases      = ref([])
 const loading        = ref(false)
@@ -855,7 +835,7 @@ async function savePurchase() {
     // Invoice opens in its own tab (auto-fires the print dialog) so a label
     // print can still take over this one.
     if (wantInvoice) window.open(`/inventory/purchases/${data.id}/print?auto=1`, '_blank')
-    if (wantPrint) await startLabelPrint(data.id, copies)
+    if (wantPrint) startLabelPrint(data.id, copies)
   } catch (e) {
     alert(purchaseErr(e))
   } finally { saving.value = false }
@@ -866,47 +846,15 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-// ── Label printing ────────────────────────────────────────────────────────
-const labelPicker = reactive({ open: false, loading: false, presets: [], selectedId: null, totalQty: 0, invoiceId: null, copies: 1 })
+// ── Label printing — the shared ProductLabelsModal (purchase mode) ─────────
+const labelsModal = reactive({ open: false, purchaseId: null, copies: 1 })
 
-async function startLabelPrint(invoiceId, copies) {
-  labelPicker.invoiceId = invoiceId
-  labelPicker.copies = copies
-  labelPicker.loading = true
-  labelPicker.open = true
-  labelPicker.selectedId = null
-  try {
-    const res = await api.get('/api/core/label-presets/')
-    labelPicker.presets = res.data.results ?? res.data
-    const def = labelPicker.presets.find(p => p.is_default)
-    if (def) labelPicker.selectedId = def.id
-    const ld = await api.get(`/api/finance/purchases/${invoiceId}/label-data/`)
-    labelPicker.totalQty = (ld.data.items || []).reduce((s, i) => s + (Number(i.quantity) || 0), 0) * copies
-    labelPicker._items = ld.data.items
-    labelPicker._storeName = ld.data.store_name
-  } finally { labelPicker.loading = false }
+function startLabelPrint(invoiceId, copies) {
+  Object.assign(labelsModal, { open: true, purchaseId: String(invoiceId), copies })
 }
 
-async function openLabelPicker() {
-  await startLabelPrint(modal.id, 1)
-}
-
-async function printLabels() {
-  const preset = labelPicker.presets.find(p => p.id === labelPicker.selectedId)
-  if (!preset) return
-  try {
-    let items = labelPicker._items
-    if (!items) {
-      const res = await api.get(`/api/finance/purchases/${labelPicker.invoiceId}/label-data/`)
-      items = res.data.items
-      labelPicker._storeName = res.data.store_name
-    }
-    const copies = Math.max(1, Number(labelPicker.copies) || 1)
-    const expanded = items.map(i => ({ ...i, quantity: (Number(i.quantity) || 0) * copies }))
-    labelsStore.setJob({ source: 'purchase', preset, store_name: labelPicker._storeName, items: expanded })
-    labelPicker.open = false
-    router.push('/print/labels')
-  } catch { alert(t('inventory.purchases.err_label_data')) }
+function openLabelPicker() {
+  startLabelPrint(modal.id, 1)
 }
 
 async function fetchStoreSettings() {
@@ -1023,13 +971,6 @@ onMounted(() => {
 .print-x { color:var(--text-muted); }
 .print-copies { width:64px; text-align:center; }
 .print-hint { font-size:12px; color:var(--text-muted); }
-
-.preset-option { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:border-color 100ms,background 100ms; }
-.preset-option:hover   { background:var(--bg-app); }
-.preset-option.selected { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, transparent); }
-.preset-info { display:flex; flex-direction:column; gap:2px; }
-.preset-name { font-size:13px; font-weight:600; color:var(--text-primary); }
-.preset-size { font-size:11.5px; color:var(--text-muted); font-variant-numeric:tabular-nums; }
 
 /* ── §PM-REDESIGN — two-panel modal (compact open + slide-out items) ───────── */
 .pm-shell { display:flex; align-items:stretch; }
