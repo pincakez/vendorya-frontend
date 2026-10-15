@@ -12,6 +12,31 @@
 
 export const changelog = [
   {
+    version: '1.60.0',
+    date: '2026-10-15',
+    tag: 'New',
+    en: {
+      title: 'Payment due dates',
+      points: [
+        'Write when a customer will pay you — one date, or split an amount into instalments every month, week or few days. Turn it on in Settings → Capabilities, then use Finance → Due dates.',
+        'Late payments, today\'s and this week\'s are shown at the top with their totals, and on the day you (and the shop owner) get a notification.',
+        '"Take payment" opens the normal customer payment with the amount filled in, and closes the due date once it is paid.',
+        'A due date is only a reminder: it never changes what the customer owes. You can also move it, close it without money, or cancel it.',
+        'The customer\'s page shows their open due dates.',
+      ],
+    },
+    ar: {
+      title: 'مواعيد التحصيل',
+      points: [
+        'اكتب العميل هيدفعلك إمتى — ميعاد واحد، أو قسّم المبلغ على أقساط كل شهر أو أسبوع أو كام يوم. شغّلها من الإعدادات ← الإمكانيات، وبعدين المالية ← مواعيد التحصيل.',
+        'المتأخر، واللي ميعاده النهارده، واللي ميعاده الأسبوع ده بيظهروا فوق بالإجمالي، وفي يوم الميعاد بيوصلك (وصاحب المحل) تنبيه.',
+        '"تحصيل دفعة" بيفتح تحصيل الدفعة العادي والمبلغ مكتوب، وبيقفل الميعاد أول ما يتدفع.',
+        'الميعاد تذكير بس: عمره ما بيغيّر اللي على العميل. وتقدر كمان تغيّر ميعاده، أو تقفله من غير فلوس، أو تلغيه.',
+        'صفحة العميل بتعرض مواعيده المفتوحة.',
+      ],
+    },
+  },
+  {
     version: '1.59.2',
     date: '2026-10-15',
     tag: 'Improved',
