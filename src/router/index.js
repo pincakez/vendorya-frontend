@@ -4,6 +4,7 @@ import { useFormatStore } from '@/stores/format'
 import LayoutSwitch from '@/layouts/LayoutSwitch.vue'
 import i18n from '@/i18n'
 import { showWarningToast } from '@/utils/toast'
+import { useOwnerLock } from '@/composables/useOwnerLock'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -178,6 +179,17 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.minRole && !auth.isSuperadmin && !auth.hasRole(to.meta.minRole)) {
     showWarningToast(i18n.global.t(`nav.role_blocked.${to.meta.minRole}`))
     return next('/dashboard')
+  }
+
+  // s174: "My private accounts" behind the owner's authenticator — a locked tree asks the code first (a deep link too);
+  // the right code then opens the page asked for (OwnerLockScreen → pending). The server refuses anyway (owner_locked).
+  if (to.meta.ownerLevel && !auth.isSuperadmin) {
+    const lock = useOwnerLock()
+    const s = await lock.refresh()
+    if (s?.enabled && !s.open) {
+      lock.ask(to.fullPath)
+      return next(from.matched.length ? false : '/dashboard')
+    }
   }
 
   next()

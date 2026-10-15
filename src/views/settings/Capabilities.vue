@@ -221,6 +221,22 @@
           <div v-else-if="form.treasury_owner_level && !ownerLevelWasOn" class="sub-block">
             <div class="sub-muted">{{ t('settings.capabilities.owner_level_on_note') }}</div>
           </div>
+          <!-- s174 (Yakot): My private accounts behind the owner's authenticator + how long it stays open (minutes) -->
+          <div v-if="form.treasury_enabled && form.treasury_owner_level && ownerLevelWasOn" class="sub-block ol-block">
+            <div class="ol-row">
+              <div class="ol-text">
+                <div class="ol-title">{{ t('settings.capabilities.owner_lock_title') }}</div>
+                <div class="sub-muted">{{ t('settings.capabilities.owner_lock_desc') }}</div>
+              </div>
+              <button class="toggle-btn" :class="{ on: form.owner_lock_enabled }" @click="form.owner_lock_enabled = !form.owner_lock_enabled">
+                <span class="toggle-knob" />
+              </button>
+            </div>
+            <label v-if="form.owner_lock_enabled" class="ol-min">
+              {{ t('settings.capabilities.owner_lock_minutes') }}
+              <input v-model.number="form.owner_unlock_minutes" type="number" min="1" max="240" class="form-input ol-min-input" dir="ltr" />
+            </label>
+          </div>
         </div>
       </div>
 
@@ -368,6 +384,7 @@ import { useFormatStore } from '@/stores/format'
 import { formatWeight } from '@/utils/format'
 import { showErrorToast } from '@/utils/toast'
 import { treasuryError } from '@/utils/treasury'
+import { useOwnerLock } from '@/composables/useOwnerLock'
 
 const { t } = useI18n()
 const fmt = useFormatStore()
@@ -396,10 +413,13 @@ const form = reactive({
   reservations_enabled:    false,
   payment_dues_enabled:    false,
   cheques_enabled:         false,
+  owner_lock_enabled:      false,
+  owner_unlock_minutes:    15,
 })
 // What the server had when the page loaded — the "boxes are made when you save" note shows only on a fresh switch-on.
 const treasuryWasOn = ref(false)
 const ownerLevelWasOn = ref(false)
+const lockWas = ref({ on: false, minutes: 15 })   // s174: the My private accounts lock as the server has it
 
 // Switch → translation key for its store-type label
 const storeTypeLabel = computed(() => t(`settings.capabilities.types.${storeType.value}`))
@@ -465,9 +485,12 @@ async function load() {
       reservations_enabled:    !!settingsRes.data.reservations_enabled,
       payment_dues_enabled:    !!settingsRes.data.payment_dues_enabled,
       cheques_enabled:         !!settingsRes.data.cheques_enabled,
+      owner_lock_enabled:      !!settingsRes.data.owner_lock_enabled,
+      owner_unlock_minutes:    settingsRes.data.owner_unlock_minutes ?? 15,
     })
     treasuryWasOn.value = !!settingsRes.data.treasury_enabled
     ownerLevelWasOn.value = !!settingsRes.data.treasury_owner_level
+    lockWas.value = { on: !!settingsRes.data.owner_lock_enabled, minutes: settingsRes.data.owner_unlock_minutes ?? 15 }
   } finally { loading.value = false }
 }
 
@@ -504,12 +527,16 @@ async function save() {
       reservations_enabled:    form.reservations_enabled,
       payment_dues_enabled:    form.payment_dues_enabled,
       cheques_enabled:         form.cheques_enabled,
+      owner_lock_enabled:      form.owner_lock_enabled,
+      owner_unlock_minutes:    form.owner_unlock_minutes,
     })
     fmt.apply({ default_weight_unit: form.default_weight_unit, treasury_enabled: form.treasury_enabled, treasury_owner_level: form.treasury_owner_level,
                 reservations_enabled: form.reservations_enabled, payment_dues_enabled: form.payment_dues_enabled,
                 cheques_enabled: form.cheques_enabled })
     treasuryWasOn.value = form.treasury_enabled
     ownerLevelWasOn.value = form.treasury_owner_level
+    lockWas.value = { on: form.owner_lock_enabled, minutes: form.owner_unlock_minutes }
+    useOwnerLock().refresh()   // s174: the tree's lock icon follows the new setting
     refreshIsOwner(res?.data)
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
@@ -518,7 +545,12 @@ async function save() {
     // Nothing was saved — put both Treasury switches back to what the server still has (e.g. `shifts_open`, `treasury_off`).
     form.treasury_enabled = treasuryWasOn.value
     form.treasury_owner_level = ownerLevelWasOn.value
-    if (data?.code === 'treasury_off') showErrorToast(t('settings.capabilities.owner_level_needs_treasury'), 4000)
+    form.owner_lock_enabled = lockWas.value.on
+    form.owner_unlock_minutes = lockWas.value.minutes
+    const LOCK_ERR = { authenticator_needed: 'owner_lock_err_setup', owner_locked: 'owner_lock_err_locked', not_owner: 'owner_lock_err_owner' }
+    if (LOCK_ERR[data?.code]) showErrorToast(t('settings.capabilities.' + LOCK_ERR[data.code]), 5000)
+    else if (data?.owner_unlock_minutes) showErrorToast(t('settings.capabilities.owner_lock_minutes') + ': 1–240', 4000)
+    else if (data?.code === 'treasury_off') showErrorToast(t('settings.capabilities.owner_level_needs_treasury'), 4000)
     else if (data?.code) showErrorToast(treasuryError(t, e, t('settings.policies.err_save')), 4000)
     else alert(data ? (typeof data === 'string' ? data : JSON.stringify(data)) : t('settings.policies.err_save'))
   } finally { saving.value = false }
@@ -528,6 +560,13 @@ onMounted(load)
 </script>
 
 <style scoped>
+/* s174: the My private accounts lock row inside the owner-level card */
+.ol-block { display: flex; flex-direction: column; gap: 10px; }
+.ol-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.ol-text { min-width: 0; }
+.ol-title { font-weight: 700; font-size: 13.5px; margin-bottom: 2px; }
+.ol-min { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.ol-min-input { width: 90px; }
 .page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
 .skeleton-card { height:300px; border-radius:12px; background:var(--border); animation:shimmer 1.4s ease-in-out infinite; }
 @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }

@@ -78,7 +78,16 @@
 
           <!-- Expanded: normal group header -->
           <button v-else class="nsb-group-head" @click="toggle(g.id)">
-            <span>{{ g.title }}</span>
+            <span v-if="g.pim" class="nsb-pim-title">
+              {{ g.title }}
+              <!-- s174: the tree's lock — open while you're inside; press it to lock the tree now. Locked: press = the code. -->
+              <span v-if="ownerLock.enabled.value" class="nsb-pim-lock" role="button" tabindex="0"
+                    :title="ownerLock.isOpen.value ? t('finance.owner.lock.lock_now') : t('finance.owner.lock.title')"
+                    @click.stop="pimLockClick" @keydown.enter.stop.prevent="pimLockClick">
+                <component :is="ownerLock.isOpen.value ? LockOpen : Lock" :size="15" />
+              </span>
+            </span>
+            <span v-else>{{ g.title }}</span>
             <ChevronDown :size="14" class="nsb-chevron" :class="{ closed: !open[g.id] }" />
           </button>
 
@@ -131,6 +140,7 @@ import { useThemeStore } from '@/stores/theme'
 import { useCartStore } from '@/stores/cart'
 import PhysicalButton from '@/components/ui/PhysicalButton.vue'
 import { canOpen } from '@/router'
+import { useOwnerLock } from '@/composables/useOwnerLock'
 import {
   LayoutDashboard, Calculator, Package, ShoppingCart, SlidersHorizontal, Tag, List,
   FileBarChart, Wallet, FileText, CornerDownLeft, Receipt, Clock, LineChart, TrendingUp,
@@ -140,7 +150,7 @@ import {
   Building2, KeyRound, Trash2, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
   BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles, CalendarClock,
   Library, Barcode, ScanBarcode, Vault, PiggyBank, Undo2, Landmark, BookmarkCheck,
-  ArrowRightLeft, Coins, HandCoins, BarChart3,
+  ArrowRightLeft, Coins, HandCoins, BarChart3, LockOpen,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -319,10 +329,25 @@ const open = reactive({})
 ;[...groups.value, ...adminGroups.value].forEach(g => { open[g.id] = g.items.some(it => itemActive(it.to)) })
 
 function toggle(id) {
+  // s174: a locked "My private accounts" tree asks the authenticator code before it opens
+  if (id === 'pim' && !open[id] && ownerLock.enabled.value && !ownerLock.isOpen.value) { ownerLock.ask('/finance/my-money'); return }
   const willOpen = !open[id]
   if (willOpen) Object.keys(open).forEach(k => { open[k] = false })
   open[id] = willOpen
 }
+const ownerLock = useOwnerLock()
+function pimLockClick() {
+  if (ownerLock.isOpen.value) ownerLock.lockNow()
+  else ownerLock.ask('/finance/my-money')
+}
+ownerLock.onLocked(() => { open.pim = false })
+// …and unfolds by itself when you land inside it (after the code, or from a link / the header search)
+watch(() => route.fullPath, () => {
+  if (route.path.startsWith('/finance/my-money') && !open.pim) { Object.keys(open).forEach(k => { open[k] = false }); open.pim = true }
+})
+// ask the lock's state once the tree may show (the shop's settings load after the sidebar mounts)
+watch(() => !props.admin && canOpen('/finance/my-money'), (may) => { if (may) ownerLock.refresh() }, { immediate: true })
+
 function go(to) { if (route.fullPath !== to) router.push(to) }   // fullPath: the PIM tree's items differ only by ?tab=
 </script>
 
@@ -508,6 +533,13 @@ function go(to) { if (route.fullPath !== to) router.push(to) }   // fullPath: th
 .nsb-pim .nsb-group-card { background: var(--pim-bg); border-color: var(--pim-line); }
 .nsb-pim .ic, .nsb-pim .ic-active, .nsb-pim .grp-icon { color: var(--pim-ink); }
 .nsb-pim .ic { opacity: 0.85; }
+.nsb-pim .nsb-group-head { font-size: 14px; letter-spacing: 0.04em; }
+.nsb-pim-title { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; min-width: 0; }
+.nsb-pim-lock {
+  display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 7px;
+  color: var(--pim-ink); background: var(--pim-bg); border: 1px solid var(--pim-line); cursor: pointer;
+}
+.nsb-pim-lock:hover, .nsb-pim-lock:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--pim-line); }
 .ic-logout { color: var(--danger); }
 
 /* Scroll-end actions row (settings gear + logout — not sticky) */
