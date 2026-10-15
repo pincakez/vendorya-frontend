@@ -49,6 +49,7 @@ export function formatNumber(value, opts) {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
     useGrouping: !!separator,
+    signDisplay: 'negative',   // s171: never "-0" / "-0.00" (a zero times −1, or a tiny minus that rounds to zero)
   })
 }
 
