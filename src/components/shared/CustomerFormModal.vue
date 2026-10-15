@@ -48,27 +48,27 @@
         <div class="modal-2col">
           <div class="modal-field">
             <label class="form-label">{{ t('people.pfm.whatsapp') }}</label>
-            <input v-model="form.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" />
+            <input v-model="form.whatsapp_number" class="form-input" :placeholder="t('people.customer_form.whatsapp_ph')" />
           </div>
           <div class="modal-field">
             <label class="form-label">{{ t('people.pfm.instagram') }}</label>
-            <input v-model="form.instagram" class="form-input" placeholder="@handle" />
+            <input v-model="form.instagram" class="form-input" :placeholder="t('people.customer_form.instagram_ph')" />
           </div>
           <div class="modal-field modal-span-2">
             <label class="form-label">{{ t('people.pfm.website') }}</label>
-            <input v-model="form.website" class="form-input" placeholder="https://…" />
+            <input v-model="form.website" class="form-input" :placeholder="t('people.customer_form.website_ph')" />
           </div>
           <div class="modal-field">
             <label class="form-label">{{ t('people.pfm.country') }}</label>
-            <input v-model="form.country" class="form-input" placeholder="Egypt" />
+            <input v-model="form.country" class="form-input" :placeholder="t('people.customer_form.country_ph')" />
           </div>
           <div class="modal-field">
             <label class="form-label">{{ t('people.pfm.city') }}</label>
-            <input v-model="form.city" class="form-input" placeholder="Cairo" />
+            <input v-model="form.city" class="form-input" :placeholder="t('people.customer_form.city_ph')" />
           </div>
           <div class="modal-field">
             <label class="form-label">{{ t('people.customer_form.phone_2') }}</label>
-            <input v-model="form.phone_2" class="form-input" placeholder="e.g. 01112345678" />
+            <input v-model="form.phone_2" class="form-input" :placeholder="t('people.customer_form.phone2_ph')" />
           </div>
           <div class="modal-field">
             <label class="form-label">{{ t('people.customer_form.tax_number') }}</label>

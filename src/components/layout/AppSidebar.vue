@@ -60,7 +60,7 @@
     <div class="nsb-scroll-area">
       <!-- Groups -->
       <div class="nsb-groups">
-        <div v-for="g in displayGroups" :key="g.id" class="nsb-group">
+        <div v-for="g in displayGroups" :key="g.id" class="nsb-group" :class="{ 'nsb-pim': g.pim }">
           <!-- Collapsed: icon with rich tooltip showing group + pages -->
           <div v-if="isCollapsed" class="nsb-group-icon-wrap">
             <button class="nsb-group-head nsb-col" @click="toggle(g.id)">
@@ -140,6 +140,7 @@ import {
   Building2, KeyRound, Trash2, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
   BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles, CalendarClock,
   Library, Barcode, ScanBarcode, Vault, PiggyBank, Undo2, Landmark, BookmarkCheck,
+  ArrowRightLeft, Coins, HandCoins, BarChart3,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -178,6 +179,12 @@ function toggleLocale() {
 }
 
 /* ── Store nav ─────────────────────────────────────────────────────────────── */
+const PIM_TABS = [
+  { id: 'overview', icon: LayoutGrid }, { id: 'move', icon: ArrowRightLeft }, { id: 'entries', icon: Coins },
+  { id: 'loans', icon: HandCoins }, { id: 'amanat', icon: Lock }, { id: 'partners', icon: Users },
+  { id: 'pnl', icon: BarChart3 }, { id: 'reports', icon: FileBarChart },
+]
+
 const groups = computed(() => [
   { id: 'inventory', title: t('nav.groups.inventory'), icon: Package, items: [
     { label: t('nav.items.products'),          to: '/inventory/products',    icon: Package },
@@ -203,7 +210,6 @@ const groups = computed(() => [
     { label: t('nav.items.shifts'),         to: '/finance/shifts',       icon: Clock },
     { label: t('nav.items.cash_drawer'),    to: '/finance/cash-drawer',  icon: Wallet },
     { label: t('nav.items.treasury'),       to: '/finance/treasury',     icon: Vault },   // s169c: only when the Treasury switch is on (canOpen)
-    { label: t('nav.items.my_money'),       to: '/finance/my-money',     icon: PiggyBank },   // s170: owner level on + this login is the owner (canOpen)
   ] },
   { id: 'reports', title: t('nav.groups.reports'), icon: LineChart, items: [
     { label: t('nav.items.sales'),         to: '/reports/sales',        icon: LineChart },
@@ -246,6 +252,11 @@ const groups = computed(() => [
     { label: t('nav.items.lockscreen'),      to: '/settings/lockscreen',     icon: Shield },
     { label: t('nav.items.whats_new'),       to: '/settings/changelog',      icon: Sparkles },
   ] },
+  // s174 (Yakot): the owner's own world (PIM) = its own tree at the BOTTOM, tinted apart from the shop menu.
+  // Each item = one My money tab (`?tab=`). Shown only when canOpen('/finance/my-money') — owner level on + this login is the owner.
+  { id: 'pim', pim: true, title: t('nav.items.my_money'), icon: PiggyBank, items: PIM_TABS.map(x => ({
+      label: t('finance.owner.tabs.' + x.id), icon: x.icon,
+      to: x.id === 'overview' ? '/finance/my-money' : `/finance/my-money?tab=${x.id}` })) },
 ])
 
 /* ── Admin nav (general super-admin mode) ──────────────────────────────────── */
@@ -293,6 +304,12 @@ const soloLabel = computed(() => props.admin ? t('nav.overview') : t('nav.dashbo
 const userCardTo = computed(() => props.admin ? '/admin/users' : '/settings/profile')
 
 function itemActive(to) {
+  if (to.startsWith('/finance/my-money')) {   // s174: the PIM tree — one route, the tab lives in ?tab=
+    const tab = to.includes('?tab=') ? to.split('?tab=')[1] : ''
+    if (!route.path.startsWith('/finance/my-money')) return false
+    if (route.path.startsWith('/finance/my-money/box/')) return tab === ''   // a box statement belongs to the overview
+    return (route.query.tab || '') === tab
+  }
   if (to === '/settings') return route.path === '/settings'
   if (to === '/admin/dashboard' || to === '/dashboard') return route.path === to
   return route.path === to || route.path.startsWith(to + '/')
@@ -306,7 +323,7 @@ function toggle(id) {
   if (willOpen) Object.keys(open).forEach(k => { open[k] = false })
   open[id] = willOpen
 }
-function go(to) { if (route.path !== to) router.push(to) }
+function go(to) { if (route.fullPath !== to) router.push(to) }   // fullPath: the PIM tree's items differ only by ?tab=
 </script>
 
 <style scoped>
@@ -484,6 +501,13 @@ function go(to) { if (route.path !== to) router.push(to) }
 /* Icon tint */
 .ic { opacity: 0.7; flex-shrink: 0; }
 .ic-active { color: var(--accent); flex-shrink: 0; }
+
+/* s174 — the owner's own tree (PIM) at the bottom: same shape as the shop groups, a slight sand-gold tint (Yakot picked 3 looks → this one). */
+.nsb-pim { border-top: 1px dashed var(--pim-line); padding-top: 14px; }
+.nsb-pim .nsb-group-head { color: var(--pim-ink); }
+.nsb-pim .nsb-group-card { background: var(--pim-bg); border-color: var(--pim-line); }
+.nsb-pim .ic, .nsb-pim .ic-active, .nsb-pim .grp-icon { color: var(--pim-ink); }
+.nsb-pim .ic { opacity: 0.85; }
 .ic-logout { color: var(--danger); }
 
 /* Scroll-end actions row (settings gear + logout — not sticky) */
@@ -516,4 +540,10 @@ function go(to) { if (route.path !== to) router.push(to) }
 .nsb-user-name { font-size: 13px; font-weight: 600; color: var(--sb-text-active); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nsb-user-role { font-size: 11px; color: var(--sb-text); text-transform: capitalize; }
 .nsb-user-chev { color: var(--sb-text); flex-shrink: 0; }
+</style>
+
+<style>
+/* s174 PIM tree tint (sand gold) — unscoped so the app-wide .dark class can reach it. */
+.nsb-pim { --pim-ink: #92400e; --pim-bg: #fbf6ec; --pim-line: #e7d3ad; }
+.dark .nsb-pim { --pim-ink: #e7c08a; --pim-bg: rgba(217, 160, 80, 0.08); --pim-line: rgba(231, 192, 138, 0.25); }
 </style>

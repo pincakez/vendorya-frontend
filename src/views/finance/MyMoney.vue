@@ -100,7 +100,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -150,6 +150,8 @@ function setTab(id) {
   activeTab.value = id
   router.replace({ query: id === 'overview' ? {} : { tab: id } }).catch(() => {})
 }
+// s174: the sidebar's My money tree links straight to a tab (same page, only ?tab= changes)
+watch(() => route.query.tab, v => { activeTab.value = TAB_IDS.includes(v) ? v : 'overview' })
 
 // ── Overview (the ONE source of parts + boxes for every tab) ─────────────
 const overview = ref(null)

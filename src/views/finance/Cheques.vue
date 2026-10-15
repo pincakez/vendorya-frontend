@@ -5,7 +5,7 @@
         <h1 class="page-title">{{ t('finance.cheques.title') }}</h1>
         <p class="page-sub">{{ t('finance.cheques.sub') }}</p>
       </div>
-      <BaseButton @click="openNew"><Plus :size="14" /> {{ t('finance.cheques.new') }}</BaseButton>
+      <BaseButton v-if="fmt.chequesEnabled" @click="openNew"><Plus :size="14" /> {{ t('finance.cheques.new') }}</BaseButton>
     </div>
 
     <!-- The reminder: waiting cheques that are late or due this week -->

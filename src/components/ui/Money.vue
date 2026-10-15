@@ -28,10 +28,10 @@ const position = computed(() => props.opts?.position ?? fmt?.position ?? 'SUFFIX
 const isPrefix = computed(() => position.value === 'PREFIX')
 </script>
 
-<template><span class="money"><span v-if="symbol && isPrefix" class="money-sym prefix">{{ symbol }}</span><span class="money-num">{{ number }}</span><span v-if="symbol && !isPrefix" class="money-sym suffix">{{ symbol }}</span></span></template>
+<template><span class="money" dir="ltr"><span v-if="symbol && isPrefix" class="money-sym prefix">{{ symbol }}</span><span class="money-num">{{ number }}</span><span v-if="symbol && !isPrefix" class="money-sym suffix">{{ symbol }}</span></span></template>
 
 <style scoped>
-.money { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.money { white-space: nowrap; font-variant-numeric: tabular-nums; unicode-bidi: isolate; }   /* s174: one block, number then symbol, even inside Arabic text */
 .money-sym { color: var(--currency-color, var(--accent)); font-weight: 600; }
 .money-sym.suffix { margin-left: 0.32em; }
 .money-sym.prefix { margin-right: 0.32em; }

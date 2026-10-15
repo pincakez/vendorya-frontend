@@ -272,6 +272,30 @@
         </div>
       </div>
 
+      <!-- Cheques — s174 (Yakot: every optional module gets a switch). Off = no menu, no NEW cheque; written ones stay reachable. -->
+      <div class="cap-card">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><Landmark :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.cheques_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='cheques' }" @click="toggleInfo('cheques')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.cheques_desc') }}</div>
+          <div v-if="openInfo==='cheques'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.cheques_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.cheques_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.cheques_enabled ? 'status-on' : 'status-off'">
+              {{ form.cheques_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.cheques_enabled }" @click="requestToggle('cheques_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Search & Autocomplete -->
       <div class="cap-card">
         <div class="cap-icon" style="background:#ede9fe;color:#7c3aed;"><Search :size="20" /></div>
@@ -336,7 +360,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault, PiggyBank, BookmarkCheck
+import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault, PiggyBank, BookmarkCheck, Landmark
 } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
@@ -371,6 +395,7 @@ const form = reactive({
   treasury_owner_level:    false,
   reservations_enabled:    false,
   payment_dues_enabled:    false,
+  cheques_enabled:         false,
 })
 // What the server had when the page loaded — the "boxes are made when you save" note shows only on a fresh switch-on.
 const treasuryWasOn = ref(false)
@@ -439,6 +464,7 @@ async function load() {
       treasury_owner_level:    !!settingsRes.data.treasury_owner_level,
       reservations_enabled:    !!settingsRes.data.reservations_enabled,
       payment_dues_enabled:    !!settingsRes.data.payment_dues_enabled,
+      cheques_enabled:         !!settingsRes.data.cheques_enabled,
     })
     treasuryWasOn.value = !!settingsRes.data.treasury_enabled
     ownerLevelWasOn.value = !!settingsRes.data.treasury_owner_level
@@ -477,9 +503,11 @@ async function save() {
       treasury_owner_level:    form.treasury_owner_level,
       reservations_enabled:    form.reservations_enabled,
       payment_dues_enabled:    form.payment_dues_enabled,
+      cheques_enabled:         form.cheques_enabled,
     })
     fmt.apply({ default_weight_unit: form.default_weight_unit, treasury_enabled: form.treasury_enabled, treasury_owner_level: form.treasury_owner_level,
-                reservations_enabled: form.reservations_enabled, payment_dues_enabled: form.payment_dues_enabled })
+                reservations_enabled: form.reservations_enabled, payment_dues_enabled: form.payment_dues_enabled,
+                cheques_enabled: form.cheques_enabled })
     treasuryWasOn.value = form.treasury_enabled
     ownerLevelWasOn.value = form.treasury_owner_level
     refreshIsOwner(res?.data)
