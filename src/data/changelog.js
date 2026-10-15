@@ -12,6 +12,69 @@
 
 export const changelog = [
   {
+    version: '1.53.2',
+    date: '2026-10-15',
+    tag: 'Fixed',
+    en: {
+      title: 'Zero amounts no longer show a minus sign',
+      points: [
+        'Lines with nothing in them (for example returns or expenses in a quiet month) now read "0" instead of "-0".',
+      ],
+    },
+    ar: {
+      title: 'المبالغ الصفر مبقتش تظهر بعلامة سالب',
+      points: [
+        'السطور اللي مفيهاش حاجة (زي المرتجعات أو المصروفات في شهر هادي) بقت بتظهر "0" بدل "-0".',
+      ],
+    },
+  },
+  {
+    version: '1.53.1',
+    date: '2026-10-15',
+    tag: 'Improved',
+    en: {
+      title: 'Repairs: parts with serial numbers, and a voided repair bill reopens the job',
+      points: [
+        'When a repair uses a part that has serial numbers, pick or scan the exact unit. It is sold with its warranty when the job is done, and goes back to stock if the device is returned.',
+        'If a repair job\'s bill is voided, the job opens again by itself (with a note saying why), so you can bill it again.',
+      ],
+    },
+    ar: {
+      title: 'الصيانة: قطع غيار بسيريال، وإلغاء فاتورة الصيانة بيرجّع الشغلانة مفتوحة',
+      points: [
+        'لما الصيانة تستخدم قطعة ليها سيريال، اختار أو امسح الوحدة نفسها. بتتباع بضمانها لما الشغلانة تخلص، وبترجع المخزن لو الجهاز رجع.',
+        'لو فاتورة شغلانة صيانة اتلغت، الشغلانة بتتفتح تاني لوحدها (مع ملاحظة بالسبب)، فتقدر تفوترها تاني.',
+      ],
+    },
+  },
+  {
+    version: '1.53.0',
+    date: '2026-10-15',
+    tag: 'New',
+    en: {
+      title: 'My money: the shop, your other businesses and your personal money in one place',
+      points: [
+        'A second switch in Settings → Capabilities: Owner level (needs the Treasury on). Only the shop\'s owner sees it.',
+        'Add your other businesses and your personal boxes (home cash, savings) next to the shop\'s boxes.',
+        'Moving money from a business to yourself is an owner draw, and the other way is an owner put-in — neither ever counts as an expense or income in the Profit & Loss.',
+        'Track loans (money you borrowed and money you lent), and money you hold for other people, with live totals.',
+        'Add partners with their share, settle a period (each partner\'s share of the profit, what was paid, what is still owed), and mark an expense as "owner only" so partners don\'t share it.',
+        'A Profit & Loss for each business. Your staff never see your personal money — on the shop\'s box they only see "Owner draw".',
+      ],
+    },
+    ar: {
+      title: 'فلوسي: المحل والبيزنس التاني وفلوسك الشخصية في مكان واحد',
+      points: [
+        'مفتاح تاني في الإعدادات ← الإمكانيات: مستوى المالك (محتاج الخزينة تكون مفتوحة). صاحب المحل بس اللي بيشوفه.',
+        'ضيف البيزنس التاني بتاعك وصناديقك الشخصية (كاش البيت، التوفير) جنب صناديق المحل.',
+        'الفلوس اللي بتاخدها من بيزنس ليك تبقى سحب مالك، والعكس يبقى إيداع مالك — ولا واحد فيهم بيتحسب مصروف أو إيراد في الأرباح والخسائر.',
+        'تابع القروض (اللي عليك واللي ليك)، والأمانات اللي معاك لناس تانية، بإجماليات لحظية.',
+        'ضيف شركاء بنسبهم، واقفل فترة (نصيب كل شريك من الربح، اللي اتدفع، واللي لسه ليه)، وعلّم مصروف إنه "على المالك بس" عشان الشركاء ميتقاسموهوش.',
+        'أرباح وخسائر لكل بيزنس. موظفينك عمرهم ما بيشوفوا فلوسك الشخصية — على صندوق المحل بيشوفوا "سحب مالك" بس.',
+      ],
+    },
+  },
+  {
     version: '1.52.0',
     date: '2026-10-15',
     tag: 'New',
