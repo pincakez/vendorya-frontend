@@ -3347,6 +3347,7 @@
       "serial_not_available": "Not in stock here: {serials}",
       "serial_not_sold": "Not sold on this invoice: {serials}",
       "serial_off": "{product} does not track serial numbers.",
+      "serial_branch_mix": "The parts' units sit in different branches ({branch}) — move them to one branch first.",
       "serial_register_cap": "Only {room} unit(s) of {product} at this branch have no serial yet — you entered {got}. Receive a purchase or make a stock adjustment to add more units.",
       "serial_weight": "A product sold by weight cannot track serial numbers.",
       "serial_base_unit": "A product with serial numbers is sold one unit at a time — keep selling single units on.",
