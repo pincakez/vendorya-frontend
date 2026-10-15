@@ -104,10 +104,10 @@
               </thead>
               <tbody>
                 <tr v-if="!incomes.length"><td colspan="6" class="dt-empty">{{ t('finance.treasury.income_empty') }}</td></tr>
-                <tr v-for="i in incomes" :key="i.id" class="dt-row">
+                <tr v-for="i in incomesPage" :key="i.id" class="dt-row">
                   <td class="text-muted">{{ fmtDay(i.date) }}</td>
-                  <td>{{ boxName(t, boxById[i.box]) }}</td>
-                  <td>{{ catName(i.category) }}</td>
+                  <td>{{ i.box_name || boxName(t, boxById[i.box]) }}</td>
+                  <td>{{ i.category_name || catName(i.category) }}</td>
                   <td class="text-muted">{{ i.description || '—' }}</td>
                   <td class="ta-right tr-in"><Money :value="i.amount" /></td>
                   <td class="ta-right">
@@ -120,7 +120,7 @@
             </table>
           </div>
         </div>
-        <AppPagination v-if="incTotal > incPageSize" :page="incPage" :page-size="incPageSize" :total="incTotal" @update:page="fetchIncomes" />
+        <AppPagination v-if="incomes.length > incPageSize" :page="incPage" :page-size="incPageSize" :total="incomes.length" @update:page="p => (incPage = p)" />
       </div>
 
       <!-- ══ TAB: Income categories ══ -->
@@ -424,15 +424,17 @@ const incomes = ref([])
 const incLoading = ref(false)
 const incPage = ref(1)
 const incPageSize = 25
-const incTotal = ref(0)
+// The server answers ONE plain list (no paging) → page it here.
+const incomesPage = computed(() => incomes.value.slice((incPage.value - 1) * incPageSize, incPage.value * incPageSize))
 async function fetchIncomes(p = 1) {
   incPage.value = p
   incLoading.value = true
   if (!categories.value.length) fetchCategories()
   try {
-    const r = await api.get('/api/treasury/other-income/', { params: { page: p, page_size: incPageSize } })
+    const r = await api.get('/api/treasury/other-income/')
     incomes.value = r.data?.results ?? r.data ?? []
-    incTotal.value = r.data?.count ?? incomes.value.length
+    const last = Math.max(1, Math.ceil(incomes.value.length / incPageSize))
+    if (incPage.value > last) incPage.value = last
   } catch (e) {
     incomes.value = []
     showErrorToast(treasuryError(t, e, t('finance.treasury.err.load')))

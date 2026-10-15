@@ -259,6 +259,8 @@ import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
 import { formatWeight } from '@/utils/format'
+import { showErrorToast } from '@/utils/toast'
+import { treasuryError } from '@/utils/treasury'
 
 const { t } = useI18n()
 const fmt = useFormatStore()
@@ -377,7 +379,10 @@ async function save() {
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
     const data = e.response?.data
-    alert(data ? (typeof data === 'string' ? data : JSON.stringify(data)) : t('settings.policies.err_save'))
+    // Nothing was saved — put the Treasury switch back to what the server still has (e.g. `shifts_open`).
+    form.treasury_enabled = treasuryWasOn.value
+    if (data?.code) showErrorToast(treasuryError(t, e, t('settings.policies.err_save')), 4000)
+    else alert(data ? (typeof data === 'string' ? data : JSON.stringify(data)) : t('settings.policies.err_save'))
   } finally { saving.value = false }
 }
 

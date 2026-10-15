@@ -6,6 +6,8 @@
  * Every box / kind / line label is translated here so all screens say the same words.
  */
 import api from '@/api/axios'
+import i18n from '@/i18n'
+import { formatCurrency } from '@/utils/format'
 
 export const BOX_KINDS = ['DRAWER', 'CASH', 'BANK', 'WALLET', 'RESERVED', 'SAVINGS']
 
@@ -13,17 +15,22 @@ export const BOX_KINDS = ['DRAWER', 'CASH', 'BANK', 'WALLET', 'RESERVED', 'SAVIN
 // at their source (delete the expense / payment …) and the server answers `reverse_at_source`.
 export const REVERSIBLE_KINDS = ['TRANSFER_IN', 'TRANSFER_OUT', 'OPENING', 'COUNT_ADJUST']
 
-const KNOWN_ERRORS = [
-  'treasury_off', 'not_enough_money', 'reason_required', 'box_not_empty', 'other_owner', 'same_box',
-  'reverse_at_source', 'zero_amount', 'box_closed', 'cannot_reverse_reversal', 'already_reversed',
-  'amount_positive', 'drawer_busy', 'paid_from_required',
-]
+// Money params the server sends with a refusal (`not_enough_money` → balance / needed, `reason_required` →
+// difference, `box_not_empty` → balance) — shown in the shop's currency format.
+const MONEY_PARAMS = ['balance', 'needed', 'difference']
 
-/** Translated text for a failed Treasury call (axios error), or `fallback` when the server sent nothing usable. */
+/** Translated text for a failed Treasury call (axios error), or `fallback` when the server sent nothing usable.
+ *  Every server `code` with a `finance.treasury.err.<code>` text is translated, with the answer's params
+ *  ({methods}, {box}, {balance}, {needed}, {difference} …) filled in; an unknown code shows the server's `detail`. */
 export function treasuryError(t, err, fallback) {
   const d = err?.response?.data
   if (d && typeof d === 'object' && !Array.isArray(d)) {
-    if (d.code && KNOWN_ERRORS.includes(d.code)) return t('finance.treasury.err.' + d.code)
+    const key = d.code ? 'finance.treasury.err.' + d.code : ''
+    if (key && i18n.global.te(key, 'en')) {
+      const params = { ...d }
+      for (const p of MONEY_PARAMS) if (params[p] != null && params[p] !== '') params[p] = formatCurrency(params[p])
+      return t(key, params)
+    }
     if (typeof d.detail === 'string' && d.detail) return d.detail
     // DRF field errors: { field: ["msg"] } → the first message
     const first = Object.values(d).find(v => (Array.isArray(v) && typeof v[0] === 'string') || typeof v === 'string')

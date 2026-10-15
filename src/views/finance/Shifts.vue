@@ -90,11 +90,11 @@
           <div class="diff-preview" :class="diffClass(openDiff)">
             {{ t('finance.shifts.close_modal.difference') }}: {{ openDiff >= 0 ? '+' : '' }}<Money :value="openDiff" />
           </div>
-          <div v-if="openDiff !== 0">
-            <label class="form-label">{{ t('finance.treasury.f.reason') }}</label>
-            <textarea v-model="openReason" class="form-input" rows="2" :placeholder="t('finance.treasury.f.reason_ph')" />
-          </div>
         </template>
+        <div v-if="treasuryOn && openNeedsReason">
+          <label class="form-label">{{ t('finance.treasury.f.reason') }}</label>
+          <textarea v-model="openReason" class="form-input" rows="2" :placeholder="t('finance.treasury.f.reason_ph')" />
+        </div>
       </div>
       <template #footer>
         <button class="btn-ghost" @click="openModal = false">{{ t('common.cancel') }}</button>
@@ -117,16 +117,17 @@
           {{ t('finance.shifts.close_modal.difference') }}: {{ closeDiff >= 0 ? '+' : '' }}<Money :value="closeDiff" />
         </div>
         <template v-if="isBoxShift">
-          <div v-if="countedCash !== '' && closeDiff !== 0">
+          <div v-if="closeNeedsReason">
             <label class="form-label">{{ t('finance.treasury.f.reason') }}</label>
             <textarea v-model="closeReason" class="form-input" rows="2" :placeholder="t('finance.treasury.f.reason_ph')" />
           </div>
-          <!-- Optional: move the takings out of the drawer (a transfer), leaving a float -->
-          <label class="check-row">
+          <!-- Optional: move the takings out of the drawer (a transfer), leaving a float. Targets come from the
+               cashier-safe list the server picks per role; none → no block. -->
+          <label v-if="moveTargets.length" class="check-row">
             <input v-model="moveOn" type="checkbox" class="check-input" />
             <span class="check-label">{{ t('finance.treasury.move_takings') }}</span>
           </label>
-          <template v-if="moveOn">
+          <template v-if="moveOn && moveTargets.length">
             <BaseSelect v-model="moveToBox" :options="moveBoxOptions" :label="t('finance.treasury.move_to')" :placeholder="t('finance.treasury.f.pick_box')" />
             <BaseInput v-model="moveAmount" type="number" min="0" step="0.01" :label="t('finance.treasury.move_amount')" placeholder="0.00" />
             <p v-if="countedCash !== '' && moveAmount !== ''" class="shift-help">{{ t('finance.treasury.float_left') }}: <Money :value="Number(countedCash) - Number(moveAmount || 0)" /></p>
@@ -152,7 +153,7 @@ import BaseSelect from '@/components/base/BaseSelect.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import { showErrorToast } from '@/utils/toast'
 import { useFormatStore } from '@/stores/format'
-import { fetchBoxes, boxOptionLabel, treasuryError } from '@/utils/treasury'
+import { kindLabel, treasuryError } from '@/utils/treasury'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
@@ -207,19 +208,24 @@ async function fetchOpenShift() {
 
 // ── Close: expected = the drawer's book (Treasury on) or the old formula — one server answer for both ──
 const expectedCash = ref(0)
-const isBoxShift   = computed(() => openShift.value?.ledger ? openShift.value.ledger === 'BOX' : treasuryOn.value)
+const isBoxShift   = computed(() => openShift.value?.ledger === 'BOX' && treasuryOn.value)
 const closeDiff    = computed(() => countedCash.value === '' ? 0 : round2(Number(countedCash.value) - Number(expectedCash.value || 0)))
 const closeReason  = ref('')
 const moveOn       = ref(false)
 const moveToBox    = ref('')
 const moveAmount   = ref('')
-const boxes        = ref([])
-const moveBoxOptions = computed(() => boxes.value
-  .filter(b => b.is_active && b.kind !== 'DRAWER' && b.system_role !== 'UNSORTED')
-  .map(b => ({ value: b.id, label: boxOptionLabel(t, b) })))
+// GET /api/finance/shifts/move-targets/ → [{ id, name, kind }] — the boxes this role may move takings to.
+const moveTargets  = ref([])
+const moveBoxOptions = computed(() => moveTargets.value.map(b => ({
+  value: b.id, label: [b.name || t('finance.treasury.unsorted_name'), kindLabel(t, b.kind)].filter(Boolean).join(' · '),
+})))
+// The server said "write the reason" (its book moved since the modal opened) → keep the box open whatever the preview says.
+const closeForceReason = ref(false)
+const closeNeedsReason = computed(() => countedCash.value !== '' && (closeDiff.value !== 0 || closeForceReason.value))
 const canCloseShift = computed(() => {
   if (!isBoxShift.value) return true
-  if (countedCash.value !== '' && closeDiff.value !== 0 && !closeReason.value.trim()) return false
+  if (countedCash.value === '') return false             // a drawer box needs a real count
+  if (closeNeedsReason.value && !closeReason.value.trim()) return false
   if (moveOn.value) {
     const amt = Number(moveAmount.value)
     if (!moveToBox.value || !(amt > 0) || (countedCash.value !== '' && amt > Number(countedCash.value))) return false
@@ -230,13 +236,23 @@ function round2(n) { return Math.round(n * 100) / 100 }
 
 async function openCloseModal() {
   countedCash.value = ''; closeReason.value = ''; moveOn.value = false; moveToBox.value = ''; moveAmount.value = ''
+  closeForceReason.value = false
   expectedCash.value = openShift.value?.expected_cash || 0
+  moveTargets.value = []
   closeModal.value = true
+  await refreshExpected()
+  if (isBoxShift.value) {
+    try {
+      const r = await api.get('/api/finance/shifts/move-targets/')
+      moveTargets.value = r.data?.results ?? r.data ?? []
+    } catch { moveTargets.value = [] }
+  }
+}
+async function refreshExpected() {
   try {
     const { data } = await api.get('/api/finance/shifts/drawer/')
     if (data?.shift && String(data.shift.id) === String(openShift.value?.id)) expectedCash.value = data.expected_balance
   } catch { /* keep the shift's own number */ }
-  if (isBoxShift.value) boxes.value = await fetchBoxes()
 }
 
 // A shift belongs to a branch (its drawer). Before 2026-10-14 the page sent the SHOP's id as the branch (always
@@ -255,6 +271,7 @@ async function startOpen() {
   }
   const mine = branches.value.find(b => b.id === auth.user?.default_branch)
   openReason.value = ''
+  openForceReason.value = false
   shiftBranch.value = (mine || branches.value[0])?.id || ''
   openModal.value = true
   if (treasuryOn.value) loadDrawers()
@@ -270,10 +287,13 @@ const busyCount    = computed(() => drawers.value.filter(d => d.busy).length)
 const pickedDrawer = computed(() => drawers.value.find(d => d.id === shiftDrawer.value && !d.busy) || null)
 const openDiff     = computed(() => pickedDrawer.value && startingCash.value !== ''
   ? round2(Number(startingCash.value) - Number(pickedDrawer.value.book_balance || 0)) : 0)
+// The server said "write the reason" → the reason box stays open even if our copy of the book looked equal.
+const openForceReason = ref(false)
+const openNeedsReason = computed(() => !!pickedDrawer.value && startingCash.value !== '' && (openDiff.value !== 0 || openForceReason.value))
 const canOpenShift = computed(() => {
   if (!treasuryOn.value) return true
-  if (!pickedDrawer.value) return false
-  return !(startingCash.value !== '' && openDiff.value !== 0 && !openReason.value.trim())
+  if (!pickedDrawer.value || startingCash.value === '') return false   // a drawer box needs a real count
+  return !(openNeedsReason.value && !openReason.value.trim())
 })
 async function loadDrawers() {
   if (!shiftBranch.value) { drawers.value = []; return }
@@ -282,7 +302,8 @@ async function loadDrawers() {
     const r = await api.get('/api/finance/shifts/drawers/', { params: { branch: shiftBranch.value } })
     drawers.value = r.data?.results ?? r.data ?? []
   } catch { drawers.value = [] } finally { drawersLoading.value = false }
-  shiftDrawer.value = freeDrawerOptions.value[0]?.value || ''
+  // keep the drawer already chosen while it is still free (a reload after a refusal must not jump to another one)
+  if (!freeDrawerOptions.value.some(o => o.value === shiftDrawer.value)) shiftDrawer.value = freeDrawerOptions.value[0]?.value || ''
 }
 watch(shiftBranch, () => { if (openModal.value && treasuryOn.value) loadDrawers() })
 
@@ -295,7 +316,7 @@ async function openShiftAction() {
     const body = { starting_cash: startingCash.value || 0, branch: shiftBranch.value }
     if (treasuryOn.value) {
       body.drawer = shiftDrawer.value
-      if (openDiff.value !== 0 && openReason.value.trim()) body.count_reason = openReason.value.trim()
+      if (openNeedsReason.value && openReason.value.trim()) body.count_reason = openReason.value.trim()
     }
     await api.post('/api/finance/shifts/', body)
   } catch (e) {
@@ -303,6 +324,7 @@ async function openShiftAction() {
     showErrorToast(d?.code === 'shift_already_open' ? t('finance.shifts.err_already_open')
       : d?.code ? treasuryError(t, e, t('pos.payment.err_shift_open'))
       : (typeof d?.detail === 'string' ? d.detail : (Array.isArray(d) && d[0]) || t('pos.payment.err_shift_open')), 3500)
+    if (d?.code === 'reason_required') openForceReason.value = true   // always let the user type it and retry
     if (treasuryOn.value) loadDrawers()
     await fetchOpenShift()
     return
@@ -321,8 +343,8 @@ async function closeShiftAction() {
   closing.value = true
   const body = { counted_cash: countedCash.value || 0 }
   if (isBoxShift.value) {
-    if (closeDiff.value !== 0 && closeReason.value.trim()) body.count_reason = closeReason.value.trim()
-    if (moveOn.value && moveToBox.value && Number(moveAmount.value) > 0) {
+    if (closeNeedsReason.value && closeReason.value.trim()) body.count_reason = closeReason.value.trim()
+    if (moveOn.value && moveTargets.value.length && moveToBox.value && Number(moveAmount.value) > 0) {
       body.move_to_box = moveToBox.value
       body.move_amount = moveAmount.value
     }
@@ -331,6 +353,10 @@ async function closeShiftAction() {
     await api.post(`/api/finance/shifts/${openShift.value.id}/close/`, body)
   } catch (e) {
     showErrorToast(treasuryError(t, e, t('finance.treasury.err.close_failed')), 3500)
+    if (e?.response?.data?.code === 'reason_required') {          // the book moved → fresh expected + the reason box
+      closeForceReason.value = true
+      await refreshExpected()
+    }
     return
   } finally { closing.value = false }
   closeModal.value = false

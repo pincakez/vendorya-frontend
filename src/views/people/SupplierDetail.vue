@@ -201,11 +201,14 @@ const fmt = useFormatStore()
 // ── Treasury (s169c): "Paid from" a money box, only when the shop's switch is on ──
 const treasuryOn = computed(() => fmt.treasuryEnabled)
 const boxes = ref([])
+// "Automatic" (= the server uses the method's lands-in box) only for a NON-cash method; cash shows the real box.
+const payIsCash = computed(() => !!methods.value.find(m => m.id === payForm.value.payment_method)?.is_cash)
 const paidFromOptions = computed(() => [
-  { value: '', label: t('finance.treasury.auto_box') },
+  ...(payIsCash.value ? [] : [{ value: '', label: t('finance.treasury.auto_box') }]),
   ...boxes.value.filter(b => b.is_active && b.system_role !== 'UNSORTED')
     .map(b => ({ value: b.id, label: boxOptionLabel(t, b) })),
 ])
+const myDrawer = ref('')   // the drawer of my open shift (GET /api/finance/shifts/drawer/ → shift.drawer)
 const payBox = computed(() => boxes.value.find(b => b.id === payForm.value.paid_from) || null)
 
 // PROLINE-PARITY Upgrade 6: the shop's OWN payment methods (the till's list) — minus Ajel (credit is not money
@@ -319,16 +322,21 @@ const paySaving = ref(false)
 const payErr = ref('')
 const payForm = ref({ amount: '', date: '', payment_method: '', note: '', paid_from: '' })
 
-// Prefill "Paid from" with the box the chosen method lands in (when known); a cash method has none → automatic
-// (the server uses the drawer of my open shift). Never overrides a box the user picked by hand.
+// Prefill "Paid from": a CASH method → the same rule as Expenses (my open shift's drawer, else the first cash box) so
+// the user sees the real box; a non-cash method → the box it lands in when known, else "Automatic". Never overrides a
+// box the user picked by hand.
 const paidFromTouched = ref(false)
-function landsInFor(methodId) {
+function defaultBoxFor(methodId) {
   const m = methods.value.find(x => x.id === methodId)
-  const box = m?.lands_in && boxes.value.find(b => b.id === m.lands_in && b.is_active)
-  return box ? box.id : ''
+  const active = id => boxes.value.find(b => b.id === id && b.is_active && b.system_role !== 'UNSORTED')
+  if (m?.is_cash) {
+    if (myDrawer.value && active(myDrawer.value)) return myDrawer.value
+    return boxes.value.find(b => b.is_active && b.kind === 'CASH')?.id || ''
+  }
+  return (m?.lands_in && active(m.lands_in)) ? m.lands_in : ''
 }
-watch(() => payForm.value.payment_method, id => { if (!paidFromTouched.value) payForm.value.paid_from = landsInFor(id) })
-watch(() => payForm.value.paid_from, v => { if (v !== landsInFor(payForm.value.payment_method)) paidFromTouched.value = true })
+watch(() => payForm.value.payment_method, id => { if (!paidFromTouched.value) payForm.value.paid_from = defaultBoxFor(id) })
+watch(() => payForm.value.paid_from, v => { if (v !== defaultBoxFor(payForm.value.payment_method)) paidFromTouched.value = true })
 
 async function fetchPayments() {
   payLoading.value = true
@@ -344,7 +352,13 @@ async function openPay() {
   paidFromTouched.value = false
   payForm.value = { amount: '', date: new Date().toISOString().slice(0, 10), payment_method: '', note: '', paid_from: '' }
   payOpen.value = true
-  if (treasuryOn.value) boxes.value = await fetchBoxes()
+  if (treasuryOn.value) {
+    boxes.value = await fetchBoxes()
+    try {
+      const { data } = await api.get('/api/finance/shifts/drawer/')
+      myDrawer.value = data?.shift?.drawer || ''
+    } catch { myDrawer.value = '' }
+  }
   if (!methods.value.length) {
     try {
       const r = await api.get('/api/finance/payment-methods/')

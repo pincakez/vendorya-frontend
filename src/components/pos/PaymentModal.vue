@@ -100,7 +100,7 @@
             <input v-model="shiftCash" type="number" min="0" step="0.01" class="form-input" placeholder="0.00"
                    @keydown.enter.stop.prevent="openShift" />
           </label>
-          <BaseButton :loading="shiftOpening" :disabled="treasuryOn && (!shiftDrawer || (shiftDiff !== 0 && !shiftReason.trim()))" @click="openShift">{{ t('finance.shifts.open_modal.open_btn') }}</BaseButton>
+          <BaseButton :loading="shiftOpening" :disabled="!canOpenShift" @click="openShift">{{ t('finance.shifts.open_modal.open_btn') }}</BaseButton>
         </div>
         <!-- Treasury on (s169c): the drawer's book balance carries over; a count that differs needs a reason -->
         <template v-if="treasuryOn">
@@ -108,7 +108,7 @@
             {{ t('finance.treasury.drawer') }}: <b>{{ shiftDrawer.name }}</b> · {{ t('finance.treasury.in_book') }}: <b>{{ formatCurrency(shiftDrawer.book_balance) }}</b>
           </div>
           <div v-else class="pm-shift-book">{{ t('finance.treasury.drawers_all_busy') }}</div>
-          <label v-if="shiftDrawer && shiftDiff !== 0" class="pm-shift-label">
+          <label v-if="shiftNeedsReason" class="pm-shift-label">
             <span>{{ t('finance.treasury.f.reason') }}</span>
             <input v-model="shiftReason" type="text" class="form-input" :placeholder="t('finance.treasury.f.reason_ph')"
                    @keydown.enter.stop.prevent="openShift" />
@@ -174,11 +174,19 @@ const shiftDrawer = ref(null)
 const shiftReason = ref('')
 const shiftDiff   = computed(() => !shiftDrawer.value || shiftCash.value === '' ? 0
   : Math.round((Number(shiftCash.value) - Number(shiftDrawer.value.book_balance || 0)) * 100) / 100)
+// The server said "write the reason" → the reason box stays open even if our copy of the book looked equal.
+const shiftForceReason = ref(false)
+const shiftNeedsReason = computed(() => !!shiftDrawer.value && shiftCash.value !== '' && (shiftDiff.value !== 0 || shiftForceReason.value))
+// On a drawer box the count is required (empty ≠ 0) and a different count needs its reason.
+const canOpenShift = computed(() => !treasuryOn.value
+  || (!!shiftDrawer.value && shiftCash.value !== '' && !(shiftNeedsReason.value && !shiftReason.value.trim())))
 
 async function loadShiftDrawer() {
   try {
     const { data } = await api.get('/api/finance/shifts/drawers/', { params: { branch: pos.branchId } })
-    shiftDrawer.value = (data?.results ?? data ?? []).find(d => !d.busy) || null
+    const free = (data?.results ?? data ?? []).filter(d => !d.busy)
+    // same drawer as before when it is still free (fresh book balance), else the first free one
+    shiftDrawer.value = free.find(d => d.id === shiftDrawer.value?.id) || free[0] || null
   } catch { shiftDrawer.value = null }
 }
 
@@ -191,13 +199,13 @@ async function checkShift() {
 }
 
 async function openShift() {
-  if (shiftOpening.value) return
+  if (shiftOpening.value || !canOpenShift.value) return
   shiftOpening.value = true
   try {
     const body = { branch: pos.branchId, starting_cash: shiftCash.value || 0 }
     if (treasuryOn.value && shiftDrawer.value) {
       body.drawer = shiftDrawer.value.id
-      if (shiftDiff.value !== 0 && shiftReason.value.trim()) body.count_reason = shiftReason.value.trim()
+      if (shiftNeedsReason.value && shiftReason.value.trim()) body.count_reason = shiftReason.value.trim()
     }
     await api.post('/api/finance/shifts/', body)
     shiftMissing.value = false
@@ -209,6 +217,7 @@ async function openShift() {
     showErrorToast(d?.code === 'shift_already_open' ? t('finance.shifts.err_already_open')
       : d?.code ? treasuryError(t, e, t('pos.payment.err_shift_open'))
       : (typeof d?.detail === 'string' ? d.detail : (Array.isArray(d) && d[0]) || t('pos.payment.err_shift_open')), 3500)
+    if (d?.code === 'reason_required') shiftForceReason.value = true   // always let the cashier type it and retry
     if (treasuryOn.value) loadShiftDrawer()
   } finally {
     shiftOpening.value = false

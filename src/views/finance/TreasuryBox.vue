@@ -146,7 +146,9 @@ const rows = computed(() => (stmt.value?.lines || []).map(l => {
     date: l.at,
     dateLabel: l.at ? formatDate(l.at) : '',
     type,
-    ref: ref?.label || '',
+    // a transfer's label is the OTHER box — the arrow shows the direction (→ out to it, ← in from it)
+    ref: ref?.type === 'transfer' && ref.label && (l.kind === 'TRANSFER_OUT' || l.kind === 'TRANSFER_IN')
+      ? (l.kind === 'TRANSFER_OUT' ? '→ ' : '← ') + ref.label : (ref?.label || ''),
     to: refRoute ? refRoute(ref.id) : null,
     note: [l.note, l.reason && t('finance.treasury.reason_prefix', { reason: l.reason }), l.created_by_name]
       .filter(Boolean).join(' — '),
