@@ -56,7 +56,8 @@ export function moveKindLabel(t, kind) {
                  'TRANSFER_IN', 'TRANSFER_OUT', 'OPENING', 'COUNT_ADJUST', 'REVERSAL',
                  // s170 owner level (generic labels — shop staff see these on a shop box too, never a name)
                  'DRAW_OUT', 'DRAW_IN', 'PUT_OUT', 'PUT_IN', 'LOAN_IN', 'LOAN_REPAY', 'LOAN_OUT', 'LOAN_BACK',
-                 'AMANA_IN', 'AMANA_OUT', 'PARTNER_IN', 'PARTNER_OUT']
+                 'AMANA_IN', 'AMANA_OUT', 'PARTNER_IN', 'PARTNER_OUT',
+                 'DEPOSIT_IN', 'DEPOSIT_OUT']   // s172 reservations
   return known.includes(kind) ? t('finance.treasury.move_kinds.' + kind) : (kind || '')
 }
 

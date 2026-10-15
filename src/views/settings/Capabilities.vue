@@ -224,6 +224,30 @@
         </div>
       </div>
 
+      <!-- Reservations with a deposit — s172 (RESERVATIONS.md). Off = no menu, no NEW reservation; open ones stay reachable. -->
+      <div class="cap-card">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><BookmarkCheck :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.reservations_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='reservations' }" @click="toggleInfo('reservations')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.reservations_desc') }}</div>
+          <div v-if="openInfo==='reservations'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.reservations_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.reservations_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.reservations_enabled ? 'status-on' : 'status-off'">
+              {{ form.reservations_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.reservations_enabled }" @click="requestToggle('reservations_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Search & Autocomplete -->
       <div class="cap-card">
         <div class="cap-icon" style="background:#ede9fe;color:#7c3aed;"><Search :size="20" /></div>
@@ -288,7 +312,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault, PiggyBank } from 'lucide-vue-next'
+import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault, PiggyBank, BookmarkCheck
+} from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
@@ -320,6 +345,7 @@ const form = reactive({
   mb_auto_register:        true,
   treasury_enabled:        false,
   treasury_owner_level:    false,
+  reservations_enabled:    false,
 })
 // What the server had when the page loaded — the "boxes are made when you save" note shows only on a fresh switch-on.
 const treasuryWasOn = ref(false)
@@ -386,6 +412,7 @@ async function load() {
       mb_auto_register:        settingsRes.data.mb_auto_register ?? true,
       treasury_enabled:        !!settingsRes.data.treasury_enabled,
       treasury_owner_level:    !!settingsRes.data.treasury_owner_level,
+      reservations_enabled:    !!settingsRes.data.reservations_enabled,
     })
     treasuryWasOn.value = !!settingsRes.data.treasury_enabled
     ownerLevelWasOn.value = !!settingsRes.data.treasury_owner_level
@@ -422,8 +449,10 @@ async function save() {
       mb_auto_register:        form.mb_auto_register,
       treasury_enabled:        form.treasury_enabled,
       treasury_owner_level:    form.treasury_owner_level,
+      reservations_enabled:    form.reservations_enabled,
     })
-    fmt.apply({ default_weight_unit: form.default_weight_unit, treasury_enabled: form.treasury_enabled, treasury_owner_level: form.treasury_owner_level })
+    fmt.apply({ default_weight_unit: form.default_weight_unit, treasury_enabled: form.treasury_enabled, treasury_owner_level: form.treasury_owner_level,
+                reservations_enabled: form.reservations_enabled })
     treasuryWasOn.value = form.treasury_enabled
     ownerLevelWasOn.value = form.treasury_owner_level
     refreshIsOwner(res?.data)

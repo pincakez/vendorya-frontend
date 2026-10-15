@@ -12,6 +12,52 @@
 
 export const changelog = [
   {
+    version: '1.59.0',
+    date: '2026-10-15',
+    tag: 'New',
+    en: {
+      title: 'Money reports',
+      points: [
+        'Finance → Treasury → Reports: how much was in every box (drawers, safe, bank, e-wallets) at the end of any day you pick.',
+        'Money in & out for any period — by type (sales, expenses, supplier payments…), by box and by day. Moves between your own boxes are not counted as money in or out.',
+        'For the owner, My money → Reports adds: every business and your personal money together, how much of it you hold for other people, what you took out of your businesses (with the average per day), and each partner\'s share, payments and balance.',
+      ],
+    },
+    ar: {
+      title: 'تقارير الفلوس',
+      points: [
+        'المالية ← الخزينة ← التقارير: كان فيه كام في كل صندوق (الأدراج، الخزنة، البنك، المحافظ) آخر أي يوم تختاره.',
+        'الداخل والخارج في أي فترة — حسب النوع (مبيعات، مصروفات، دفعات موردين…)، وحسب الصندوق، وحسب اليوم. التحويل بين صناديقك مش محسوب داخل أو خارج.',
+        'للمالك، فلوسي ← التقارير فيها كمان: كل أنشطتك وفلوسك الشخصية مع بعض، قد إيه منها أمانات لناس تانية، اللي سحبته من شغلك (ومتوسط اليوم)، ونصيب كل شريك ودفعاته ورصيده.',
+      ],
+    },
+  },
+  {
+    version: '1.58.0',
+    date: '2026-10-15',
+    tag: 'New',
+    en: {
+      title: 'Reservations with a deposit',
+      points: [
+        'A customer can reserve items and pay part of the price now. Turn it on in Settings → Capabilities, then use Finance → Reservations.',
+        'Reserved items stay on your stock count, but nobody else can sell them — the till refuses. A specific laptop can be held by its serial number, or picked later.',
+        'The deposit is real money in the drawer or box from the first minute. Add more deposits any time.',
+        '"Make it a sale" creates a normal sale: the deposit counts as paid and the rest is paid then (cash, card, or on credit).',
+        'Cancel a reservation and choose what happens to the deposit: give it back, move it to the customer\'s store credit, or (managers) keep it — a kept deposit shows as other income in Profit & Loss.',
+      ],
+    },
+    ar: {
+      title: 'الحجز بعربون',
+      points: [
+        'العميل يقدر يحجز أصناف ويدفع جزء من التمن دلوقتي. شغّلها من الإعدادات ← الإمكانيات، وبعدين المالية ← الحجوزات.',
+        'الأصناف المحجوزة بتفضل في رصيد المخزن، لكن محدش تاني يقدر يبيعها — الكاشير بيرفض. وينفع تحجز لابتوب معيّن بالسيريال بتاعه، أو تختاره بعدين.',
+        'العربون فلوس حقيقية في الدرج أو الصندوق من أول دقيقة. وتقدر تزوّد عربون في أي وقت.',
+        '"حوّله لبيع" بيعمل فاتورة بيع عادية: العربون محسوب مدفوع والباقي بيتدفع ساعتها (كاش، كارت، أو آجل).',
+        'لو ألغيت الحجز تختار العربون هيروح فين: يرجع للعميل، أو يتحوّل لرصيده عندك، أو (للمدير) المحل يحتفظ بيه — والعربون اللي المحل احتفظ بيه بيظهر إيراد آخر في الأرباح والخسائر.',
+      ],
+    },
+  },
+  {
     version: '1.57.0',
     date: '2026-10-15',
     tag: 'New',

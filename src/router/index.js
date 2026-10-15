@@ -39,6 +39,8 @@ const router = createRouter({
         { path: 'finance/invoices/:id', component: () => import('@/views/sales/InvoiceDetail.vue'),        meta: { store: true }, props: true },
         { path: 'finance/returns',      component: () => import('@/views/sales/Returns.vue'),              meta: { store: true } },
         { path: 'finance/expenses',     component: () => import('@/views/finance/Expenses.vue'),           meta: { store: true, minRole: 'MANAGER' } },
+        // s172: reservations with a deposit — in menus only while the shop's switch is on (canOpen); open ones stay reachable.
+        { path: 'finance/reservations', component: () => import('@/views/finance/Reservations.vue'),       meta: { store: true, minRole: 'CASHIER', reservations: true } },
         { path: 'finance/cheques',      component: () => import('@/views/finance/Cheques.vue'),            meta: { store: true, minRole: 'MANAGER' } },   // s171
         { path: 'finance/shifts',           component: () => import('@/views/finance/Shifts.vue'),            meta: { store: true } },
         { path: 'finance/shifts/:id',       component: () => import('@/views/finance/ShiftDetail.vue'),     meta: { store: true }, props: true },
@@ -184,6 +186,7 @@ router.beforeEach(async (to, from, next) => {
 export function canOpen(path) {
   const meta = router.resolve(path).meta
   if (meta.treasury && !useFormatStore().treasuryEnabled) return false   // s169c: Treasury switch off → no menu entry
+  if (meta.reservations && !useFormatStore().reservationsEnabled) return false   // s172
   if (meta.ownerLevel) {   // s170: the owner level — both switches on AND this login is the owner
     const f = useFormatStore()
     if (!(f.treasuryEnabled && f.treasuryOwnerLevel && f.treasuryIsOwner)) return false

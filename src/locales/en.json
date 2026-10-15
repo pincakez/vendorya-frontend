@@ -102,7 +102,8 @@
       "treasury": "Treasury",
       "my_money": "My money",
       "supplier_returns": "Supplier Returns",
-      "cheques": "Cheques"
+      "cheques": "Cheques",
+      "reservations": "Reservations"
     }
   },
   "common": {
@@ -1100,7 +1101,8 @@
       "tabs": {
         "boxes": "Boxes",
         "income": "Other income",
-        "categories": "Income categories"
+        "categories": "Income categories",
+        "reports": "Reports"
       },
       "total_all": "Total in all boxes",
       "show_closed": "Show closed boxes ({n})",
@@ -1218,7 +1220,9 @@
         "AMANA_OUT": "Amana given back",
         "PARTNER_IN": "Partner put money in",
         "PARTNER_OUT": "Paid to a partner",
-        "SUPPLIER_IN": "Supplier paid back"
+        "SUPPLIER_IN": "Supplier paid back",
+        "DEPOSIT_IN": "Reservation deposit",
+        "DEPOSIT_OUT": "Deposit given back"
       },
       "err": {
         "treasury_off": "The Treasury is off for this shop.",
@@ -1288,7 +1292,8 @@
         "loans": "Loans",
         "amanat": "Amanat",
         "partners": "Partners",
-        "pnl": "Business P&L"
+        "pnl": "Business P&L",
+        "reports": "Reports"
       },
       "part_kinds": {
         "SHOP": "Shop",
@@ -1612,6 +1617,170 @@
         "not_open": "This cheque is already closed.",
         "reason_required": "Write the reason.",
         "box_required": "Choose the box (bank account) it was paid from."
+      }
+    },
+    "reservations": {
+      "title": "Reservations",
+      "sub": "Items held for a customer who paid a deposit — turn them into a sale later, or cancel.",
+      "new": "New reservation",
+      "switch_off": "Reservations are turned off for this shop (Settings → Capabilities). Open reservations below can still be finished.",
+      "search_ph": "Search customer, phone, item or number",
+      "empty": "No reservations here.",
+      "tabs": {
+        "open": "Open",
+        "overdue": "Past hold date",
+        "converted": "Became a sale",
+        "cancelled": "Cancelled",
+        "all": "All"
+      },
+      "status": {
+        "OPEN": "Open",
+        "CONVERTED": "Became a sale",
+        "CANCELLED": "Cancelled"
+      },
+      "overdue": "Past hold date",
+      "cols": {
+        "items": "Items",
+        "item": "Item",
+        "total": "Total",
+        "deposit": "Deposit paid",
+        "due": "Still due",
+        "status": "Status",
+        "date": "Date"
+      },
+      "customer": "Customer",
+      "branch": "Branch",
+      "hold_until": "Hold until",
+      "pick": "Choose…",
+      "add_item": "Add an item",
+      "item_ph": "Type a name, code or barcode",
+      "in_stock": "{n} in stock",
+      "qty": "Qty",
+      "price": "Agreed price",
+      "serials_ph": "Serial number(s) to hold (optional)",
+      "before_tax": "Total before tax:",
+      "first_deposit": "Deposit now",
+      "method": "Paid by",
+      "note": "Note",
+      "amount": "Amount",
+      "hold_hint": "Held items stay on the shelf count, but nobody else can sell them until this reservation becomes a sale or is cancelled.",
+      "detail_title": "Reservation #{n}",
+      "sale_n": "sale #{n}",
+      "salesperson": "Salesperson",
+      "deposits": "Deposits",
+      "and_more": "+{n} more",
+      "cancelled_by": "Cancelled by {who} on {when}",
+      "extra_to_credit": "The deposit was more than the sale — {amount} went to the customer's store credit.",
+      "outcome": {
+        "REFUNDED": "deposit given back",
+        "KEPT": "deposit kept by the shop",
+        "TO_CREDIT": "deposit moved to store credit"
+      },
+      "outcome_pick": {
+        "REFUNDED": "Give the deposit back",
+        "TO_CREDIT": "Move it to store credit",
+        "KEPT": "Shop keeps it"
+      },
+      "outcome_hint": {
+        "REFUNDED": "The money leaves the drawer / box it is paid from.",
+        "TO_CREDIT": "The customer can spend it at the till later.",
+        "KEPT": "The money stays in the shop and counts as other income (managers only)."
+      },
+      "give_back_by": "Give back by",
+      "reason": "Why?",
+      "pay_rest_with": "Pay the rest with",
+      "convert_hint": "The deposit already counts as paid. The sale follows the till's normal rules (stock, credit limit, shift).",
+      "add_deposit": "Add deposit",
+      "give_back": "Give part back",
+      "convert": "Make it a sale",
+      "cancel": "Cancel reservation",
+      "open_sale": "Open the sale",
+      "confirm": {
+        "deposit": "Take deposit",
+        "give-back": "Give back",
+        "convert": "Complete the sale",
+        "cancel": "Cancel reservation"
+      },
+      "err": {
+        "generic": "That didn't work — please try again.",
+        "reservations_off": "Reservations are turned off for this shop.",
+        "customer_required": "A reservation is for a named customer — choose one.",
+        "branch_required": "Choose the branch the items are held at.",
+        "items_required": "Add at least one item.",
+        "variant_not_found": "Item not found in this shop.",
+        "bad_quantity": "Check the quantities.",
+        "bad_price": "Check the prices.",
+        "bad_amount": "Check the amount.",
+        "not_enough_stock": "Not enough free stock of {product} (free: {available}).",
+        "serial_reserved": "Serial {serial} is already held by reservation #{reservation}.",
+        "serial_not_available": "This serial is not in stock at this branch.",
+        "serials_not_tracked": "This item does not track serial numbers.",
+        "too_many_serials": "More serials than units.",
+        "whole_units": "This item is sold in whole units.",
+        "method_required": "Choose how the money is paid.",
+        "method_not_money": "A deposit is real money — not Ajel or store credit.",
+        "not_open": "This reservation is already closed.",
+        "more_than_deposit": "That is more than the deposit held.",
+        "reason_required": "Write why.",
+        "outcome_required": "Choose what happens to the deposit.",
+        "shift_required": "Open your shift first — this shop sells only with an open shift."
+      },
+      "serials_for": "Serial number(s) for {name} — {n} to pick",
+      "serials_scan": "Scan or type, one per unit"
+    },
+    "money_reports": {
+      "names": {
+        "balances": "Balances on a date",
+        "movements": "Money in & out",
+        "draws": "Owner draws",
+        "amanat": "Money held for others",
+        "partners": "Partners"
+      },
+      "hint": {
+        "balances": "How much was in every box at the end of the chosen day.",
+        "movements": "Every money line in the period, grouped by what it was, by box and by day. Moves between your own boxes are not counted as money in or out.",
+        "draws": "Money you took out of your businesses (and put back), with the average per day.",
+        "amanat": "Money you hold for other people — it is in your boxes but it is not yours.",
+        "partners": "Each partner's settled profit share, money they put in, what they were paid, and what is owed now."
+      },
+      "on_date": "On",
+      "total": "Total",
+      "amanat_held": "Held for others",
+      "own_money": "Your own money",
+      "closed": "closed",
+      "money_in": "Money in",
+      "money_out": "Money out",
+      "net": "Net",
+      "by_kind": "By type",
+      "by_box": "By box",
+      "by_day": "By day",
+      "by_month": "Drawn per month",
+      "drawn": "Drawn",
+      "put_in": "Put back in",
+      "net_drawn": "Net drawn",
+      "per_day": "Per day ({n} days)",
+      "partner_balance_hint": "Owed now: positive = the business owes the partner; negative = the partner owes the business.",
+      "empty": "Nothing in this period.",
+      "err": "Could not load the report.",
+      "cols": {
+        "part": "Business",
+        "box": "Box",
+        "kind": "Type",
+        "balance": "Balance",
+        "count": "Lines",
+        "day": "Day",
+        "month": "Month",
+        "held_for": "Held for",
+        "opened_on": "Since",
+        "received": "Received",
+        "returned": "Given back",
+        "held": "Held now",
+        "partner": "Partner",
+        "share": "Share",
+        "settled": "Profit share",
+        "partner_put_in": "Put in",
+        "paid": "Paid to them",
+        "balance_now": "Owed now"
       }
     }
   },
@@ -2907,7 +3076,11 @@
       "owner_level_info_off": "Off: the Treasury works exactly as before. Nothing is deleted — turn it back on and everything is still there.",
       "owner_level_needs_treasury": "Turn the Treasury on first — the owner level works on top of it.",
       "owner_level_on_note": "Press Save to turn it on — your personal part will be made.",
-      "confirm_treasury_owner_level": "Turn the owner level off? \"My money\" is hidden until you turn it back on. Nothing is deleted."
+      "confirm_treasury_owner_level": "Turn the owner level off? \"My money\" is hidden until you turn it back on. Nothing is deleted.",
+      "reservations_title": "Reservations with a deposit",
+      "reservations_desc": "Hold items for a customer who paid part of the price; turn it into a sale later, or cancel.",
+      "reservations_info_on": "On: Finance → Reservations appears. Held items stay on the stock count but nobody else can sell them; the deposit is real money in the drawer or box.",
+      "reservations_info_off": "Off: the menu entry is hidden and no new reservation can be made. Open reservations keep holding their items and can still be finished."
     },
     "policies": {
       "title": "Business Policies",

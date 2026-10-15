@@ -123,6 +123,9 @@
         <AppPagination v-if="incomes.length > incPageSize" :page="incPage" :page-size="incPageSize" :total="incomes.length" @update:page="p => (incPage = p)" />
       </div>
 
+      <!-- ══ TAB: Reports (Wave 3) ══ -->
+      <MoneyReports v-if="activeTab === 'reports'" scope="shop" />
+
       <!-- ══ TAB: Income categories ══ -->
       <div v-if="activeTab === 'categories'">
         <div class="tr-cat-head">
@@ -255,7 +258,9 @@ import { useI18n } from 'vue-i18n'
 import {
   Plus, Pencil, Trash2, ArrowRightLeft, HandCoins, ClipboardCheck, Vault, Wallet, Landmark, Smartphone,
   PiggyBank, Lock, Banknote, Inbox, Tags, Coins,
+  FileBarChart,
 } from 'lucide-vue-next'
+import MoneyReports from './owner/MoneyReports.vue'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
@@ -277,6 +282,7 @@ const tabs = [
   { id: 'boxes',      icon: Vault },
   { id: 'income',     icon: Coins },
   { id: 'categories', icon: Tags },
+  { id: 'reports',    icon: FileBarChart },   // s172 Wave 3
 ]
 const activeTab = ref('boxes')
 function setTab(id) {

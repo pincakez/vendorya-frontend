@@ -42,6 +42,7 @@
       <OwnerAmanat v-else-if="activeTab === 'amanat'" :parts="parts" @changed="reload" />
       <OwnerPartners v-else-if="activeTab === 'partners'" :parts="parts" @changed="reload" />
       <OwnerPnl v-else-if="activeTab === 'pnl'" :parts="parts" />
+      <MoneyReports v-else-if="activeTab === 'reports'" scope="owner" />
     </template>
 
     <!-- ══ MODAL: New business / rename or close a business ══ -->
@@ -104,6 +105,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import {
   Plus, Briefcase, ArrowRightLeft, PiggyBank, UserX, LayoutGrid, Coins, HandCoins, Users, BarChart3, Lock,
+  FileBarChart,
 } from 'lucide-vue-next'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -122,6 +124,7 @@ import OwnerLoans from './owner/OwnerLoans.vue'
 import OwnerAmanat from './owner/OwnerAmanat.vue'
 import OwnerPartners from './owner/OwnerPartners.vue'
 import OwnerPnl from './owner/OwnerPnl.vue'
+import MoneyReports from './owner/MoneyReports.vue'
 import './owner/owner.css'
 
 const { t } = useI18n()
@@ -139,6 +142,7 @@ const tabs = [
   { id: 'amanat',   icon: Lock },
   { id: 'partners', icon: Users },
   { id: 'pnl',      icon: BarChart3 },
+  { id: 'reports',  icon: FileBarChart },   // s172 Wave 3
 ]
 const TAB_IDS = tabs.map(x => x.id)
 const activeTab = ref(TAB_IDS.includes(route.query.tab) ? route.query.tab : 'overview')

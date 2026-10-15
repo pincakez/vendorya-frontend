@@ -163,6 +163,7 @@ import {
   FileText, CornerDownLeft, Receipt, Clock, Wallet, Users, Truck, Briefcase,
   LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator, Sparkles,
   Library, Archive, ArrowLeftRight, ArrowDownUp, Layers, UserCircle, CreditCard, Shield, Menu, ScanBarcode, Vault, PiggyBank, Undo2, Landmark,
+  BookmarkCheck,
 } from 'lucide-vue-next'
 import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
 import { useAuthStore } from '@/stores/auth'
@@ -219,6 +220,7 @@ const NAV_ICON_MAP = {
   '/finance/returns':         CornerDownLeft,
   '/finance/expenses':        Receipt,
   '/finance/cheques':         Landmark,
+  '/finance/reservations':    BookmarkCheck,
   '/finance/shifts':          Clock,
   '/finance/cash-drawer':     Wallet,
   '/finance/treasury':        Vault,
@@ -263,6 +265,7 @@ const PAGES = computed(() => [
   { label: t('nav.items.sales_invoices'),   path: '/finance/invoices',        group: t('nav.groups.finance'),   icon: FileText,        kw: 'invoice sale receipt order customer' },
   { label: t('nav.items.returns'),          path: '/finance/returns',         group: t('nav.groups.finance'),   icon: CornerDownLeft,  kw: 'refund return exchange cancel' },
   { label: t('nav.items.expenses'),         path: '/finance/expenses',        group: t('nav.groups.finance'),   icon: Receipt,         kw: 'cost spending overhead bills' },
+  { label: t('nav.items.reservations'),     path: '/finance/reservations',    group: t('nav.groups.finance'),   icon: BookmarkCheck,   kw: 'reservation reserve hold deposit layaway حجز عربون' },
   { label: t('nav.items.cheques'),          path: '/finance/cheques',         group: t('nav.groups.finance'),   icon: Landmark,        kw: 'cheque check bank due date bounced شيك شيكات' },
   { label: t('nav.items.shifts'),           path: '/finance/shifts',          group: t('nav.groups.finance'),   icon: Clock,           kw: 'open close shift daily session cash' },
   { label: t('nav.items.cash_drawer'),      path: '/finance/cash-drawer',     group: t('nav.groups.finance'),   icon: Wallet,          kw: 'drawer float cash in out' },
