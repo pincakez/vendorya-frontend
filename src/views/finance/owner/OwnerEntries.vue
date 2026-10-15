@@ -3,6 +3,8 @@
     <div class="om-toolbar">
       <div class="om-toolbar-left">
         <BaseSelect v-model="partFilter" :options="filterOptions" :label="t('finance.owner.f.part')" />
+        <BaseInput v-model="dateFrom" type="date" :label="t('finance.owner.f.date_from')" />
+        <BaseInput v-model="dateTo" type="date" :label="t('finance.owner.f.date_to')" />
       </div>
       <BaseButton :disabled="!entryParts.length" @click="openNew"><Plus :size="14" /> {{ t('finance.owner.entries.new') }}</BaseButton>
     </div>
@@ -142,10 +144,18 @@ const knownCategories = computed(() => [...new Set(rows.value
   .filter(e => e.direction === modal.direction && e.category).map(e => e.category))].sort())
 watch(partFilter, () => { page.value = 1 })
 
+// A date range (this year by default) — never the owner's whole history in one go.
+const dateFrom = ref(`${new Date().getFullYear()}-01-01`)
+const dateTo = ref(localISO())
+watch([dateFrom, dateTo], () => { page.value = 1; load() })
+
 async function load() {
   loading.value = true
   loadError.value = ''
-  try { rows.value = await getList('entries/') } catch (e) {
+  const params = {}
+  if (dateFrom.value) params.date_from = dateFrom.value
+  if (dateTo.value) params.date_to = dateTo.value
+  try { rows.value = await getList('entries/', params) } catch (e) {
     rows.value = []
     loadError.value = treasuryError(t, e, t('finance.owner.err_load'))
   } finally { loading.value = false }

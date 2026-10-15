@@ -1188,7 +1188,11 @@
         "already_cancelled": "This settlement is already cancelled.",
         "bad_dates": "The dates are not valid — is the end before the start?",
         "name_required": "Write a name.",
-        "bad_direction": "Choose the direction."
+        "bad_direction": "Choose the direction.",
+        "part_business_only": "Only a business can be added here — the shop and personal money are made for you.",
+        "part_fixed": "This part is fixed — a shop carries its own name, and personal money cannot be closed.",
+        "drawer_needs_shop": "A till drawer belongs to a shop and one of its branches.",
+        "entries_not_for_shop": "A shop records its income and spending on the Sales and Expenses screens — not here."
       }
     },
     "owner": {

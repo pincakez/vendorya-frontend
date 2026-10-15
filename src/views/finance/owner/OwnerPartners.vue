@@ -194,7 +194,7 @@
             <div class="om-summary-row"><span>{{ t('finance.owner.partners.period') }}</span><span>{{ fmtDay(se.preview.date_from) }} → {{ fmtDay(se.preview.date_to) }}</span></div>
             <div class="om-summary-row"><span>{{ t('finance.owner.partners.profit') }}</span><span :class="{ 'om-neg': Number(se.preview.profit) < 0 }"><Money :value="se.preview.profit ?? 0" /></span></div>
             <div class="om-summary-row"><span>{{ t('finance.owner.partners.owner_only_exp') }}</span><span><Money :value="se.preview.owner_only_expenses ?? 0" /></span></div>
-            <div class="om-summary-row om-summary-row--total"><span>{{ t('finance.owner.partners.base') }}</span><span><Money :value="Number(se.preview.profit || 0) + Number(se.preview.owner_only_expenses || 0)" /></span></div>
+            <div class="om-summary-row om-summary-row--total"><span>{{ t('finance.owner.partners.base') }}</span><span><Money :value="se.preview.base ?? 0" /></span></div>
           </div>
           <SettlementLines :lines="se.preview.lines || []" />
           <p v-if="Number(se.preview.profit) < 0" class="om-help" style="margin:0">{{ t('finance.owner.partners.loss_hint') }}</p>
@@ -366,19 +366,25 @@ async function openStatement(p) {
     sm.data = r.data
   } catch (e) { sm.error = treasuryError(t, e, t('finance.owner.err_load')) } finally { sm.loading = false }
 }
-function stmtKind(k) { return ['SETTLEMENT', 'PUT_IN', 'PAID'].includes(k) ? t('finance.owner.partners.stmt_kinds.' + k) : (k || '') }
+function stmtKind(k) {
+  if (['SETTLEMENT', 'PUT_IN', 'PAID'].includes(k)) return t('finance.owner.partners.stmt_kinds.' + k)
+  if (k === 'REVERSAL') return t('finance.treasury.move_kinds.REVERSAL')
+  return k || ''
+}
+// Settlement rows → their period; money rows → the box the money moved through.
 function refLabel(ref) {
   if (!ref) return ''
   if (typeof ref === 'string') return ref
-  return ref.label || ''
+  if (ref.type === 'settlement' && ref.date_from) return `${fmtDay(ref.date_from)} → ${fmtDay(ref.date_to)}`
+  return ref.box_name || ref.label || ''
 }
 
 // ── Settle a period ──
-// The newest month that is fully over (a settlement can't end in the future — `settlement_future`).
+// The newest month that is fully over = last month (the server refuses a period ending today or later —
+// `settlement_future`: today's later sales would miss the split).
 const maxMonth = computed(() => {
   const d = new Date()
-  const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
-  const m = d.getDate() === last ? d : new Date(d.getFullYear(), d.getMonth() - 1, 1)
+  const m = new Date(d.getFullYear(), d.getMonth() - 1, 1)
   return `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`
 })
 const se = reactive({ open: false, month: '', preview: null, loading: false, saving: false, error: '' })
