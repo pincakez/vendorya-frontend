@@ -229,6 +229,58 @@
             <label class="form-label">{{ t('people.pfm.notes') }}</label>
             <textarea v-model="modal.notes" class="form-input" rows="2" :placeholder="t('people.pfm.notes_ph')" />
           </div>
+          <div class="pfm-2col">
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.customer_form.phone_2') }}</label>
+              <input v-model="modal.phone_2" class="form-input" placeholder="e.g. 01112345678" />
+            </div>
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.customer_form.tax_number') }}</label>
+              <input v-model="modal.tax_number" class="form-input" />
+            </div>
+          </div>
+          <div class="pfm-row">
+            <label class="form-label">{{ t('people.customer_form.address') }}</label>
+            <input v-model="modal.address" class="form-input" />
+          </div>
+          <!-- s171: personal data (national ID + guarantor) — managers and up; the server hides it from cashiers -->
+          <template v-if="canSetOpening">
+            <div class="pfm-row">
+              <label class="form-label">{{ t('people.customer_form.national_id') }}</label>
+              <input v-model="modal.national_id" class="form-input" inputmode="numeric" />
+            </div>
+            <div class="pfm-sub">{{ t('people.customer_form.guarantor') }}</div>
+            <div class="pfm-2col">
+              <div class="pfm-row">
+                <label class="form-label">{{ t('people.customer_form.guarantor_name') }}</label>
+                <input v-model="modal.guarantor_name" class="form-input" />
+              </div>
+              <div class="pfm-row">
+                <label class="form-label">{{ t('people.customer_form.national_id') }}</label>
+                <input v-model="modal.guarantor_national_id" class="form-input" inputmode="numeric" />
+              </div>
+            </div>
+            <div class="pfm-2col">
+              <div class="pfm-row">
+                <label class="form-label">{{ t('people.customer_form.phone_label') }}</label>
+                <input v-model="modal.guarantor_phone" class="form-input" />
+              </div>
+              <div class="pfm-row">
+                <label class="form-label">{{ t('people.customer_form.phone_2') }}</label>
+                <input v-model="modal.guarantor_phone_2" class="form-input" />
+              </div>
+            </div>
+            <div class="pfm-2col">
+              <div class="pfm-row">
+                <label class="form-label">{{ t('people.customer_form.guarantor_work') }}</label>
+                <input v-model="modal.guarantor_work" class="form-input" />
+              </div>
+              <div class="pfm-row">
+                <label class="form-label">{{ t('people.customer_form.address') }}</label>
+                <input v-model="modal.guarantor_address" class="form-input" />
+              </div>
+            </div>
+          </template>
           <div v-if="canSetOpening" class="pfm-row">
             <label class="form-label">{{ t('people.customer_form.credit_limit_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
             <input v-model.number="modal.credit_limit" type="number" min="0" step="100" class="form-input" style="max-width:160px;" placeholder="0" />
@@ -489,8 +541,12 @@ const _custDefaults = () => ({
   name: '', phone_number: '', email: '',
   whatsapp_number: '', instagram: '', website: '',
   country: 'Egypt', city: '', notes: '', credit_limit: null, opening_balance: '',
+  phone_2: '', address: '', tax_number: '', national_id: '', guarantor_name: '', guarantor_national_id: '', guarantor_phone: '', guarantor_phone_2: '', guarantor_work: '', guarantor_address: '',
   errorMsg: '',
 })
+// s171: extra customer fields — EXTRA for everyone, PRIVATE (national ID + guarantor) for managers and up only.
+const CUST_EXTRA = ['phone_2', 'address', 'tax_number']
+const CUST_PRIVATE = ['national_id', 'guarantor_name', 'guarantor_national_id', 'guarantor_phone', 'guarantor_phone_2', 'guarantor_work', 'guarantor_address']
 const modal = reactive(_custDefaults())
 
 function openNew() {
@@ -512,6 +568,7 @@ function openEdit(c) {
   modal.notes         = c.notes         || ''
   modal.credit_limit  = c.credit_limit  || null
   modal.opening_balance = Number(c.opening_balance) ? c.opening_balance : ''
+  for (const k of [...CUST_EXTRA, ...CUST_PRIVATE]) modal[k] = c[k] || ''
   if (modal.opening_balance) modal.expanded = true
 }
 function closeModal() { modal.open = false }
@@ -535,6 +592,9 @@ async function saveCustomer() {
       // Opening balance (s167) + credit limit (2026-10-14): managers and up only — the server refuses a
       // cashier who changes either, so a cashier's form leaves both out (and they stay as they are).
       ...(canSetOpening.value ? { opening_balance: modal.opening_balance || 0, credit_limit: modal.credit_limit || null } : {}),
+      ...Object.fromEntries(CUST_EXTRA.map(k => [k, modal[k].trim()])),
+      // a cashier never sees the personal fields, so their save must never send (and blank) them
+      ...(canSetOpening.value ? Object.fromEntries(CUST_PRIVATE.map(k => [k, modal[k].trim()])) : {}),
     }
     if (isEdit) {
       await api.patch(`/api/auth/customers/${modal.id}/`, payload)
@@ -634,4 +694,5 @@ onMounted(() => { loadLayout() })
   box-shadow: 0 8px 28px rgba(0,0,0,.18); white-space: nowrap;
   transform: rotate(-2deg) scale(1.04); transition: none;
 }
+.pfm-sub { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); margin-top: 6px; }
 </style>

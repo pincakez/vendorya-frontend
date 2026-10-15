@@ -66,6 +66,50 @@
             <label class="form-label">{{ t('people.pfm.city') }}</label>
             <input v-model="form.city" class="form-input" placeholder="Cairo" />
           </div>
+          <div class="modal-field">
+            <label class="form-label">{{ t('people.customer_form.phone_2') }}</label>
+            <input v-model="form.phone_2" class="form-input" placeholder="e.g. 01112345678" />
+          </div>
+          <div class="modal-field">
+            <label class="form-label">{{ t('people.customer_form.tax_number') }}</label>
+            <input v-model="form.tax_number" class="form-input" />
+          </div>
+          <div class="modal-field modal-span-2">
+            <label class="form-label">{{ t('people.customer_form.address') }}</label>
+            <input v-model="form.address" class="form-input" />
+          </div>
+          <!-- s171: personal data (national ID + guarantor) — managers and up; the server hides it from cashiers -->
+          <template v-if="canSetCredit">
+            <div class="modal-field">
+              <label class="form-label">{{ t('people.customer_form.national_id') }}</label>
+              <input v-model="form.national_id" class="form-input" inputmode="numeric" />
+            </div>
+            <div class="modal-field modal-span-2 pfm-sub">{{ t('people.customer_form.guarantor') }}</div>
+            <div class="modal-field">
+              <label class="form-label">{{ t('people.customer_form.guarantor_name') }}</label>
+              <input v-model="form.guarantor_name" class="form-input" />
+            </div>
+            <div class="modal-field">
+              <label class="form-label">{{ t('people.customer_form.national_id') }}</label>
+              <input v-model="form.guarantor_national_id" class="form-input" inputmode="numeric" />
+            </div>
+            <div class="modal-field">
+              <label class="form-label">{{ t('people.customer_form.phone_label') }}</label>
+              <input v-model="form.guarantor_phone" class="form-input" />
+            </div>
+            <div class="modal-field">
+              <label class="form-label">{{ t('people.customer_form.phone_2') }}</label>
+              <input v-model="form.guarantor_phone_2" class="form-input" />
+            </div>
+            <div class="modal-field">
+              <label class="form-label">{{ t('people.customer_form.guarantor_work') }}</label>
+              <input v-model="form.guarantor_work" class="form-input" />
+            </div>
+            <div class="modal-field">
+              <label class="form-label">{{ t('people.customer_form.address') }}</label>
+              <input v-model="form.guarantor_address" class="form-input" />
+            </div>
+          </template>
           <div v-if="canSetCredit" class="modal-field">
             <label class="form-label">{{ t('people.customer_form.credit_limit_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
             <input v-model.number="form.credit_limit" type="number" min="0" step="100" class="form-input" placeholder="0" />
@@ -134,7 +178,10 @@ const form = reactive({
   whatsapp_number: '', instagram: '', website: '',
   country: 'Egypt', city: '', notes: '',
   gender: 'MALE', credit_limit: null,
+  phone_2: '', address: '', tax_number: '', national_id: '', guarantor_name: '', guarantor_national_id: '', guarantor_phone: '', guarantor_phone_2: '', guarantor_work: '', guarantor_address: '',
 })
+const EXTRA_FIELDS = ['phone_2', 'address', 'tax_number']            // everyone
+const PRIVATE_FIELDS = ['national_id', 'guarantor_name', 'guarantor_national_id', 'guarantor_phone', 'guarantor_phone_2', 'guarantor_work', 'guarantor_address']   // MANAGER+ (s171)
 
 watch(() => props.open, (val) => {
   if (!val) return
@@ -146,6 +193,7 @@ watch(() => props.open, (val) => {
     website: '', country: 'Egypt', city: '', notes: '',
     gender: 'MALE', credit_limit: null,
   })
+  for (const k of [...EXTRA_FIELDS, ...PRIVATE_FIELDS]) form[k] = ''
   customer.value = null
   receiveOpen.value = false
   if (props.customerId) loadCustomer()
@@ -165,6 +213,7 @@ async function loadCustomer() {
       country: data.country || '', city: data.city || '', notes: data.notes || '',
       gender: data.gender || 'MALE', credit_limit: data.credit_limit ?? null,
     })
+    for (const k of [...EXTRA_FIELDS, ...PRIVATE_FIELDS]) form[k] = data[k] || ''
   } catch {
     errorMsg.value = t('people.customer_form.err_load')
   }
@@ -198,6 +247,9 @@ async function save() {
     city:            form.city.trim(),
     // Credit limit: managers and up only (2026-10-14) — the server refuses a cashier who sets one.
     ...(canSetCredit.value ? { credit_limit: form.credit_limit || null } : {}),
+    ...Object.fromEntries(EXTRA_FIELDS.map(k => [k, form[k].trim()])),
+    // Personal fields: only a manager+ sees them, so only a manager+ sends them (a cashier's save must never blank them).
+    ...(canSetCredit.value ? Object.fromEntries(PRIVATE_FIELDS.map(k => [k, form[k].trim()])) : {}),
   }
   try {
     let res
@@ -236,6 +288,7 @@ async function save() {
   transition: opacity 120ms;
 }
 .pfm-expand-btn:hover { opacity: .75; }
+.pfm-sub { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); margin-top: 6px; }
 .pfm-chev { transition: transform 220ms ease; flex-shrink: 0; }
 .pfm-chev.open { transform: rotate(180deg); }
 </style>

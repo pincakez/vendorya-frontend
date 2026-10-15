@@ -2134,7 +2134,14 @@
       "save_changes": "Save Changes",
       "add_customer": "Add Customer",
       "opening_label": "Opening balance (what they owed before Vendorya)",
-      "opening_hint": "Debt carried over from your old system. Use a minus sign if you owed them."
+      "opening_hint": "Debt carried over from your old system. Use a minus sign if you owed them.",
+      "phone_2": "Second phone",
+      "tax_number": "Tax number",
+      "address": "Address",
+      "national_id": "National ID",
+      "guarantor": "Guarantor",
+      "guarantor_name": "Guarantor name",
+      "guarantor_work": "Work"
     }
   },
   "reports": {
