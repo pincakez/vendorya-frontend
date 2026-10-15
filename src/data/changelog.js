@@ -12,6 +12,111 @@
 
 export const changelog = [
   {
+    version: '1.57.0',
+    date: '2026-10-15',
+    tag: 'New',
+    en: {
+      title: 'Cheques with due dates',
+      points: [
+        'A new page, Finance → Cheques: record cheques you received from customers or gave to suppliers, with the bank, number and due date.',
+        'A waiting cheque changes no balance. When it clears, it is recorded as a normal payment (the customer owes less, or you owe the supplier less).',
+        'If a cleared cheque bounces, mark it — the payment is cancelled and the debt comes back. A cheque typed by mistake can be cancelled.',
+        'A reminder at the top of the page shows the cheques that are late or due this week, with their totals.',
+      ],
+    },
+    ar: {
+      title: 'الشيكات بتواريخ استحقاقها',
+      points: [
+        'صفحة جديدة، المالية ← الشيكات: سجّل الشيكات اللي استلمتها من عملاء أو اديتها لموردين، بالبنك والرقم وتاريخ الاستحقاق.',
+        'الشيك المنتظر مش بيغيّر أي رصيد. لما يتصرف بيتسجل دفعة عادية (العميل عليه أقل، أو إنت عليك للمورّد أقل).',
+        'لو شيك اتصرف ورجع، علّمه راجع — الدفعة بتتلغي والدين بيرجع. والشيك اللي اتكتب غلط ينفع يتلغي.',
+        'تنبيه فوق الصفحة بيوريك الشيكات المتأخرة أو المستحقة الأسبوع ده، بإجمالياتها.',
+      ],
+    },
+  },
+  {
+    version: '1.56.0',
+    date: '2026-10-15',
+    tag: 'New',
+    en: {
+      title: 'Return goods to a supplier',
+      points: [
+        'On a received purchase, press "Return to supplier", choose what goes back (laptops by their serial number), and save.',
+        'The goods leave your stock and what you owe that supplier goes down. You can never send back more than you bought on that purchase.',
+        'If the supplier hands you money back, record it — it goes into the box you choose.',
+        'A new page, Inventory → Supplier Returns, lists every return. A mistake is voided (stock and amounts go back), never deleted.',
+      ],
+    },
+    ar: {
+      title: 'رجّع بضاعة للمورّد',
+      points: [
+        'في فاتورة شراء مستلمة، دوس "مرتجع للمورّد"، اختار اللي هيرجع (اللابتوبات برقم السيريال بتاعها)، واحفظ.',
+        'البضاعة بتخرج من مخزنك واللي عليك للمورّد ده بيقل. ومينفعش ترجّع أكتر من اللي اشتريته في الفاتورة دي.',
+        'لو المورّد رجّعلك فلوس، سجّلها — بتدخل في الصندوق اللي تختاره.',
+        'صفحة جديدة، المخزون ← مرتجعات الموردين، فيها كل المرتجعات. الغلطة بتتلغي (البضاعة والمبالغ بترجع)، عمرها ما بتتمسح.',
+      ],
+    },
+  },
+  {
+    version: '1.55.1',
+    date: '2026-10-15',
+    tag: 'Fixed',
+    en: {
+      title: 'The payables report now counts what you already paid',
+      points: [
+        'The "money you owe suppliers" (A/P aging) report showed full purchase totals even after you paid. It now takes off your payments and returns, oldest purchase first — the same total as the suppliers list.',
+        'Clicking a row in the Serial Lookup list opens that unit again.',
+      ],
+    },
+    ar: {
+      title: 'تقرير اللي عليك للموردين بقى بيحسب اللي دفعته',
+      points: [
+        'تقرير "اللي عليك للموردين" كان بيوري إجمالي الفواتير كامل حتى بعد ما تدفع. دلوقتي بيخصم دفعاتك والمرتجعات، من أقدم فاتورة — نفس الإجمالي اللي في قايمة الموردين.',
+        'الضغط على سطر في صفحة البحث بالسيريال بقى بيفتح الوحدة تاني.',
+      ],
+    },
+  },
+  {
+    version: '1.55.0',
+    date: '2026-10-15',
+    tag: 'Improved',
+    en: {
+      title: 'Who sold it',
+      points: [
+        'Every sale now remembers who sold it (the person signed in), shown on the invoice as "Sold by".',
+        'The Cashier performance report shows what each person sold next to the money they took at the till.',
+      ],
+    },
+    ar: {
+      title: 'مين اللي باع',
+      points: [
+        'كل بيعة بقت بتفتكر مين اللي باعها (اللي داخل بحسابه)، وبتظهر في الفاتورة "البايع".',
+        'تقرير أداء الكاشيرية بقى بيوري اللي كل واحد باعه جنب الفلوس اللي استلمها على الكاشير.',
+      ],
+    },
+  },
+  {
+    version: '1.54.0',
+    date: '2026-10-15',
+    tag: 'Improved',
+    en: {
+      title: 'More customer details: second phone, national ID, guarantor',
+      points: [
+        'A customer can now have a second phone, an address and a tax number — and search finds them by the second phone too.',
+        'For customers who buy on credit: national ID and a guarantor (name, ID, phones, work, address).',
+        'National ID and guarantor details are personal: cashiers never see them, only managers and up.',
+      ],
+    },
+    ar: {
+      title: 'بيانات أكتر للعميل: تليفون تاني، رقم قومي، ضامن',
+      points: [
+        'العميل بقى ينفع يبقى ليه تليفون تاني وعنوان ورقم ضريبي — والبحث بيلاقيه بالتليفون التاني كمان.',
+        'للعملاء اللي بيشتروا آجل: الرقم القومي وضامن (الاسم، الرقم القومي، التليفونات، الشغل، العنوان).',
+        'الرقم القومي وبيانات الضامن بيانات شخصية: الكاشير عمره ما بيشوفها، المدير واللي فوقه بس.',
+      ],
+    },
+  },
+  {
     version: '1.53.2',
     date: '2026-10-15',
     tag: 'Fixed',
