@@ -139,7 +139,7 @@ import {
   ChevronDown, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight,
   Building2, KeyRound, Trash2, Wrench, ShieldCheck, Star, Keyboard, ArrowDownUp,
   BarChart2, LayoutGrid, Terminal, AlertTriangle, Palette, Archive, Sparkles, CalendarClock,
-  Library, Barcode, ScanBarcode, Vault,
+  Library, Barcode, ScanBarcode, Vault, PiggyBank,
 } from 'lucide-vue-next'
 
 const props = defineProps({ collapsed: Boolean, admin: Boolean })
@@ -199,6 +199,7 @@ const groups = computed(() => [
     { label: t('nav.items.shifts'),         to: '/finance/shifts',       icon: Clock },
     { label: t('nav.items.cash_drawer'),    to: '/finance/cash-drawer',  icon: Wallet },
     { label: t('nav.items.treasury'),       to: '/finance/treasury',     icon: Vault },   // s169c: only when the Treasury switch is on (canOpen)
+    { label: t('nav.items.my_money'),       to: '/finance/my-money',     icon: PiggyBank },   // s170: owner level on + this login is the owner (canOpen)
   ] },
   { id: 'reports', title: t('nav.groups.reports'), icon: LineChart, items: [
     { label: t('nav.items.sales'),         to: '/reports/sales',        icon: LineChart },

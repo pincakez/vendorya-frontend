@@ -229,6 +229,7 @@
       <p class="cg-ref-note">
         Canonical dropdown. Props: <code>modelValue</code> (v-model) · <code>options</code> <code>[{value, label}]</code> ·
         <code>label</code> · <code>placeholder</code> · <code>error</code> · <code>disabled</code>.
+        An option may carry <code>group</code> → the options render inside <code>&lt;optgroup&gt;</code> headings.
         Extra attributes pass through via <code>$attrs</code>.
       </p>
       <div class="cg-grid">
@@ -252,6 +253,17 @@
             />
           </div>
           <code class="cg-code">placeholder (unselected)</code>
+        </div>
+        <div class="cg-item">
+          <div class="cg-demo" style="width:220px">
+            <BaseSelect
+              label="Box"
+              model-value=""
+              placeholder="Choose a box…"
+              :options="[{value:'a',label:'Main drawer',group:'Shop'},{value:'b',label:'Office safe',group:'Shop'},{value:'c',label:'Home cash',group:'Personal'}]"
+            />
+          </div>
+          <code class="cg-code">options[].group → optgroup</code>
         </div>
         <div class="cg-item">
           <div class="cg-demo" style="width:220px">

@@ -190,6 +190,40 @@
         </div>
       </div>
 
+      <!-- Owner level (Treasury Wave 2, s170) — a SECOND switch that rides on the Treasury: other businesses + personal
+           money, seen only by the owner. Disabled while the Treasury is off (the server answers `treasury_off`). -->
+      <div class="cap-card" :class="{ 'cap-card--off': !form.treasury_enabled }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><PiggyBank :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.owner_level_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='owner_level' }" @click="toggleInfo('owner_level')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.owner_level_desc') }}</div>
+          <div v-if="openInfo==='owner_level'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.owner_level_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.owner_level_info_private') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.owner_level_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.treasury_enabled && form.treasury_owner_level ? 'status-on' : 'status-off'">
+              {{ form.treasury_enabled && form.treasury_owner_level ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.treasury_enabled && form.treasury_owner_level }" :disabled="!form.treasury_enabled"
+                    :title="!form.treasury_enabled ? t('settings.capabilities.owner_level_needs_treasury') : ''"
+                    @click="requestToggle('treasury_owner_level', true)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+          <div v-if="!form.treasury_enabled" class="sub-block">
+            <div class="sub-muted">{{ t('settings.capabilities.owner_level_needs_treasury') }}</div>
+          </div>
+          <div v-else-if="form.treasury_owner_level && !ownerLevelWasOn" class="sub-block">
+            <div class="sub-muted">{{ t('settings.capabilities.owner_level_on_note') }}</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Search & Autocomplete -->
       <div class="cap-card">
         <div class="cap-icon" style="background:#ede9fe;color:#7c3aed;"><Search :size="20" /></div>
@@ -254,7 +288,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault } from 'lucide-vue-next'
+import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault, PiggyBank } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
@@ -285,9 +319,11 @@ const form = reactive({
   autocomplete_source:     'memory_base',
   mb_auto_register:        true,
   treasury_enabled:        false,
+  treasury_owner_level:    false,
 })
 // What the server had when the page loaded — the "boxes are made when you save" note shows only on a fresh switch-on.
 const treasuryWasOn = ref(false)
+const ownerLevelWasOn = ref(false)
 
 // Switch → translation key for its store-type label
 const storeTypeLabel = computed(() => t(`settings.capabilities.types.${storeType.value}`))
@@ -349,16 +385,29 @@ async function load() {
       autocomplete_source:     settingsRes.data.autocomplete_source || 'memory_base',
       mb_auto_register:        settingsRes.data.mb_auto_register ?? true,
       treasury_enabled:        !!settingsRes.data.treasury_enabled,
+      treasury_owner_level:    !!settingsRes.data.treasury_owner_level,
     })
     treasuryWasOn.value = !!settingsRes.data.treasury_enabled
+    ownerLevelWasOn.value = !!settingsRes.data.treasury_owner_level
   } finally { loading.value = false }
+}
+
+// "My money" shows only when this login IS the owner (settings `treasury_is_owner`). Take it from the save answer when
+// the server sends it there, else read the settings once more (turning the owner level on makes the personal part).
+async function refreshIsOwner(data) {
+  if (data && data.treasury_is_owner !== undefined) { fmt.apply({ treasury_is_owner: data.treasury_is_owner }); return }
+  try {
+    const r = await api.get('/api/core/settings/')
+    fmt.apply({ treasury_owner_level: !!r.data?.treasury_owner_level, treasury_is_owner: !!r.data?.treasury_is_owner })
+  } catch { /* keep what we have */ }
 }
 
 async function save() {
   saving.value = true
   saved.value  = false
+  let res = null
   try {
-    await api.patch('/api/core/settings/', {
+    res = await api.patch('/api/core/settings/', {
       multi_unit_enabled:      form.multi_unit_enabled,
       unit_tier_names:         form.unit_tier_names,
       base_unit_name:          form.base_unit_name || 'Unit',
@@ -372,16 +421,21 @@ async function save() {
       autocomplete_source:     form.autocomplete_source,
       mb_auto_register:        form.mb_auto_register,
       treasury_enabled:        form.treasury_enabled,
+      treasury_owner_level:    form.treasury_owner_level,
     })
-    fmt.apply({ default_weight_unit: form.default_weight_unit, treasury_enabled: form.treasury_enabled })
+    fmt.apply({ default_weight_unit: form.default_weight_unit, treasury_enabled: form.treasury_enabled, treasury_owner_level: form.treasury_owner_level })
     treasuryWasOn.value = form.treasury_enabled
+    ownerLevelWasOn.value = form.treasury_owner_level
+    refreshIsOwner(res?.data)
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
     const data = e.response?.data
-    // Nothing was saved — put the Treasury switch back to what the server still has (e.g. `shifts_open`).
+    // Nothing was saved — put both Treasury switches back to what the server still has (e.g. `shifts_open`, `treasury_off`).
     form.treasury_enabled = treasuryWasOn.value
-    if (data?.code) showErrorToast(treasuryError(t, e, t('settings.policies.err_save')), 4000)
+    form.treasury_owner_level = ownerLevelWasOn.value
+    if (data?.code === 'treasury_off') showErrorToast(t('settings.capabilities.owner_level_needs_treasury'), 4000)
+    else if (data?.code) showErrorToast(treasuryError(t, e, t('settings.policies.err_save')), 4000)
     else alert(data ? (typeof data === 'string' ? data : JSON.stringify(data)) : t('settings.policies.err_save'))
   } finally { saving.value = false }
 }
@@ -426,6 +480,8 @@ onMounted(load)
 
 .toggle-btn  { width:44px; height:24px; border-radius:12px; border:none; background:var(--border); cursor:pointer; position:relative; transition:background 200ms; padding:0; flex-shrink:0; }
 .toggle-btn.on { background:var(--accent); }
+.toggle-btn:disabled { cursor:not-allowed; opacity:.5; }
+.cap-card--off .cap-desc { opacity:.75; }
 .toggle-knob { position:absolute; width:18px; height:18px; border-radius:50%; background:#fff; top:3px; left:3px; transition:left 200ms; box-shadow:0 1px 3px rgba(0,0,0,.2); }
 .toggle-btn.on .toggle-knob { left:23px; }
 
