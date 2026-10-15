@@ -12,6 +12,46 @@
 
 export const changelog = [
   {
+    version: '1.59.2',
+    date: '2026-10-15',
+    tag: 'Improved',
+    en: {
+      title: 'Clearer money box statements',
+      points: [
+        'The Type column shows the full name now — "Opening balance" is no longer cut off.',
+        'Who made each line is shown on its own small line under the note (and as its own column in the CSV), instead of being mixed into the note.',
+      ],
+    },
+    ar: {
+      title: 'كشف حساب الصندوق أوضح',
+      points: [
+        'عمود النوع بيظهر الاسم كامل — "رصيد افتتاحي" مبقاش بيتقطع.',
+        'اسم اللي عمل كل سطر بقى في سطر صغير لوحده تحت البيان (وعمود لوحده في ملف CSV)، بدل ما كان متلخبط مع البيان.',
+      ],
+    },
+  },
+  {
+    version: '1.59.1',
+    date: '2026-10-15',
+    tag: 'Improved',
+    en: {
+      title: 'One customer form everywhere',
+      points: [
+        'Adding or editing a customer from the Customers page now uses the same form as the till — every field is in the same place on both.',
+        'Editing a customer from the Customers page now shows their balance, with a Receive payment button for managers.',
+        'Managers can still set a customer\'s opening balance and credit limit in the form (under More details).',
+      ],
+    },
+    ar: {
+      title: 'فورم عميل واحد في كل مكان',
+      points: [
+        'إضافة أو تعديل عميل من صفحة العملاء بقت بنفس الفورم بتاع الكاشير — كل خانة في نفس مكانها في الاتنين.',
+        'لما تعدّل عميل من صفحة العملاء بقى بيظهر رصيده، ومعاه زرار تحصيل دفعة للمديرين.',
+        'المدير لسه يقدر يحط الرصيد الافتتاحي وحد الآجل للعميل في الفورم (تحت تفاصيل إضافية).',
+      ],
+    },
+  },
+  {
     version: '1.59.0',
     date: '2026-10-15',
     tag: 'New',
