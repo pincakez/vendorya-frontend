@@ -49,11 +49,19 @@ function csvEscape(s) {
   return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
 }
 
+// s175 security review: a TEXT cell starting with = + - @ (e.g. a customer typed as "=HYPERLINK(…)") would run as a
+// formula when the CSV is opened in Excel — an apostrophe keeps it text. Number columns are left alone (−100.00 stays a number).
+const NUMERIC_TYPES = new Set(['number', 'currency', 'qty'])
+function csvCell(value, type) {
+  const s = displayValue(value, type)
+  return !NUMERIC_TYPES.has(type) && /^[=+\-@\t\r]/.test(String(s ?? '')) ? `'${s}` : s
+}
+
 /** CSV — display strings, UTF-8 BOM so Excel opens Arabic/symbols correctly. */
 export function exportCSV(rows, columns, filename) {
   const header = columns.map(c => csvEscape(c.label)).join(',')
   const body = rows.map(r =>
-    columns.map(c => csvEscape(displayValue(r[c.key], c.type))).join(',')
+    columns.map(c => csvEscape(csvCell(r[c.key], c.type))).join(',')
   )
   const csv = '﻿' + [header, ...body].join('\r\n')
   triggerDownload(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${filename}.csv`)
