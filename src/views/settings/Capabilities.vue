@@ -312,6 +312,30 @@
         </div>
       </div>
 
+      <!-- Salesperson picker — s174 (Yakot): the till's "Sold by" list; the cashier (money) never changes. Off = the signed-in person. -->
+      <div class="cap-card">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><UserCheck :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.seller_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='seller' }" @click="toggleInfo('seller')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.seller_desc') }}</div>
+          <div v-if="openInfo==='seller'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.seller_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.seller_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.salesperson_picker_enabled ? 'status-on' : 'status-off'">
+              {{ form.salesperson_picker_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.salesperson_picker_enabled }" @click="requestToggle('salesperson_picker_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Search & Autocomplete -->
       <div class="cap-card">
         <div class="cap-icon" style="background:#ede9fe;color:#7c3aed;"><Search :size="20" /></div>
@@ -376,7 +400,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault, PiggyBank, BookmarkCheck, Landmark
+import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault, PiggyBank, BookmarkCheck, Landmark, UserCheck
 } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
@@ -415,6 +439,7 @@ const form = reactive({
   cheques_enabled:         false,
   owner_lock_enabled:      false,
   owner_unlock_minutes:    15,
+  salesperson_picker_enabled: false,
 })
 // What the server had when the page loaded — the "boxes are made when you save" note shows only on a fresh switch-on.
 const treasuryWasOn = ref(false)
@@ -485,6 +510,7 @@ async function load() {
       reservations_enabled:    !!settingsRes.data.reservations_enabled,
       payment_dues_enabled:    !!settingsRes.data.payment_dues_enabled,
       cheques_enabled:         !!settingsRes.data.cheques_enabled,
+      salesperson_picker_enabled: !!settingsRes.data.salesperson_picker_enabled,
       owner_lock_enabled:      !!settingsRes.data.owner_lock_enabled,
       owner_unlock_minutes:    settingsRes.data.owner_unlock_minutes ?? 15,
     })
@@ -527,12 +553,13 @@ async function save() {
       reservations_enabled:    form.reservations_enabled,
       payment_dues_enabled:    form.payment_dues_enabled,
       cheques_enabled:         form.cheques_enabled,
+      salesperson_picker_enabled: form.salesperson_picker_enabled,
       owner_lock_enabled:      form.owner_lock_enabled,
       owner_unlock_minutes:    form.owner_unlock_minutes,
     })
     fmt.apply({ default_weight_unit: form.default_weight_unit, treasury_enabled: form.treasury_enabled, treasury_owner_level: form.treasury_owner_level,
                 reservations_enabled: form.reservations_enabled, payment_dues_enabled: form.payment_dues_enabled,
-                cheques_enabled: form.cheques_enabled })
+                cheques_enabled: form.cheques_enabled, salesperson_picker_enabled: form.salesperson_picker_enabled })
     treasuryWasOn.value = form.treasury_enabled
     ownerLevelWasOn.value = form.treasury_owner_level
     lockWas.value = { on: form.owner_lock_enabled, minutes: form.owner_unlock_minutes }

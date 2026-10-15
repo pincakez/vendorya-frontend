@@ -169,6 +169,15 @@
             </div>
           </div>
 
+          <!-- s174: "Sold by" — who gets the credit for this sale; the cashier taking the money never changes (shop switch) -->
+          <label v-if="fmt.salespersonPickerEnabled && otherSellers.length" class="pos-seller">
+            <span class="pos-seller-label">{{ t('pos.sold_by') }}</span>
+            <select v-model="cart.salespersonId" class="pos-seller-select">
+              <option :value="null">{{ t('pos.sold_by_me') }}</option>
+              <option v-for="p in otherSellers" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select>
+          </label>
+
           <div v-if="cart.discount > 0" class="pib-discount-chip">
             − {{ fmtNum(cart.discount) }}
             <button @click="cart.setDiscount(0)"><X :size="10" /></button>
@@ -510,6 +519,7 @@ import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
 import api from '@/api/axios'
 import { formatQty, formatWeight, weightUnitLabel, isGramUnit, toBaseKg, fromBaseKg } from '@/utils/format'
 import { useAuthStore }  from '@/stores/auth'
+import { useFormatStore } from '@/stores/format'
 import { useCartStore }  from '@/stores/cart'
 import { usePosStore }   from '@/stores/pos'
 import { useUIStore }    from '@/stores/ui'
@@ -551,6 +561,15 @@ function exitToDashboard() {
   router.push('/dashboard')
 }
 const auth   = useAuthStore()
+const fmt    = useFormatStore()
+
+// s174: the "Sold by" list (this shop's staff) — only while the shop's switch is on
+const salespeople = ref([])
+const otherSellers = computed(() => salespeople.value.filter(p => p.id !== String(auth.user?.id)))
+watch(() => fmt.salespersonPickerEnabled, async (on) => {
+  if (!on) { salespeople.value = []; return }
+  try { salespeople.value = (await api.get('/api/finance/invoices/salespeople/')).data || [] } catch { salespeople.value = [] }
+}, { immediate: true })
 const cart   = useCartStore()
 const pos    = usePosStore()
 const ui     = useUIStore()
@@ -1052,6 +1071,8 @@ async function syncInvoice() {
     date:     new Date().toISOString(),
     status:   'DRAFT',
     discount: cart.invoiceDiscountAmount,
+    // s174: "Sold by" — sent only with the switch on (the server refuses someone else while it's off)
+    ...(fmt.salespersonPickerEnabled ? { salesperson: cart.salespersonId || auth.user?.id } : {}),
     items:    cart.items.map(i => ({
       variant: i.variant_id,
       unit: i.unit_id,            // null = base unit; backend freezes the factor
@@ -1075,6 +1096,7 @@ async function syncInvoice() {
 
 watch(() => cart.items.map(i => `${i.key}:${i.qty}:${i.discType || ''}:${i.discValue || 0}:${(i.serials || []).join('/')}`).join(), schedulePatch)
 watch(() => cart.customerId, schedulePatch)
+watch(() => cart.salespersonId, schedulePatch)
 watch(() => `${cart.invDiscType || ''}:${cart.invDiscValue}:${cart.additive}`, schedulePatch)
 
 function removeItem(key) {
@@ -1786,6 +1808,12 @@ function fmtNum(n) {
   display: flex; align-items: center; gap: 8px; min-width: 0;
 }
 .pos-customer-icon { color: var(--text-muted); flex-shrink: 0; }
+.pos-seller { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.pos-seller-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.pos-seller-select {
+  max-width: 160px; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--text-primary);
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; cursor: pointer;
+}
 .pos-customer-name {
   font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;

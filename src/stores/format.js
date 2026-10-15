@@ -46,6 +46,8 @@ export const useFormatStore = defineStore('format', {
     paymentDuesEnabled: false,
     // s174: StoreSettings.cheques_enabled — gates the Finance → Cheques menu.
     chequesEnabled: false,
+    // s174: StoreSettings.salesperson_picker_enabled — the till's "Sold by" list.
+    salespersonPickerEnabled: false,
     // Treasury Wave 2 (s170, TREASURY.md § 12): the owner level switch (StoreSettings.treasury_owner_level) and whether this
     // login IS the owner (settings GET `treasury_is_owner`). "My money" shows only when all three are true.
     treasuryOwnerLevel: false,
@@ -94,6 +96,7 @@ export const useFormatStore = defineStore('format', {
         this.reservationsEnabled = !!res.data?.reservations_enabled
         this.paymentDuesEnabled = !!res.data?.payment_dues_enabled
         this.chequesEnabled     = !!res.data?.cheques_enabled
+        this.salespersonPickerEnabled = !!res.data?.salesperson_picker_enabled
         this.treasuryOwnerLevel = !!res.data?.treasury_owner_level
         this.treasuryIsOwner    = !!res.data?.treasury_is_owner
       } catch {
@@ -106,6 +109,7 @@ export const useFormatStore = defineStore('format', {
         this.reservationsEnabled = false
         this.paymentDuesEnabled = false
         this.chequesEnabled = false
+        this.salespersonPickerEnabled = false
         this.treasuryOwnerLevel = false
         this.treasuryIsOwner = false
       }
@@ -113,7 +117,7 @@ export const useFormatStore = defineStore('format', {
     },
 
     /** Called after the user saves StoreSettings or sudo changes the store currency. */
-    apply({ symbol, position, decimals, thousands_separator, item_noun, category_level_names, default_weight_unit, treasury_enabled, treasury_owner_level, treasury_is_owner, reservations_enabled, payment_dues_enabled, cheques_enabled }) {
+    apply({ symbol, position, decimals, thousands_separator, item_noun, category_level_names, default_weight_unit, treasury_enabled, treasury_owner_level, treasury_is_owner, reservations_enabled, payment_dues_enabled, cheques_enabled, salesperson_picker_enabled }) {
       if (symbol !== undefined)   this.symbol   = symbol
       if (position !== undefined) this.position = position
       if (decimals !== undefined) this.decimals = Number(decimals)
@@ -125,6 +129,7 @@ export const useFormatStore = defineStore('format', {
       if (reservations_enabled !== undefined) this.reservationsEnabled = !!reservations_enabled
       if (payment_dues_enabled !== undefined) this.paymentDuesEnabled = !!payment_dues_enabled
       if (cheques_enabled !== undefined) this.chequesEnabled = !!cheques_enabled
+      if (salesperson_picker_enabled !== undefined) this.salespersonPickerEnabled = !!salesperson_picker_enabled
       if (treasury_owner_level !== undefined) this.treasuryOwnerLevel = !!treasury_owner_level
       if (treasury_is_owner !== undefined) this.treasuryIsOwner = !!treasury_is_owner
     },

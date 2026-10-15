@@ -2018,6 +2018,7 @@
       "col_total": "Total",
       "payments": "Payments",
       "info_sold_by": "Sold by",
+      "info_cashier": "Cashier",
       "info_source_number": "Old system no."
     },
     "invoice_print": {
@@ -2061,6 +2062,8 @@
     "favorites": "Favorites",
     "no_favorites": "No favorites yet",
     "walk_in": "Walk-in",
+    "sold_by": "Sold by",
+    "sold_by_me": "Me",
     "no_customer_found": "No customer found — press Enter or click to add",
     "draft": "#DRAFT",
     "col": {
@@ -3200,6 +3203,10 @@
       "owner_lock_err_setup": "Set up your authenticator first (Settings → Security), then turn this on.",
       "owner_lock_err_locked": "Open My private accounts with your code first, then change the lock.",
       "owner_lock_err_owner": "Only the shop owner can change this lock.",
+      "seller_title": "Pick the salesperson at the till",
+      "seller_desc": "A \"Sold by\" list on the till, so a sale counts for the person who helped the customer — the cashier who takes the money stays the same.",
+      "seller_info_on": "On: the till shows \"Sold by\" next to the customer (default: you). The staff report counts the sale for that person; the money still goes to the cashier's drawer and shift. The invoice page shows both names.",
+      "seller_info_off": "Off: every sale counts for whoever is signed in at the till, as before. Sales already made keep their names.",
       "dues_title": "Payment due dates",
       "dues_desc": "Write when a customer will pay you — one date or instalments — and get reminded on the day.",
       "dues_info_on": "On: Finance → Due dates. Set a date (or split an amount into instalments every month, week or few days) on any customer. Late and due-soon ones show at the top of the page, and on the day the person who wrote it and the owner get a notification. A due date is only a reminder — it never changes what the customer owes; the money comes in with a normal payment.",

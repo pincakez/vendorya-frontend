@@ -16,6 +16,7 @@ export const useCartStore = defineStore('cart', {
   state: () => ({
     items: [],
     customerId: null,
+    salespersonId: null,   // s174: "Sold by" at the till (null = the signed-in person); only with the shop's switch on
     customerObj: null,
     // Whole-invoice discount, stored as type + value so it stays reactive to cart changes.
     invDiscType: null,   // null | 'percent' | 'fixed'
@@ -65,6 +66,7 @@ export const useCartStore = defineStore('cart', {
       return {
         items:        this.items.map(i => ({ ...i })),
         customerId:   this.customerId,
+        salespersonId: this.salespersonId,
         customerObj:  this.customerObj ? { ...this.customerObj } : null,
         invDiscType:  this.invDiscType,
         invDiscValue: this.invDiscValue,
@@ -74,6 +76,7 @@ export const useCartStore = defineStore('cart', {
     _restore(snap) {
       this.items        = snap.items
       this.customerId   = snap.customerId
+      this.salespersonId = snap.salespersonId ?? null
       this.customerObj  = snap.customerObj
       this.invDiscType  = snap.invDiscType ?? null
       this.invDiscValue = snap.invDiscValue ?? 0
@@ -207,6 +210,7 @@ export const useCartStore = defineStore('cart', {
       this.items = []
       this.customerId = null
       this.customerObj = null
+      this.salespersonId = null
       this.invDiscType = null
       this.invDiscValue = 0
       // `additive` is a cashier preference — keep it across sales

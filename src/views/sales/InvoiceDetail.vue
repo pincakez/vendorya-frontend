@@ -50,6 +50,11 @@
             <div class="info-label">{{ t('sales.invoice_detail.info_sold_by') }}</div>
             <div class="info-value">{{ data.invoice.salesperson_name }}</div>
           </div>
+          <!-- s174: who took the money — next to "Sold by" (they differ when the till picked another salesperson) -->
+          <div v-if="data.invoice.cashier_name" class="info-item">
+            <div class="info-label">{{ t('sales.invoice_detail.info_cashier') }}</div>
+            <div class="info-value">{{ data.invoice.cashier_name }}</div>
+          </div>
           <div class="info-item">
             <div class="info-label">{{ t('sales.invoice_detail.info_branch') }}</div>
             <div class="info-value">{{ data.branch?.name || data.store.name }}</div>
