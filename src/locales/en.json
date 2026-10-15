@@ -3125,7 +3125,9 @@
       "tax": "Tax",
       "grand_total": "Total to pay",
       "quote_failed": "Could not work out the job total.",
-      "loading_total": "Working out the total…"
+      "loading_total": "Working out the total…",
+      "part_serials_hint": "A part with serial numbers: pick the exact unit — one serial per unit. It is sold with its warranty when the job is marked Done.",
+      "part_serials_missing": "{product}: pick {need} serial number(s) — one per unit."
     }
   },
   "receipt": {

@@ -219,6 +219,7 @@
 
         <div class="sfm-section-title sfm-parts-title">{{ t('core.svcdesk.parts_section') }}</div>
         <p class="sfm-hint">{{ t('core.svcdesk.parts_hint') }}</p>
+        <p v-if="form.parts.some(p => p.track_serials)" class="sfm-hint">{{ t('core.svcdesk.part_serials_hint') }}</p>
         <div v-if="!locked" class="sfm-customer-search">
           <input
             v-model="partQuery"
@@ -255,8 +256,14 @@
               <span class="sfm-dd-phone">
                 {{ p.sku || '' }}<template v-if="p.unit_cost != null"> · {{ t('core.svcdesk.col_unit_cost') }} <Money :value="p.unit_cost" /></template>
               </span>
+              <!-- s170: a serial-numbered part names its exact unit(s) — the quantity follows the serials picked -->
+              <span v-if="p.track_serials" class="sfm-part-serials">
+                <span v-for="s in p.serial_numbers" :key="s" class="sfm-serial-chip" dir="ltr">{{ s }}</span>
+                <span v-if="!p.serial_numbers.length" class="sfm-serial-missing">{{ t('serials.pick_needed') }}</span>
+                <BaseButton v-if="!locked" variant="ghost" size="sm" @click="openPartSerials(p)">{{ t('serials.pick_edit') }}</BaseButton>
+              </span>
             </span>
-            <input v-model.number="p.quantity" type="number" min="0.001" step="1" class="form-input sfm-part-num" :disabled="locked" />
+            <input v-model.number="p.quantity" type="number" min="0.001" step="1" class="form-input sfm-part-num" :disabled="locked || p.track_serials" />
             <input v-model.number="p.unit_price" type="number" min="0" step="0.01" class="form-input sfm-part-num" :disabled="locked" />
             <span class="sfm-part-total"><Money :value="lineTotal(p)" /></span>
             <button v-if="!locked" type="button" class="sfm-clear-btn sfm-part-remove" :title="t('core.svcdesk.remove_part')" @click="form.parts.splice(i, 1)">×</button>
@@ -301,6 +308,11 @@
         @click="save"
       >{{ saving ? t('common.saving') : (serviceId ? t('settings.store.save_changes') : t('core.svcform.create')) }}</button>
     </template>
+
+    <SerialPickerModal v-if="serialPicker" :product-name="serialPicker.part.product_name"
+                       :variant-id="serialPicker.part.variant" :branch-id="auth.user?.default_branch || ''"
+                       :initial="serialPicker.part.serial_numbers" :taken="takenSerials(serialPicker.part)"
+                       @confirm="onPartSerials" @close="serialPicker = null" />
   </AppModal>
 </template>
 
@@ -309,8 +321,11 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppModal from '@/components/ui/AppModal.vue'
 import Money from '@/components/ui/Money.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import SerialPickerModal from '@/components/pos/SerialPickerModal.vue'
 import api from '@/api/axios'
 import { formatQty, formatNumber } from '@/utils/format'
+import { serialErrorText } from '@/utils/serials'
 import { useAuthStore } from '@/stores/auth'
 import { useQZTray } from '@/composables/useQZTray'
 import { useShopLocale } from '@/composables/useShopLocale'
@@ -447,16 +462,45 @@ function searchParts() {
     } catch { partResults.value = [] }
   }, 250)
 }
+function newPart(p, serials = []) {
+  return {
+    key: `n${++partKey}`, variant: p.default_variant_id, product_name: p.name, sku: p.sku_display || '',
+    quantity: p.track_serials ? serials.length : 1, unit_price: Number(p.default_variant_price) || 0,
+    unit_cost: null, track_serials: !!p.track_serials, serial_numbers: serials,
+  }
+}
 function addPart(p) {
   const same = form.parts.find(x => x.variant === p.default_variant_id)
-  if (same) same.quantity = (Number(same.quantity) || 0) + 1
-  else form.parts.push({
-    key: `n${++partKey}`, variant: p.default_variant_id, product_name: p.name, sku: p.sku_display || '',
-    quantity: 1, unit_price: Number(p.default_variant_price) || 0, unit_cost: null,
-  })
+  if (p.track_serials) {
+    // s170: like the till — a scanned serial goes straight onto the part, otherwise pick the unit(s).
+    const scanned = p.scan_serial && p.scan_serial_variant === p.default_variant_id ? p.scan_serial : ''
+    if (scanned && !takenSerials(null).includes(scanned)) {
+      if (same) { same.serial_numbers.push(scanned); same.quantity = same.serial_numbers.length }
+      else form.parts.push(newPart(p, [scanned]))
+    } else {
+      serialPicker.value = same ? { part: same, isNew: false } : { part: newPart(p), isNew: true }
+    }
+  } else if (same) same.quantity = (Number(same.quantity) || 0) + 1
+  else form.parts.push(newPart(p))
   partQuery.value = ''
   partResults.value = []
   showPartDropdown.value = false
+}
+
+/* ── serials of a serial-numbered part (s170) ───────────────────── */
+// serialPicker = { part, isNew } while the picker is open; a new part joins the list only once its units are picked.
+const serialPicker = ref(null)
+function openPartSerials(part) { serialPicker.value = { part, isNew: false } }
+// Serials already on the job's OTHER parts — the picker hides them (one unit can't be fitted twice).
+function takenSerials(part) {
+  return form.parts.filter(x => x !== part).flatMap(x => x.serial_numbers || [])
+}
+function onPartSerials(serials) {
+  const { part, isNew } = serialPicker.value
+  part.serial_numbers = [...serials]
+  part.quantity = serials.length
+  if (isNew) form.parts.push(part)
+  serialPicker.value = null
 }
 const round2 = n => Math.round((Number(n) || 0) * 100) / 100
 function lineTotal(p) { return round2((Number(p.quantity) || 0) * (Number(p.unit_price) || 0)) }
@@ -554,6 +598,7 @@ watch(() => props.open, (val) => {
         id: p.id, variant: p.variant, product_name: p.product_name, sku: p.sku || '',
         quantity: parseFloat(p.quantity) || 0, unit_price: parseFloat(p.unit_price) || 0,
         unit_cost: p.unit_cost ?? null,
+        track_serials: !!p.track_serials, serial_numbers: [...(p.serial_numbers ?? [])],
       })),
     })
     if (form.client) customerQuery.value = form.clientName
@@ -619,7 +664,14 @@ async function save() {
     payload.is_warranty   = form.is_warranty
     payload.parts = form.parts.map(p => ({
       id: p.id, variant: p.variant, quantity: p.quantity || 0, unit_price: p.unit_price || 0,
+      serial_numbers: p.track_serials ? p.serial_numbers : [],
     }))
+    const short = form.parts.find(p => p.track_serials && p.serial_numbers.length !== Number(p.quantity))
+    if (short) {
+      errorMsg.value = t('core.svcdesk.part_serials_missing', { product: short.product_name, need: formatQty(short.quantity) })
+      saving.value = false
+      return
+    }
   }
 
   if (!form.no_eta) {
@@ -651,7 +703,7 @@ async function save() {
   } catch (err) {
     const data = err?.response?.data
     if (data) {
-      errorMsg.value = firstError(data) || t('core.svcform.err_save')
+      errorMsg.value = serialErrorText(t, data) || firstError(data) || t('core.svcform.err_save')
     } else {
       errorMsg.value = t('core.svcform.err_save')
     }
@@ -700,7 +752,10 @@ function ticketFields(tr) {
     serialNo:    form.device_serial || '',
     damage:      form.damage || '',
     technician:  technicians.value.find(u => u.id === form.technician)?.name || '',
-    parts:       form.parts.map(p => ({ name: p.product_name || '', qty: formatQty(p.quantity), total: money(form.is_warranty ? 0 : lineTotal(p)) })),
+    parts:       form.parts.map(p => ({
+      name: (p.product_name || '') + (p.serial_numbers?.length ? ` (${p.serial_numbers.join(', ')})` : ''),
+      qty: formatQty(p.quantity), total: money(form.is_warranty ? 0 : lineTotal(p)),
+    })),
     detection:   money(form.is_warranty ? 0 : form.detection_fee),
     repair:      money(form.is_warranty ? 0 : form.cost),
     // Totals = the server quote of the SAVED job (same tax rule as the invoice Done makes), when there is one.
@@ -967,6 +1022,12 @@ async function doServicePrint(copies = 2, jobId = props.serviceId) {
 .sfm-part-num { padding: 5px 8px; font-size: 13px; }
 .sfm-part-total { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .sfm-part-remove { color: var(--danger); font-size: 18px; }
+.sfm-part-serials { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 2px; }
+.sfm-serial-chip {
+  font-family: ui-monospace, monospace; font-size: 11px; font-weight: 600; color: var(--text-primary);
+  background: var(--bg-app); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px;
+}
+.sfm-serial-missing { font-size: 11px; font-weight: 600; color: var(--warning); }
 .sfm-totals { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: flex-end; font-size: 13px; color: var(--text-secondary); }
 .sfm-totals strong { color: var(--text-primary); margin-left: 4px; }
 @media (max-width: 600px) {

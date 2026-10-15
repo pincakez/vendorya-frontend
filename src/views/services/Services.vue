@@ -277,7 +277,9 @@
           <div v-if="(detail.service.parts || []).length" class="det-field det-full">
             <span class="det-lbl">{{ t('core.svcdesk.parts_section') }}</span>
             <div v-for="p in detail.service.parts" :key="p.id" class="det-part">
-              <span dir="auto">{{ formatQty(p.quantity) }} × {{ p.product_name }}</span>
+              <span dir="auto">{{ formatQty(p.quantity) }} × {{ p.product_name }}
+                <span v-if="(p.serial_numbers || []).length" class="det-serials" dir="ltr">{{ p.serial_numbers.join(', ') }}</span>
+              </span>
               <Money :value="p.line_total" />
             </div>
           </div>
@@ -352,6 +354,7 @@ import AppModal from '@/components/ui/AppModal.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import Money from '@/components/ui/Money.vue'
 import { formatQty } from '@/utils/format'
+import { serialErrorText } from '@/utils/serials'
 import { useAuthStore } from '@/stores/auth'
 import ServiceFormModal from './ServiceFormModal.vue'
 import AppTable from '@/components/ui/AppTable.vue'
@@ -544,7 +547,8 @@ async function executeDone() {
     confirm.done = false
     fetchItems(); fetchCounts()
   } catch (e) {
-    alert(e?.response?.data?.detail ?? t('core.services.err_done'))
+    // s170: a part's unit sold at the till meanwhile → the serial error, worded in the user's language
+    alert(serialErrorText(t, e?.response?.data) || (e?.response?.data?.detail ?? t('core.services.err_done')))
     if (e?.response?.status === 409) loadQuote(confirm.target)
   } finally { confirm.busy = false }
 }
@@ -602,7 +606,7 @@ async function executeReturn() {
     confirm.return = false
     fetchItems(); fetchCounts()
   } catch (e) {
-    alert(e?.response?.data?.detail ?? t('core.services.err_return'))
+    alert(serialErrorText(t, e?.response?.data) || (e?.response?.data?.detail ?? t('core.services.err_return')))
   } finally { confirm.busy = false }
 }
 
@@ -819,6 +823,7 @@ onMounted(() => {
 .det-val   { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
 .det-cost-input { max-width: 140px; padding: 6px 10px; font-size: 14px; font-weight: 600; }
 
+.det-serials { display: block; font-family: ui-monospace, monospace; font-size: 11px; color: var(--text-muted); }
 .det-part { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--text-primary); padding: 3px 0; border-bottom: 1px dashed var(--border); }
 .det-totals { flex-direction: row; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 13px; color: var(--text-secondary); }
 .det-totals strong { color: var(--text-primary); margin-left: 4px; }

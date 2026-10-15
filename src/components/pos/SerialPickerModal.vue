@@ -40,8 +40,9 @@ import { normalizeSerial } from '@/utils/serials'
 const props = defineProps({
   productName: { type: String, default: '' },
   variantId:   { type: String, required: true },
-  branchId:    { type: String, required: true },
+  branchId:    { type: String, default: '' },        // '' = every branch of the shop (the repair desk)
   initial:     { type: Array,  default: () => [] },   // serials already on the line
+  taken:       { type: Array,  default: () => [] },   // serials already on another line of the same document
 })
 defineEmits(['confirm', 'close'])
 const { t } = useI18n()
@@ -55,10 +56,10 @@ const scanEl    = ref(null)
 
 onMounted(async () => {
   try {
-    const { data } = await api.get('/api/inventory/serials/', {
-      params: { variant: props.variantId, branch: props.branchId, status: 'IN_STOCK' },
-    })
-    available.value = data.results || []
+    const params = { variant: props.variantId, status: 'IN_STOCK' }
+    if (props.branchId) params.branch = props.branchId
+    const { data } = await api.get('/api/inventory/serials/', { params })
+    available.value = (data.results || []).filter(u => !props.taken.includes(u.serial))
   } catch { available.value = [] }
   finally { loading.value = false }
   nextTick(() => scanEl.value?.querySelector('input')?.focus())
