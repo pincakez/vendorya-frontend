@@ -1562,6 +1562,7 @@
       "notes_label": "Notes",
       "notes_ph": "Any notes about this customer…",
       "err_save": "Could not save customer.",
+      "err_load": "Could not load this customer — close and try again.",
       "save_changes": "Save Changes",
       "add_customer": "Add Customer",
       "opening_label": "Opening balance (what they owed before Vendorya)",

@@ -1,6 +1,19 @@
 <template>
-  <AppModal :open="open" :title="customerId ? t('people.customer_form.title_edit') : t('people.customer_form.title_new')" width="900px" @close="$emit('close')">
+  <!-- hide-close while "Receive payment" is open on top: Escape then closes only that one (both listen on window) -->
+  <AppModal :open="open" :title="customerId ? t('people.customer_form.title_edit') : t('people.customer_form.title_new')" width="900px"
+            :hide-close="receiveOpen" @close="$emit('close')">
     <div class="modal-form">
+
+      <!-- ── Balance + Receive payment (existing customer; managers and up — the server refuses a cashier) ── -->
+      <div v-if="customerId && customer" class="cfm-balance">
+        <span class="cfm-balance-label">{{ t('people.customer_detail.info.balance') }}</span>
+        <span v-if="Number(customer.balance) > 0" class="cfm-owe">{{ t('people.customer_detail.owes') }} <Money :value="customer.balance" /></span>
+        <span v-else-if="Number(customer.balance) < 0" class="cfm-credit">{{ t('people.customer_detail.credit') }} <Money :value="Math.abs(Number(customer.balance))" /></span>
+        <span v-else class="cfm-zero">—</span>
+        <BaseButton v-if="canReceive" variant="primary" size="sm" class="cfm-receive" @click="receiveOpen = true">
+          <HandCoins :size="14" /> {{ t('people.customer_detail.receive_payment') }}
+        </BaseButton>
+      </div>
 
       <!-- ── Simple fields (always visible) · TwoCol preset ── -->
       <div class="modal-2col">
@@ -74,13 +87,18 @@
       </button>
     </template>
   </AppModal>
+
+  <ReceivePaymentModal :open="receiveOpen" :customer="customer" @close="receiveOpen = false" @received="onReceived" />
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronDown } from 'lucide-vue-next'
+import { ChevronDown, HandCoins } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
+import Money from '@/components/ui/Money.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import ReceivePaymentModal from '@/components/shared/ReceivePaymentModal.vue'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 
@@ -94,10 +112,17 @@ const props = defineProps({
   prefillEmail: { type: String,  default: '' },
 })
 
-const emit = defineEmits(['close', 'saved'])
+// `received`: a payment was taken from this customer — carries the reloaded customer (new balance).
+const emit = defineEmits(['close', 'saved', 'received'])
 
 const auth = useAuthStore()
 const canSetCredit = computed(() => ['MANAGER', 'ADMIN', 'OWNER'].includes(auth.userRole))
+// Receive payment (s167 lump sum): MANAGER+ like the customer page — lowering a debt is a credit decision.
+const canReceive = computed(() => auth.hasRole('MANAGER'))
+
+// The customer being edited, as the API returns it (live `balance`) — null for a new one.
+const customer    = ref(null)
+const receiveOpen = ref(false)
 
 const saving      = ref(false)
 const errorMsg    = ref('')
@@ -121,8 +146,37 @@ watch(() => props.open, (val) => {
     website: '', country: 'Egypt', city: '', notes: '',
     gender: 'MALE', credit_limit: null,
   })
+  customer.value = null
+  receiveOpen.value = false
+  if (props.customerId) loadCustomer()
   nextTick(() => nameInputEl.value?.focus())
 })
+
+// Edit mode: fill the form with what is saved (a PATCH of blanks would wipe it) and show the live balance.
+async function loadCustomer() {
+  const id = props.customerId
+  try {
+    const { data } = await api.get(`/api/auth/customers/${id}/`)
+    if (id !== props.customerId || !props.open) return
+    customer.value = data
+    Object.assign(form, {
+      name: data.name || '', phone_number: data.phone_number || '', email: data.email || '',
+      whatsapp_number: data.whatsapp_number || '', instagram: data.instagram || '', website: data.website || '',
+      country: data.country || '', city: data.city || '', notes: data.notes || '',
+      gender: data.gender || 'MALE', credit_limit: data.credit_limit ?? null,
+    })
+  } catch {
+    errorMsg.value = t('people.customer_form.err_load')
+  }
+}
+
+async function onReceived() {
+  try {
+    const { data } = await api.get(`/api/auth/customers/${props.customerId}/`)
+    customer.value = data
+    emit('received', data)
+  } catch { /* the balance shows on the next open */ }
+}
 
 const _canSave = computed(() => !!form.name.trim())
 
@@ -163,6 +217,13 @@ async function save() {
 </script>
 
 <style scoped>
+.cfm-balance { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--bg-app); border: 1px solid var(--border); font-size: 13px; }
+.cfm-balance-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); font-weight: 600; }
+.cfm-owe    { display: inline-block; padding: 2px 8px; border-radius: 20px; background: var(--danger-soft); color: var(--danger); font-size: 12px; font-weight: 600; }
+.cfm-credit { display: inline-block; padding: 2px 8px; border-radius: 20px; background: var(--success-soft); color: var(--success); font-size: 12px; font-weight: 600; }
+.cfm-zero   { color: var(--text-muted); }
+.cfm-receive { margin-inline-start: auto; }
+
 .pfm-opt  { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
 .pfm-error { font-size: 12px; color: var(--danger); background: var(--danger-soft); border-radius: 8px; padding: 8px 12px; }
 

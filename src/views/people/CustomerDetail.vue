@@ -164,56 +164,8 @@
       </div>
     </div>
 
-    <!-- Receive payment (one lump sum → oldest sales first, then the opening balance) -->
-    <AppModal :open="recModal.open" :title="t('people.customer_detail.receive_payment')" width="520px" @close="recModal.open = false">
-      <div v-if="!recModal.result" class="rec-form">
-        <div class="rec-balance">
-          <span>{{ t('people.customer_detail.receive.owes_now') }}</span>
-          <strong><Money :value="Math.max(0, Number(customer?.balance || 0))" /></strong>
-        </div>
-        <BaseInput v-model="recModal.amount" type="number" min="0" step="0.01"
-                   :label="t('people.customer_detail.receive.amount')" placeholder="0.00" :error="recModal.error" />
-        <BaseSelect v-model="recModal.method" :options="methodOptions"
-                    :label="t('people.customer_detail.receive.method')"
-                    :placeholder="methodOptions.length ? '' : t('people.customer_detail.receive.no_methods')" />
-        <BaseInput v-model="recModal.date" type="date" :label="t('people.customer_detail.receive.date')" />
-        <BaseInput v-model="recModal.note" :label="t('people.customer_detail.receive.note')"
-                   :placeholder="t('people.customer_detail.receive.note_ph')" />
-        <label v-if="extra > 0" class="rec-advance">
-          <input type="checkbox" v-model="recModal.allowAdvance" />
-          <span>{{ t('people.customer_detail.receive.keep_credit') }} <Money :value="extra" /></span>
-        </label>
-        <p class="rec-hint">{{ t('people.customer_detail.receive.hint') }}</p>
-      </div>
-      <div v-else class="rec-form">
-        <p class="rec-done">{{ t('people.customer_detail.receive.done') }}</p>
-        <div v-for="a in recModal.result.allocations" :key="a.invoice" class="rec-line">
-          <span>{{ t('people.customer_detail.receive.to_sale', { num: a.invoice_number || '—' }) }}</span>
-          <Money :value="a.amount" />
-        </div>
-        <div v-if="Number(recModal.result.to_opening_balance)" class="rec-line">
-          <span>{{ t('people.customer_detail.receive.to_opening') }}</span>
-          <Money :value="recModal.result.to_opening_balance" />
-        </div>
-        <div v-if="Number(recModal.result.advance)" class="rec-line">
-          <span>{{ t('people.customer_detail.receive.to_credit') }}</span>
-          <Money :value="recModal.result.advance" />
-        </div>
-        <div class="rec-line rec-total">
-          <span>{{ t('people.customer_detail.receive.balance_after') }}</span>
-          <Money :value="recModal.result.balance_after" />
-        </div>
-      </div>
-      <template #footer>
-        <template v-if="!recModal.result">
-          <BaseButton variant="ghost" @click="recModal.open = false">{{ t('common.cancel') }}</BaseButton>
-          <BaseButton variant="primary" :loading="recModal.saving" :disabled="!recModal.method" @click="saveReceive">
-            {{ t('people.customer_detail.receive.save') }}
-          </BaseButton>
-        </template>
-        <BaseButton v-else variant="primary" @click="recModal.open = false">{{ t('common.close') }}</BaseButton>
-      </template>
-    </AppModal>
+    <!-- Receive payment (one lump sum → oldest sales first, then the opening balance) — shared with the till -->
+    <ReceivePaymentModal :open="recOpen" :customer="customer" @close="recOpen = false" @received="onReceived" />
 
     <!-- Edit modal (reuse Customers.vue logic inline) -->
     <AppModal :open="editModal.open" :title="t('people.customer_detail.edit_modal.title')" @close="editModal.open = false">
@@ -259,8 +211,7 @@ import AppModal from '@/components/ui/AppModal.vue'
 import AccountStatement from '@/components/finance/AccountStatement.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
-import BaseInput from '@/components/base/BaseInput.vue'
-import BaseSelect from '@/components/base/BaseSelect.vue'
+import ReceivePaymentModal from '@/components/shared/ReceivePaymentModal.vue'
 import { useAuthStore } from '@/stores/auth'
 import { showSuccessToast, showErrorToast } from '@/utils/toast'
 import { formatCurrency } from '@/utils/format'
@@ -388,21 +339,7 @@ const stmtRows = computed(() => (stmt.value?.lines || []).map((l, i) => {
 // ── Receive payment (s167): one lump sum, spread by the server oldest sale first ──
 const receipts = ref([])
 const recLoading = ref(false)
-const methods = ref([])
-const recModal = reactive({ open: false, amount: '', method: '', date: '', note: '', allowAdvance: false,
-                            saving: false, error: '', result: null })
-// Credit (Ajel) is the unpaid part of a sale, never a way to pay.
-const methodOptions = computed(() => methods.value.filter(m => !m.is_agel).map(m => ({ value: m.id, label: m.name })))
-// What the typed amount goes beyond everything they owe — only kept as credit when ticked.
-const extra = computed(() => {
-  const owes = Math.max(0, Number(customer.value?.balance || 0))
-  const amt = Number(recModal.amount) || 0
-  return amt > owes ? Math.round((amt - owes) * 100) / 100 : 0
-})
-const today = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
+const recOpen = ref(false)
 
 async function fetchReceipts() {
   if (!isManagerPlus.value) return
@@ -414,44 +351,10 @@ async function fetchReceipts() {
   finally { recLoading.value = false }
 }
 
-async function openReceive() {
-  Object.assign(recModal, { open: true, amount: '', date: today(), note: '', allowAdvance: false,
-                            saving: false, error: '', result: null })
-  if (!methods.value.length) {
-    try {
-      const r = await api.get('/api/finance/payment-methods/')
-      methods.value = r.data.results ?? r.data ?? []
-    } catch { methods.value = [] }
-  }
-  const cash = methodOptions.value.find(o => methods.value.find(m => m.id === o.value)?.is_cash)
-  recModal.method = (cash || methodOptions.value[0])?.value || ''
-}
+function openReceive() { recOpen.value = true }
 
-async function saveReceive() {
-  recModal.error = ''
-  const amt = Number(recModal.amount)
-  if (!amt || amt <= 0) { recModal.error = t('people.customer_detail.receive.amount_required'); return }
-  if (extra.value > 0 && !recModal.allowAdvance) { recModal.error = t('people.customer_detail.receive.too_much'); return }
-  recModal.saving = true
-  try {
-    const r = await api.post('/api/finance/customer-receipts/', {
-      customer: props.id,
-      amount: amt,
-      method: recModal.method,
-      // today → the server stamps the real time; another day → noon, so no time zone pushes it a day off
-      date: recModal.date && recModal.date !== today() ? new Date(`${recModal.date}T12:00:00`).toISOString() : undefined,
-      note: recModal.note || '',
-      allow_advance: recModal.allowAdvance,
-    })
-    recModal.result = r.data.summary
-    showSuccessToast(t('people.customer_detail.receive.done'))
-    await Promise.all([fetchCustomer(), fetchInvoices(page.value), fetchReceipts(), fetchStatement()])
-  } catch (e) {
-    const d = e?.response?.data || {}
-    const first = v => (Array.isArray(v) ? v[0] : v)   // a field error comes as a list or a plain string
-    recModal.error = first(d.amount) || first(d.method) || first(d.customer) || d.detail
-      || t('people.customer_detail.receive.save_failed')
-  } finally { recModal.saving = false }
+async function onReceived() {
+  await Promise.all([fetchCustomer(), fetchInvoices(page.value), fetchReceipts(), fetchStatement()])
 }
 
 async function deleteReceipt(r) {
@@ -526,14 +429,6 @@ onMounted(() => { fetchCustomer(); fetchInvoices(); fetchReceipts(); fetchStatem
 .rec-row:last-child { border-bottom:none; }
 .del-btn { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:7px; border:none; background:none; color:var(--text-muted); cursor:pointer; transition:background 100ms, color 100ms; }
 .del-btn:hover { background:rgba(220,38,38,0.10); color:var(--danger); }
-.rec-form { display:flex; flex-direction:column; gap:14px; }
-.rec-balance { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:8px; background:var(--bg-app); border:1px solid var(--border); font-size:13px; color:var(--text-secondary); }
-.rec-balance strong { color:var(--text-primary); font-size:15px; }
-.rec-advance { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-secondary); cursor:pointer; }
-.rec-hint { font-size:12px; color:var(--text-muted); margin:0; }
-.rec-done { font-size:14px; font-weight:600; color:var(--success); margin:0; }
-.rec-line { display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text-secondary); padding:6px 0; border-bottom:1px solid var(--border); }
-.rec-total { border-bottom:none; font-weight:600; color:var(--text-primary); }
 .form-label { font-size:12px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; display:block; margin-bottom:6px; }
 .form-input { width:100%; padding:8px 11px; border:1px solid var(--border); border-radius:8px; background:var(--bg-app); color:var(--text-primary); font-size:13px; box-sizing:border-box; outline:none; }
 .form-input:focus { border-color:var(--accent); }
