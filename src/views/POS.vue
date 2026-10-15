@@ -274,10 +274,7 @@
               <Printer :size="15" />
               <span>{{ t('pos.actions.reprint') }}</span>
             </button>
-            <button class="pac pac--disabled" :data-tip="actionTip('note')" disabled>
-              <FileText :size="15" />
-              <span>{{ t('pos.actions.note') }}</span>
-            </button>
+            <!-- s169c: the old "Note" button is gone — a sale has no notes field to save it in (it was always disabled). -->
           </div>
 
           <PosNumpad class="pos-numpad" ref="numpadRef" @key="onNumpadKey" @mode-change="numpadCalc = $event" />
@@ -499,7 +496,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
   Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
-  Printer, FileText, ShoppingCart, CheckCircle2, ArrowLeft, ChevronDown, AlertTriangle,
+  Printer, ShoppingCart, CheckCircle2, ArrowLeft, ChevronDown, AlertTriangle,
   Sun, Moon, LogOut, Menu, ChevronUp, Calculator,
 } from 'lucide-vue-next'
 import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
@@ -1362,7 +1359,7 @@ const shortcuts = computed(() => ({
 // Hover tooltip text for an action button: "Name · Shortcut" (or just name).
 function actionTip(action) {
   const name = t(`pos.actions.${action}`)
-  const key  = shortcuts.value[action]   // customer/note have none → name only
+  const key  = shortcuts.value[action]   // customer has none → name only
   return key ? `${name} · ${key}` : name
 }
 
@@ -1960,7 +1957,7 @@ function fmtNum(n) {
 .pac:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .pac:active:not(:disabled) { transform: scale(var(--press-scale)); box-shadow: none; transition-duration: var(--press-down); }
 .pac--held { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-.pac--disabled { opacity: 0.35; cursor: not-allowed; }
+.pac:disabled { opacity: 0.35; cursor: not-allowed; }
 .pac-badge {
   position: absolute; top: 3px; right: 3px;
   background: var(--accent); color: #fff; font-size: 8px; font-weight: 800;
@@ -2132,7 +2129,7 @@ function fmtNum(n) {
     transition: transform 280ms var(--ease-in-out), visibility 0s;
   }
   .pos-right-scroll { flex: 0 1 auto; }
-  .pos-actions-grid { grid-template-columns: repeat(6, 1fr); }
+  .pos-actions-grid { grid-template-columns: repeat(5, 1fr); }
   .pac { padding: 8px 2px; font-size: 10.5px; }
   .pac[data-tip]:hover::after { display: none; }   /* no sticky hover tooltips on touch */
 
