@@ -178,7 +178,8 @@ async function onReceived() {
   } catch { /* the balance shows on the next open */ }
 }
 
-const _canSave = computed(() => !!form.name.trim())
+// Edit mode: never save before the customer loaded (a failed load + a typed name would PATCH blanks over them).
+const _canSave = computed(() => !!form.name.trim() && (!props.customerId || !!customer.value))
 
 async function save() {
   if (!_canSave.value || saving.value) return
