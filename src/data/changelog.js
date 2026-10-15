@@ -12,6 +12,58 @@
 
 export const changelog = [
   {
+    version: '1.52.0',
+    date: '2026-10-15',
+    tag: 'New',
+    en: {
+      title: 'Treasury: know where every pound is',
+      points: [
+        'A new switch in Settings → Capabilities: Treasury (money boxes). When it is off, nothing changes.',
+        'Turn it on and every place your money sits becomes a box: each till drawer, the safe, the bank account, e-wallets, savings — each with its balance.',
+        'Every sale, refund, debt payment, expense and supplier payment now writes its line in the right box by itself. A line is never edited or deleted — a mistake gets a reverse line, like a bank statement.',
+        'The till drawer keeps its balance from one shift to the next. Opening and closing a shift means counting it, and any difference needs a reason.',
+        'Move money between boxes (for example the day\'s takings to the safe), record money that isn\'t a sale as "Other income" (it shows in the Profit & Loss), and count any box against reality.',
+        'Choose where each payment method\'s money lands, and which box an expense or a supplier payment was paid from.',
+      ],
+    },
+    ar: {
+      title: 'الخزينة: اعرف كل جنيه فين',
+      points: [
+        'مفتاح جديد في الإعدادات ← الإمكانيات: الخزينة (صناديق الفلوس). لو مقفول، مفيش أي حاجة بتتغير.',
+        'لما تفتحه، كل مكان فيه فلوسك بيبقى صندوق: كل درج كاشير، الخزنة، حساب البنك، المحافظ الإلكترونية، التوفير — وكل واحد برصيده.',
+        'كل بيعة ومرتجع وسداد دين ومصروف ودفعة مورد بقت بتكتب سطرها في الصندوق الصح لوحدها. السطر عمره ما بيتعدّل ولا بيتمسح — الغلطة ليها سطر عكسي، زي كشف حساب البنك.',
+        'درج الكاشير بيشيل رصيده من وردية للتانية. فتح وقفل الوردية معناه إنك تعدّه، وأي فرق لازم له سبب.',
+        'حوّل فلوس بين الصناديق (مثلاً إيراد اليوم للخزنة)، وسجّل الفلوس اللي مش بيع كـ"إيرادات أخرى" (بتظهر في الأرباح والخسائر)، واعدّ أي صندوق على الحقيقة.',
+        'اختار فلوس كل طريقة دفع بتنزل في أنهي صندوق، والمصروف أو دفعة المورد اتدفعت من أنهي صندوق.',
+      ],
+    },
+  },
+  {
+    version: '1.51.0',
+    date: '2026-10-15',
+    tag: 'Improved',
+    en: {
+      title: 'Take a debt payment right at the till, and clearer screens',
+      points: [
+        'At the till, the small button next to the chosen customer opens their card: details and what they owe. Managers can take a debt payment right there.',
+        'The Services list shows which of your products a device is, and a badge while its warranty still runs.',
+        'Stock Transfers and Memory Base now speak Arabic too, with wording that fits any shop.',
+        'Printing labels from a purchase uses the same label window as the product list.',
+        'A completed sale can no longer be deleted — only voided — so stock and money always stay right.',
+      ],
+    },
+    ar: {
+      title: 'استلم سداد دين من الكاشير نفسه، وشاشات أوضح',
+      points: [
+        'في الكاشير، الزرار الصغير جنب العميل المختار بيفتح كارته: بياناته واللي عليه. المدير يقدر يستلم سداد دين من مكانه.',
+        'قايمة الصيانة بقت بتوري الجهاز ده أنهي منتج من منتجاتك، وعلامة طول ما ضمانه شغال.',
+        'تحويلات المخزون وقاعدة المعرفة بقوا بالعربي كمان، بكلام يناسب أي محل.',
+        'طباعة الليبلز من فاتورة شراء بقت بنفس شباك الليبلز بتاع قايمة المنتجات.',
+        'الفاتورة المكتملة مبقاش ينفع تتمسح — بتتلغي بس — عشان المخزون والفلوس يفضلوا مظبوطين.',
+      ],
+    },
+  },
+  {
     version: '1.50.3',
     date: '2026-10-15',
     tag: 'Improved',
