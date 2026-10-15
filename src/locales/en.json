@@ -98,7 +98,8 @@
       "shop_export": "Export My Data",
       "expiry": "Expiry & Batches",
       "lockscreen": "Lock Screen",
-      "serials": "Serial Lookup"
+      "serials": "Serial Lookup",
+      "treasury": "Treasury"
     }
   },
   "common": {
@@ -957,7 +958,155 @@
         "parent_none": "None"
       },
       "confirm_delete_expense": "Delete this expense?",
-      "confirm_delete_category": "Delete this category?"
+      "confirm_delete_category": "Delete this category?",
+      "save_failed": "Could not save the expense."
+    },
+    "treasury": {
+      "title": "Treasury",
+      "sub": "Your money boxes — drawers, safe, bank, e-wallets — and what is in each one",
+      "box": "Money box",
+      "new_box": "New box",
+      "edit_box": "Edit box",
+      "transfer": "Transfer",
+      "transfer_btn": "Move the money",
+      "transfer_done": "Money moved.",
+      "other_income": "Other income",
+      "count_box": "Count a box",
+      "save_count": "Save the count",
+      "count_matches": "The count matches the book.",
+      "count_saved": "Count saved — the difference was written with your reason.",
+      "off_title": "The Treasury is off for this shop",
+      "off_text": "Turn it on to see every drawer, the safe, the bank account and each e-wallet with its own balance.",
+      "off_link": "Open Settings → Capabilities",
+      "tabs": {
+        "boxes": "Boxes",
+        "income": "Other income",
+        "categories": "Income categories"
+      },
+      "total_all": "Total in all boxes",
+      "show_closed": "Show closed boxes ({n})",
+      "groups": {
+        "drawers": "Till drawers",
+        "others": "Other boxes"
+      },
+      "groups_empty": {
+        "drawers": "No till drawers yet.",
+        "others": "No other boxes yet — add your safe, bank account or e-wallet with \"New box\"."
+      },
+      "default_drawer": "Main drawer",
+      "closed": "Closed",
+      "unsorted_name": "Not sorted yet",
+      "unsorted_hint": "Money from payment methods that have no box yet lands here. Choose a box for each payment method in Settings → Payment methods, then move this money with a transfer.",
+      "income_empty": "No other income recorded yet.",
+      "income_saved": "Income recorded.",
+      "income_delete_confirm": "Delete this income? The money is taken back out of its box with a reversal line.",
+      "income_deleted": "Income deleted.",
+      "cat_sub": "Group money that does not come from sales — rent received, commissions, a refund from a supplier…",
+      "cat_new": "New category",
+      "cat_rename": "Rename category",
+      "cat_empty": "No income categories yet.",
+      "cat_name_ph": "e.g. Rent received",
+      "cat_delete_confirm": "Delete the category \"{name}\"?",
+      "saved": "Saved.",
+      "in_box_now": "In this box now",
+      "in_book": "In the book",
+      "difference": "Difference",
+      "balance_now": "Balance now",
+      "statement_title": "Money box statement",
+      "statement_hint": "Balance = money in the box after each line.",
+      "col_in": "In",
+      "col_out": "Out",
+      "reverse": "Reverse",
+      "reverse_title": "Reverse this line",
+      "reverse_hint": "The line stays in the book; an opposite line is added so the balance goes back. Write why.",
+      "reversed": "reversed",
+      "reversed_ok": "Line reversed.",
+      "reason_prefix": "Reason: {reason}",
+      "paid_from": "Paid from",
+      "before_treasury": "Before the Treasury",
+      "auto_box": "Automatic (the payment method's box)",
+      "lands_in": "Money lands in",
+      "lands_in_drawer": "The drawer of the open shift",
+      "lands_in_none": "Not chosen yet (goes to \"Not sorted yet\")",
+      "lands_in_hint": "The box this method's money goes into — e.g. the bank account for cards, the e-wallet for wallet payments.",
+      "drawer": "Drawer",
+      "drawers_all_busy": "Every drawer of this branch already has an open shift.",
+      "drawers_none": "This branch has no drawer box yet.",
+      "drawers_some_busy": "{n} drawer(s) of this branch already have an open shift.",
+      "counted_open": "Counted cash in the drawer",
+      "expected_book": "Expected (in the book)",
+      "move_takings": "Move the takings to another box",
+      "move_to": "Move to",
+      "move_amount": "Amount to move",
+      "float_left": "Left in the drawer",
+      "f": {
+        "name": "Name",
+        "name_ph": "e.g. Office safe",
+        "kind": "Kind",
+        "branch": "Branch",
+        "branch_pick": "Choose the branch",
+        "whole_shop": "The whole shop",
+        "opening": "Opening amount",
+        "opening_hint": "Count what is really in it today. You can leave it at 0 and count the box later.",
+        "note": "Note",
+        "note_ph": "Why the money moved",
+        "close_box": "Close this box",
+        "close_hint": "A box can be closed only when it is empty (balance 0). Its lines are kept.",
+        "from": "From",
+        "to": "To",
+        "pick_box": "Choose a box",
+        "amount": "Amount",
+        "into_box": "Into box",
+        "category": "Category",
+        "pick_category": "Choose a category",
+        "no_categories": "No categories yet (add them in the \"Income categories\" tab)",
+        "income_desc_ph": "Where the money came from",
+        "box": "Box",
+        "counted": "Counted amount",
+        "reason": "Reason",
+        "reason_ph": "Why the count is different",
+        "reverse_reason_ph": "Why this line is wrong"
+      },
+      "kinds": {
+        "DRAWER": "Till drawer",
+        "CASH": "Cash (safe / petty cash)",
+        "BANK": "Bank account",
+        "WALLET": "E-wallet",
+        "RESERVED": "Money set aside",
+        "SAVINGS": "Savings"
+      },
+      "move_kinds": {
+        "SALE_IN": "Sale payment",
+        "RECEIPT_IN": "Customer paid a debt",
+        "REFUND_OUT": "Refund paid back",
+        "SUPPLIER_OUT": "Supplier payment",
+        "EXPENSE_OUT": "Expense",
+        "OTHER_INCOME_IN": "Other income",
+        "TRANSFER_IN": "Transfer in",
+        "TRANSFER_OUT": "Transfer out",
+        "OPENING": "Opening balance",
+        "COUNT_ADJUST": "Count difference",
+        "REVERSAL": "Reversal"
+      },
+      "err": {
+        "treasury_off": "The Treasury is off for this shop.",
+        "not_enough_money": "Not enough money in this box.",
+        "reason_required": "The count is different from the book — write the reason.",
+        "box_not_empty": "This box still has money in it. Move the money out first, then close it.",
+        "other_owner": "Both boxes must belong to the same owner.",
+        "same_box": "Choose two different boxes.",
+        "reverse_at_source": "This line comes from a sale, expense or payment — fix it there (e.g. delete the expense), not here.",
+        "zero_amount": "Enter an amount.",
+        "box_closed": "This box is closed.",
+        "cannot_reverse_reversal": "A reversal line cannot be reversed.",
+        "already_reversed": "This line is already reversed.",
+        "amount_positive": "The amount must be above zero.",
+        "drawer_busy": "This drawer already has an open shift.",
+        "paid_from_required": "Choose the box the money is paid from.",
+        "generic": "Something went wrong. Please try again.",
+        "load": "Could not load the money boxes.",
+        "close_failed": "Could not close the shift."
+      }
     }
   },
   "sales": {
@@ -1652,7 +1801,8 @@
         "cogs": "COGS",
         "expenses": "Expenses",
         "returns": "Returns",
-        "net_profit": "Net Profit"
+        "net_profit": "Net Profit",
+        "other_income": "Other income"
       },
       "cols": {
         "period": "Period",
@@ -1661,8 +1811,10 @@
         "gross_profit": "Gross Profit",
         "expenses": "Expenses",
         "returns": "Returns",
-        "net": "Net"
-      }
+        "net": "Net",
+        "other_income": "Other income"
+      },
+      "subtitle_other": "Revenue − COGS − Expenses − Returns + Other income = Net"
     },
     "ar_aging": {
       "title": "A/R Aging",
@@ -2221,7 +2373,14 @@
       "ac_source_hint_memory_base": "Searching the product reference list. Your own received products appear first when there is a match.",
       "ac_source_hint_store_history": "Searching only products you have received or added. If a product is not found, a note will appear suggesting to switch to Memory Base.",
       "mb_auto_label": "Auto-add new items to Memory Base",
-      "mb_auto_hint": "When on, every new product you add is automatically added to the Memory Base reference list — keeping it up to date."
+      "mb_auto_hint": "When on, every new product you add is automatically added to the Memory Base reference list — keeping it up to date.",
+      "treasury_title": "Treasury (money boxes)",
+      "treasury_desc": "Know where your money is: every till drawer, the safe, the bank account and each e-wallet becomes a box with its own balance and statement.",
+      "treasury_info_on": "On: every sale, refund, expense and supplier payment writes a line in the box the money went into or came out of — at the same moment. Shifts open on a drawer whose balance carries over from the last shift, and a count that does not match needs a written reason.",
+      "treasury_info_off": "Off: everything works exactly as before (shifts count cash the old way, expenses have no \"paid from\").",
+      "treasury_info_start": "When you turn it on, one drawer box is made for each branch. Then add your safe, bank account and e-wallets on the Treasury page, and count each box once to set its opening balance. Old sales and expenses are not moved into boxes.",
+      "treasury_on_note": "Press Save to turn it on — one drawer box will be made for each branch.",
+      "confirm_treasury_enabled": "Turn the Treasury off? The boxes and their lines are kept, but new sales, expenses and shifts will stop writing to them until you turn it back on."
     },
     "policies": {
       "title": "Business Policies",

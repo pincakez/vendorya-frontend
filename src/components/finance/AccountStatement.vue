@@ -11,13 +11,16 @@
  *     :lines="rows" :opening-balance="s.opening_balance" :closing-balance="s.closing_balance"
  *     :totals="s.totals" :debit-label="…" :credit-label="…" :balance-hint="…" filename="statement-x" />
  *
- * lines: [{ key, date (ISO), type (label), ref, note, debit, credit, running_balance, to? }]
- *   `to` = optional router path; the Ref cell becomes a link on screen.
+ * lines: [{ key, date (ISO), type (label), ref, note, debit, credit, running_balance, to?, dim? }]
+ *   `to` = optional router path; the Ref cell becomes a link on screen. `dim` = draw the row faded (e.g. a reversed line).
+ *
+ * Optional slot `actions` ({ line }) — s169c, money boxes: one extra column at the end of each line (e.g. a Reverse
+ * button). Screen only: the column never reaches the paper or the CSV.
  *
  * Print: the sheet is teleported to <body> for the print and everything else is hidden
  * (body.stmt-printing) — the app's sidebar/header never reach the paper.
  */
-import { ref, computed, nextTick, onBeforeUnmount } from 'vue'
+import { ref, computed, nextTick, onBeforeUnmount, useSlots } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Printer, Download } from 'lucide-vue-next'
 import Money from '@/components/ui/Money.vue'
@@ -49,6 +52,8 @@ const emit = defineEmits(['update:dateFrom', 'update:dateTo', 'refresh'])
 
 const { t } = useI18n()
 const auth = useAuthStore()
+const slots = useSlots()
+const hasActions = computed(() => !!slots.actions)
 
 const heading  = computed(() => props.title || t('finance.statement.title'))
 const debitLbl  = computed(() => props.debitLabel  || t('finance.statement.cols.debit'))
@@ -149,6 +154,7 @@ onBeforeUnmount(() => {
               <colgroup>
                 <col style="width:12%" /><col style="width:13%" /><col style="width:12%" /><col style="width:21%" />
                 <col style="width:14%" /><col style="width:14%" /><col style="width:14%" />
+                <col v-if="hasActions" class="stmt-noprint" style="width:96px" />
               </colgroup>
               <thead>
                 <tr>
@@ -159,6 +165,7 @@ onBeforeUnmount(() => {
                   <th class="dt-th ta-right">{{ debitLbl }}</th>
                   <th class="dt-th ta-right">{{ creditLbl }}</th>
                   <th class="dt-th ta-right">{{ t('finance.statement.cols.balance') }}</th>
+                  <th v-if="hasActions" class="dt-th stmt-noprint" />
                 </tr>
               </thead>
               <tbody>
@@ -166,11 +173,12 @@ onBeforeUnmount(() => {
                   <td>{{ dayLabel(dateFrom) || '—' }}</td>
                   <td colspan="5">{{ t('finance.statement.opening') }}</td>
                   <td class="ta-right"><Money :value="openingBalance" /></td>
+                  <td v-if="hasActions" class="stmt-noprint" />
                 </tr>
                 <tr v-if="!lines.length">
-                  <td colspan="7" class="dt-empty">{{ t('finance.statement.empty') }}</td>
+                  <td :colspan="hasActions ? 8 : 7" class="dt-empty">{{ t('finance.statement.empty') }}</td>
                 </tr>
-                <tr v-for="l in lines" :key="l.key" class="dt-row">
+                <tr v-for="l in lines" :key="l.key" class="dt-row" :class="{ 'stmt-dim': l.dim }">
                   <td class="stmt-muted">{{ fmtLineDate(l.date) }}</td>
                   <td>{{ l.type }}</td>
                   <td class="mono">
@@ -181,6 +189,7 @@ onBeforeUnmount(() => {
                   <td class="ta-right"><Money v-if="Number(l.debit)" :value="l.debit" /></td>
                   <td class="ta-right"><Money v-if="Number(l.credit)" :value="l.credit" /></td>
                   <td class="ta-right stmt-bal"><Money :value="l.running_balance" /></td>
+                  <td v-if="hasActions" class="ta-right stmt-noprint"><slot name="actions" :line="l" /></td>
                 </tr>
               </tbody>
               <tfoot>
@@ -189,11 +198,13 @@ onBeforeUnmount(() => {
                   <td class="ta-right"><Money :value="totals?.debit || 0" /></td>
                   <td class="ta-right"><Money :value="totals?.credit || 0" /></td>
                   <td />
+                  <td v-if="hasActions" class="stmt-noprint" />
                 </tr>
                 <tr class="stmt-total stmt-closing">
                   <td>{{ dayLabel(dateTo) || '' }}</td>
                   <td colspan="5">{{ t('finance.statement.closing') }}</td>
                   <td class="ta-right"><Money :value="closingBalance" /></td>
+                  <td v-if="hasActions" class="stmt-noprint" />
                 </tr>
               </tfoot>
             </table>
@@ -239,6 +250,7 @@ onBeforeUnmount(() => {
 .stmt-closing td:last-child  { border-bottom-right-radius:15px; }
 .stmt-foot { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--text-muted); }
 .stmt-printed { display:none; }
+.stmt-dim td { opacity:.55; }
 
 @media print {
   .stmt-sheet { display:block; color:black; background:white; padding:0; }
@@ -253,6 +265,8 @@ onBeforeUnmount(() => {
   .stmt-foot { margin-top:14px; }
   .stmt-printed { display:inline; }
   .stmt-link { text-decoration:none; font-weight:400; }
+  .stmt-noprint { display:none; }
+  col.stmt-noprint { width:0 !important; }
 }
 </style>
 

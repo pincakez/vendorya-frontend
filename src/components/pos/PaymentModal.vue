@@ -100,8 +100,20 @@
             <input v-model="shiftCash" type="number" min="0" step="0.01" class="form-input" placeholder="0.00"
                    @keydown.enter.stop.prevent="openShift" />
           </label>
-          <BaseButton :loading="shiftOpening" @click="openShift">{{ t('finance.shifts.open_modal.open_btn') }}</BaseButton>
+          <BaseButton :loading="shiftOpening" :disabled="treasuryOn && (!shiftDrawer || (shiftDiff !== 0 && !shiftReason.trim()))" @click="openShift">{{ t('finance.shifts.open_modal.open_btn') }}</BaseButton>
         </div>
+        <!-- Treasury on (s169c): the drawer's book balance carries over; a count that differs needs a reason -->
+        <template v-if="treasuryOn">
+          <div v-if="shiftDrawer" class="pm-shift-book">
+            {{ t('finance.treasury.drawer') }}: <b>{{ shiftDrawer.name }}</b> · {{ t('finance.treasury.in_book') }}: <b>{{ formatCurrency(shiftDrawer.book_balance) }}</b>
+          </div>
+          <div v-else class="pm-shift-book">{{ t('finance.treasury.drawers_all_busy') }}</div>
+          <label v-if="shiftDrawer && shiftDiff !== 0" class="pm-shift-label">
+            <span>{{ t('finance.treasury.f.reason') }}</span>
+            <input v-model="shiftReason" type="text" class="form-input" :placeholder="t('finance.treasury.f.reason_ph')"
+                   @keydown.enter.stop.prevent="openShift" />
+          </label>
+        </template>
       </div>
 
       <!-- Error -->
@@ -124,7 +136,9 @@ import api from '@/api/axios'
 import { useCartStore } from '@/stores/cart'
 import { usePosStore } from '@/stores/pos'
 import { useAuthStore } from '@/stores/auth'
-import { formatNumber } from '@/utils/format'
+import { formatNumber, formatCurrency } from '@/utils/format'
+import { useFormatStore } from '@/stores/format'
+import { treasuryError } from '@/utils/treasury'
 import { serialErrorText } from '@/utils/serials'
 import AppModal from '@/components/ui/AppModal.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -153,11 +167,26 @@ const allowAgel    = ref(true)
 const shiftMissing = ref(false)
 const shiftCash    = ref('')
 const shiftOpening = ref(false)
+// Treasury on (s169c): the first free drawer of this branch → { id, name, book_balance }.
+const fmtStore    = useFormatStore()
+const treasuryOn  = computed(() => fmtStore.treasuryEnabled)
+const shiftDrawer = ref(null)
+const shiftReason = ref('')
+const shiftDiff   = computed(() => !shiftDrawer.value || shiftCash.value === '' ? 0
+  : Math.round((Number(shiftCash.value) - Number(shiftDrawer.value.book_balance || 0)) * 100) / 100)
+
+async function loadShiftDrawer() {
+  try {
+    const { data } = await api.get('/api/finance/shifts/drawers/', { params: { branch: pos.branchId } })
+    shiftDrawer.value = (data?.results ?? data ?? []).find(d => !d.busy) || null
+  } catch { shiftDrawer.value = null }
+}
 
 async function checkShift() {
   try {
     const { data } = await api.get('/api/finance/shifts/drawer/')
     shiftMissing.value = !data?.shift || data.shift.branch !== pos.branchId
+    if (shiftMissing.value && treasuryOn.value) loadShiftDrawer()
   } catch { /* the server still checks at checkout */ }
 }
 
@@ -165,7 +194,12 @@ async function openShift() {
   if (shiftOpening.value) return
   shiftOpening.value = true
   try {
-    await api.post('/api/finance/shifts/', { branch: pos.branchId, starting_cash: shiftCash.value || 0 })
+    const body = { branch: pos.branchId, starting_cash: shiftCash.value || 0 }
+    if (treasuryOn.value && shiftDrawer.value) {
+      body.drawer = shiftDrawer.value.id
+      if (shiftDiff.value !== 0 && shiftReason.value.trim()) body.count_reason = shiftReason.value.trim()
+    }
+    await api.post('/api/finance/shifts/', body)
     shiftMissing.value = false
     error.value = ''
     showSuccessToast(t('pos.payment.shift_opened'))
@@ -173,7 +207,9 @@ async function openShift() {
   } catch (e) {
     const d = e?.response?.data
     showErrorToast(d?.code === 'shift_already_open' ? t('finance.shifts.err_already_open')
+      : d?.code ? treasuryError(t, e, t('pos.payment.err_shift_open'))
       : (typeof d?.detail === 'string' ? d.detail : (Array.isArray(d) && d[0]) || t('pos.payment.err_shift_open')), 3500)
+    if (treasuryOn.value) loadShiftDrawer()
   } finally {
     shiftOpening.value = false
   }
@@ -371,6 +407,7 @@ async function confirm() {
     const data = e?.response?.data
     if (data?.code === 'shift_required') {
       shiftMissing.value = true
+      if (treasuryOn.value) loadShiftDrawer()
       error.value = t('pos.payment.err_shift_required')
       showErrorToast(error.value, 3500)
     } else if (data?.serial_code) {
@@ -488,6 +525,7 @@ async function confirm() {
 }
 .pm-shift-msg { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; font-weight: 700; color: var(--warning); }
 .pm-shift-msg svg { flex-shrink: 0; margin-top: 1px; }
+.pm-shift-book { font-size: 12px; color: var(--text-secondary); }
 .pm-shift-row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
 .pm-shift-label { flex: 1; min-width: 140px; display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: var(--text-secondary); }
 .pm-error {

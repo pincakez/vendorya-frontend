@@ -41,6 +41,10 @@ const router = createRouter({
         { path: 'finance/shifts',           component: () => import('@/views/finance/Shifts.vue'),            meta: { store: true } },
         { path: 'finance/shifts/:id',       component: () => import('@/views/finance/ShiftDetail.vue'),     meta: { store: true }, props: true },
         { path: 'finance/cash-drawer',  component: () => import('@/views/finance/CashDrawer.vue'),         meta: { store: true } },
+        // Treasury Wave 1 (s169c): money boxes. meta.treasury = shown in menus only when the shop's Treasury switch is on
+        // (canOpen below); a deep link while off still opens and the page explains it (the API answers code treasury_off).
+        { path: 'finance/treasury',     component: () => import('@/views/finance/Treasury.vue'),           meta: { store: true, minRole: 'MANAGER', treasury: true } },
+        { path: 'finance/treasury/:id', component: () => import('@/views/finance/TreasuryBox.vue'),        meta: { store: true, minRole: 'MANAGER', treasury: true }, props: true },
         // Reports v1
         { path: 'reports/sales',        component: () => import('@/views/reports/SalesReport.vue'),         meta: { store: true, minRole: 'MANAGER' } },
         { path: 'reports/profit',       component: () => import('@/views/reports/ProfitMargin.vue'),        meta: { store: true, minRole: 'MANAGER' } },
@@ -171,7 +175,9 @@ router.beforeEach(async (to, from, next) => {
 // s167: may the signed-in user open this path? Reads the route's meta.minRole — the sidebar and the
 // header page-search use it so a menu never offers a page the guard above would bounce.
 export function canOpen(path) {
-  return useAuthStore().hasRole(router.resolve(path).meta.minRole)
+  const meta = router.resolve(path).meta
+  if (meta.treasury && !useFormatStore().treasuryEnabled) return false   // s169c: Treasury switch off → no menu entry
+  return useAuthStore().hasRole(meta.minRole)
 }
 
 export default router

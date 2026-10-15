@@ -162,6 +162,34 @@
         </div>
       </div>
 
+      <!-- Treasury (money boxes) — s169c. Off = today's Vendorya exactly; on = the server makes one drawer box per branch. -->
+      <div class="cap-card">
+        <div class="cap-icon" style="background:var(--info-soft);color:var(--info);"><Vault :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.treasury_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='treasury' }" @click="toggleInfo('treasury')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.treasury_desc') }}</div>
+          <div v-if="openInfo==='treasury'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.treasury_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.treasury_info_off') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.treasury_info_start') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.treasury_enabled ? 'status-on' : 'status-off'">
+              {{ form.treasury_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.treasury_enabled }" @click="requestToggle('treasury_enabled', true)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+          <div v-if="form.treasury_enabled && !treasuryWasOn" class="sub-block">
+            <div class="sub-muted">{{ t('settings.capabilities.treasury_on_note') }}</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Search & Autocomplete -->
       <div class="cap-card">
         <div class="cap-icon" style="background:#ede9fe;color:#7c3aed;"><Search :size="20" /></div>
@@ -226,7 +254,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search } from 'lucide-vue-next'
+import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
 import { useFormatStore } from '@/stores/format'
@@ -254,7 +282,10 @@ const form = reactive({
   default_weight_unit:     'KG',
   autocomplete_source:     'memory_base',
   mb_auto_register:        true,
+  treasury_enabled:        false,
 })
+// What the server had when the page loaded — the "boxes are made when you save" note shows only on a fresh switch-on.
+const treasuryWasOn = ref(false)
 
 // Switch → translation key for its store-type label
 const storeTypeLabel = computed(() => t(`settings.capabilities.types.${storeType.value}`))
@@ -315,7 +346,9 @@ async function load() {
       default_weight_unit:     settingsRes.data.default_weight_unit === 'G' ? 'G' : 'KG',
       autocomplete_source:     settingsRes.data.autocomplete_source || 'memory_base',
       mb_auto_register:        settingsRes.data.mb_auto_register ?? true,
+      treasury_enabled:        !!settingsRes.data.treasury_enabled,
     })
+    treasuryWasOn.value = !!settingsRes.data.treasury_enabled
   } finally { loading.value = false }
 }
 
@@ -336,8 +369,10 @@ async function save() {
       default_weight_unit:     form.default_weight_unit,
       autocomplete_source:     form.autocomplete_source,
       mb_auto_register:        form.mb_auto_register,
+      treasury_enabled:        form.treasury_enabled,
     })
-    fmt.apply({ default_weight_unit: form.default_weight_unit })
+    fmt.apply({ default_weight_unit: form.default_weight_unit, treasury_enabled: form.treasury_enabled })
+    treasuryWasOn.value = form.treasury_enabled
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
@@ -372,6 +407,8 @@ onMounted(load)
 
 .info-btn { width:22px; height:22px; border-radius:50%; border:1px solid var(--border); background:var(--bg-app); color:var(--text-muted); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; transition:all 120ms; }
 .info-btn:hover, .info-btn.on { border-color:var(--accent); color:var(--accent); }
+.info-p { margin:0 0 6px; }
+.info-p:last-child { margin-bottom:0; }
 .info-box { font-size:12.5px; line-height:1.55; color:var(--text-primary); background:var(--bg-app); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:14px; }
 
 .affect-flag { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#b91c1c; background:#fee2e2; border-radius:999px; padding:2px 8px; }

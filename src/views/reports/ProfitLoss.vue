@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">{{ t('reports.pnl.title') }}</h1>
-        <p class="page-sub">{{ t('reports.pnl.subtitle') }}</p>
+        <p class="page-sub">{{ hasOtherIncome ? t('reports.pnl.subtitle_other') : t('reports.pnl.subtitle') }}</p>
       </div>
     </div>
 
@@ -25,6 +25,11 @@
       <div class="kpi-card">
         <div class="kpi-label">{{ t('reports.pnl.kpi.expenses') }}</div>
         <div class="kpi-value"><Money :value="sum.expenses ?? 0" /></div>
+      </div>
+      <!-- Treasury (s169c): money that came in from outside sales (rent received, a refund from a supplier…) -->
+      <div v-if="hasOtherIncome" class="kpi-card">
+        <div class="kpi-label">{{ t('reports.pnl.kpi.other_income') }}</div>
+        <div class="kpi-value"><Money :value="sum.other_income ?? 0" /></div>
       </div>
       <div class="kpi-card kpi-net" :class="netClass">
         <div class="kpi-label">{{ t('reports.pnl.kpi.net_profit') }}</div>
@@ -75,8 +80,12 @@ const columns = computed(() => [
   { key: 'cogs',         label: t('reports.pnl.cols.cogs'), type: 'currency' },
   { key: 'gross_profit', label: t('reports.pnl.cols.gross_profit'), type: 'currency' },
   { key: 'expenses',     label: t('reports.pnl.cols.expenses'), type: 'currency' },
+  ...(hasOtherIncome.value ? [{ key: 'other_income', label: t('reports.pnl.cols.other_income'), type: 'currency' }] : []),
   { key: 'net',          label: t('reports.pnl.cols.net'), type: 'currency', accent: 'sign' },
 ])
+// The server adds `other_income` only when the shop has any (Treasury); show the row/column only then.
+const hasOtherIncome = computed(() => sum.value.other_income != null && Number(sum.value.other_income) !== 0
+  || rows.value.some(r => r.other_income != null && Number(r.other_income) !== 0))
 
 function onFilters(f) { filters.value = f; fetchData() }
 

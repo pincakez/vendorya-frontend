@@ -161,6 +161,11 @@
         <BaseSelect v-model="payForm.payment_method" :options="methodOptions"
                     :label="t('people.supplier_detail.pay_form.method')"
                     :placeholder="methodOptions.length ? '' : t('people.supplier_detail.pay_form.no_methods')" />
+        <!-- Treasury on (s169c): the box the money leaves. Empty = the server picks the method's box. -->
+        <div v-if="treasuryOn">
+          <BaseSelect v-model="payForm.paid_from" :options="paidFromOptions" :label="t('finance.treasury.paid_from')" />
+          <p v-if="payBox" class="pay-help">{{ t('finance.treasury.in_box_now') }}: <Money :value="payBox.balance" /></p>
+        </div>
         <BaseInput v-model="payForm.note"
                    :label="t('people.supplier_detail.pay_form.note')"
                    :placeholder="t('people.supplier_detail.pay_form.note_ph')" />
@@ -174,7 +179,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronLeft, Lock, Plus, Trash2, ScrollText, Package, Wallet } from 'lucide-vue-next'
 import api from '@/api/axios'
@@ -186,9 +191,22 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseSelect from '@/components/base/BaseSelect.vue'
 import { showSuccessToast, showErrorToast } from '@/utils/toast'
+import { useFormatStore } from '@/stores/format'
+import { fetchBoxes, boxOptionLabel, treasuryError } from '@/utils/treasury'
 
 const { t } = useI18n()
 const props = defineProps({ id: String })
+const fmt = useFormatStore()
+
+// ── Treasury (s169c): "Paid from" a money box, only when the shop's switch is on ──
+const treasuryOn = computed(() => fmt.treasuryEnabled)
+const boxes = ref([])
+const paidFromOptions = computed(() => [
+  { value: '', label: t('finance.treasury.auto_box') },
+  ...boxes.value.filter(b => b.is_active && b.system_role !== 'UNSORTED')
+    .map(b => ({ value: b.id, label: boxOptionLabel(t, b) })),
+])
+const payBox = computed(() => boxes.value.find(b => b.id === payForm.value.paid_from) || null)
 
 // PROLINE-PARITY Upgrade 6: the shop's OWN payment methods (the till's list) — minus Ajel (credit is not money
 // paid) and store credit (a customer's wallet; the list endpoint already hides it).
@@ -299,7 +317,18 @@ const payLoading = ref(false)
 const payOpen = ref(false)
 const paySaving = ref(false)
 const payErr = ref('')
-const payForm = ref({ amount: '', date: '', payment_method: '', note: '' })
+const payForm = ref({ amount: '', date: '', payment_method: '', note: '', paid_from: '' })
+
+// Prefill "Paid from" with the box the chosen method lands in (when known); a cash method has none → automatic
+// (the server uses the drawer of my open shift). Never overrides a box the user picked by hand.
+const paidFromTouched = ref(false)
+function landsInFor(methodId) {
+  const m = methods.value.find(x => x.id === methodId)
+  const box = m?.lands_in && boxes.value.find(b => b.id === m.lands_in && b.is_active)
+  return box ? box.id : ''
+}
+watch(() => payForm.value.payment_method, id => { if (!paidFromTouched.value) payForm.value.paid_from = landsInFor(id) })
+watch(() => payForm.value.paid_from, v => { if (v !== landsInFor(payForm.value.payment_method)) paidFromTouched.value = true })
 
 async function fetchPayments() {
   payLoading.value = true
@@ -312,8 +341,10 @@ async function fetchPayments() {
 
 async function openPay() {
   payErr.value = ''
-  payForm.value = { amount: '', date: new Date().toISOString().slice(0, 10), payment_method: '', note: '' }
+  paidFromTouched.value = false
+  payForm.value = { amount: '', date: new Date().toISOString().slice(0, 10), payment_method: '', note: '', paid_from: '' }
   payOpen.value = true
+  if (treasuryOn.value) boxes.value = await fetchBoxes()
   if (!methods.value.length) {
     try {
       const r = await api.get('/api/finance/payment-methods/')
@@ -337,6 +368,7 @@ async function savePay() {
       date: payForm.value.date ? new Date(payForm.value.date).toISOString() : undefined,
       payment_method: payForm.value.payment_method,
       note: payForm.value.note || '',
+      ...(treasuryOn.value && payForm.value.paid_from ? { paid_from: payForm.value.paid_from } : {}),
     })
     payOpen.value = false
     showSuccessToast(t('people.supplier_detail.pay_form.recorded'))
@@ -344,7 +376,8 @@ async function savePay() {
   } catch (e) {
     const d = e?.response?.data || {}
     const first = v => (Array.isArray(v) ? v[0] : v)
-    showErrorToast(first(d.amount) || first(d.payment_method) || t('people.supplier_detail.pay_form.save_failed'))
+    showErrorToast(d.code ? treasuryError(t, e) : (first(d.amount) || first(d.payment_method) || first(d.paid_from)
+      || t('people.supplier_detail.pay_form.save_failed')), 3500)
   } finally { paySaving.value = false }
 }
 
@@ -354,7 +387,7 @@ async function deletePay(p) {
     await api.delete(`/api/finance/supplier-payments/${p.id}/`)
     await Promise.all([fetchPayments(), fetchSupplier(), fetchStatement()])
     showSuccessToast(t('people.supplier_detail.pay_form.deleted'))
-  } catch { showErrorToast(t('people.supplier_detail.pay_form.delete_failed')) }
+  } catch (e) { showErrorToast(e?.response?.data?.code ? treasuryError(t, e) : t('people.supplier_detail.pay_form.delete_failed'), 3500) }
 }
 
 function fmtDate(iso) {
@@ -370,6 +403,7 @@ onMounted(() => { fetchSupplier(); fetchPurchases(); fetchPayments(); fetchState
 .header-left { display:flex; align-items:flex-start; gap:12px; }
 .header-right { flex-shrink:0; }
 .pay-form { display:flex; flex-direction:column; gap:14px; }
+.pay-help { font-size:12px; color:var(--text-muted); margin:6px 0 0; }
 .del-btn { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:7px; border:none; background:none; color:var(--text-muted); cursor:pointer; transition:background 100ms, color 100ms; }
 .del-btn:hover { background:rgba(220,38,38,0.10); color:var(--danger); }
 .back-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 10px; border-radius:8px; border:1px solid var(--border); background:none; color:var(--text-secondary); cursor:pointer; font-size:13px; font-weight:500; transition:background 100ms; margin-top:2px; }

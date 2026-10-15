@@ -26,11 +26,11 @@
         </div>
         <table v-else class="data-table">
           <thead>
-            <tr><th>{{ t('common.date') }}</th><th>{{ t('finance.expenses.col_category') }}</th><th>{{ t('finance.expenses.col_amount') }}</th><th>{{ t('common.description') }}</th><th style="width:60px;"></th></tr>
+            <tr><th>{{ t('common.date') }}</th><th>{{ t('finance.expenses.col_category') }}</th><th>{{ t('finance.expenses.col_amount') }}</th><th v-if="treasuryOn">{{ t('finance.treasury.paid_from') }}</th><th>{{ t('common.description') }}</th><th style="width:60px;"></th></tr>
           </thead>
           <tbody>
             <tr v-if="expenses.length === 0">
-              <td colspan="5" class="table-empty">
+              <td :colspan="treasuryOn ? 6 : 5" class="table-empty">
                 <Wallet :size="32" style="opacity:.3;margin-bottom:8px;" />
                 <div>{{ t('finance.expenses.empty') }}</div>
               </td>
@@ -39,6 +39,7 @@
               <td>{{ fmtDate(e.date) }}</td>
               <td>{{ categoryName(e.category) }}</td>
               <td class="col-amount"><Money :value="e.amount" /></td>
+              <td v-if="treasuryOn" class="col-desc">{{ paidFromLabel(e) }}</td>
               <td class="col-desc">{{ e.description || '—' }}</td>
               <td>
                 <button class="row-action danger" @click="deleteExpense(e.id)"><Trash2 :size="13" /></button>
@@ -90,6 +91,12 @@
           <label class="form-label">{{ t('finance.expenses.exp_modal.date_label') }}</label>
           <input v-model="expModal.date" type="date" class="form-input" />
         </div>
+        <!-- Treasury on (s169c): which money box the expense is paid from — required -->
+        <div v-if="treasuryOn">
+          <BaseSelect v-model="expModal.paid_from" :options="paidFromOptions" :label="t('finance.treasury.paid_from')"
+                      :placeholder="t('finance.treasury.f.pick_box')" />
+          <p v-if="expBox" class="exp-help">{{ t('finance.treasury.in_box_now') }}: <Money :value="expBox.balance" /></p>
+        </div>
         <div>
           <label class="form-label">{{ t('finance.expenses.exp_modal.description_label') }}</label>
           <textarea v-model="expModal.description" class="form-input" rows="2" :placeholder="t('finance.expenses.exp_modal.description_placeholder')" />
@@ -97,7 +104,7 @@
       </div>
       <template #footer>
         <button class="btn-ghost" @click="expModal.open = false">{{ t('common.cancel') }}</button>
-        <button class="btn-primary" :disabled="!expModal.category || !expModal.amount" @click="saveExpense">{{ t('common.save') }}</button>
+        <button class="btn-primary" :disabled="!expModal.category || !expModal.amount || (treasuryOn && !expModal.paid_from) || expModal.saving" @click="saveExpense">{{ t('common.save') }}</button>
       </template>
     </AppModal>
 
@@ -134,10 +141,41 @@ useCtrlN(openNewExpense)
 import { useAuthStore } from '@/stores/auth'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
 import { formatNumber } from '@/utils/format'
+import { useFormatStore } from '@/stores/format'
+import { showErrorToast } from '@/utils/toast'
+import { fetchBoxes, boxName, boxOptionLabel, treasuryError } from '@/utils/treasury'
 
 const { t } = useI18n()
 const auth = useAuthStore()
+const fmt  = useFormatStore()
+
+// ── Treasury (s169c): "Paid from" a money box — only when the shop's switch is on ──
+const treasuryOn = computed(() => fmt.treasuryEnabled)
+const boxes = ref([])
+const boxById = computed(() => Object.fromEntries(boxes.value.map(b => [b.id, b])))
+const paidFromOptions = computed(() => boxes.value
+  .filter(b => b.is_active && b.system_role !== 'UNSORTED')
+  .map(b => ({ value: b.id, label: boxOptionLabel(t, b) })))
+const expBox = computed(() => boxById.value[expModal.paid_from] || null)
+function paidFromLabel(e) {
+  if (!e.paid_from) return t('finance.treasury.before_treasury')
+  return e.paid_from_name || boxName(t, boxById.value[e.paid_from])
+}
+watch(treasuryOn, async on => { if (on) boxes.value = await fetchBoxes() }, { immediate: true })
+
+// Default box: the drawer of my open shift when I'm at the till, else the first cash box (the safe).
+async function defaultPaidFrom() {
+  let drawer = ''
+  try {
+    const { data } = await api.get('/api/finance/shifts/drawer/')
+    drawer = data?.shift?.drawer || ''
+  } catch { /* no shift */ }
+  if (drawer && paidFromOptions.value.some(o => o.value === drawer)) return drawer
+  const cash = boxes.value.find(b => b.is_active && b.kind === 'CASH')
+  return cash?.id || ''
+}
 
 const tabs = [
   { id: 'expenses',   icon: Wallet },
@@ -180,22 +218,35 @@ async function deleteExpense(id) {
 }
 
 // Expense modal
-const expModal = reactive({ open: false, category: '', amount: '', date: '', description: '' })
+const expModal = reactive({ open: false, category: '', amount: '', date: '', description: '', paid_from: '', saving: false })
 
-function openNewExpense() {
-  Object.assign(expModal, { open: true, category: '', amount: '', date: new Date().toISOString().slice(0,10), description: '' })
+async function openNewExpense() {
+  Object.assign(expModal, { open: true, category: '', amount: '', date: new Date().toISOString().slice(0,10), description: '', paid_from: '', saving: false })
+  if (treasuryOn.value) {
+    boxes.value = await fetchBoxes()   // fresh balances
+    expModal.paid_from = await defaultPaidFrom()
+  }
 }
 
 async function saveExpense() {
-  await api.post('/api/finance/expenses/', {
-    category: expModal.category,
-    amount: expModal.amount,
-    date: expModal.date,
-    description: expModal.description,
-    branch: auth.user?.store?.id,
-  })
-  expModal.open = false
-  fetchExpenses(1)
+  if (expModal.saving) return
+  expModal.saving = true
+  try {
+    const body = {
+      category: expModal.category,
+      amount: expModal.amount,
+      date: expModal.date,
+      description: expModal.description,
+      branch: auth.user?.store?.id,
+    }
+    if (treasuryOn.value) body.paid_from = expModal.paid_from
+    await api.post('/api/finance/expenses/', body)
+    expModal.open = false
+    fetchExpenses(1)
+    if (treasuryOn.value) boxes.value = await fetchBoxes()
+  } catch (e) {
+    showErrorToast(treasuryError(t, e, t('finance.expenses.save_failed')), 3500)
+  } finally { expModal.saving = false }
 }
 
 // Category modal
@@ -246,6 +297,7 @@ function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { yea
 .col-name   { font-weight:500; }
 .col-amount { font-variant-numeric:tabular-nums; color:var(--danger); font-weight:600; }
 .col-desc   { color:var(--text-muted); font-size:12px; max-width:220px; }
+.exp-help   { font-size:12px; color:var(--text-muted); margin:6px 0 0; }
 
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action:hover        { background:var(--border); color:var(--text-primary); }

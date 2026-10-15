@@ -642,15 +642,20 @@
       <div class="table-wrap">
         <div v-if="pmLoading" class="table-skeleton"><div v-for="i in 3" :key="i" class="skeleton-row" /></div>
         <table v-else class="data-table">
-          <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('settings.payment_methods.type') }}</th><th>{{ t('settings.store.agel') }}</th><th style="width:70px;"></th></tr></thead>
+          <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('settings.payment_methods.type') }}</th><th>{{ t('settings.store.agel') }}</th><th v-if="fmt.treasuryEnabled">{{ t('finance.treasury.lands_in') }}</th><th style="width:70px;"></th></tr></thead>
           <tbody>
             <tr v-if="paymentMethods.length === 0">
-              <td colspan="4" class="table-empty"><CreditCard :size="28" style="opacity:.3;margin-bottom:8px;" /><div>{{ t('settings.payment_methods.empty') }}</div></td>
+              <td :colspan="fmt.treasuryEnabled ? 5 : 4" class="table-empty"><CreditCard :size="28" style="opacity:.3;margin-bottom:8px;" /><div>{{ t('settings.payment_methods.empty') }}</div></td>
             </tr>
             <tr v-for="pm in paymentMethods" :key="pm.id" class="table-row">
               <td class="col-name">{{ pm.name }}</td>
               <td><span :class="pm.is_cash ? 'badge-cash' : 'badge-digital'">{{ pm.is_cash ? t('settings.payment_methods.cash') : t('settings.store.digital') }}</span></td>
               <td><span v-if="pm.is_agel" class="badge-agel">{{ t('settings.store.agel') }}</span><span v-else class="text-muted-sm">—</span></td>
+              <td v-if="fmt.treasuryEnabled">
+                <span v-if="!pmNeedsBox(pm)" class="text-muted-sm">{{ pm.is_cash ? t('finance.treasury.lands_in_drawer') : '—' }}</span>
+                <span v-else-if="pm.lands_in && pmBoxName(pm.lands_in)">{{ pmBoxName(pm.lands_in) }}</span>
+                <span v-else class="badge-unsorted">{{ t('finance.treasury.unsorted_name') }}</span>
+              </td>
               <td>
                 <button class="row-action" @click="openEditPM(pm)"><Pencil :size="13" /></button>
                 <button class="row-action danger" @click="deletePM(pm.id)"><Trash2 :size="13" /></button>
@@ -886,6 +891,11 @@
             <button class="toggle-btn" :class="{ on: pmModal.is_agel }" @click="pmModal.is_agel = !pmModal.is_agel"><span class="toggle-knob" /></button>
           </div>
         </div>
+        <!-- Treasury on (s169c): the money box this method's money lands in (not for cash / Ajel / store credit) -->
+        <div v-if="fmt.treasuryEnabled && pmNeedsBox(pmModal)">
+          <BaseSelect v-model="pmModal.lands_in" :options="landsInOptions" :label="t('finance.treasury.lands_in')" />
+          <div class="toggle-desc" style="margin-top:6px;">{{ t('finance.treasury.lands_in_hint') }}</div>
+        </div>
       </div>
       <template #footer>
         <button class="btn-ghost" @click="pmModal.open = false">{{ t('common.cancel') }}</button>
@@ -908,6 +918,8 @@ import { useFormatStore } from '@/stores/format'
 import { useAuthStore } from '@/stores/auth'
 import { formatCurrency } from '@/utils/format'
 import AppModal from '@/components/ui/AppModal.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
+import { fetchBoxes, boxName, boxOptionLabel, treasuryError } from '@/utils/treasury'
 import { useQZTray, buildLabelTSPL } from '@/composables/useQZTray'
 
 const { t } = useI18n()
@@ -1301,21 +1313,32 @@ async function saveBranch() {
 const paymentMethods = ref([])
 const pmLoading      = ref(false)
 const pmSaving       = ref(false)
-const pmModal        = reactive({ open: false, id: null, name: '', is_cash: false, is_agel: false })
+const pmModal        = reactive({ open: false, id: null, name: '', is_cash: false, is_agel: false, is_store_credit: false, lands_in: '' })
+// Treasury (s169c): "Money lands in" — options = the shop's active boxes that are not till drawers.
+const tBoxes = ref([])
+const landsInOptions = computed(() => [
+  { value: '', label: t('finance.treasury.lands_in_none') },
+  ...tBoxes.value.filter(b => b.is_active && b.kind !== 'DRAWER' && b.system_role !== 'UNSORTED')
+    .map(b => ({ value: b.id, label: boxOptionLabel(t, b) })),
+])
+function pmNeedsBox(pm) { return !pm.is_cash && !pm.is_agel && !pm.is_store_credit }
+function pmBoxName(id) { const b = tBoxes.value.find(x => x.id === id); return b ? boxName(t, b) : '' }
+async function loadTBoxes() { if (fmt.treasuryEnabled) tBoxes.value = await fetchBoxes() }
 
 async function fetchPMs() {
   pmLoading.value = true
-  try { const res = await api.get('/api/finance/payment-methods/'); paymentMethods.value = res.data.results ?? res.data } finally { pmLoading.value = false }
+  try { const res = await api.get('/api/finance/payment-methods/'); paymentMethods.value = res.data.results ?? res.data; loadTBoxes() } finally { pmLoading.value = false }
 }
-function openNewPM()    { Object.assign(pmModal, { open: true, id: null, name: '', is_cash: false, is_agel: false }) }
-function openEditPM(pm) { Object.assign(pmModal, { open: true, id: pm.id, name: pm.name, is_cash: pm.is_cash, is_agel: pm.is_agel ?? false }) }
+function openNewPM()    { Object.assign(pmModal, { open: true, id: null, name: '', is_cash: false, is_agel: false, is_store_credit: false, lands_in: '' }) }
+function openEditPM(pm) { Object.assign(pmModal, { open: true, id: pm.id, name: pm.name, is_cash: pm.is_cash, is_agel: pm.is_agel ?? false, is_store_credit: !!pm.is_store_credit, lands_in: pm.lands_in || '' }) }
 async function savePM() {
   pmSaving.value = true
   try {
     const payload = { name: pmModal.name, is_cash: pmModal.is_cash, is_agel: pmModal.is_agel }
+    if (fmt.treasuryEnabled) payload.lands_in = pmNeedsBox(pmModal) ? (pmModal.lands_in || null) : null
     pmModal.id ? await api.patch(`/api/finance/payment-methods/${pmModal.id}/`, payload) : await api.post('/api/finance/payment-methods/', payload)
     pmModal.open = false; fetchPMs()
-  } catch (e) { alert(e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.generic')) } finally { pmSaving.value = false }
+  } catch (e) { alert(e.response?.data?.code ? treasuryError(t, e) : (e.response?.data ? JSON.stringify(e.response.data) : t('settings.store.err.generic'))) } finally { pmSaving.value = false }
 }
 async function deletePM(id) {
   if (!confirm(t('settings.store.confirm_delete_pm'))) return
@@ -1534,6 +1557,7 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .badge-cash    { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:var(--success-soft); color:#166534; }
 .badge-digital { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:#f3f4f6; color:#6b7280; }
 .badge-agel    { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:#ede9fe; color:#7c3aed; }
+.badge-unsorted { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; background:var(--warning-soft); color:var(--warning-hover); }
 
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action:hover        { background:var(--border); color:var(--text-primary); }

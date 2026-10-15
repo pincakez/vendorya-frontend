@@ -37,6 +37,9 @@ export const useFormatStore = defineStore('format', {
     // §WT: how weights are shown/typed — 'KG' (default) or 'G'. Display only;
     // stock is always kg to the gram. Read via utils/format.js formatWeight().
     weightUnit: 'KG',
+    // Treasury (money boxes) capability switch — StoreSettings.treasury_enabled. Gates the Finance → Treasury
+    // menu and the "paid from" / "lands in" / drawer pickers. Off = the app behaves exactly as before.
+    treasuryEnabled: false,
     // Currency-symbol tint — a per-user (per-browser) display preference.
     symbolColor: localStorage.getItem(COLOR_KEY) || DEFAULT_COLOR,
     loaded: false,
@@ -77,18 +80,20 @@ export const useFormatStore = defineStore('format', {
         this.itemNoun           = res.data?.item_noun || 'NAME'
         this.categoryLevels     = normalizeLevels(res.data?.category_level_names)
         this.weightUnit         = res.data?.default_weight_unit === 'G' ? 'G' : 'KG'
+        this.treasuryEnabled    = !!res.data?.treasury_enabled
       } catch {
         this.decimals = 2
         this.thousandsSeparator = false
         this.itemNoun = 'NAME'
         this.categoryLevels = DEFAULT_LEVELS.slice()
         this.weightUnit = 'KG'
+        this.treasuryEnabled = false
       }
       this.loaded = true
     },
 
     /** Called after the user saves StoreSettings or sudo changes the store currency. */
-    apply({ symbol, position, decimals, thousands_separator, item_noun, category_level_names, default_weight_unit }) {
+    apply({ symbol, position, decimals, thousands_separator, item_noun, category_level_names, default_weight_unit, treasury_enabled }) {
       if (symbol !== undefined)   this.symbol   = symbol
       if (position !== undefined) this.position = position
       if (decimals !== undefined) this.decimals = Number(decimals)
@@ -96,6 +101,7 @@ export const useFormatStore = defineStore('format', {
       if (item_noun !== undefined) this.itemNoun = item_noun || 'NAME'
       if (category_level_names !== undefined) this.categoryLevels = normalizeLevels(category_level_names)
       if (default_weight_unit !== undefined) this.weightUnit = default_weight_unit === 'G' ? 'G' : 'KG'
+      if (treasury_enabled !== undefined) this.treasuryEnabled = !!treasury_enabled
     },
 
     /** Push the chosen currency-symbol colour onto <html> so the CSS var
@@ -121,6 +127,7 @@ export const useFormatStore = defineStore('format', {
       this.itemNoun = 'NAME'
       this.categoryLevels = DEFAULT_LEVELS.slice()
       this.weightUnit = 'KG'
+      this.treasuryEnabled = false
       this.loaded = false
       // symbolColor is a user preference — intentionally kept across logout.
     },
