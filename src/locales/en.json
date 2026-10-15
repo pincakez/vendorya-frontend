@@ -2859,6 +2859,7 @@
       "unit_warranty_until": "warranty until {date}",
       "unit_warranty_ended": "warranty ended {date}",
       "unit_no_warranty": "no warranty",
+      "unit_in_warranty": "In warranty",
       "unit_warranty_ticked": "\"Under warranty\" was ticked for you — untick it if this repair is not covered.",
       "damage": "Reported problem / damage",
       "damage_ph": "What the customer says is wrong, visible damage…",
