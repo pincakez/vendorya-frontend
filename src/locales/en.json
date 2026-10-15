@@ -1921,7 +1921,8 @@
       "col_tax": "Tax",
       "col_total": "Total",
       "payments": "Payments",
-      "info_sold_by": "Sold by"
+      "info_sold_by": "Sold by",
+      "info_source_number": "Old system no."
     },
     "invoice_print": {
       "back": "Back",

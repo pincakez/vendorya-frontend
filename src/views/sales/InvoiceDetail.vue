@@ -42,6 +42,10 @@
             <div class="info-label">{{ t('sales.invoice_detail.info_customer') }}</div>
             <div class="info-value">{{ data.customer?.name || t('sales.invoice_detail.walk_in') }}</div>
           </div>
+          <div v-if="data.invoice.source_number" class="info-item">
+            <div class="info-label">{{ t('sales.invoice_detail.info_source_number') }}</div>
+            <div class="info-value mono">{{ data.invoice.source_number }}</div>
+          </div>
           <div v-if="data.invoice.salesperson_name" class="info-item">
             <div class="info-label">{{ t('sales.invoice_detail.info_sold_by') }}</div>
             <div class="info-value">{{ data.invoice.salesperson_name }}</div>
