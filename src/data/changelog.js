@@ -12,6 +12,46 @@
 
 export const changelog = [
   {
+    version: '1.50.3',
+    date: '2026-10-15',
+    tag: 'Improved',
+    en: {
+      title: 'Your data export now includes serials, repair jobs and specs',
+      points: [
+        'The owner’s "Export my shop’s data" file now also holds every serial number (with its sale and warranty end), every repair job with its parts, and every product’s specs.',
+        'A returned repair invoice no longer puts the "repair service" line in stock, so no false low-stock alert appears for it.',
+        'A product that tracks serial numbers can no longer be added as a repair part (finishing the job would fail). Sell it at the till with its serial instead.',
+      ],
+    },
+    ar: {
+      title: 'ملف بياناتك بقى فيه السيريالات وأوامر الصيانة والمواصفات',
+      points: [
+        'ملف "تصدير بيانات محلي" بتاع المالك بقى فيه كمان كل رقم سيريال (ببيعته وآخر يوم ضمان)، وكل أمر صيانة بقطع غياره، ومواصفات كل منتج.',
+        'مرتجع فاتورة الصيانة مبقاش بيدخّل سطر "خدمة الصيانة" في المخزن، فمبقاش بيطلع تنبيه نقص مخزون غلط عليه.',
+        'المنتج اللي بيتابع أرقام السيريال مبقاش ينفع يتضاف كقطعة غيار في أمر صيانة (لأن إنهاء الأمر كان هيفشل). بيعه من الكاشير بالسيريال بتاعه.',
+      ],
+    },
+  },
+  {
+    version: '1.50.2',
+    date: '2026-10-15',
+    tag: 'Improved',
+    en: {
+      title: 'The repair desk recognises your own devices',
+      points: [
+        'Type a device’s serial number in a repair job and Vendorya shows which of your products it is, which invoice it was sold on, and until when its warranty runs.',
+        'If the warranty is still running, "Repair under warranty" is ticked for you on a new job. You can always untick it.',
+      ],
+    },
+    ar: {
+      title: 'مكتب الصيانة بقى يعرف أجهزتك',
+      points: [
+        'اكتب رقم سيريال الجهاز في أمر الصيانة، وVendorya هيوريك هو أنهي منتج من منتجاتك، واتباع في أنهي فاتورة، وضمانه لحد إمتى.',
+        'لو الضمان لسه شغال، "صيانة تحت الضمان" بتتعلّم لوحدها في الأمر الجديد. وتقدر تشيل العلامة في أي وقت.',
+      ],
+    },
+  },
+  {
     version: '1.50.1',
     date: '2026-10-15',
     tag: 'Fixed',
