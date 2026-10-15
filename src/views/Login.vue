@@ -63,7 +63,7 @@
           </div>
 
           <!-- Form area -->
-          <form @submit.prevent="step === 'otp' ? handleOtp() : handleLogin()">
+          <form @submit.prevent="onSubmit">
             <div class="form-fields">
               <Transition name="field-switch" mode="out-in">
 
@@ -110,6 +110,28 @@
                   </div>
                 </div>
 
+                <!-- s174: an OWNER's one-time authenticator setup (required for owners) -->
+                <div v-else-if="step === 'setup'" key="setup" class="fields-inner">
+                  <div class="setup-title">Protect your owner account</div>
+                  <p class="setup-text">Owner accounts sign in with Google Authenticator. Open it on your phone, tap <b>+</b>, scan this code, then type the 6-digit code it shows.</p>
+                  <img v-if="setup.qr" :src="setup.qr" class="setup-qr" alt="Authenticator QR code" />
+                  <Loader2 v-else :size="22" class="spin setup-wait" />
+                  <div v-if="setup.secret" class="setup-secret">Can't scan? Type this key: <code>{{ setup.secret }}</code></div>
+                  <div class="input-wrap">
+                    <Key :size="18" class="input-icon" />
+                    <input v-model="otp" type="text" inputmode="numeric" class="login-input login-input-otp setup-code"
+                           placeholder="000000" maxlength="6" autocomplete="one-time-code" :disabled="loading" />
+                  </div>
+                </div>
+
+                <!-- s174: the 10 backup codes, shown once -->
+                <div v-else-if="step === 'backup'" key="backup" class="fields-inner">
+                  <div class="setup-title">Save your backup codes</div>
+                  <p class="setup-text">Each code works once, if your phone is lost or broken. Write them down or keep them somewhere safe — they are not shown again.</p>
+                  <div class="backup-grid"><code v-for="c in backupCodes" :key="c">{{ c }}</code></div>
+                  <button type="button" class="link-btn" @click="copyCodes">{{ copied ? 'Copied ✓' : 'Copy all' }}</button>
+                </div>
+
                 <!-- Authenticator / OTP view -->
                 <div v-else key="otp" class="fields-inner">
                   <div class="otp-back-row">
@@ -147,11 +169,11 @@
             <button
               type="submit"
               class="submit-btn"
-              :disabled="loading || (step === 'credentials' && (!form.username || !form.password)) || (step === 'otp' && !otp)"
+              :disabled="loading || (step === 'credentials' && (!form.username || !form.password)) || (step === 'otp' && !otp) || (step === 'setup' && otp.length < 6)"
             >
               <div class="btn-shimmer" aria-hidden="true"></div>
               <Loader2 v-if="loading" :size="18" class="spin" />
-              <span>{{ loading ? 'Verifying...' : 'Authenticate' }}</span>
+              <span>{{ loading ? 'Verifying...' : step === 'backup' ? "I saved them — continue" : step === 'setup' ? 'Turn on and sign in' : 'Authenticate' }}</span>
               <ArrowRight v-if="!loading" :size="18" class="btn-arrow" />
             </button>
           </form>
@@ -187,6 +209,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { Mail, Lock, Eye, EyeOff, Key, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useI18n } from 'vue-i18n'
+import api from '@/api/axios'
 
 const { locale } = useI18n()
 
@@ -207,7 +230,7 @@ const form         = ref({ username: '', password: '' })
 const showPassword = ref(false)
 const loading      = ref(false)
 const error        = ref('')
-const step         = ref('credentials') // 'credentials' | 'otp'
+const step         = ref('credentials') // 'credentials' | 'otp' | 'setup' | 'backup' (s174: owner's authenticator setup)
 const otp          = ref('')
 
 // ── support modal + USE AUTHENTICATOR counter ────────────
@@ -266,6 +289,7 @@ onUnmounted(() => clearInterval(slideTimer))
 
 // ── auth logic (unchanged) ───────────────────────────────
 function resetToCredentials() {
+  pendingLogin = null; backupCodes.value = []
   step.value  = 'credentials'
   otp.value   = ''
   error.value = ''
@@ -294,12 +318,63 @@ async function handleLogin() {
   try {
     const res = await auth.login(form.value.username, form.value.password)
     if (res.status === 'requires_2fa') { step.value = 'otp'; return }
+    if (res.status === 'requires_setup') { await startSetup(res.preAuth); return }
     return goHome()
   } catch (err) {
     error.value = mapError(err, 'Server error. Please try again.')
   } finally {
     loading.value = false
   }
+}
+
+function onSubmit() {
+  if (step.value === 'otp') return handleOtp()
+  if (step.value === 'setup') return verifySetup()
+  if (step.value === 'backup') return finishSetup()
+  return handleLogin()
+}
+
+// ── s174: owners must use an authenticator — the one-time setup, with the short pass the login gave ──
+const setup       = ref({ preAuth: '', qr: '', secret: '' })
+const backupCodes = ref([])
+const copied      = ref(false)
+let   pendingLogin = null
+const preAuthHeaders = () => ({ headers: { Authorization: `Bearer ${setup.value.preAuth}` } })
+
+async function startSetup(preAuth) {
+  setup.value = { preAuth, qr: '', secret: '' }
+  otp.value = ''; error.value = ''; step.value = 'setup'
+  const res = await api.post('/api/auth/2fa/setup/', {}, preAuthHeaders())
+  let secret = ''
+  try { secret = new URL(res.data.otpauth_url).searchParams.get('secret') || '' } catch { /* the QR is enough */ }
+  setup.value = { preAuth, qr: res.data.qr, secret: secret.replace(/(.{4})/g, '$1 ').trim() }
+}
+
+async function verifySetup() {
+  if (otp.value.length < 6) return
+  error.value = ''; loading.value = true
+  try {
+    const res = await api.post('/api/auth/2fa/verify-setup/', { token: otp.value.trim() }, preAuthHeaders())
+    pendingLogin = res.data
+    backupCodes.value = res.data.backup_codes || []
+    step.value = 'backup'
+  } catch (err) {
+    error.value = err.response?.status === 401
+      ? 'The setup took too long — sign in again.'
+      : (err.response?.data?.detail || 'Wrong code — try the newest one in the app.')
+    otp.value = ''
+  } finally { loading.value = false }
+}
+
+function finishSetup() {
+  if (!pendingLogin?.access) return resetToCredentials()
+  auth.completeLogin(pendingLogin)
+  pendingLogin = null
+  goHome()
+}
+
+async function copyCodes() {
+  try { await navigator.clipboard.writeText(backupCodes.value.join('\n')); copied.value = true } catch { copied.value = false }
 }
 
 async function handleOtp() {
@@ -319,6 +394,16 @@ async function handleOtp() {
 </script>
 
 <style scoped>
+/* s174: the owner's authenticator setup + backup codes */
+.setup-title { font-size: 17px; font-weight: 800; color: #fff; }
+.setup-text { margin: 0; font-size: 13px; line-height: 1.6; color: rgba(255, 255, 255, 0.7); }
+.setup-qr { width: 168px; height: 168px; align-self: center; border-radius: 12px; background: #fff; padding: 8px; }
+.setup-wait { align-self: center; color: rgba(255, 255, 255, 0.6); }
+.setup-secret { font-size: 12px; color: rgba(255, 255, 255, 0.6); text-align: center; }
+.setup-secret code { color: #fff; letter-spacing: 0.06em; user-select: all; }
+.backup-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 14px; }
+.backup-grid code { font-size: 14px; letter-spacing: 0.08em; color: #fff; text-align: center; padding: 6px; border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12); user-select: all; }
 /* ── root & background ──────────────────────────────────── */
 .login-root {
   position: fixed;

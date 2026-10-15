@@ -44,21 +44,29 @@ export const useAuthStore = defineStore('auth', {
     // Returns a status the Login view branches on:
     //   { status: 'ok' }           — logged in, tokens set
     //   { status: 'requires_2fa' } — user has 2FA enabled; re-call with otpToken
+    //   { status: 'requires_setup', preAuth } — s174: an owner must set up an authenticator first (Login → setup step)
     async login(username, password, otpToken) {
       const payload = { username, password }
       if (otpToken) payload.otp_token = otpToken
       const res = await api.post('/api/auth/token/', payload)
+      if (res.data.requires_2fa_setup) {
+        return { status: 'requires_setup', preAuth: res.data.pre_auth_token }
+      }
       if (res.data.requires_2fa) {
         return { status: 'requires_2fa' }
       }
-      this.setAccess(res.data.access)
-      if (res.data.user) this.setUser(res.data.user)
+      this.completeLogin(res.data)
+      return { status: 'ok' }
+    },
+    // The tail of every login (password login, or the forced authenticator setup that finishes it — s174).
+    completeLogin(data) {
+      this.setAccess(data.access)
+      if (data.user) this.setUser(data.user)
       // The user identity just changed (sudo vs regular) — apply that user's own theme,
       // not whatever the previous tab session left behind.
       useThemeStore().refresh()
       // Refresh currency + number-format prefs for the new identity.
       useFormatStore().loadForStore()
-      return { status: 'ok' }
     },
     async fetchMe() {
       const res = await api.get('/api/auth/me/')
