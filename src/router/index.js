@@ -25,6 +25,7 @@ const router = createRouter({
         { path: 'inventory/products',           component: () => import('@/views/inventory/Products.vue'),       meta: { store: true } },
         { path: 'inventory/products/:id',       component: () => import('@/views/inventory/ProductDetail.vue'),  meta: { store: true }, props: true },
         { path: 'inventory/purchases',  component: () => import('@/views/inventory/Purchases.vue'),        meta: { store: true, minRole: 'MANAGER' } },
+        { path: 'inventory/supplier-returns', component: () => import('@/views/inventory/SupplierReturns.vue'), meta: { store: true, minRole: 'MANAGER' } },   // s171
         { path: 'inventory/serials',    component: () => import('@/views/inventory/SerialLookup.vue'),     meta: { store: true, minRole: 'CASHIER' } },   // New 7: serial / IMEI lookup
         { path: 'inventory/adjustments',component: () => import('@/views/inventory/StockAdjustments.vue'), meta: { store: true, minRole: 'MANAGER' } },
         { path: 'inventory/transfers',  component: () => import('@/views/inventory/StockTransfers.vue'),  meta: { store: true, minRole: 'ADMIN' } },

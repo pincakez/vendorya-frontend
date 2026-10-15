@@ -304,13 +304,17 @@ const stmtRows = computed(() => (stmt.value?.lines || []).map(l => {
     date: l.date,
     type: isPurchase
       ? t('people.supplier_detail.stmt.purchase')
+      : l.kind === 'return' ? t('people.supplier_detail.stmt.return')
+      : l.kind === 'return_refund'
+        ? [t('people.supplier_detail.stmt.return_refund'), l.payment_method_name].filter(Boolean).join(' · ')
       : [t('people.supplier_detail.stmt.payment'), payMethodLabel(l)].filter(Boolean).join(' · '),
     ref: l.ref,
     note: [vendorNote, l.note].filter(Boolean).join(' — '),
     debit: l.debit,
     credit: l.credit,
     running_balance: l.running_balance,
-    to: isPurchase ? `/inventory/purchases/${l.link_id}/print` : null,
+    to: isPurchase ? `/inventory/purchases/${l.link_id}/print`
+      : (l.kind === 'return' ? `/inventory/supplier-returns?open=${l.link_id}` : null),
   }
 }))
 

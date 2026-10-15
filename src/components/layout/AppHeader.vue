@@ -162,7 +162,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, SlidersHorizontal, Tag, List, FileBarChart,
   FileText, CornerDownLeft, Receipt, Clock, Wallet, Users, Truck, Briefcase,
   LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator, Sparkles,
-  Library, Archive, ArrowLeftRight, ArrowDownUp, Layers, UserCircle, CreditCard, Shield, Menu, ScanBarcode, Vault, PiggyBank,
+  Library, Archive, ArrowLeftRight, ArrowDownUp, Layers, UserCircle, CreditCard, Shield, Menu, ScanBarcode, Vault, PiggyBank, Undo2,
 } from 'lucide-vue-next'
 import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
 import { useAuthStore } from '@/stores/auth'
@@ -205,6 +205,7 @@ const NAV_ICON_MAP = {
   '/pos':                     Calculator,
   '/inventory/products':      Package,
   '/inventory/purchases':     ShoppingCart,
+  '/inventory/supplier-returns': Undo2,
   '/inventory/serials':       ScanBarcode,
   '/inventory/adjustments':   SlidersHorizontal,
   '/inventory/transfers':     ArrowLeftRight,
@@ -248,6 +249,7 @@ const PAGES = computed(() => [
   { label: t('core.header.pos'),            path: '/pos',                     group: t('nav.groups.general'),   icon: Calculator,      kw: 'cashier sale checkout counter point of sale' },
   { label: t('nav.items.products'),         path: '/inventory/products',      group: t('nav.groups.inventory'), icon: Package,         kw: 'items drugs medicines stock sku barcode' },
   { label: t('nav.items.purchases'),        path: '/inventory/purchases',     group: t('nav.groups.inventory'), icon: ShoppingCart,    kw: 'receive supplier invoice stock in buy' },
+  { label: t('nav.items.supplier_returns'), path: '/inventory/supplier-returns', group: t('nav.groups.inventory'), icon: Undo2, kw: 'return supplier send back debit note مرتجع مورد' },
   { label: t('nav.items.serials'),          path: '/inventory/serials',       group: t('nav.groups.inventory'), icon: ScanBarcode,     kw: 'serial imei service tag warranty lookup unit' },
   { label: t('nav.items.stock_adjustments'),path: '/inventory/adjustments',   group: t('nav.groups.inventory'), icon: SlidersHorizontal, kw: 'correct opening balance ledger movement' },
   { label: t('nav.items.stock_transfers'),  path: '/inventory/transfers',     group: t('nav.groups.inventory'), icon: ArrowLeftRight,  kw: 'move branch transfer between' },

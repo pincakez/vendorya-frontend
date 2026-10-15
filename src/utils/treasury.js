@@ -52,7 +52,7 @@ export function kindLabel(t, kind) {
 }
 
 export function moveKindLabel(t, kind) {
-  const known = ['SALE_IN', 'RECEIPT_IN', 'REFUND_OUT', 'SUPPLIER_OUT', 'EXPENSE_OUT', 'OTHER_INCOME_IN',
+  const known = ['SALE_IN', 'RECEIPT_IN', 'REFUND_OUT', 'SUPPLIER_OUT', 'SUPPLIER_IN', 'EXPENSE_OUT', 'OTHER_INCOME_IN',
                  'TRANSFER_IN', 'TRANSFER_OUT', 'OPENING', 'COUNT_ADJUST', 'REVERSAL',
                  // s170 owner level (generic labels — shop staff see these on a shop box too, never a name)
                  'DRAW_OUT', 'DRAW_IN', 'PUT_OUT', 'PUT_IN', 'LOAN_IN', 'LOAN_REPAY', 'LOAN_OUT', 'LOAN_BACK',

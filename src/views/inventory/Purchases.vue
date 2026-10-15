@@ -69,6 +69,9 @@
               <button v-if="p.status === 'DRAFT'" class="row-action danger" :title="t('common.delete')" @click="deletePurchase(p)">
                 <Trash2 :size="13" />
               </button>
+              <button v-if="p.status === 'RECEIVED'" class="row-action" data-testid="purchase-return" :title="t('inventory.supplier_returns.action')" @click="openReturn(p.id)">
+                <Undo2 :size="13" />
+              </button>
             </td>
           </tr>
         </tbody>
@@ -313,6 +316,7 @@
       <template #footer>
         <button class="btn-ghost" @click="tryClose">{{ t('common.cancel') }}</button>
         <button v-if="modal.id && readOnly" class="btn-ghost" data-testid="purchase-print-labels" @click="openLabelPicker"><Tag :size="14" /> {{ t('inventory.purchases.print_labels') }}</button>
+        <button v-if="modal.id && readOnly && modal.status === 'RECEIVED'" class="btn-ghost" @click="openReturn(modal.id)"><Undo2 :size="14" /> {{ t('inventory.supplier_returns.action') }}</button>
         <template v-if="!readOnly">
           <button class="btn-secondary" :disabled="saving || !hasRows" @click="saveDraft">
             {{ saving ? t('common.saving') : t('inventory.purchases.save_draft') }}
@@ -333,6 +337,8 @@
     />
 
     <!-- Inline add — new category / new attribute option, on the fly -->
+    <SupplierReturnModal :open="returnModal.open" :purchase-id="returnModal.id" @close="returnModal.open = false" @saved="onReturned" />
+
     <AppModal :open="inlineAdd.open" :title="inlineAdd.type === 'category' ? t('inventory.purchases.add_category') : t('inventory.purchases.add_option')" width="400px" @close="inlineAdd.open = false">
       <BaseInput
         v-model="inlineAdd.value"
@@ -353,7 +359,9 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X, Lock, ChevronDown, ChevronLeft, ChevronRight, Printer } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X, Lock, ChevronDown, ChevronLeft, ChevronRight, Printer, Undo2 } from 'lucide-vue-next'
+import SupplierReturnModal from '@/components/inventory/SupplierReturnModal.vue'
 import api from '@/api/axios'
 import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openNew)
@@ -510,6 +518,15 @@ const modal  = reactive({
 })
 
 const readOnly        = computed(() => modal.status === 'RECEIVED')
+
+// s171: return goods to the supplier — from a RECEIVED purchase's row or its view.
+const router = useRouter()
+const returnModal = reactive({ open: false, id: '' })
+function openReturn(id) { returnModal.id = String(id); returnModal.open = true }
+function onReturned(ret) {
+  returnModal.open = false
+  router.push({ path: '/inventory/supplier-returns', query: { open: ret.id } })   // shows the saved return
+}
 const supplierEditable = computed(() => !readOnly.value && !modal.origSupplier)
 const modalTitle = computed(() => {
   if (!modal.id) return t('inventory.purchases.modal_new_title')

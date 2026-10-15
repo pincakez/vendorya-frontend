@@ -100,7 +100,8 @@
       "lockscreen": "Lock Screen",
       "serials": "Serial Lookup",
       "treasury": "Treasury",
-      "my_money": "My money"
+      "my_money": "My money",
+      "supplier_returns": "Supplier Returns"
     }
   },
   "common": {
@@ -870,6 +871,85 @@
       "type_select": "List",
       "also_inherited": "also in a parent",
       "also_inherited_hint": "A parent category asks for this too. It stays here, in this order, for this category."
+    },
+    "supplier_returns": {
+      "title": "Supplier returns",
+      "sub": "Goods you sent back to a supplier. Each return takes the stock out and lowers what you owe that supplier.",
+      "from_purchase": "Start from a purchase",
+      "all_suppliers": "All suppliers",
+      "empty": "No returns to suppliers yet.",
+      "loading": "Loading…",
+      "action": "Return to supplier",
+      "total": "Total",
+      "money_back": "Money back",
+      "credit": "Off what you owe",
+      "branch": "Branch",
+      "by": "Recorded by",
+      "detail_title": "Supplier return S#{n}",
+      "voided_because": "Voided: {reason}",
+      "void": "Void this return",
+      "void_confirm": "Void it",
+      "void_reason": "Why are you voiding it?",
+      "void_reason_ph": "e.g. wrong quantity",
+      "void_hint": "Voiding puts the goods back in stock, puts the amount back on the supplier's account and reverses any money back. The return stays in the list as Void.",
+      "status": {
+        "POSTED": "Done",
+        "VOID": "Void"
+      },
+      "cols": {
+        "date": "Date",
+        "supplier": "Supplier",
+        "purchase": "Purchase",
+        "status": "Status",
+        "product": "Product",
+        "bought": "Bought",
+        "returned": "Already returned",
+        "left": "Can go back",
+        "unit_cost": "Cost",
+        "qty": "Send back",
+        "line_total": "Line total"
+      },
+      "modal": {
+        "title": "Return to supplier",
+        "intro": "Supplier: {supplier} — choose what you are sending back. The stock leaves your branch now.",
+        "money_back": "Money the supplier gave back (optional)",
+        "method": "How it was paid back",
+        "method_ph": "Choose a method",
+        "box": "Money went into",
+        "box_auto": "Automatic (by the method)",
+        "notes": "Note",
+        "notes_ph": "e.g. faulty screen",
+        "money_hint": "Leave money back empty when the supplier just lowers your bill. Any money they hand back is taken off that credit.",
+        "confirm": "Send back",
+        "no_units": "No unit of this product is on the shelf at this branch."
+      },
+      "err": {
+        "generic": "Could not save the return. Please try again.",
+        "bad_number": "Please type a number.",
+        "quantity_positive": "Each line needs a quantity above zero.",
+        "bad_serials": "The serial numbers are not valid.",
+        "purchase_required": "A line from a purchase needs that purchase.",
+        "purchase_item_not_found": "This line is not on that purchase.",
+        "more_than_bought": "Only {left} of {product} can still go back to the supplier.",
+        "variant_not_found": "Choose a product of this shop.",
+        "unit_not_found": "That unit does not belong to this product.",
+        "cost_negative": "A cost cannot be below zero.",
+        "supplier_not_found": "Choose a supplier of this shop.",
+        "purchase_not_found": "Purchase not found.",
+        "purchase_not_received": "Only a received purchase can be returned.",
+        "wrong_supplier": "This purchase is from another supplier.",
+        "branch_not_found": "Choose a branch of this shop.",
+        "no_lines": "Choose at least one product to send back.",
+        "refund_negative": "Money back cannot be below zero.",
+        "not_enough_stock": "Only {available} of {product} is in stock at this branch.",
+        "refund_above_total": "Money back cannot be more than the return is worth.",
+        "refund_method_required": "Choose how the supplier paid the money back.",
+        "refund_method_not_money": "Pick a real payment method (not Ajel or store credit).",
+        "refund_box_required": "Choose the money box the money went into.",
+        "reason_required": "Write why you are voiding this return.",
+        "already_void": "This return is already void.",
+        "serial_not_from_purchase": "These units did not come on this purchase: {serials}."
+      }
     }
   },
   "finance": {
@@ -1136,7 +1216,8 @@
         "AMANA_IN": "Amana received",
         "AMANA_OUT": "Amana given back",
         "PARTNER_IN": "Partner put money in",
-        "PARTNER_OUT": "Paid to a partner"
+        "PARTNER_OUT": "Paid to a partner",
+        "SUPPLIER_IN": "Supplier paid back"
       },
       "err": {
         "treasury_off": "The Treasury is off for this shop.",
@@ -1962,9 +2043,11 @@
         "purchase": "Purchase",
         "payment": "Payment",
         "supplier_inv": "Supplier inv. {ref}",
-        "debit": "Paid (Debit)",
+        "debit": "Paid / returned (Debit)",
         "credit": "Purchased (Credit)",
-        "balance_hint": "Balance = what you still owe this supplier. A minus balance means you paid ahead."
+        "balance_hint": "Balance = what you still owe this supplier. A minus balance means you paid ahead.",
+        "return": "Returned to supplier",
+        "return_refund": "Money back from supplier"
       }
     },
     "staff": {
