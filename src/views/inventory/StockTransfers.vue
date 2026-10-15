@@ -2,10 +2,10 @@
   <div>
     <div class="page-header">
       <div>
-        <h1 class="page-title">Stock Transfers</h1>
-        <p class="page-sub">Move stock between branches instantly — Admin / Owner only</p>
+        <h1 class="page-title">{{ i18n.t('inventory.transfers.title') }}</h1>
+        <p class="page-sub">{{ i18n.t('inventory.transfers.sub') }}</p>
       </div>
-      <button class="btn-primary" @click="openModal">New Transfer</button>
+      <button class="btn-primary" @click="openModal">{{ i18n.t('inventory.transfers.new_btn') }}</button>
     </div>
 
     <!-- List -->
@@ -17,20 +17,20 @@
         <table class="dt">
         <thead>
           <tr>
-            <th class="dt-th">Date</th>
-            <th class="dt-th">From</th>
-            <th class="dt-th">To</th>
-            <th class="dt-th">Items</th>
-            <th class="dt-th">Notes</th>
-            <th class="dt-th">By</th>
+            <th class="dt-th">{{ i18n.t('inventory.transfers.col_date') }}</th>
+            <th class="dt-th">{{ i18n.t('inventory.transfers.col_from') }}</th>
+            <th class="dt-th">{{ i18n.t('inventory.transfers.col_to') }}</th>
+            <th class="dt-th">{{ i18n.t('inventory.transfers.col_items') }}</th>
+            <th class="dt-th">{{ i18n.t('inventory.transfers.col_notes') }}</th>
+            <th class="dt-th">{{ i18n.t('inventory.transfers.col_by') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="transfers.length === 0">
             <td colspan="6" class="dt-empty">
               <ArrowLeftRight :size="32" style="opacity:.3;margin-bottom:8px;" />
-              <div>No transfers yet</div>
-              <div class="table-empty-sub">Use "New Transfer" to move stock between branches</div>
+              <div>{{ i18n.t('inventory.transfers.empty') }}</div>
+              <div class="table-empty-sub">{{ i18n.t('inventory.transfers.empty_sub') }}</div>
             </td>
           </tr>
           <tr v-for="t in transfers" :key="t.id" class="dt-row" @click="viewTransfer(t)">
@@ -39,7 +39,7 @@
             <td><span class="branch-pill to-pill">{{ t.to_branch_name }}</span></td>
             <td>
               <span v-for="item in t.items" :key="item.id" class="item-chip">
-                {{ item.variant_sku }} ×{{ item.quantity }}
+                {{ item.variant_sku }} ×{{ formatQty(item.quantity) }}
               </span>
             </td>
             <td class="col-notes">{{ t.notes || '—' }}</td>
@@ -52,21 +52,21 @@
     </div>
 
     <!-- New Transfer Modal -->
-    <AppModal :open="modal.open" title="New Stock Transfer" width="640px" @close="closeModal">
+    <AppModal :open="modal.open" :title="i18n.t('inventory.transfers.modal_title')" width="640px" @close="closeModal">
       <div class="modal-body">
         <!-- Branches -->
         <div class="form-row-2">
           <div class="form-group">
-            <label class="form-label">From Branch</label>
+            <label class="form-label">{{ i18n.t('inventory.transfers.from_branch') }}</label>
             <select v-model="modal.fromBranch" class="form-input">
-              <option value="">Select branch…</option>
+              <option value="">{{ i18n.t('inventory.transfers.select_branch') }}</option>
               <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">To Branch</label>
+            <label class="form-label">{{ i18n.t('inventory.transfers.to_branch') }}</label>
             <select v-model="modal.toBranch" class="form-input">
-              <option value="">Select branch…</option>
+              <option value="">{{ i18n.t('inventory.transfers.select_branch') }}</option>
               <option v-for="b in branches" :key="b.id" :value="b.id" :disabled="b.id === modal.fromBranch">{{ b.name }}</option>
             </select>
           </div>
@@ -74,12 +74,12 @@
 
         <!-- Item search -->
         <div class="form-group">
-          <label class="form-label">Add Product</label>
+          <label class="form-label">{{ i18n.t('inventory.transfers.add_product') }}</label>
           <div class="search-row">
             <input
               v-model="modal.search"
               class="form-input"
-              placeholder="Search by name or SKU…"
+              :placeholder="i18n.t('inventory.transfers.search_ph')"
               @input="searchProducts"
             />
           </div>
@@ -101,9 +101,9 @@
           <table class="data-table mini-table">
             <thead>
               <tr>
-                <th class="dt-th">SKU</th>
-                <th class="dt-th">Product</th>
-                <th class="dt-th">Qty</th>
+                <th class="dt-th">{{ i18n.t('inventory.transfers.col_sku') }}</th>
+                <th class="dt-th">{{ i18n.t('inventory.transfers.col_product') }}</th>
+                <th class="dt-th">{{ i18n.t('inventory.transfers.col_qty') }}</th>
                 <th class="dt-th"></th>
               </tr>
             </thead>
@@ -128,7 +128,7 @@
                   />
                 </td>
                 <td>
-                  <button class="remove-btn" @click="modal.items.splice(idx, 1)">✕</button>
+                  <button class="remove-btn" :title="i18n.t('inventory.transfers.remove')" :aria-label="i18n.t('inventory.transfers.remove')" @click="modal.items.splice(idx, 1)">✕</button>
                 </td>
               </tr>
             </tbody>
@@ -137,58 +137,58 @@
 
         <!-- Notes -->
         <div class="form-group">
-          <label class="form-label">Notes (optional)</label>
-          <textarea v-model="modal.notes" class="form-input" rows="2" placeholder="Reason or reference…" />
+          <label class="form-label">{{ i18n.t('inventory.transfers.notes_label') }}</label>
+          <textarea v-model="modal.notes" class="form-input" rows="2" :placeholder="i18n.t('inventory.transfers.notes_ph')" />
         </div>
 
         <p v-if="modal.error" class="form-error">{{ modal.error }}</p>
       </div>
       <template #footer>
-        <button class="btn-secondary" @click="closeModal">Cancel</button>
+        <button class="btn-secondary" @click="closeModal">{{ i18n.t('common.cancel') }}</button>
         <button class="btn-primary" :disabled="!canSubmit || modal.saving" @click="submit">
-          {{ modal.saving ? 'Transferring…' : 'Transfer Stock' }}
+          {{ modal.saving ? i18n.t('inventory.transfers.submitting') : i18n.t('inventory.transfers.submit') }}
         </button>
       </template>
     </AppModal>
 
     <!-- Detail Modal -->
-    <AppModal :open="detail.open" title="Transfer Detail" width="560px" @close="detail.open = false">
+    <AppModal :open="detail.open" :title="i18n.t('inventory.transfers.detail_title')" width="560px" @close="detail.open = false">
       <div v-if="detail.transfer" class="modal-body">
         <div class="detail-row">
-          <span class="detail-label">Date</span>
+          <span class="detail-label">{{ i18n.t('inventory.transfers.col_date') }}</span>
           <span>{{ fmtDate(detail.transfer.created_at) }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">From</span>
+          <span class="detail-label">{{ i18n.t('inventory.transfers.col_from') }}</span>
           <span class="branch-pill from-pill">{{ detail.transfer.from_branch_name }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">To</span>
+          <span class="detail-label">{{ i18n.t('inventory.transfers.col_to') }}</span>
           <span class="branch-pill to-pill">{{ detail.transfer.to_branch_name }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">By</span>
+          <span class="detail-label">{{ i18n.t('inventory.transfers.col_by') }}</span>
           <span>{{ detail.transfer.transferred_by_name }}</span>
         </div>
         <div v-if="detail.transfer.notes" class="detail-row">
-          <span class="detail-label">Notes</span>
+          <span class="detail-label">{{ i18n.t('inventory.transfers.col_notes') }}</span>
           <span>{{ detail.transfer.notes }}</span>
         </div>
         <table class="data-table mini-table" style="margin-top:16px;">
           <thead>
-            <tr><th class="dt-th">SKU</th><th class="dt-th">Product</th><th class="dt-th">Qty</th></tr>
+            <tr><th class="dt-th">{{ i18n.t('inventory.transfers.col_sku') }}</th><th class="dt-th">{{ i18n.t('inventory.transfers.col_product') }}</th><th class="dt-th">{{ i18n.t('inventory.transfers.col_qty') }}</th></tr>
           </thead>
           <tbody>
             <tr v-for="item in detail.transfer.items" :key="item.id">
               <td class="col-ref">{{ item.variant_sku }}</td>
               <td>{{ item.product_name }}</td>
-              <td>{{ item.quantity }}</td>
+              <td>{{ formatQty(item.quantity) }}</td>
             </tr>
           </tbody>
         </table>
       </div><!-- existing -->
       <template #footer>
-        <button class="btn-secondary" @click="detail.open = false">Close</button>
+        <button class="btn-secondary" @click="detail.open = false">{{ i18n.t('common.close') }}</button>
       </template>
     </AppModal>
   </div>
@@ -302,7 +302,7 @@ async function submit() {
   } catch (err) {
     const d = err.response?.data
     modal.error = serialErrorText(i18n.t, d) || (typeof d === 'string' ? d
-      : d?.detail ?? d?.non_field_errors?.[0] ?? JSON.stringify(d) ?? 'Transfer failed.')
+      : d?.detail ?? d?.non_field_errors?.[0] ?? JSON.stringify(d) ?? i18n.t('inventory.transfers.failed'))
   } finally {
     modal.saving = false
   }
