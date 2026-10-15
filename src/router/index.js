@@ -45,6 +45,11 @@ const router = createRouter({
         // (canOpen below); a deep link while off still opens and the page explains it (the API answers code treasury_off).
         { path: 'finance/treasury',     component: () => import('@/views/finance/Treasury.vue'),           meta: { store: true, minRole: 'MANAGER', treasury: true } },
         { path: 'finance/treasury/:id', component: () => import('@/views/finance/TreasuryBox.vue'),        meta: { store: true, minRole: 'MANAGER', treasury: true }, props: true },
+        // Treasury Wave 2 (s170, TREASURY.md § 12.5): "My money" — the owner level. meta.ownerLevel = in menus only when the Treasury
+        // AND the owner level are on AND this login is the owner (canOpen); a deep link while off opens and explains
+        // (the API answers owner_level_off / not_owner).
+        { path: 'finance/my-money',         component: () => import('@/views/finance/MyMoney.vue'),         meta: { store: true, minRole: 'OWNER', ownerLevel: true } },
+        { path: 'finance/my-money/box/:id', component: () => import('@/views/finance/MyMoneyBox.vue'),      meta: { store: true, minRole: 'OWNER', ownerLevel: true }, props: true },
         // Reports v1
         { path: 'reports/sales',        component: () => import('@/views/reports/SalesReport.vue'),         meta: { store: true, minRole: 'MANAGER' } },
         { path: 'reports/profit',       component: () => import('@/views/reports/ProfitMargin.vue'),        meta: { store: true, minRole: 'MANAGER' } },
@@ -177,6 +182,10 @@ router.beforeEach(async (to, from, next) => {
 export function canOpen(path) {
   const meta = router.resolve(path).meta
   if (meta.treasury && !useFormatStore().treasuryEnabled) return false   // s169c: Treasury switch off → no menu entry
+  if (meta.ownerLevel) {   // s170: the owner level — both switches on AND this login is the owner
+    const f = useFormatStore()
+    if (!(f.treasuryEnabled && f.treasuryOwnerLevel && f.treasuryIsOwner)) return false
+  }
   return useAuthStore().hasRole(meta.minRole)
 }
 

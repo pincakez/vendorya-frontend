@@ -53,7 +53,10 @@ export function kindLabel(t, kind) {
 
 export function moveKindLabel(t, kind) {
   const known = ['SALE_IN', 'RECEIPT_IN', 'REFUND_OUT', 'SUPPLIER_OUT', 'EXPENSE_OUT', 'OTHER_INCOME_IN',
-                 'TRANSFER_IN', 'TRANSFER_OUT', 'OPENING', 'COUNT_ADJUST', 'REVERSAL']
+                 'TRANSFER_IN', 'TRANSFER_OUT', 'OPENING', 'COUNT_ADJUST', 'REVERSAL',
+                 // s170 owner level (generic labels — shop staff see these on a shop box too, never a name)
+                 'DRAW_OUT', 'DRAW_IN', 'PUT_OUT', 'PUT_IN', 'LOAN_IN', 'LOAN_REPAY', 'LOAN_OUT', 'LOAN_BACK',
+                 'AMANA_IN', 'AMANA_OUT', 'PARTNER_IN', 'PARTNER_OUT']
   return known.includes(kind) ? t('finance.treasury.move_kinds.' + kind) : (kind || '')
 }
 

@@ -40,7 +40,7 @@
               <td>{{ categoryName(e.category) }}</td>
               <td class="col-amount"><Money :value="e.amount" /></td>
               <td v-if="treasuryOn" class="col-desc">{{ paidFromLabel(e) }}</td>
-              <td class="col-desc">{{ e.description || '—' }}</td>
+              <td class="col-desc">{{ e.description || '—' }}<span v-if="ownerLevelOn && e.owner_only" class="exp-tag">{{ t('finance.owner.owner_only_tag') }}</span></td>
               <td>
                 <button class="row-action danger" @click="deleteExpense(e.id)"><Trash2 :size="13" /></button>
               </td>
@@ -96,6 +96,15 @@
           <BaseSelect v-model="expModal.paid_from" :options="paidFromOptions" :label="t('finance.treasury.paid_from')"
                       :placeholder="t('finance.treasury.f.pick_box')" />
           <p v-if="expBox" class="exp-help">{{ t('finance.treasury.in_box_now') }}: <Money :value="expBox.balance" /></p>
+        </div>
+        <!-- Owner level (s170): "this expense is the owner's alone" — partners don't carry it. Only for the owner, and only
+             when the shop part has partners. -->
+        <div v-if="ownerOnlyAllowed">
+          <label class="exp-check">
+            <input v-model="expModal.owner_only" type="checkbox" />
+            <span>{{ t('finance.owner.owner_only_expense') }}</span>
+          </label>
+          <p class="exp-help">{{ t('finance.owner.owner_only_hint') }}</p>
         </div>
         <div>
           <label class="form-label">{{ t('finance.expenses.exp_modal.description_label') }}</label>
@@ -165,6 +174,26 @@ function paidFromLabel(e) {
 }
 watch(treasuryOn, async on => { if (on) boxes.value = await fetchBoxes() }, { immediate: true })
 
+// ── Owner level (s170, TREASURY.md § 12.5): the "owner-only expense" tick — the owner only, and only when this
+// shop's part has active partners (a partner settlement then leaves the expense with the owner).
+const ownerLevelOn = computed(() => fmt.treasuryEnabled && fmt.treasuryOwnerLevel && fmt.treasuryIsOwner)
+const shopHasPartners = ref(false)
+const ownerOnlyAllowed = computed(() => ownerLevelOn.value && shopHasPartners.value)
+async function checkShopPartners() {
+  try {
+    const pr = await api.get('/api/treasury/owner/parts/')
+    const parts = pr.data?.results ?? pr.data ?? []
+    const myStore = String(auth.user?.store?.id || '')
+    const shops = parts.filter(p => p.kind === 'SHOP' && p.is_active !== false)
+    const shop = shops.find(p => String(p.store) === myStore) || (shops.length === 1 ? shops[0] : null)
+    if (!shop) { shopHasPartners.value = false; return }
+    const r = await api.get('/api/treasury/owner/partners/', { params: { part: shop.id } })
+    const list = r.data?.results ?? r.data ?? []
+    shopHasPartners.value = list.some(p => String(p.part) === String(shop.id) && p.is_active !== false)
+  } catch { shopHasPartners.value = false }
+}
+watch(ownerLevelOn, on => { if (on) checkShopPartners(); else shopHasPartners.value = false }, { immediate: true })
+
 // Default box: the drawer of my open shift when I'm at the till, else the first cash box (the safe).
 async function defaultPaidFrom() {
   let drawer = ''
@@ -218,10 +247,11 @@ async function deleteExpense(id) {
 }
 
 // Expense modal
-const expModal = reactive({ open: false, category: '', amount: '', date: '', description: '', paid_from: '', saving: false })
+const expModal = reactive({ open: false, category: '', amount: '', date: '', description: '', paid_from: '', owner_only: false, saving: false })
 
 async function openNewExpense() {
-  Object.assign(expModal, { open: true, category: '', amount: '', date: new Date().toISOString().slice(0,10), description: '', paid_from: '', saving: false })
+  Object.assign(expModal, { open: true, category: '', amount: '', date: new Date().toISOString().slice(0,10), description: '', paid_from: '', owner_only: false, saving: false })
+  if (ownerLevelOn.value) checkShopPartners()   // partners may have changed since the page opened
   if (treasuryOn.value) {
     boxes.value = await fetchBoxes()   // fresh balances
     expModal.paid_from = await defaultPaidFrom()
@@ -240,6 +270,7 @@ async function saveExpense() {
       branch: auth.user?.store?.id,
     }
     if (treasuryOn.value) body.paid_from = expModal.paid_from
+    if (ownerOnlyAllowed.value) body.owner_only = !!expModal.owner_only
     await api.post('/api/finance/expenses/', body)
     expModal.open = false
     fetchExpenses(1)
@@ -298,6 +329,10 @@ function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { yea
 .col-amount { font-variant-numeric:tabular-nums; color:var(--danger); font-weight:600; }
 .col-desc   { color:var(--text-muted); font-size:12px; max-width:220px; }
 .exp-help   { font-size:12px; color:var(--text-muted); margin:6px 0 0; }
+.exp-check  { display:flex; align-items:center; gap:8px; cursor:pointer; }
+.exp-check input { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+.exp-check span  { font-size:13px; font-weight:600; color:var(--text-secondary); }
+.exp-tag    { margin-inline-start:6px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; background:var(--border); color:var(--text-muted); }
 
 .row-action { width:28px; height:28px; border:none; background:none; border-radius:6px; cursor:pointer; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; transition:background 100ms,color 100ms; }
 .row-action:hover        { background:var(--border); color:var(--text-primary); }

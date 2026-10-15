@@ -162,7 +162,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, SlidersHorizontal, Tag, List, FileBarChart,
   FileText, CornerDownLeft, Receipt, Clock, Wallet, Users, Truck, Briefcase,
   LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator, Sparkles,
-  Library, Archive, ArrowLeftRight, ArrowDownUp, Layers, UserCircle, CreditCard, Shield, Menu, ScanBarcode, Vault,
+  Library, Archive, ArrowLeftRight, ArrowDownUp, Layers, UserCircle, CreditCard, Shield, Menu, ScanBarcode, Vault, PiggyBank,
 } from 'lucide-vue-next'
 import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
 import { useAuthStore } from '@/stores/auth'
@@ -220,6 +220,7 @@ const NAV_ICON_MAP = {
   '/finance/shifts':          Clock,
   '/finance/cash-drawer':     Wallet,
   '/finance/treasury':        Vault,
+  '/finance/my-money':        PiggyBank,
   '/people/customers':        Users,
   '/people/suppliers':        Truck,
   '/people/staff':            Briefcase,
@@ -262,6 +263,7 @@ const PAGES = computed(() => [
   { label: t('nav.items.shifts'),           path: '/finance/shifts',          group: t('nav.groups.finance'),   icon: Clock,           kw: 'open close shift daily session cash' },
   { label: t('nav.items.cash_drawer'),      path: '/finance/cash-drawer',     group: t('nav.groups.finance'),   icon: Wallet,          kw: 'drawer float cash in out' },
   { label: t('nav.items.treasury'),         path: '/finance/treasury',        group: t('nav.groups.finance'),   icon: Vault,           kw: 'treasury money box safe bank wallet transfer count balance' },
+  { label: t('nav.items.my_money'),         path: '/finance/my-money',        group: t('nav.groups.finance'),   icon: PiggyBank,       kw: 'owner personal money business partners loans amanat draw' },
   { label: t('nav.items.customers'),        path: '/people/customers',        group: t('nav.groups.people'),    icon: Users,           kw: 'clients patients buyer contact' },
   { label: t('nav.items.suppliers'),        path: '/people/suppliers',        group: t('nav.groups.people'),    icon: Truck,           kw: 'vendor company distributor source' },
   { label: t('nav.items.staff'),            path: '/people/staff',            group: t('nav.groups.people'),    icon: Briefcase,       kw: 'employees cashier manager role user account' },

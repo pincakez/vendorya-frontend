@@ -40,6 +40,10 @@ export const useFormatStore = defineStore('format', {
     // Treasury (money boxes) capability switch — StoreSettings.treasury_enabled. Gates the Finance → Treasury
     // menu and the "paid from" / "lands in" / drawer pickers. Off = the app behaves exactly as before.
     treasuryEnabled: false,
+    // Treasury Wave 2 (s170, TREASURY.md § 12): the owner level switch (StoreSettings.treasury_owner_level) and whether this
+    // login IS the owner (settings GET `treasury_is_owner`). "My money" shows only when all three are true.
+    treasuryOwnerLevel: false,
+    treasuryIsOwner: false,
     // Currency-symbol tint — a per-user (per-browser) display preference.
     symbolColor: localStorage.getItem(COLOR_KEY) || DEFAULT_COLOR,
     loaded: false,
@@ -81,6 +85,8 @@ export const useFormatStore = defineStore('format', {
         this.categoryLevels     = normalizeLevels(res.data?.category_level_names)
         this.weightUnit         = res.data?.default_weight_unit === 'G' ? 'G' : 'KG'
         this.treasuryEnabled    = !!res.data?.treasury_enabled
+        this.treasuryOwnerLevel = !!res.data?.treasury_owner_level
+        this.treasuryIsOwner    = !!res.data?.treasury_is_owner
       } catch {
         this.decimals = 2
         this.thousandsSeparator = false
@@ -88,12 +94,14 @@ export const useFormatStore = defineStore('format', {
         this.categoryLevels = DEFAULT_LEVELS.slice()
         this.weightUnit = 'KG'
         this.treasuryEnabled = false
+        this.treasuryOwnerLevel = false
+        this.treasuryIsOwner = false
       }
       this.loaded = true
     },
 
     /** Called after the user saves StoreSettings or sudo changes the store currency. */
-    apply({ symbol, position, decimals, thousands_separator, item_noun, category_level_names, default_weight_unit, treasury_enabled }) {
+    apply({ symbol, position, decimals, thousands_separator, item_noun, category_level_names, default_weight_unit, treasury_enabled, treasury_owner_level, treasury_is_owner }) {
       if (symbol !== undefined)   this.symbol   = symbol
       if (position !== undefined) this.position = position
       if (decimals !== undefined) this.decimals = Number(decimals)
@@ -102,6 +110,8 @@ export const useFormatStore = defineStore('format', {
       if (category_level_names !== undefined) this.categoryLevels = normalizeLevels(category_level_names)
       if (default_weight_unit !== undefined) this.weightUnit = default_weight_unit === 'G' ? 'G' : 'KG'
       if (treasury_enabled !== undefined) this.treasuryEnabled = !!treasury_enabled
+      if (treasury_owner_level !== undefined) this.treasuryOwnerLevel = !!treasury_owner_level
+      if (treasury_is_owner !== undefined) this.treasuryIsOwner = !!treasury_is_owner
     },
 
     /** Push the chosen currency-symbol colour onto <html> so the CSS var
@@ -128,6 +138,8 @@ export const useFormatStore = defineStore('format', {
       this.categoryLevels = DEFAULT_LEVELS.slice()
       this.weightUnit = 'KG'
       this.treasuryEnabled = false
+      this.treasuryOwnerLevel = false
+      this.treasuryIsOwner = false
       this.loaded = false
       // symbolColor is a user preference — intentionally kept across logout.
     },
