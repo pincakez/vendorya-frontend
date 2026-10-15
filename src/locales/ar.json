@@ -2006,7 +2006,8 @@
       "col_tax": "الضريبة",
       "col_total": "الإجمالي",
       "payments": "المدفوعات",
-      "info_sold_by": "البايع"
+      "info_sold_by": "البايع",
+      "info_source_number": "رقم النظام القديم"
     },
     "invoice_print": {
       "back": "رجوع",
