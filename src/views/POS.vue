@@ -132,6 +132,13 @@
               class="pos-customer-name"
               @click="openCustomerSearch"
             >{{ cart.customerObj.name }}</span>
+            <!-- The customer's card: details + balance; Manager+ also "Receive payment" (s169c) -->
+            <button
+              v-if="cart.customerObj && !cart.customerObj.is_walk_in && !customerFocused"
+              class="pos-customer-card-btn" type="button"
+              :title="t('people.customer_form.title_edit')" :aria-label="t('people.customer_form.title_edit')"
+              @click="openCustomerCard"
+            ><UserIcon :size="14" /></button>
             <input
               v-else
               ref="customerInputEl"
@@ -274,10 +281,7 @@
               <Printer :size="15" />
               <span>{{ t('pos.actions.reprint') }}</span>
             </button>
-            <button class="pac pac--disabled" :data-tip="actionTip('note')" disabled>
-              <FileText :size="15" />
-              <span>{{ t('pos.actions.note') }}</span>
-            </button>
+            <!-- s169c: the old "Note" button is gone — a sale has no notes field to save it in (it was always disabled). -->
           </div>
 
           <PosNumpad class="pos-numpad" ref="numpadRef" @key="onNumpadKey" @mode-change="numpadCalc = $event" />
@@ -434,10 +438,12 @@
     </div>
     <CustomerFormModal
       :open="showAddCustomer"
+      :customer-id="editCustomerId"
       :prefill-name="addCustomerPrefill.name"
       :prefill-phone="addCustomerPrefill.phone"
-      @close="showAddCustomer = false"
+      @close="showAddCustomer = false; editCustomerId = null"
       @saved="onAddCustomerSaved"
+      @received="onAddCustomerSaved"
     />
 
     <!-- ─── Success overlay ────────────────────────────────── -->
@@ -499,7 +505,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
   Search, User as UserIcon, X, Pause, Percent, CornerDownLeft,
-  Printer, FileText, ShoppingCart, CheckCircle2, ArrowLeft, ChevronDown, AlertTriangle,
+  Printer, ShoppingCart, CheckCircle2, ArrowLeft, ChevronDown, AlertTriangle,
   Sun, Moon, LogOut, Menu, ChevronUp, Calculator,
 } from 'lucide-vue-next'
 import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
@@ -1157,6 +1163,13 @@ function onCustomerKeydown(e) {
 function onAddCustomerSaved(customer) {
   selectCustomer(customer)
 }
+// Open the chosen customer's card (edit + balance + Manager+ "Receive payment") — not the add form.
+const editCustomerId = ref(null)
+function openCustomerCard() {
+  if (!cart.customerObj?.id) return
+  editCustomerId.value = String(cart.customerObj.id)
+  showAddCustomer.value = true
+}
 
 // ── Hold / Resume ────────────────────────────────────────────
 const showHeldPanel = ref(false)
@@ -1362,7 +1375,7 @@ const shortcuts = computed(() => ({
 // Hover tooltip text for an action button: "Name · Shortcut" (or just name).
 function actionTip(action) {
   const name = t(`pos.actions.${action}`)
-  const key  = shortcuts.value[action]   // customer/note have none → name only
+  const key  = shortcuts.value[action]   // customer has none → name only
   return key ? `${name} · ${key}` : name
 }
 
@@ -1780,6 +1793,12 @@ function fmtNum(n) {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .pos-customer-name:hover { text-decoration: underline; }
+.pos-customer-card-btn {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 24px; height: 24px; margin-inline-start: 4px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); cursor: pointer;
+}
+.pos-customer-card-btn:hover { color: var(--accent); border-color: var(--accent); }
 .pos-customer-input {
   flex: 1; border: none; background: none; outline: none;
   font-size: 13px; color: var(--text-primary); font-weight: 600; min-width: 0;
@@ -1960,7 +1979,7 @@ function fmtNum(n) {
 .pac:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .pac:active:not(:disabled) { transform: scale(var(--press-scale)); box-shadow: none; transition-duration: var(--press-down); }
 .pac--held { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-.pac--disabled { opacity: 0.35; cursor: not-allowed; }
+.pac:disabled { opacity: 0.35; cursor: not-allowed; }
 .pac-badge {
   position: absolute; top: 3px; right: 3px;
   background: var(--accent); color: #fff; font-size: 8px; font-weight: 800;
@@ -2132,7 +2151,7 @@ function fmtNum(n) {
     transition: transform 280ms var(--ease-in-out), visibility 0s;
   }
   .pos-right-scroll { flex: 0 1 auto; }
-  .pos-actions-grid { grid-template-columns: repeat(6, 1fr); }
+  .pos-actions-grid { grid-template-columns: repeat(5, 1fr); }
   .pac { padding: 8px 2px; font-size: 10.5px; }
   .pac[data-tip]:hover::after { display: none; }   /* no sticky hover tooltips on touch */
 

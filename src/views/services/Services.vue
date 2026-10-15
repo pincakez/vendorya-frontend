@@ -77,6 +77,15 @@
                 <span v-if="s.device || s.technician_name" class="client-phone" dir="auto">
                   {{ [s.device, s.technician_name].filter(Boolean).join(' · ') }}
                 </span>
+                <!-- s169c: the device serial is one of the shop's own units → its product (+ warranty if still on) -->
+                <span v-if="s.device_unit" class="client-phone unit-line" dir="auto">
+                  {{ t('core.svcdesk.unit_ours', { product: s.device_unit.product_name }) }}
+                  <span
+                    v-if="s.device_unit.warranty_active"
+                    class="eta-badge ok"
+                    :title="s.device_unit.warranty_ends_on ? t('core.svcdesk.unit_warranty_until', { date: fmtDate(s.device_unit.warranty_ends_on) }) : ''"
+                  >{{ t('core.svcdesk.unit_in_warranty') }}</span>
+                </span>
               </div>
             </td>
             <td>{{ fmtDate(s.receive_date) }}</td>
@@ -759,6 +768,8 @@ onMounted(() => {
 .done-pay-methods { display: flex; flex-wrap: wrap; gap: 8px; }
 .client-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .client-phone { font-size: 11px; color: var(--text-muted); }
+.unit-line { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.unit-line .eta-badge { font-size: 10px; padding: 1px 6px; }
 
 .eta-none { color: var(--text-muted); font-size: 12px; }
 .eta-badge {

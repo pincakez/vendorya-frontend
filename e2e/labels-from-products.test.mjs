@@ -137,7 +137,7 @@ try {
     if (await received.count()) {
       await received.first().click()
       await page.locator('[data-testid="purchase-print-labels"]').click()
-      await page.locator('[data-testid="purchase-labels-print"]').click()
+      await page.locator('[data-testid="labels-print"]').click()   // s169c: the shared ProductLabelsModal
       await page.waitForURL(/\/print\/labels/, { timeout: 10000 })
       await page.waitForSelector('.label-card', { timeout: 10000 })
       check(await page.locator('.label-card').count() > 0, `purchase → ${await page.locator('.label-card').count()} labels`)

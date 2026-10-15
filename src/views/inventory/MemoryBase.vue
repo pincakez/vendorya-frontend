@@ -151,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Search, X, Library, Upload, CopyX, Filter } from 'lucide-vue-next'
 import api from '@/api/axios'
@@ -168,17 +168,22 @@ const { t } = useI18n()
 const flags = useSearchFlags()
 
 /* ── Column definitions ─────────────────────────────────────── */
-const MB_COLUMNS = [
-  { key: 'name',         label: 'DRUG NAME',        sort: 'name',      align: 'left',  field: 'name',          cls: '' },
-  { key: 'brand_ar',     label: 'BRAND (AR)',        align: 'left',  field: 'brand_ar',      cls: '' },
-  { key: 'active_ing',   label: 'ACTIVE ING.',       align: 'left',  field: 'active_ing',    cls: '' },
-  { key: 'active_ing_ar',label: 'ACTIVE ING. (AR)',  align: 'left',  field: 'active_ing_ar', cls: '' },
-  { key: 'manufacturer', label: 'MANUFACTURER',      align: 'left',  field: 'manufacturer',  cls: '' },
-  { key: 'category',     label: 'CATEGORY',          align: 'left',  field: 'category_l1',   cls: '' },
-  { key: 'price',        label: 'PRICE',             sort: 'o_retail', align: 'right', field: 'price_display', cls: '', money: true },
-  { key: 'strips_per_pack',   label: 'STRIPS / PACK',   align: 'right', field: 'strips_per_pack',   cls: '' },
-  { key: 'tablets_per_strip', label: 'TABLETS / STRIP', align: 'right', field: 'tablets_per_strip', cls: '' },
-]
+// s169c: headers are translated + generic (any shop type). An attribute column takes the shop's OWN
+// attribute name when the shop has one with that key (like the product list does) — so the wording
+// follows the shop's setup, never a hardcoded trade.
+const attrNames = ref({})   // attribute key → the shop's display name
+const mb = k => t(`inventory.memory_base.${k}`)
+const MB_COLUMNS = computed(() => [
+  { key: 'name',         label: mb('col_name'),                                      sort: 'name',      align: 'left',  field: 'name',          cls: '' },
+  { key: 'brand_ar',     label: attrNames.value.brand_ar      || mb('col_name_ar'),       align: 'left',  field: 'brand_ar',      cls: '' },
+  { key: 'active_ing',   label: attrNames.value.active_ing    || mb('col_ingredient'),    align: 'left',  field: 'active_ing',    cls: '' },
+  { key: 'active_ing_ar',label: attrNames.value.active_ing_ar || mb('col_ingredient_ar'), align: 'left',  field: 'active_ing_ar', cls: '' },
+  { key: 'manufacturer', label: attrNames.value.manufacturer  || mb('col_manufacturer'),  align: 'left',  field: 'manufacturer',  cls: '' },
+  { key: 'category',     label: mb('col_category'),                                  align: 'left',  field: 'category_l1',   cls: '' },
+  { key: 'price',        label: mb('col_price'),                                     sort: 'o_retail', align: 'right', field: 'price_display', cls: '', money: true },
+  { key: 'strips_per_pack',   label: mb('col_inner_per_pack'),   align: 'right', field: 'strips_per_pack',   cls: '' },
+  { key: 'tablets_per_strip', label: mb('col_pieces_per_inner'), align: 'right', field: 'tablets_per_strip', cls: '' },
+])
 const LOCKED         = ['name']
 const DEFAULT_HIDDEN = ['active_ing_ar', 'strips_per_pack', 'tablets_per_strip']
 const DEFAULT_WIDTHS = { name: 280, brand_ar: 200, active_ing: 220, active_ing_ar: 200, manufacturer: 180, category: 160, price: 110, strips_per_pack: 130, tablets_per_strip: 140 }
@@ -211,7 +216,7 @@ async function fetchEntries(p = page.value) {
     if (search.value)  params.search    = search.value
     if (catFilter.value) params.category = catFilter.value
     if (sortKey.value) {
-      const col = MB_COLUMNS.find(c => c.key === sortKey.value)
+      const col = MB_COLUMNS.value.find(c => c.key === sortKey.value)
       if (col?.sort) params.ordering = (sortDir.value === 'desc' ? '-' : '') + col.sort
     }
     const { data } = await api.get('/api/inventory/products/', { params })
@@ -233,6 +238,14 @@ async function fetchCategories() {
   } catch { /* noop */ }
 }
 fetchCategories()
+
+async function fetchAttrNames() {
+  try {
+    const { data } = await api.get('/api/inventory/attributes/')
+    attrNames.value = Object.fromEntries((data.results ?? data).map(d => [d.key, d.name]))
+  } catch { /* noop — the generic labels stay */ }
+}
+fetchAttrNames()
 
 /* ── Events from FluidDataTable ─────────────────────────────── */
 function onPage(p)     { fetchEntries(p) }

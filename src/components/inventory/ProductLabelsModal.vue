@@ -1,6 +1,7 @@
 <template>
   <!-- s167 (PROLINE-PARITY Upgrade 14): price stickers from the product list / product page.
-       Same preset picker as a purchase's "Print Labels"; hands the SAME job shape to /print/labels. -->
+       s169c: also a received purchase's "Print Labels" (purchaseId) — one label per unit received × copies.
+       Hands the SAME job shape to /print/labels. -->
   <AppModal :open="open" :title="t('inventory.labels.title')" width="420px" @close="$emit('close')">
     <div v-if="loading" class="pl-msg">{{ t('inventory.labels.loading') }}</div>
     <div v-else-if="error" class="pl-msg pl-err">{{ error }}</div>
@@ -18,8 +19,9 @@
         </label>
       </div>
 
-      <div class="pl-section-title">{{ t('inventory.labels.per_item_title') }}</div>
-      <div class="pl-modes">
+      <!-- A purchase prints what it received (× copies) — no per-item choice -->
+      <div v-if="!purchaseId" class="pl-section-title">{{ t('inventory.labels.per_item_title') }}</div>
+      <div v-if="!purchaseId" class="pl-modes">
         <label class="preset-option" :class="{ selected: mode === 'one' }">
           <input v-model="mode" type="radio" value="one" class="pl-hidden" />
           <span class="preset-name">{{ t('inventory.labels.per_item_one') }}</span>
@@ -62,6 +64,9 @@ import { formatNumber } from '@/utils/format'
 const props = defineProps({
   open:       { type: Boolean, default: false },
   productIds: { type: Array,   default: () => [] },
+  // s169c: a received purchase instead of products → its label-data, `quantity` (received) × copies each
+  purchaseId: { type: String,  default: null },
+  copies:     { type: Number,  default: 1 },
 })
 const emit = defineEmits(['close'])
 
@@ -77,7 +82,9 @@ const items      = ref([])
 const storeName  = ref('')
 const mode       = ref('one')   // 'one' = 1 label per item · 'stock' = 1 per unit in stock
 
-const qtyOf = i => (mode.value === 'stock' ? i.stock_labels : i.quantity) || 1
+const qtyOf = i => props.purchaseId
+  ? (Number(i.quantity) || 0) * Math.max(1, Number(props.copies) || 1)   // exactly what the old purchase picker printed
+  : ((mode.value === 'stock' ? i.stock_labels : i.quantity) || 1)
 const totalLabels = computed(() => items.value.reduce((s, i) => s + qtyOf(i), 0))
 const hasWeight   = computed(() => items.value.some(i => i.by_weight))
 const hasSpecs    = computed(() => items.value.some(i => i.specs))
@@ -91,13 +98,15 @@ async function load() {
   items.value = []
   mode.value = 'one'
   try {
-    if (props.productIds.length > LABEL_MAX_PRODUCTS) {
+    if (!props.purchaseId && props.productIds.length > LABEL_MAX_PRODUCTS) {
       error.value = t('inventory.labels.too_many', { max: LABEL_MAX_PRODUCTS })
       return
     }
     const [pr, ld] = await Promise.all([
       api.get('/api/core/label-presets/'),
-      api.post('/api/inventory/products/label-data/', { ids: props.productIds }),
+      props.purchaseId
+        ? api.get(`/api/finance/purchases/${props.purchaseId}/label-data/`)
+        : api.post('/api/inventory/products/label-data/', { ids: props.productIds }),
     ])
     presets.value = pr.data.results ?? pr.data
     const def = presets.value.find(p => p.is_default) || presets.value[0]
@@ -118,7 +127,7 @@ function print() {
   const preset = presets.value.find(p => p.id === selectedId.value)
   if (!preset) return
   labelsStore.setJob({
-    source: 'products',
+    source: props.purchaseId ? 'purchase' : 'products',
     preset: { ...preset, show_specs: hasSpecs.value && withSpecs.value },
     store_name: storeName.value,
     items: items.value.map(i => ({ ...i, quantity: qtyOf(i) })),
@@ -141,7 +150,7 @@ function print() {
 .pl-note { margin: 0; font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 .pl-check { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: var(--text-primary); cursor: pointer; }
 .pl-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
-/* Same look as the purchase label picker (Purchases.vue) */
+/* Preset cards — this modal is the ONE label picker (product list, product page, purchases) */
 .preset-option { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:border-color 100ms,background 100ms; }
 .preset-option:hover   { background:var(--bg-app); }
 .preset-option.selected { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, transparent); }
