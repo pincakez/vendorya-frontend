@@ -127,18 +127,16 @@
 
           <div class="pos-customer-area" ref="customerWrapEl">
             <UserIcon :size="14" class="pos-customer-icon" />
-            <span
-              v-if="cart.customerObj && !customerFocused"
-              class="pos-customer-name"
-              @click="openCustomerSearch"
-            >{{ cart.customerObj.name }}</span>
-            <!-- The customer's card: details + balance; Manager+ also "Receive payment" (s169c) -->
-            <button
-              v-if="cart.customerObj && !cart.customerObj.is_walk_in && !customerFocused"
-              class="pos-customer-card-btn" type="button"
-              :title="t('people.customer_form.title_edit')" :aria-label="t('people.customer_form.title_edit')"
-              @click="openCustomerCard"
-            ><UserIcon :size="14" /></button>
+            <template v-if="cart.customerObj && !customerFocused">
+              <span class="pos-customer-name" @click="openCustomerSearch">{{ cart.customerObj.name }}</span>
+              <!-- The customer's card: details + balance; Manager+ also "Receive payment" (s169c) -->
+              <button
+                v-if="!cart.customerObj.is_walk_in"
+                class="pos-customer-card-btn" type="button"
+                :title="t('people.customer_form.title_edit')" :aria-label="t('people.customer_form.title_edit')"
+                @click="openCustomerCard"
+              ><UserIcon :size="14" /></button>
+            </template>
             <input
               v-else
               ref="customerInputEl"
