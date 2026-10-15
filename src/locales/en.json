@@ -21,6 +21,8 @@
     "groups": {
       "inventory": "INVENTORY",
       "finance": "FINANCE",
+      "sales": "SALES",
+      "money": "MONEY",
       "reports": "REPORTS",
       "people": "PEOPLE",
       "services": "SERVICES",

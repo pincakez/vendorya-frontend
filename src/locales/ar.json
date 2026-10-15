@@ -21,6 +21,8 @@
     "groups": {
       "inventory": "المخزون",
       "finance": "المالية",
+      "sales": "المبيعات",
+      "money": "النقدية",
       "reports": "التقارير",
       "people": "الأشخاص",
       "services": "الخدمات",

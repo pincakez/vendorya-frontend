@@ -210,16 +210,19 @@ const groups = computed(() => [
     { label: t('nav.items.import_export'),     to: '/inventory/import-export', icon: ArrowDownUp },
     { label: t('nav.items.storage'),           to: '/inventory/storage',     icon: Archive },
   ] },
-  { id: 'finance', title: t('nav.groups.finance'), icon: Wallet, items: [
+  // s174 (Yakot: "your call"): Finance had grown to 10 — split in two by job. SALES = who owes what; MONEY = where the cash is.
+  { id: 'sales', title: t('nav.groups.sales'), icon: FileText, items: [
     { label: t('nav.items.sales_invoices'), to: '/finance/invoices',     icon: FileText },
     { label: t('nav.items.returns'),        to: '/finance/returns',      icon: CornerDownLeft },
     { label: t('nav.items.reservations'),   to: '/finance/reservations', icon: BookmarkCheck },   // s172: only with the switch on (canOpen)
-    { label: t('nav.items.expenses'),       to: '/finance/expenses',     icon: Receipt },
     { label: t('nav.items.due_dates'),      to: '/finance/due-dates',    icon: CalendarClock },   // s173: only with the switch on (canOpen)
-    { label: t('nav.items.cheques'),        to: '/finance/cheques',      icon: Landmark },   // s171
+    { label: t('nav.items.cheques'),        to: '/finance/cheques',      icon: Landmark },   // s171 · s174: only with the switch on
+  ] },
+  { id: 'money', title: t('nav.groups.money'), icon: Wallet, items: [
     { label: t('nav.items.shifts'),         to: '/finance/shifts',       icon: Clock },
     { label: t('nav.items.cash_drawer'),    to: '/finance/cash-drawer',  icon: Wallet },
     { label: t('nav.items.treasury'),       to: '/finance/treasury',     icon: Vault },   // s169c: only when the Treasury switch is on (canOpen)
+    { label: t('nav.items.expenses'),       to: '/finance/expenses',     icon: Receipt },
   ] },
   { id: 'reports', title: t('nav.groups.reports'), icon: LineChart, items: [
     { label: t('nav.items.sales'),         to: '/reports/sales',        icon: LineChart },
