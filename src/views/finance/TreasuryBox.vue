@@ -150,8 +150,8 @@ const rows = computed(() => (stmt.value?.lines || []).map(l => {
     ref: ref?.type === 'transfer' && ref.label && (l.kind === 'TRANSFER_OUT' || l.kind === 'TRANSFER_IN')
       ? (l.kind === 'TRANSFER_OUT' ? '→ ' : '← ') + ref.label : (ref?.label || ''),
     to: refRoute ? refRoute(ref.id) : null,
-    note: [l.note, l.reason && t('finance.treasury.reason_prefix', { reason: l.reason }), l.created_by_name]
-      .filter(Boolean).join(' — '),
+    note: [l.note, l.reason && t('finance.treasury.reason_prefix', { reason: l.reason })].filter(Boolean).join(' — '),
+    by: l.created_by_name || '',
     debit: amt > 0 ? amt : 0,
     credit: amt < 0 ? -amt : 0,
     amount: l.amount,

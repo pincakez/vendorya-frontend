@@ -11,7 +11,8 @@
  *     :lines="rows" :opening-balance="s.opening_balance" :closing-balance="s.closing_balance"
  *     :totals="s.totals" :debit-label="…" :credit-label="…" :balance-hint="…" filename="statement-x" />
  *
- * lines: [{ key, date (ISO), type (label), ref, note, debit, credit, running_balance, to?, dim? }]
+ * lines: [{ key, date (ISO), type (label), ref, note, by? (who made it — a small line under the note), debit, credit,
+ *           running_balance, to?, dim? }]
  *   `to` = optional router path; the Ref cell becomes a link on screen. `dim` = draw the row faded (e.g. a reversed line).
  *
  * Optional slot `actions` ({ line }) — s169c, money boxes: one extra column at the end of each line (e.g. a Reverse
@@ -76,6 +77,7 @@ function exportCsv() {
     { key: 'type',    label: t('finance.statement.cols.type'),    type: 'text' },
     { key: 'ref',     label: t('finance.statement.cols.ref'),     type: 'text' },
     { key: 'note',    label: t('finance.statement.cols.note'),    type: 'text' },
+    ...(props.lines.some(l => l.by) ? [{ key: 'by', label: t('finance.statement.cols.by'), type: 'text' }] : []),
     { key: 'debit',   label: debitLbl.value,                      type: 'number' },
     { key: 'credit',  label: creditLbl.value,                     type: 'number' },
     { key: 'balance', label: t('finance.statement.cols.balance'), type: 'number' },
@@ -83,7 +85,7 @@ function exportCsv() {
   const rows = [
     { date: dayLabel(props.dateFrom), type: t('finance.statement.opening'), balance: props.openingBalance },
     ...props.lines.map(l => ({
-      date: fmtLineDate(l.date), type: l.type, ref: l.ref, note: l.note,
+      date: fmtLineDate(l.date), type: l.type, ref: l.ref, note: l.note, by: l.by || '',
       debit: l.debit, credit: l.credit, balance: l.running_balance,
     })),
     { type: t('finance.statement.totals'), debit: props.totals?.debit, credit: props.totals?.credit },
@@ -152,8 +154,8 @@ onBeforeUnmount(() => {
           <div class="dt-xscroll">
             <table class="dt">
               <colgroup>
-                <col style="width:12%" /><col style="width:13%" /><col style="width:12%" /><col style="width:21%" />
-                <col style="width:14%" /><col style="width:14%" /><col style="width:14%" />
+                <col style="width:11%" /><col style="width:17%" /><col style="width:10%" /><col style="width:21%" />
+                <col style="width:13%" /><col style="width:14%" /><col style="width:14%" />
                 <col v-if="hasActions" class="stmt-noprint" style="width:96px" />
               </colgroup>
               <thead>
@@ -180,12 +182,15 @@ onBeforeUnmount(() => {
                 </tr>
                 <tr v-for="l in lines" :key="l.key" class="dt-row" :class="{ 'stmt-dim': l.dim }">
                   <td class="stmt-muted">{{ fmtLineDate(l.date) }}</td>
-                  <td>{{ l.type }}</td>
+                  <td class="stmt-type">{{ l.type }}</td>
                   <td class="mono">
                     <router-link v-if="l.to && l.ref" :to="l.to" class="stmt-link">{{ l.ref }}</router-link>
                     <span v-else>{{ l.ref || '—' }}</span>
                   </td>
-                  <td class="stmt-muted stmt-note" :title="l.note">{{ l.note || '' }}</td>
+                  <td class="stmt-muted stmt-note" :title="[l.note, l.by].filter(Boolean).join(' — ')">
+                    {{ l.note || '' }}
+                    <span v-if="l.by" class="stmt-by">{{ t('finance.statement.by', { name: l.by }) }}</span>
+                  </td>
                   <td class="ta-right"><Money v-if="Number(l.debit)" :value="l.debit" /></td>
                   <td class="ta-right"><Money v-if="Number(l.credit)" :value="l.credit" /></td>
                   <td class="ta-right stmt-bal"><Money :value="l.running_balance" /></td>
@@ -239,6 +244,8 @@ onBeforeUnmount(() => {
 .stmt-error { padding:24px; text-align:center; color:var(--danger); }
 .stmt-muted { color:var(--text-muted); }
 .stmt-note { font-size:13px; }
+.stmt-type { white-space:normal; }
+.stmt-by { display:block; font-size:11.5px; color:var(--text-muted); margin-top:2px; }
 .mono { font-family:ui-monospace,monospace; font-size:13px; }
 .stmt-link { color:var(--accent); text-decoration:none; font-weight:600; }
 .stmt-link:hover { text-decoration:underline; }

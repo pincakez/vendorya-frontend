@@ -977,8 +977,10 @@
         "note": "Note",
         "debit": "Debit",
         "credit": "Credit",
-        "balance": "Balance"
-      }
+        "balance": "Balance",
+        "by": "By"
+      },
+      "by": "by {name}"
     },
     "shifts": {
       "title": "Work Shifts",

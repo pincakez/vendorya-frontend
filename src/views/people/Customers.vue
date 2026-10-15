@@ -182,124 +182,8 @@
     </AppModal>
 
     <!-- ADD/EDIT CUSTOMER MODAL -->
-    <AppModal :open="modal.open" :title="modal.id ? t('people.customer_form.title_edit') : t('people.customer_form.title_new')" width="900px" @close="closeModal">
-      <div class="pfm-form">
-        <div class="pfm-row">
-          <label class="form-label">{{ t('people.customer_form.name_label') }}</label>
-          <input v-model="modal.name" class="form-input" :placeholder="t('people.customer_form.name_ph')" />
-        </div>
-        <div class="pfm-row">
-          <label class="form-label">{{ t('people.customer_form.phone_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
-          <input v-model="modal.phone_number" class="form-input" :placeholder="t('people.customer_form.phone_ph')" />
-        </div>
-        <div class="pfm-row">
-          <label class="form-label">{{ t('people.customer_form.email_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
-          <input v-model="modal.email" type="email" class="form-input" :placeholder="t('people.customer_form.email_ph')" />
-        </div>
-        <button type="button" class="pfm-expand-btn" @click="modal.expanded = !modal.expanded">
-          <ChevronDown :size="14" :class="['pfm-chev', { open: modal.expanded }]" />
-          {{ modal.expanded ? t('people.pfm.collapse') : t('people.pfm.more_fields') }}
-        </button>
-        <div v-if="modal.expanded" class="pfm-expanded">
-          <div class="pfm-2col">
-            <div class="pfm-row">
-              <label class="form-label">{{ t('people.pfm.whatsapp') }}</label>
-              <input v-model="modal.whatsapp_number" class="form-input" placeholder="e.g. 01012345678" />
-            </div>
-            <div class="pfm-row">
-              <label class="form-label">{{ t('people.pfm.instagram') }}</label>
-              <input v-model="modal.instagram" class="form-input" placeholder="@handle" />
-            </div>
-          </div>
-          <div class="pfm-row">
-            <label class="form-label">{{ t('people.pfm.website') }}</label>
-            <input v-model="modal.website" class="form-input" placeholder="https://…" />
-          </div>
-          <div class="pfm-2col">
-            <div class="pfm-row">
-              <label class="form-label">{{ t('people.pfm.country') }}</label>
-              <input v-model="modal.country" class="form-input" placeholder="Egypt" />
-            </div>
-            <div class="pfm-row">
-              <label class="form-label">{{ t('people.pfm.city') }}</label>
-              <input v-model="modal.city" class="form-input" placeholder="Cairo" />
-            </div>
-          </div>
-          <div class="pfm-row">
-            <label class="form-label">{{ t('people.pfm.notes') }}</label>
-            <textarea v-model="modal.notes" class="form-input" rows="2" :placeholder="t('people.pfm.notes_ph')" />
-          </div>
-          <div class="pfm-2col">
-            <div class="pfm-row">
-              <label class="form-label">{{ t('people.customer_form.phone_2') }}</label>
-              <input v-model="modal.phone_2" class="form-input" placeholder="e.g. 01112345678" />
-            </div>
-            <div class="pfm-row">
-              <label class="form-label">{{ t('people.customer_form.tax_number') }}</label>
-              <input v-model="modal.tax_number" class="form-input" />
-            </div>
-          </div>
-          <div class="pfm-row">
-            <label class="form-label">{{ t('people.customer_form.address') }}</label>
-            <input v-model="modal.address" class="form-input" />
-          </div>
-          <!-- s171: personal data (national ID + guarantor) — managers and up; the server hides it from cashiers -->
-          <template v-if="canSetOpening">
-            <div class="pfm-row">
-              <label class="form-label">{{ t('people.customer_form.national_id') }}</label>
-              <input v-model="modal.national_id" class="form-input" inputmode="numeric" />
-            </div>
-            <div class="pfm-sub">{{ t('people.customer_form.guarantor') }}</div>
-            <div class="pfm-2col">
-              <div class="pfm-row">
-                <label class="form-label">{{ t('people.customer_form.guarantor_name') }}</label>
-                <input v-model="modal.guarantor_name" class="form-input" />
-              </div>
-              <div class="pfm-row">
-                <label class="form-label">{{ t('people.customer_form.national_id') }}</label>
-                <input v-model="modal.guarantor_national_id" class="form-input" inputmode="numeric" />
-              </div>
-            </div>
-            <div class="pfm-2col">
-              <div class="pfm-row">
-                <label class="form-label">{{ t('people.customer_form.phone_label') }}</label>
-                <input v-model="modal.guarantor_phone" class="form-input" />
-              </div>
-              <div class="pfm-row">
-                <label class="form-label">{{ t('people.customer_form.phone_2') }}</label>
-                <input v-model="modal.guarantor_phone_2" class="form-input" />
-              </div>
-            </div>
-            <div class="pfm-2col">
-              <div class="pfm-row">
-                <label class="form-label">{{ t('people.customer_form.guarantor_work') }}</label>
-                <input v-model="modal.guarantor_work" class="form-input" />
-              </div>
-              <div class="pfm-row">
-                <label class="form-label">{{ t('people.customer_form.address') }}</label>
-                <input v-model="modal.guarantor_address" class="form-input" />
-              </div>
-            </div>
-          </template>
-          <div v-if="canSetOpening" class="pfm-row">
-            <label class="form-label">{{ t('people.customer_form.credit_limit_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
-            <input v-model.number="modal.credit_limit" type="number" min="0" step="100" class="form-input" style="max-width:160px;" placeholder="0" />
-          </div>
-          <div v-if="canSetOpening" class="pfm-row">
-            <label class="form-label">{{ t('people.customer_form.opening_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
-            <input v-model="modal.opening_balance" type="number" step="0.01" class="form-input" style="max-width:160px;" placeholder="0" />
-            <p class="pfm-hint">{{ t('people.customer_form.opening_hint') }}</p>
-          </div>
-        </div>
-        <p v-if="modal.errorMsg" class="pfm-error">{{ modal.errorMsg }}</p>
-      </div>
-      <template #footer>
-        <button class="btn-ghost" @click="closeModal">{{ t('common.cancel') }}</button>
-        <button class="btn-primary" :disabled="!modal.name.trim() || saving" @click="saveCustomer">
-          {{ saving ? t('common.saving') : (modal.id ? t('people.customer_form.save_changes') : t('people.customer_form.add_customer')) }}
-        </button>
-      </template>
-    </AppModal>
+    <CustomerFormModal :open="custModal.open" :customer-id="custModal.id" @close="custModal.open = false"
+                       @saved="onCustomerSaved" @received="fetchCustomers(page)" />
   </div>
 </template>
 
@@ -308,7 +192,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
-  Search, X, Users, Pencil, Trash2, Plus, ChevronDown,
+  Search, X, Users, Pencil, Trash2, Plus,
   ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown,
   Columns3, GripVertical, Lock, UserCog, RotateCcw,
 } from 'lucide-vue-next'
@@ -317,6 +201,7 @@ import { useCtrlN } from '@/composables/useCtrlN'
 useCtrlN(openNew)
 import { useAuthStore } from '@/stores/auth'
 import AppModal from '@/components/ui/AppModal.vue'
+import CustomerFormModal from '@/components/shared/CustomerFormModal.vue'
 
 const { t } = useI18n()
 const auth   = useAuthStore()
@@ -357,7 +242,6 @@ const displayColumns = computed(() =>
 )
 const tableMin = computed(() => displayColumns.value.reduce((a, c) => a + colWidths[c.key], 0) + 96)
 const canEdit  = computed(() => ['OWNER', 'ADMIN'].includes(auth.userRole) || auth.isSuperadmin)
-const canSetOpening = computed(() => ['MANAGER', 'ADMIN', 'OWNER'].includes(auth.userRole))
 
 /* ── layout / presets ── */
 const baseConfig = ref(null)
@@ -534,82 +418,11 @@ function debouncedFetch() { clearTimeout(searchTimer); searchTimer = setTimeout(
 function clearSearch() { search.value = ''; fetchCustomers(1) }
 
 /* ── CRUD ── */
-const saving = ref(false)
-
-const _custDefaults = () => ({
-  open: false, expanded: false, id: null,
-  name: '', phone_number: '', email: '',
-  whatsapp_number: '', instagram: '', website: '',
-  country: 'Egypt', city: '', notes: '', credit_limit: null, opening_balance: '',
-  phone_2: '', address: '', tax_number: '', national_id: '', guarantor_name: '', guarantor_national_id: '', guarantor_phone: '', guarantor_phone_2: '', guarantor_work: '', guarantor_address: '',
-  errorMsg: '',
-})
-// s171: extra customer fields — EXTRA for everyone, PRIVATE (national ID + guarantor) for managers and up only.
-const CUST_EXTRA = ['phone_2', 'address', 'tax_number']
-const CUST_PRIVATE = ['national_id', 'guarantor_name', 'guarantor_national_id', 'guarantor_phone', 'guarantor_phone_2', 'guarantor_work', 'guarantor_address']
-const modal = reactive(_custDefaults())
-
-function openNew() {
-  Object.assign(modal, _custDefaults())
-  modal.open = true
-}
-function openEdit(c) {
-  Object.assign(modal, _custDefaults())
-  modal.open = true
-  modal.id            = c.id
-  modal.name          = c.name          || ''
-  modal.phone_number  = c.phone_number  || ''
-  modal.email         = c.email         || ''
-  modal.whatsapp_number = c.whatsapp_number || ''
-  modal.instagram     = c.instagram     || ''
-  modal.website       = c.website       || ''
-  modal.country       = c.country       || 'Egypt'
-  modal.city          = c.city          || ''
-  modal.notes         = c.notes         || ''
-  modal.credit_limit  = c.credit_limit  || null
-  modal.opening_balance = Number(c.opening_balance) ? c.opening_balance : ''
-  for (const k of [...CUST_EXTRA, ...CUST_PRIVATE]) modal[k] = c[k] || ''
-  if (modal.opening_balance) modal.expanded = true
-}
-function closeModal() { modal.open = false }
-
-async function saveCustomer() {
-  if (!modal.name.trim() || saving.value) return
-  modal.errorMsg = ''
-  saving.value = true
-  const isEdit = !!modal.id
-  try {
-    const payload = {
-      name:            modal.name.trim(),
-      phone_number:    modal.phone_number.trim()    || null,
-      email:           modal.email.trim(),
-      notes:           modal.notes.trim(),
-      whatsapp_number: modal.whatsapp_number.trim(),
-      instagram:       modal.instagram.trim(),
-      website:         modal.website.trim(),
-      country:         modal.country.trim(),
-      city:            modal.city.trim(),
-      // Opening balance (s167) + credit limit (2026-10-14): managers and up only — the server refuses a
-      // cashier who changes either, so a cashier's form leaves both out (and they stay as they are).
-      ...(canSetOpening.value ? { opening_balance: modal.opening_balance || 0, credit_limit: modal.credit_limit || null } : {}),
-      ...Object.fromEntries(CUST_EXTRA.map(k => [k, modal[k].trim()])),
-      // a cashier never sees the personal fields, so their save must never send (and blank) them
-      ...(canSetOpening.value ? Object.fromEntries(CUST_PRIVATE.map(k => [k, modal[k].trim()])) : {}),
-    }
-    if (isEdit) {
-      await api.patch(`/api/auth/customers/${modal.id}/`, payload)
-    } else {
-      await api.post('/api/auth/customers/', payload)
-    }
-    closeModal()
-    fetchCustomers(isEdit ? page.value : 1)
-  } catch (err) {
-    const data = err?.response?.data
-    modal.errorMsg = data
-      ? (Object.values(data).flat()[0] || t('people.customer_form.err_save'))
-      : t('people.customer_form.err_save')
-  } finally { saving.value = false }
-}
+// One customer form for the whole app (s173): the same modal as the till's — every new field lands in one place.
+const custModal = reactive({ open: false, id: null })
+function openNew()   { Object.assign(custModal, { open: true, id: null }) }
+function openEdit(c) { Object.assign(custModal, { open: true, id: c.id }) }
+function onCustomerSaved() { fetchCustomers(custModal.id ? page.value : 1) }
 
 async function deleteCustomer(id) {
   if (!confirm(t('people.customers.confirm_delete'))) return
@@ -672,17 +485,6 @@ onMounted(() => { loadLayout() })
 .form-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-app); color: var(--text-primary); font-size: 13px; outline: none; box-sizing: border-box; transition: border-color 120ms; resize: vertical; }
 .form-input:focus { border-color: var(--accent); }
 
-.pfm-form { display: flex; flex-direction: column; gap: 12px; }
-.pfm-row  { display: flex; flex-direction: column; gap: 4px; }
-.pfm-opt  { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
-.pfm-expand-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--accent); padding: 2px 0; align-self: flex-start; transition: opacity 120ms; }
-.pfm-expand-btn:hover { opacity: .75; }
-.pfm-chev { transition: transform 220ms ease; flex-shrink: 0; }
-.pfm-chev.open { transform: rotate(180deg); }
-.pfm-expanded { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; border-top: 1px dashed var(--border); }
-.pfm-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.pfm-error { font-size: 12px; color: var(--danger); background: var(--danger-soft); border-radius: 8px; padding: 8px 12px; margin: 0; }
-.pfm-hint  { font-size: 12px; color: var(--text-muted); margin: 6px 0 0; }
 </style>
 
 <style>
@@ -694,5 +496,4 @@ onMounted(() => { loadLayout() })
   box-shadow: 0 8px 28px rgba(0,0,0,.18); white-space: nowrap;
   transform: rotate(-2deg) scale(1.04); transition: none;
 }
-.pfm-sub { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); margin-top: 6px; }
 </style>

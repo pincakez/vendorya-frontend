@@ -114,6 +114,11 @@
             <label class="form-label">{{ t('people.customer_form.credit_limit_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
             <input v-model.number="form.credit_limit" type="number" min="0" step="100" class="form-input" placeholder="0" />
           </div>
+          <div v-if="canSetCredit" class="modal-field">
+            <label class="form-label">{{ t('people.customer_form.opening_label') }} <span class="pfm-opt">({{ t('common.optional') }})</span></label>
+            <input v-model="form.opening_balance" type="number" step="0.01" class="form-input" placeholder="0" />
+            <p class="pfm-hint">{{ t('people.customer_form.opening_hint') }}</p>
+          </div>
           <div class="modal-field modal-span-2">
             <label class="form-label">{{ t('people.pfm.notes') }}</label>
             <textarea v-model="form.notes" class="form-input" rows="2" :placeholder="t('people.pfm.notes_ph')" />
@@ -177,7 +182,7 @@ const form = reactive({
   name: '', phone_number: '', email: '',
   whatsapp_number: '', instagram: '', website: '',
   country: 'Egypt', city: '', notes: '',
-  gender: 'MALE', credit_limit: null,
+  gender: 'MALE', credit_limit: null, opening_balance: '',
   phone_2: '', address: '', tax_number: '', national_id: '', guarantor_name: '', guarantor_national_id: '', guarantor_phone: '', guarantor_phone_2: '', guarantor_work: '', guarantor_address: '',
 })
 const EXTRA_FIELDS = ['phone_2', 'address', 'tax_number']            // everyone
@@ -191,7 +196,7 @@ watch(() => props.open, (val) => {
     name: props.prefillName || '', phone_number: props.prefillPhone || '',
     email: props.prefillEmail || '', whatsapp_number: '', instagram: '',
     website: '', country: 'Egypt', city: '', notes: '',
-    gender: 'MALE', credit_limit: null,
+    gender: 'MALE', credit_limit: null, opening_balance: '',
   })
   for (const k of [...EXTRA_FIELDS, ...PRIVATE_FIELDS]) form[k] = ''
   customer.value = null
@@ -212,8 +217,10 @@ async function loadCustomer() {
       whatsapp_number: data.whatsapp_number || '', instagram: data.instagram || '', website: data.website || '',
       country: data.country || '', city: data.city || '', notes: data.notes || '',
       gender: data.gender || 'MALE', credit_limit: data.credit_limit ?? null,
+      opening_balance: Number(data.opening_balance) ? data.opening_balance : '',
     })
     for (const k of [...EXTRA_FIELDS, ...PRIVATE_FIELDS]) form[k] = data[k] || ''
+    if (form.opening_balance && canSetCredit.value) expanded.value = true
   } catch {
     errorMsg.value = t('people.customer_form.err_load')
   }
@@ -245,8 +252,9 @@ async function save() {
     website:         form.website.trim(),
     country:         form.country.trim(),
     city:            form.city.trim(),
-    // Credit limit: managers and up only (2026-10-14) — the server refuses a cashier who sets one.
-    ...(canSetCredit.value ? { credit_limit: form.credit_limit || null } : {}),
+    // Opening balance (s167) + credit limit (2026-10-14): managers and up only — the server refuses a cashier who
+    // changes either, so a cashier's form leaves both out (and they stay as they are).
+    ...(canSetCredit.value ? { opening_balance: form.opening_balance || 0, credit_limit: form.credit_limit || null } : {}),
     ...Object.fromEntries(EXTRA_FIELDS.map(k => [k, form[k].trim()])),
     // Personal fields: only a manager+ sees them, so only a manager+ sends them (a cashier's save must never blank them).
     ...(canSetCredit.value ? Object.fromEntries(PRIVATE_FIELDS.map(k => [k, form[k].trim()])) : {}),
@@ -278,6 +286,7 @@ async function save() {
 .cfm-receive { margin-inline-start: auto; }
 
 .pfm-opt  { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+.pfm-hint  { font-size: 12px; color: var(--text-muted); margin: 6px 0 0; }
 .pfm-error { font-size: 12px; color: var(--danger); background: var(--danger-soft); border-radius: 8px; padding: 8px 12px; }
 
 .pfm-expand-btn {
