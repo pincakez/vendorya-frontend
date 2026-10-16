@@ -17,6 +17,12 @@
       </div>
     </div>
 
+    <!-- s176: after a save that took modules away (the server already switched them off + logged it) -->
+    <div v-if="modulesNote" class="mod-note">
+      <span><strong>{{ modulesNote.store }}</strong> can no longer use: {{ modulesNote.names }}. If the shop had them on, they were switched off — nothing was deleted.</span>
+      <button class="row-action" title="Dismiss" @click="modulesNote = null"><X :size="13" /></button>
+    </div>
+
     <AppTable :loading="loading" :empty="!stores.length" empty-text="No stores yet" :cols="9">
       <template #head>
         <th class="dt-th">Store</th>
@@ -60,7 +66,7 @@
 
 
     <!-- Edit modal (single store) -->
-    <AppModal :open="editModal.open" title="Edit Store" @close="closeEdit">
+    <AppModal :open="editModal.open" title="Edit Store" width="560px" @close="closeEdit">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
           <label class="form-label">Store Name</label>
@@ -143,6 +149,32 @@
           </div>
           <p style="font-size:11.5px;color:var(--admin-accent);margin:0;">⚠ Immediate suspension locks out all staff until you reactivate.</p>
         </div>
+        <!-- s176 module control: per-shop exceptions to the plan -->
+        <div class="mod-section">
+          <div class="mod-head">
+            <label class="form-label" style="margin:0;">Modules</label>
+            <span class="hint">{{ planLine }}</span>
+          </div>
+          <div v-for="m in MODULES" :key="m.key" class="mod-row">
+            <div class="mod-info">
+              <span class="mod-name">{{ m.name }}</span>
+              <span class="mod-sub">
+                <span v-if="editPlan.name">Plan: {{ planIncludes(m.key) ? 'included' : 'not included' }} · </span>
+                <span :class="editModal.modules_allowed[m.key] ? 'mod-yes' : 'mod-no'">{{ editModal.modules_allowed[m.key] ? 'Allowed' : 'Not allowed' }}</span>
+                <template v-if="preview && preview[m.key] !== editModal.modules_allowed[m.key]">
+                  → <span :class="preview[m.key] ? 'mod-yes' : 'mod-no'" title="After saving">{{ preview[m.key] ? 'Allowed' : 'Not allowed' }}</span> on save
+                </template>
+              </span>
+            </div>
+            <div class="seg" role="radiogroup" :aria-label="m.name">
+              <label v-for="o in accessOptions" :key="o.value" class="seg-opt" :class="[o.value, { on: editModal.module_access[m.key] === o.value }]">
+                <input v-model="editModal.module_access[m.key]" type="radio" :name="'ma-' + m.key" :value="o.value" />
+                {{ o.label }}
+              </label>
+            </div>
+          </div>
+          <p class="mod-help">A module that isn't allowed can't be switched on by the shop. Taking one away switches it off for the shop — nothing is deleted.</p>
+        </div>
         <!-- Danger Zone -->
         <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
           <p style="font-size:11.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;">Danger Zone</p>
@@ -156,6 +188,8 @@
             </button>
           </div>
         </div>
+        <!-- s176: the save was refused (e.g. a Treasury drawer shift is still open) — the modal stays open -->
+        <div v-if="editError" ref="editErrorEl" class="error-box" style="margin-top:0;">{{ editError }}</div>
       </div>
       <template #footer>
         <button class="btn-ghost" @click="closeEdit">Cancel</button>
@@ -368,11 +402,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
-import { Search, Store, Pencil, Plus } from 'lucide-vue-next'
+import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import { Search, Store, Pencil, Plus, X } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
 import AppTable from '@/components/ui/AppTable.vue'
+import { MODULES, MODULE_KEYS, moduleName, modulesSummary, previewAllowed } from '@/utils/modules'
 
 
 const stores = ref([])
@@ -436,12 +471,55 @@ const editModal = reactive({
   open: false, id: null,
   name: '', store_code: '', plan: 'FREE', currency_id: '', default_language: 'ar',
   timezone: 'Africa/Cairo', is_active: true,
+  module_access: {}, modules_allowed: {},
 })
 const codeCheck = ref(null)   // null = unchecked, true = available, false = taken
 const checkingCode = ref(false)
 
+// --- s176 module control ---
+// module_access holds every key as 'plan' | 'allow' | 'block' while editing; only the exceptions are sent.
+const accessOptions = [
+  { value: 'plan',  label: 'Follow plan' },
+  { value: 'allow', label: 'Allow' },
+  { value: 'block', label: 'Block' },
+]
+const editPlan = reactive({ known: false, name: '', modules: null })   // the shop's subscription plan, for the preview
+const editError = ref('')
+const editErrorEl = ref(null)
+const modulesNote = ref(null)   // { store, names } after a save that took modules away
+
+function planIncludes(key) { return editPlan.modules == null || editPlan.modules.includes(key) }
+
+const planLine = computed(() => {
+  if (!editPlan.known) return ''
+  if (!editPlan.name) return 'No subscription — every module'
+  return `Plan ${editPlan.name}: ${modulesSummary(editPlan.modules).toLowerCase()}`
+})
+
+// What the shop will get after saving (null while the plan isn't known — then only the current state shows).
+const preview = computed(() => editPlan.known ? previewAllowed(editPlan.modules, editModal.module_access) : null)
+
+// The store row has no plan details, so read the shop's subscription + the plans (both small, unpaginated lists).
+async function loadEditPlan(storeId) {
+  Object.assign(editPlan, { known: false, name: '', modules: null })
+  try {
+    const [subs, plans] = await Promise.all([
+      api.get('/api/admin/billing/subscriptions/'),
+      api.get('/api/admin/billing/plans/'),
+    ])
+    const subList  = Array.isArray(subs.data)  ? subs.data  : (subs.data.results  || [])
+    const planList = Array.isArray(plans.data) ? plans.data : (plans.data.results || [])
+    if (editModal.id !== storeId) return   // another store was opened meanwhile
+    const sub = subList.find(x => x.store?.id === storeId)
+    if (!sub) { Object.assign(editPlan, { known: true, name: '', modules: null }); return }
+    const plan = planList.find(p => p.id === sub.plan)
+    if (plan) Object.assign(editPlan, { known: true, name: plan.name, modules: plan.modules })
+  } catch { /* no preview — the current state from the server still shows */ }
+}
+
 function openEdit(s) {
   codeCheck.value = null
+  editError.value = ''
   Object.assign(editModal, {
     open: true, id: s.id,
     name: s.name, store_code: s.store_code || '',
@@ -451,7 +529,10 @@ function openEdit(s) {
     timezone: s.timezone || 'Africa/Cairo',
     is_active: s.is_active,
     suspend_reason: '', suspend_grace_days: 0, originalActive: s.is_active,
+    module_access: Object.fromEntries(MODULE_KEYS.map(k => [k, s.module_access?.[k] || 'plan'])),
+    modules_allowed: { ...(s.modules_allowed || {}) },
   })
+  loadEditPlan(s.id)
 }
 
 function closeEdit() { editModal.open = false }
@@ -486,16 +567,29 @@ async function saveEdit() {
       default_language: editModal.default_language,
       timezone: editModal.timezone,
       is_active: editModal.is_active,
+      // s176: only the exceptions to the plan (a key left out = follow the plan)
+      module_access: Object.fromEntries(Object.entries(editModal.module_access).filter(([, v]) => v !== 'plan')),
     }
     if (editModal.store_code) payload.store_code = editModal.store_code
     if (suspending) {
       payload.suspend_reason = editModal.suspend_reason.trim()
       payload.suspend_grace_days = editModal.suspend_grace_days
     }
-    await api.patch(`/api/admin/stores/${editModal.id}/`, payload)
+    editError.value = ''
+    const res = await api.patch(`/api/admin/stores/${editModal.id}/`, payload)
+    const before = editModal.modules_allowed
+    const after = res.data?.modules_allowed || {}
+    const lost = MODULE_KEYS.filter(k => before[k] && after[k] === false)
+    modulesNote.value = lost.length ? { store: res.data.name || editModal.name, names: lost.map(moduleName).join(', ') } : null
     closeEdit()
     fetchStores()
   } catch (e) {
+    // s176: taking the Treasury away while a drawer shift is open is refused — show why, keep the modal open
+    if (e.response?.data?.code === 'shifts_open') {
+      editError.value = e.response.data.detail
+      nextTick(() => editErrorEl.value?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
+      return
+    }
     alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving store')
   } finally {
     saving.value = false
@@ -653,6 +747,30 @@ onMounted(() => {
 
 .step-help { font-size:12px; color:var(--text-muted); margin:4px 0 0; line-height:1.5; }
 .error-box { margin-top:12px; padding:10px 12px; border:1px solid #fecaca; background:rgba(220,38,38,0.08); border-radius:8px; color:var(--danger-hover); font-size:12.5px; display:flex; flex-direction:column; gap:3px; }
+
+/* s176 module control */
+.mod-section { border-top:1px solid var(--border); padding-top:12px; display:flex; flex-direction:column; }
+.mod-head    { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:6px; }
+.mod-row     { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid var(--border); }
+.mod-row:last-of-type { border-bottom:none; }
+.mod-info    { display:flex; flex-direction:column; min-width:0; }
+.mod-name    { font-size:13px; font-weight:500; color:var(--text-primary); }
+.mod-sub     { font-size:11.5px; color:var(--text-muted); }
+.mod-yes     { color:var(--success); font-weight:600; }
+.mod-no      { color:var(--danger); font-weight:600; }
+.mod-help    { font-size:11.5px; color:var(--text-muted); margin:8px 0 0; line-height:1.5; }
+.mod-note    { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--warning-soft); color:var(--text-primary); font-size:12.5px; }
+
+/* 3-way segmented choice — radios underneath, so the modal's unsaved-changes guard sees the change */
+.seg     { display:inline-flex; flex-shrink:0; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--bg-app); }
+.seg-opt { position:relative; padding:5px 9px; font-size:11.5px; font-weight:600; color:var(--text-secondary); cursor:pointer; user-select:none; white-space:nowrap; transition:background 100ms,color 100ms; }
+.seg-opt + .seg-opt { border-left:1px solid var(--border); }
+.seg-opt input { position:absolute; opacity:0; width:0; height:0; margin:0; pointer-events:none; }
+.seg-opt:hover { color:var(--text-primary); }
+.seg-opt:has(input:focus-visible) { outline:2px solid var(--admin-accent, var(--danger)); outline-offset:-2px; }
+.seg-opt.on.plan  { background:var(--bg-card); color:var(--text-primary); box-shadow:inset 0 0 0 1px var(--text-muted); border-radius:7px; }
+.seg-opt.on.allow { background:var(--success-soft); color:var(--success); }
+.seg-opt.on.block { background:var(--danger-soft); color:var(--danger); }
 
 .code-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:700; letter-spacing:.06em; font-variant-numeric:tabular-nums; background:rgba(239,68,68,0.12); color:var(--admin-accent); border:1px solid rgba(239,68,68,0.25); }
 
