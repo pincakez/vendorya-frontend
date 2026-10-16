@@ -12,6 +12,54 @@
 
 export const changelog = [
   {
+    version: '1.62.0',
+    date: '2026-10-16',
+    tag: 'New',
+    en: {
+      title: 'Turn modules on and off',
+      points: [
+        'Settings → Modules now has a switch for every optional part of Vendorya, grouped into Selling, Stock, Service desk and Money.',
+        'New switches: Service desk, Supplier returns, Serial numbers and Stock transfers. They stay on unless you turn them off. Off hides their menus and buttons; what you already recorded is kept.',
+        'Tax can now be switched off for shops that do not charge it.',
+        'Each module\'s own settings open right under its switch, for example the credit limit rules under Selling on credit, and service types under Service desk.',
+        'A module that is not part of your plan shows a lock with "Not in your plan".',
+      ],
+    },
+    ar: {
+      title: 'شغّل واقفل الإمكانيات',
+      points: [
+        'الإعدادات ← الإمكانيات فيها دلوقتي مفتاح لكل جزء اختياري في Vendorya، متقسّمة: البيع، المخزون، الصيانة والخدمات، الأموال.',
+        'مفاتيح جديدة: الصيانة والخدمات، مرتجعات الموردين، الأرقام التسلسلية (السيريال)، وتحويلات المخزون. شغّالة زي ما هي لحد ما تقفلها. لو قفلتها قوائمها وزرايرها بتختفي، واللي اتسجّل قبل كده بيفضل موجود.',
+        'تقدر دلوقتي تقفل الضريبة لو محلك مش بيحصّلها.',
+        'إعدادات كل جزء بتفتح تحت مفتاحه على طول، زي قواعد حد الائتمان تحت البيع الآجل، وأنواع الخدمات تحت الصيانة.',
+        'الجزء اللي مش في باقتك بيظهر عليه قفل ومكتوب "غير متاحة في باقتك".',
+      ],
+    },
+  },
+  {
+    version: '1.61.0',
+    date: '2026-10-16',
+    tag: 'New',
+    en: {
+      title: 'All settings on one page',
+      points: [
+        'Settings is now one page with a list on the side: Shop, Selling, Till, Printing, Modules, Staff & access, Plan & data, and your own account.',
+        'Type in the search box to find any setting. The side list can be folded to icons.',
+        'Everyone sees only what they can change: staff see their own account, managers also see favourites and label sizes, admins also see branches, payment methods and taxes.',
+        'Your product code format is shown on the Selling tab, so you know why your codes look the way they do.',
+      ],
+    },
+    ar: {
+      title: 'كل الإعدادات في صفحة واحدة',
+      points: [
+        'الإعدادات بقت صفحة واحدة وجنبها قائمة: المتجر، البيع، الكاشير، الطباعة، الإمكانيات، الموظفون والصلاحيات، الاشتراك والبيانات، وحسابك.',
+        'اكتب في خانة البحث وتلاقي أي إعداد. والقائمة الجانبية ممكن تصغّرها لأيقونات.',
+        'كل واحد بيشوف اللي يقدر يغيّره بس: الموظف بيشوف حسابه، والمدير كمان المفضلة ومقاسات الملصقات، والأدمن كمان الفروع وطرق الدفع والضرائب.',
+        'شكل كود المنتج بتاعك ظاهر في تبويب البيع، علشان تعرف أكوادك طالعة كده ليه.',
+      ],
+    },
+  },
+  {
     version: '1.60.0',
     date: '2026-10-15',
     tag: 'New',

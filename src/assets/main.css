@@ -4,6 +4,11 @@
 
 /* ── THEME TOKENS ──────────────────────────────────────── */
 :root {
+  /* s176: the admin red lives on :root too — pop-ups (AppModal) render outside .admin-shell, so a red
+     "Save" button there had no background (invisible in light mode). Only --accent is flipped per shell. */
+  --admin-accent:        #ef4444;
+  --admin-accent-hover:  #dc2626;
+  --admin-accent-soft:   rgba(239,68,68,0.12);
   /* Sidebar (light = white, orange accent — new design) */
   --sb-bg:           #ffffff;
   --sb-bg-deep:      #ffffff;
