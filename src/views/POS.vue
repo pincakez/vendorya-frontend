@@ -1452,7 +1452,7 @@ function onGlobalKey(e) {
   const isFKey = /^F\d+$/.test(k)
   if (inInput && !isFKey) return
 
-  if (k === 'F7')                                  { e.preventDefault(); showServiceModal.value = true; return }
+  if (k === 'F7')                                  { e.preventDefault(); if (fmt.servicesEnabled) showServiceModal.value = true; return }   // s176: not while the Service desk is off
   if (k === (shortcuts.value.pay || 'F9'))         { e.preventDefault(); openPayment(); return }
   if (k === (shortcuts.value.discount || 'F8'))    { e.preventDefault(); openInvoiceDiscount(); return }
   if (k === (shortcuts.value.hold || 'F4'))        { e.preventDefault(); holdOrResume(); return }

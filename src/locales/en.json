@@ -106,7 +106,8 @@
       "supplier_returns": "Supplier Returns",
       "cheques": "Cheques",
       "reservations": "Reservations",
-      "due_dates": "Due dates"
+      "due_dates": "Due dates",
+      "settings": "Settings"
     }
   },
   "common": {
@@ -3619,7 +3620,8 @@
       "confirm_delete_preset": "Delete this label preset?",
       "save_service": "Save Service Settings",
       "lang_hint": "Printed receipts always use this language, whoever prints them. Notifications show in each person's own screen language.",
-      "cb_specs": "Specs (from the category)"
+      "cb_specs": "Specs (from the category)",
+      "stock_returns": "Stock & Returns"
     },
     "changelog": {
       "title": "What's New",
@@ -3629,6 +3631,54 @@
         "new": "New",
         "improved": "Improved",
         "fixed": "Fixed"
+      }
+    },
+    "hub": {
+      "title": "Settings",
+      "sub": "Everything about your shop and your own account, in one place.",
+      "search_ph": "Search settings…",
+      "group_shop": "Shop",
+      "group_me": "Just for me",
+      "collapse": "Collapse the list",
+      "expand": "Expand the list",
+      "on_count": "{n}/{total} on",
+      "no_match": "No setting matches.",
+      "scope_shop_owner": "Whole shop · only the owner can change this",
+      "scope_shop": "Whole shop",
+      "scope_me": "Just for you",
+      "sku_title": "Product codes",
+      "sku_example": "A new product's code looks like",
+      "sku_parts": "{p} digits for the product · {s} for the supplier · shop code {c}",
+      "sku_dashes_on": "The parts are separated by dashes",
+      "sku_dashes_off": "No dashes between the parts",
+      "sku2_off": "Second code (SKU2): off",
+      "sku2_on": "Second code (SKU2): on",
+      "sku2_disabled": "Second code (SKU2): switched off for good",
+      "set_by_vendorya": "Set by Vendorya. Ask us if you need it changed.",
+      "default_sounds": "Default sounds for the shop",
+      "password_title": "Password & authenticator",
+      "my_sounds": "My notifications & sounds",
+      "tabs": {
+        "shop": "Shop",
+        "selling": "Selling",
+        "till": "Till",
+        "printing": "Printing",
+        "modules": "Modules",
+        "access": "Staff & access",
+        "plan": "Plan & data",
+        "me": "My account",
+        "whats-new": "What's new"
+      },
+      "kw": {
+        "shop": "store info name currency language time zone contact logo branding branches owners",
+        "selling": "rules negative stock shift returns restocking fee decimals thousands units categories payment methods tax vat rate sku product codes",
+        "till": "pos favorites top selling cart display clock",
+        "printing": "printer receipt header footer labels stickers barcode copies cut designs",
+        "modules": "capabilities features switches multi unit expiry weight treasury cheques reservations credit agel services repairs serials transfers supplier returns tax",
+        "access": "staff access visibility cost profit lock screen pin timer logo ip session sounds",
+        "plan": "subscription plan billing invoices export download backup my data",
+        "me": "profile account password authenticator 2fa photo language size font sounds shortcuts keyboard",
+        "whats-new": "updates version release new features changelog"
       }
     }
   },

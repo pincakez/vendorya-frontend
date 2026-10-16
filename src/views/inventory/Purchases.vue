@@ -181,7 +181,7 @@
                 </label>
               </div>
               <!-- New 7: onboard a brand-new product as serial-tracked (laptop, phone…) -->
-              <div class="ie-field ie-track-expiry">
+              <div v-if="fmtMods.serialsEnabled" class="ie-field ie-track-expiry">
                 <label class="ie-check">
                   <input type="checkbox" v-model="row.track_serials" />
                   <span>{{ t('serials.track_new') }}</span>
@@ -358,6 +358,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import { useFormatStore } from '@/stores/format'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { ShoppingCart, PackageCheck, Trash2, Plus, Tag, Search, X, Lock, ChevronDown, ChevronLeft, ChevronRight, Printer, Undo2 } from 'lucide-vue-next'
@@ -373,6 +374,7 @@ import BaseSelect from '@/components/base/BaseSelect.vue'
 import { formatNumber, formatQty } from '@/utils/format'
 import { parseSerials, serialErrorText } from '@/utils/serials'
 
+const fmtMods = useFormatStore()   // s176: module switches (Serial numbers)
 const { t }       = useI18n()
 
 const purchases      = ref([])

@@ -520,7 +520,7 @@
           </div>
 
           <!-- New 7: serial / IMEI per unit -->
-          <label class="pm2-base-toggle">
+          <label v-if="fmtStore.serialsEnabled || prodModal.track_serials" class="pm2-base-toggle">
             <input type="checkbox" v-model="prodModal.track_serials" />
             <span>{{ t('serials.track_label') }} — {{ t('serials.track_hint') }}</span>
           </label>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="page-header">
+    <div v-if="!embedded" class="page-header">
       <div>
         <h1 class="page-title">{{ t('settings.notif_prefs.title') }}</h1>
         <p class="page-sub">{{ t('settings.notif_prefs.sub') }}</p>
@@ -8,7 +8,7 @@
     </div>
 
     <!-- ── MY SOUNDS (every user) ─────────────────────────── -->
-    <div class="settings-card">
+    <div v-if="part !== 'shop'" class="settings-card">
       <div v-if="loading" class="loading-msg">{{ t('settings.notif_prefs.loading') }}</div>
       <template v-else>
         <div class="pref-table">
@@ -76,7 +76,7 @@
     </div>
 
     <!-- ── STORE DEFAULTS (owner / admin) ─────────────────── -->
-    <div v-if="canManageStore" class="settings-card section-card">
+    <div v-if="canManageStore && part !== 'me'" class="settings-card section-card">
       <div class="section-head">
         <h2 class="section-title">{{ t('settings.notif_prefs.defaults_title') }}</h2>
         <p class="section-sub">{{ t('settings.notif_prefs.defaults_sub') }}</p>
@@ -107,6 +107,8 @@
 </template>
 
 <script setup>
+// s176: `embedded` = shown inside the one Settings page (its own title + side list), so no page header here.
+const props = defineProps({ embedded: { type: Boolean, default: false }, part: { type: String, default: 'all' } })
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Play, Lock } from 'lucide-vue-next'
@@ -116,7 +118,8 @@ import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const auth = useAuthStore()
-const canManageStore = computed(() => ['OWNER', 'ADMIN'].includes(auth.userRole) && !!auth.user?.store)
+// s176: the shop's default sounds save through PATCH /api/core/settings/ = owner only (an Admin's save was refused)
+const canManageStore = computed(() => auth.userRole === 'OWNER' && !!auth.user?.store)
 
 const loading = ref(true)
 const saving  = ref(false)

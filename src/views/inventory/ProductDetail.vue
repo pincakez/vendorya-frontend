@@ -466,7 +466,7 @@
           <BaseInput v-model="editModal.warranty_months" type="number" min="0" step="1"
                      :label="t('serials.warranty_label')" :suffix="t('serials.months')" />
         </div>
-        <label class="prod-expiry-toggle" style="width:100%;">
+        <label v-if="fmtMods.serialsEnabled || editModal.track_serials" class="prod-expiry-toggle" style="width:100%;">
           <input type="checkbox" v-model="editModal.track_serials" />
           <span>
             <span class="form-label" style="margin-bottom:2px;">{{ t('serials.track_label') }}</span>
@@ -533,6 +533,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, reactive, nextTick } from 'vue'
+import { useFormatStore } from '@/stores/format'
 import { useI18n } from 'vue-i18n'
 import { ChevronLeft, Eye, X, Camera, Image as ImageIcon, Pencil, Lock, Layers,
          Volume2, VolumeX, Play, ImagePlus, Video, Info, Printer } from 'lucide-vue-next'
@@ -552,6 +553,7 @@ import BaseSelect from '@/components/base/BaseSelect.vue'
 import { renderRichText } from '@/utils/richText'
 import { useAuthStore } from '@/stores/auth'
 
+const fmtMods = useFormatStore()   // s176: module switches (Serial numbers)
 const { t } = useI18n()
 const props = defineProps({ id: String })
 const auth = useAuthStore()

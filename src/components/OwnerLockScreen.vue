@@ -77,7 +77,7 @@ async function submit() {
 }
 
 function close() { cancel() }
-function goSetup() { cancel(); router.push('/settings/security').catch(() => {}) }
+function goSetup() { cancel(); router.push('/settings?tab=me').catch(() => {}) }
 
 function onKeydown(e) { if (prompt.value && e.key === 'Escape') { e.stopPropagation(); close() } }
 onMounted(()   => window.addEventListener('keydown', onKeydown, { capture: true }))

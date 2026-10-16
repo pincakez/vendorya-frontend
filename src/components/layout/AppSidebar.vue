@@ -31,13 +31,13 @@
             <template #icon><Calculator :size="18" /></template>
             POS
           </PhysicalButton>
-          <button class="nsb-srv-btn" @click="go('/services')" title="Services">SRV</button>
+          <button v-if="canOpen('/services')" class="nsb-srv-btn" @click="go('/services')" title="Services">SRV</button>
         </div>
         <div v-else class="nsb-pos-collapsed-row">
           <PhysicalButton variant="primary" :collapsed="true" tooltip="POS System" :class="{ 'pos-shimmer': hasOpenInvoice }" @click="go('/pos')">
             <template #icon><Calculator :size="18" /></template>
           </PhysicalButton>
-          <button class="nsb-srv-btn-col" @click="go('/services')" title="Services">
+          <button v-if="canOpen('/services')" class="nsb-srv-btn-col" @click="go('/services')" title="Services">
             <Wrench :size="16" />
           </button>
         </div>
@@ -253,17 +253,8 @@ const groups = computed(() => [
     { label: t('nav.items.inbox'),        to: '/inbox',         icon: Inbox },
   ] },
   { id: 'settings', title: t('nav.groups.settings'), icon: Settings, items: [
-    { label: t('nav.items.store_settings'),  to: '/settings',                icon: Store },
-    { label: t('nav.items.capabilities'),    to: '/settings/capabilities',   icon: SlidersHorizontal },
-    { label: t('nav.items.taxes'),           to: '/settings/taxes',          icon: Percent },
-    { label: t('nav.items.notifications'),   to: '/settings/notifications',  icon: Bell },
-    { label: t('nav.items.billing'),         to: '/settings/billing',        icon: CreditCard },
-    { label: t('nav.items.shop_export'),     to: '/settings/export',         icon: Archive },
-    { label: t('nav.items.pos_settings'),    to: '/settings/pos',            icon: Keyboard },
-    { label: t('nav.items.profile'),         to: '/settings/profile',        icon: User },
-    { label: t('nav.items.security'),        to: '/settings/security',       icon: Lock },
-    { label: t('nav.items.lockscreen'),      to: '/settings/lockscreen',     icon: Shield },
-    { label: t('nav.items.whats_new'),       to: '/settings/changelog',      icon: Sparkles },
+    // s176 (Yakot 10-16): ONE settings page with its own side list — so one link here.
+    { label: t('nav.items.settings'),        to: '/settings',                icon: Settings },
   ] },
   // s174 (Yakot): the owner's own world (PIM) = its own tree at the BOTTOM, tinted apart from the shop menu.
   // Each item = one My money tab (`?tab=`). Shown only when canOpen('/finance/my-money') — owner level on + this login is the owner.
@@ -314,7 +305,7 @@ const displayGroups = computed(() => props.admin ? adminGroups.value : visibleGr
 
 const soloTo    = computed(() => props.admin ? '/admin/dashboard' : '/dashboard')
 const soloLabel = computed(() => props.admin ? t('nav.overview') : t('nav.dashboard'))
-const userCardTo = computed(() => props.admin ? '/admin/users' : '/settings/profile')
+const userCardTo = computed(() => props.admin ? '/admin/users' : '/settings?tab=me')
 
 function itemActive(to) {
   if (to.startsWith('/finance/my-money')) {   // s174: the PIM tree — one route, the tab lives in ?tab=
@@ -428,6 +419,7 @@ function go(to) { if (route.fullPath !== to) router.push(to) }   // fullPath: th
 .nsb-pos { margin-bottom: 14px; }
 .nsb-pos-row { display: flex; gap: 5%; align-items: stretch; }
 .nsb-pos-main { flex: 0 0 70%; }
+.nsb-pos-main:only-child { flex: 1 1 auto; }   /* s176: Service desk switched off → POS takes the row */
 
 /* Shimmer — runs while a POS invoice is still open (cart not empty). A light band
    sweeps across the button every 1.5s. Implemented as a ::before gradient (clipped

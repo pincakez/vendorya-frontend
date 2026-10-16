@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="page-header">
+    <div v-if="!embedded" class="page-header">
       <div>
         <h1 class="page-title">{{ t('settings.lockscreen.title') }}</h1>
         <p class="page-sub">{{ t('settings.lockscreen.sub') }}</p>
@@ -145,6 +145,8 @@
 </template>
 
 <script setup>
+// s176: `embedded` = shown inside the one Settings page (its own title + side list), so no page header here.
+const props = defineProps({ embedded: { type: Boolean, default: false } })
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Lock } from 'lucide-vue-next'

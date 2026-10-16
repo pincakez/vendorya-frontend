@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="page-header">
+    <div v-if="!embedded" class="page-header">
       <div>
         <h1 class="page-title">{{ t('settings.export.title') }}</h1>
         <p class="page-sub">{{ t('settings.export.sub') }}</p>
@@ -28,6 +28,8 @@
 </template>
 
 <script setup>
+// s176: `embedded` = shown inside the one Settings page (its own title + side list), so no page header here.
+const props = defineProps({ embedded: { type: Boolean, default: false } })
 // Owner-only (route meta.minRole 'OWNER' = core.shop_export.ShopExportViewSet role_map) — s167.
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'

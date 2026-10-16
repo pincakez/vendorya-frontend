@@ -1,13 +1,13 @@
 <template>
   <div>
-    <div class="page-header">
+    <div v-if="!sections" class="page-header">
       <div>
         <h1 class="page-title">{{ t('settings.store.title') }}</h1>
         <p class="page-sub">{{ t('settings.store.sub') }}</p>
       </div>
     </div>
 
-    <div class="tab-bar">
+    <div v-if="!sections" class="tab-bar">
       <button v-for="tab in tabs" :key="tab.id" class="tab-btn" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id">
         <component :is="tab.icon" :size="15" />
         {{ tab.label }}
@@ -15,7 +15,8 @@
     </div>
 
     <!-- ══ TAB: Store Info ══ -->
-    <div v-if="activeTab === 'store'">
+    <div v-if="show('store')" class="ss-section">
+      <h3 v-if="showTitle('store')" class="ss-section-title">{{ tabLabel('store') }}</h3>
       <div v-if="storeLoading" class="form-skeleton" />
       <div v-else class="settings-card">
         <div class="section-divider">{{ t('settings.store.basic') }}</div>
@@ -105,7 +106,8 @@
     </div>
 
     <!-- ══ TAB: Branches & Owners ══ -->
-    <div v-if="activeTab === 'branches'">
+    <div v-if="show('branches')" class="ss-section">
+      <h3 v-if="showTitle('branches')" class="ss-section-title">{{ tabLabel('branches') }}</h3>
       <!-- Owners section -->
       <div class="section-heading-row">
         <span class="section-group-title">{{ t('settings.store.owners') }}</span>
@@ -159,7 +161,8 @@
     </div>
 
     <!-- ══ TAB: Branding ══ -->
-    <div v-if="activeTab === 'branding'">
+    <div v-if="show('branding')" class="ss-section">
+      <h3 v-if="showTitle('branding')" class="ss-section-title">{{ tabLabel('branding') }}</h3>
       <div class="settings-card">
         <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">
           {{ t('settings.store.logo_intro') }}<br>
@@ -197,7 +200,8 @@
     </div>
 
     <!-- ══ TAB: Business Rules ══ -->
-    <div v-if="activeTab === 'rules'">
+    <div v-if="show('rules')" class="ss-section">
+      <h3 v-if="showTitle('rules')" class="ss-section-title">{{ tabLabel('rules') }}</h3>
       <div class="settings-card">
         <div class="section-divider">{{ t('settings.store.display_fmt') }}</div>
         <div class="form-grid">
@@ -284,34 +288,15 @@
           </div>
         </div>
 
-        <div class="section-divider">{{ t('settings.store.stock_credit') }}</div>
+        <div class="section-divider">{{ t('settings.store.stock_returns') }}</div>
         <div class="toggle-row">
           <div class="toggle-item">
             <div><div class="toggle-label">{{ t('settings.policies.neg_stock_title') }}</div><div class="toggle-desc">{{ t('settings.store.neg_stock_desc') }}</div></div>
             <button class="toggle-btn" :class="{ on: settingsForm.allow_negative_stock }" @click="settingsForm.allow_negative_stock = !settingsForm.allow_negative_stock"><span class="toggle-knob" /></button>
           </div>
           <div class="toggle-item">
-            <div><div class="toggle-label">{{ t('settings.policies.agel_title') }}</div><div class="toggle-desc">{{ t('settings.store.agel_desc') }}</div></div>
-            <button class="toggle-btn" :class="{ on: settingsForm.enable_agel_selling }" @click="settingsForm.enable_agel_selling = !settingsForm.enable_agel_selling"><span class="toggle-knob" /></button>
-          </div>
-          <div class="toggle-item">
             <div><div class="toggle-label">{{ t('settings.store.require_shift_title') }}</div><div class="toggle-desc">{{ t('settings.store.require_shift_desc') }}</div></div>
             <button class="toggle-btn" :class="{ on: settingsForm.require_shift_to_sell }" @click="settingsForm.require_shift_to_sell = !settingsForm.require_shift_to_sell"><span class="toggle-knob" /></button>
-          </div>
-        </div>
-
-        <div class="form-grid" style="margin-top:16px;">
-          <div class="form-group">
-            <label class="form-label">{{ t('settings.policies.credit_limit_title') }}</label>
-            <div style="display:flex;gap:8px;margin-top:4px;">
-              <button v-for="opt in creditPolicyOptions" :key="opt.value" class="mode-btn" :class="{ active: settingsForm.credit_policy === opt.value }" @click="settingsForm.credit_policy = opt.value">{{ opt.label }}</button>
-            </div>
-            <p class="form-hint">{{ t('settings.store.credit_policy_hint') }}</p>
-          </div>
-          <div class="form-group" v-if="settingsForm.credit_policy !== 'ALLOW'">
-            <label class="form-label">{{ t('settings.store.default_credit_limit') }}</label>
-            <input v-model.number="settingsForm.default_credit_limit" type="number" min="0" step="100" class="form-input" style="width:130px;" placeholder="e.g. 5000" />
-            <p class="form-hint">{{ t('settings.store.no_limit_hint') }}</p>
           </div>
         </div>
 
@@ -335,13 +320,14 @@
     </div>
 
     <!-- ══ TAB: Printing Setup ══ -->
-    <div v-if="activeTab === 'printing'">
+    <div v-if="show('printing')" class="ss-section">
+      <h3 v-if="showTitle('printing')" class="ss-section-title">{{ tabLabel('printing') }}</h3>
       <!-- Sub-tab bar -->
-      <div class="sub-tab-bar">
-        <button class="sub-tab-btn" :class="{ active: printingTab === 'setup' }"    @click="printingTab = 'setup'"><Printer :size="14" /> {{ t('settings.store.print_tabs.setup') }}</button>
-        <button class="sub-tab-btn" :class="{ active: printingTab === 'receipt' }"  @click="printingTab = 'receipt'"><Receipt :size="14" /> {{ t('settings.store.print_tabs.receipt') }}</button>
-        <button class="sub-tab-btn" :class="{ active: printingTab === 'labels' }"   @click="printingTab = 'labels'"><Tag :size="14" /> {{ t('settings.store.print_tabs.labels') }}</button>
-        <button class="sub-tab-btn" :class="{ active: printingTab === 'designs' }"  @click="printingTab = 'designs'"><Palette :size="14" /> {{ t('settings.store.print_tabs.designs') }}</button>
+      <div v-if="allowedSubs.length > 1" class="sub-tab-bar">
+        <button v-if="subOk('setup')" class="sub-tab-btn" :class="{ active: printingTab === 'setup' }"    @click="printingTab = 'setup'"><Printer :size="14" /> {{ t('settings.store.print_tabs.setup') }}</button>
+        <button v-if="subOk('receipt')" class="sub-tab-btn" :class="{ active: printingTab === 'receipt' }"  @click="printingTab = 'receipt'"><Receipt :size="14" /> {{ t('settings.store.print_tabs.receipt') }}</button>
+        <button v-if="subOk('labels')" class="sub-tab-btn" :class="{ active: printingTab === 'labels' }"   @click="printingTab = 'labels'"><Tag :size="14" /> {{ t('settings.store.print_tabs.labels') }}</button>
+        <button v-if="subOk('designs')" class="sub-tab-btn" :class="{ active: printingTab === 'designs' }"  @click="printingTab = 'designs'"><Palette :size="14" /> {{ t('settings.store.print_tabs.designs') }}</button>
       </div>
 
       <!-- Sub-tab: Receipt -->
@@ -634,7 +620,8 @@
     </div>
 
     <!-- ══ TAB: Payment Methods ══ -->
-    <div v-if="activeTab === 'payments'">
+    <div v-if="show('payments')" class="ss-section">
+      <h3 v-if="showTitle('payments')" class="ss-section-title">{{ tabLabel('payments') }}</h3>
       <div class="section-heading-row">
         <span class="section-group-title">{{ t('settings.payment_methods.title') }}</span>
         <button class="btn-primary btn-sm" @click="openNewPM"><Plus :size="14" /> {{ t('settings.store.new_method') }}</button>
@@ -667,7 +654,8 @@
     </div>
 
     <!-- ══ TAB: Service Types ══ -->
-    <div v-if="activeTab === 'services'">
+    <div v-if="show('services')" class="ss-section">
+      <h3 v-if="showTitle('services')" class="ss-section-title">{{ tabLabel('services') }}</h3>
       <div class="settings-card">
         <div class="section-divider">{{ t('settings.store.service_types') }}</div>
         <p class="form-hint">{{ t('settings.store.service_types_hint') }}</p>
@@ -732,7 +720,8 @@
     </div>
 
     <!-- ══ TAB: Security ══ -->
-    <div v-if="activeTab === 'security'">
+    <div v-if="show('security')" class="ss-section">
+      <h3 v-if="showTitle('security')" class="ss-section-title">{{ tabLabel('security') }}</h3>
       <div class="settings-card">
         <div class="form-group" style="margin-bottom:20px;">
           <label class="form-label">{{ t('settings.policies.session_title') }}</label>
@@ -754,7 +743,8 @@
     </div>
 
     <!-- ══ FIELD ACCESS / VISIBILITY ══ -->
-    <div v-if="activeTab === 'visibility'">
+    <div v-if="show('visibility')" class="ss-section">
+      <h3 v-if="showTitle('visibility')" class="ss-section-title">{{ tabLabel('visibility') }}</h3>
       <div class="settings-card" v-for="(table, tableId) in FIELD_CATALOG" :key="tableId" style="margin-bottom:16px;">
         <div style="margin-bottom:16px;">
           <div class="form-label" style="font-size:14px;font-weight:700;">{{ table.label }}</div>
@@ -939,7 +929,21 @@ const tabs = computed(() => [
   { id: 'visibility', label: t('settings.store.tabs.visibility'), icon: Eye },
 ])
 const activeTab   = ref('store')
-const printingTab = ref('setup')
+
+// s176: inside the one Settings page each tab passes the sections it shows (stacked, no tab bar); `printSubs` limits
+// the Printing sub-tabs (a manager sees Labels only). Without `sections` this is the old stand-alone page.
+const props = defineProps({
+  sections:  { type: Array, default: null },
+  printSubs: { type: Array, default: null },
+})
+const show = id => props.sections ? props.sections.includes(id) : activeTab.value === id
+const tabLabel = id => tabs.value.find(x => x.id === id)?.label || ''
+// Stacked sections get a title — except Branches and Payment methods, which carry their own heading row.
+const showTitle = id => !!props.sections && props.sections.length > 1 && !['branches', 'payments'].includes(id)
+const PRINT_SUBS = ['setup', 'receipt', 'labels', 'designs']
+const allowedSubs = computed(() => props.printSubs ? PRINT_SUBS.filter(x => props.printSubs.includes(x)) : PRINT_SUBS)
+const subOk = id => allowedSubs.value.includes(id)
+const printingTab = ref(allowedSubs.value[0])
 
 /* ── Print Designs ─────────────────────────────────────────────────── */
 const activeReceiptDesign = ref(localStorage.getItem('vya_receipt_design') || 'classic')
@@ -1183,10 +1187,7 @@ async function saveRules() {
   try {
     await api.patch('/api/core/settings/', {
       allow_negative_stock: settingsForm.allow_negative_stock,
-      enable_agel_selling:  settingsForm.enable_agel_selling,
       require_shift_to_sell: settingsForm.require_shift_to_sell,
-      credit_policy:        settingsForm.credit_policy,
-      default_credit_limit: (settingsForm.credit_policy !== 'ALLOW' && settingsForm.default_credit_limit) ? settingsForm.default_credit_limit : null,
       return_window_days:   settingsForm.return_window_days || 0,
       restocking_fee_percent: settingsForm.restocking_fee_percent || 0,
       default_tax:          settingsForm.default_tax || null,
@@ -1479,11 +1480,13 @@ async function runNotifications() {
 }
 
 // Load on tab switch
-watch(activeTab, tab => {
+function loadFor(tab) {
   if (tab === 'branches' && branches.value.length === 0) { fetchBranches(); fetchOwners() }
   if (tab === 'payments' && paymentMethods.value.length === 0) fetchPMs()
   if (tab === 'printing' && presets.value.length === 0) fetchPresets()
-}, { immediate: true })
+}
+if (props.sections) props.sections.forEach(loadFor)
+else watch(activeTab, loadFor, { immediate: true })
 
 onMounted(() => { loadStore(); initLogoPreviews() })
 </script>
@@ -1495,6 +1498,8 @@ onMounted(() => { loadStore(); initLogoPreviews() })
 .tab-btn:hover  { color:var(--text-primary); }
 .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
 
+.ss-section + .ss-section { margin-top:28px; }
+.ss-section-title { font-size:15px; font-weight:700; color:var(--text-primary); margin:0 0 12px; }
 .settings-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px; }
 .form-skeleton { height:320px; border-radius:12px; background:linear-gradient(90deg,var(--border) 25%,var(--bg-app) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
 @keyframes shimmer { to { background-position:-200% 0; } }

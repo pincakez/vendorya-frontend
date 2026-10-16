@@ -164,6 +164,7 @@ import {
   LineChart, TrendingUp, DollarSign, Activity, Inbox as InboxIcon, Settings, Percent, Lock, Calculator, Sparkles,
   Library, Archive, ArrowLeftRight, ArrowDownUp, Layers, UserCircle, CreditCard, Shield, Menu, ScanBarcode, Vault, PiggyBank, Undo2, Landmark,
   BookmarkCheck, CalendarClock,
+  Printer,
 } from 'lucide-vue-next'
 import { usePhoneSidebar } from '@/composables/usePhoneSidebar'
 import { useAuthStore } from '@/stores/auth'
@@ -282,21 +283,16 @@ const PAGES = computed(() => [
   { label: t('nav.items.tax'),              path: '/reports/tax',             group: t('nav.groups.reports'),   icon: Percent,         kw: 'vat gst tax report' },
   { label: t('nav.items.activity_log'),     path: '/activity-log',            group: t('nav.groups.general'),   icon: Activity,        kw: 'history audit log who changed' },
   { label: t('nav.items.inbox'),            path: '/inbox',                   group: t('nav.groups.general'),   icon: InboxIcon,       kw: 'messages alerts notifications' },
-  { label: t('nav.items.store_settings'),   path: '/settings',                group: t('nav.groups.settings'),  icon: Settings,        kw: 'store info general configuration setup name' },
-  { label: 'Capabilities',                  path: '/settings/capabilities',   group: t('nav.groups.settings'),  icon: Layers,          kw: 'multi unit pharmacy fefo expiry weight selling mode features toggle' },
-  { label: 'POS Settings',                  path: '/settings/pos',            group: t('nav.groups.settings'),  icon: Calculator,      kw: 'clock 12h 24h time format cart display pos favorites' },
-  { label: t('nav.items.taxes'),            path: '/settings/taxes',          group: t('nav.groups.settings'),  icon: Percent,         kw: 'vat rate tax rate percentage' },
-  { label: 'Profile',                       path: '/settings/profile',        group: t('nav.groups.settings'),  icon: UserCircle,      kw: 'account password name email photo avatar' },
-  { label: t('nav.items.security'),         path: '/settings/security',       group: t('nav.groups.settings'),  icon: Lock,            kw: 'password 2fa pin access login auth' },
-  { label: t('nav.items.lockscreen'),       path: '/settings/lockscreen',     group: t('nav.groups.settings'),  icon: Shield,          kw: 'lock screen auto lock idle timeout pin code logo facts timer' },
-  { label: 'Notifications',                 path: '/settings/notifications',  group: t('nav.groups.settings'),  icon: Bell,            kw: 'alerts push email sound notification prefs' },
-  { label: 'Billing',                       path: '/settings/billing',        group: t('nav.groups.settings'),  icon: CreditCard,      kw: 'subscription plan payment invoice billing' },
-  { label: t('nav.items.shop_export'),      path: '/settings/export',         group: t('nav.groups.settings'),  icon: Archive,         kw: 'export download backup zip csv excel my data' },
-  { label: t('nav.items.whats_new'),        path: '/settings/changelog',      group: t('nav.groups.settings'),  icon: Sparkles,        kw: 'updates version release new features' },
-  // lockscreen child options (client-side fallback only — API returns these with parent field)
-  { label: 'Auto-Lock Timer', parent: 'Lock Screen', path: '/settings/lockscreen', group: t('nav.groups.settings'), icon: Shield, kw: 'auto lock timer idle timeout minutes disable' },
-  { label: 'PIN Code',        parent: 'Lock Screen', path: '/settings/lockscreen', group: t('nav.groups.settings'), icon: Shield, kw: 'pin code lock password digits set change' },
-  { label: 'Lock Screen Logo',parent: 'Lock Screen', path: '/settings/lockscreen', group: t('nav.groups.settings'), icon: Shield, kw: 'lock logo image upload branding' },
+  // s176: the one Settings page — one entry per tab (canOpen knows who sees which tab).
+  { label: t('settings.hub.tabs.shop'),      path: '/settings?tab=shop',      group: t('nav.groups.settings'),  icon: Settings,        kw: 'store info general name currency language logo branches owners' },
+  { label: t('settings.hub.tabs.selling'),   path: '/settings?tab=selling',   group: t('nav.groups.settings'),  icon: Percent,         kw: 'rules negative stock shift returns restocking decimals payment methods vat tax rate sku codes' },
+  { label: t('settings.hub.tabs.till'),      path: '/settings?tab=till',      group: t('nav.groups.settings'),  icon: Calculator,      kw: 'pos favorites top selling cart display clock 12h 24h' },
+  { label: t('settings.hub.tabs.printing'),  path: '/settings?tab=printing',  group: t('nav.groups.settings'),  icon: Printer,         kw: 'printer receipt header footer labels sticker barcode copies cut design' },
+  { label: t('settings.hub.tabs.modules'),   path: '/settings?tab=modules',   group: t('nav.groups.settings'),  icon: Layers,          kw: 'capabilities modules features switch multi unit expiry weight treasury cheques reservations credit agel services serials transfers' },
+  { label: t('settings.hub.tabs.access'),    path: '/settings?tab=access',    group: t('nav.groups.settings'),  icon: Shield,          kw: 'staff access visibility cost profit lock screen pin timer logo ip session sounds' },
+  { label: t('settings.hub.tabs.plan'),      path: '/settings?tab=plan',      group: t('nav.groups.settings'),  icon: CreditCard,      kw: 'subscription plan billing invoice export download backup my data' },
+  { label: t('settings.hub.tabs.me'),        path: '/settings?tab=me',        group: t('nav.groups.settings'),  icon: UserCircle,      kw: 'profile account password 2fa authenticator photo language size font sounds shortcuts keyboard' },
+  { label: t('settings.hub.tabs.whats-new'), path: '/settings?tab=whats-new', group: t('nav.groups.settings'),  icon: Sparkles,        kw: 'updates version release new features changelog' },
 ].filter(p => canOpen(p.path)))   // s167: only pages this role may open (route meta.minRole)
 
 function fuzzyMatch(term, target) {

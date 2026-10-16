@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="page-header">
+    <div v-if="!embedded" class="page-header">
       <div>
         <h1 class="page-title">{{ t('settings.profile.title') }}</h1>
         <p class="page-sub">{{ t('settings.profile.sub') }}</p>
@@ -128,6 +128,8 @@
 </template>
 
 <script setup>
+// s176: `embedded` = shown inside the one Settings page (its own title + side list), so no page header here.
+const props = defineProps({ embedded: { type: Boolean, default: false } })
 import { ref, reactive, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ShieldCheck, ChevronRight, Palette, Camera } from 'lucide-vue-next'

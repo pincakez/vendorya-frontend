@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { SETTINGS_OLD_PATHS, SETTINGS_TAB_MIN_ROLE, settingsTabOf } from '@/views/settings/settingsTabs'
 import { useAuthStore } from '@/stores/auth'
 import { useFormatStore } from '@/stores/format'
 import LayoutSwitch from '@/layouts/LayoutSwitch.vue'
@@ -26,10 +27,10 @@ const router = createRouter({
         { path: 'inventory/products',           component: () => import('@/views/inventory/Products.vue'),       meta: { store: true } },
         { path: 'inventory/products/:id',       component: () => import('@/views/inventory/ProductDetail.vue'),  meta: { store: true }, props: true },
         { path: 'inventory/purchases',  component: () => import('@/views/inventory/Purchases.vue'),        meta: { store: true, minRole: 'MANAGER' } },
-        { path: 'inventory/supplier-returns', component: () => import('@/views/inventory/SupplierReturns.vue'), meta: { store: true, minRole: 'MANAGER' } },   // s171
-        { path: 'inventory/serials',    component: () => import('@/views/inventory/SerialLookup.vue'),     meta: { store: true, minRole: 'CASHIER' } },   // New 7: serial / IMEI lookup
+        { path: 'inventory/supplier-returns', component: () => import('@/views/inventory/SupplierReturns.vue'), meta: { store: true, minRole: 'MANAGER', supplierReturns: true } },   // s171
+        { path: 'inventory/serials',    component: () => import('@/views/inventory/SerialLookup.vue'),     meta: { store: true, minRole: 'CASHIER', serials: true } },   // New 7: serial / IMEI lookup
         { path: 'inventory/adjustments',component: () => import('@/views/inventory/StockAdjustments.vue'), meta: { store: true, minRole: 'MANAGER' } },
-        { path: 'inventory/transfers',  component: () => import('@/views/inventory/StockTransfers.vue'),  meta: { store: true, minRole: 'ADMIN' } },
+        { path: 'inventory/transfers',  component: () => import('@/views/inventory/StockTransfers.vue'),  meta: { store: true, minRole: 'ADMIN', transfers: true } },
         { path: 'inventory/memory-base', component: () => import('@/views/inventory/MemoryBase.vue'),       meta: { store: true } },
         { path: 'inventory/categories', component: () => import('@/views/inventory/Categories.vue'),       meta: { store: true } },
         { path: 'inventory/attributes', component: () => import('@/views/inventory/Attributes.vue'),       meta: { store: true } },
@@ -77,25 +78,15 @@ const router = createRouter({
         { path: 'people/suppliers',         component: () => import('@/views/people/Suppliers.vue'),          meta: { store: true, minRole: 'MANAGER' } },
         { path: 'people/suppliers/:id',     component: () => import('@/views/people/SupplierDetail.vue'),   meta: { store: true, minRole: 'MANAGER' }, props: true },
         { path: 'people/staff',         component: () => import('@/views/people/Staff.vue'),               meta: { store: true, minRole: 'MANAGER' } },
-        { path: 'services',             component: () => import('@/views/services/Services.vue'),         meta: { store: true } },
+        { path: 'services',             component: () => import('@/views/services/Services.vue'),         meta: { store: true, services: true } },
         { path: 'activity-log',         component: () => import('@/views/ActivityLog.vue'),                meta: { store: true, minRole: 'MANAGER' } },
-        { path: 'settings',             component: () => import('@/views/settings/StoreSettings.vue'),     meta: { store: true } },
+        // s176 (Yakot 10-16): ONE settings page, tab in ?tab= — each part shows only to who may change it (SettingsPage.vue).
+        { path: 'settings',             component: () => import('@/views/settings/SettingsPage.vue'),      meta: { store: true } },
         { path: 'settings/branches/:id', component: () => import('@/views/settings/BranchDetail.vue'),    meta: { store: true } },
-        { path: 'settings/capabilities', component: () => import('@/views/settings/Capabilities.vue'),    meta: { store: true, minRole: 'OWNER' } },   // every save = PATCH /api/core/settings/ = IsOwner (s167)
-        { path: 'settings/taxes',       component: () => import('@/views/settings/Taxes.vue'),             meta: { store: true } },
-        { path: 'settings/profile',     component: () => import('@/views/settings/Profile.vue'),           meta: { store: true } },
-        { path: 'settings/security',    component: () => import('@/views/settings/Security.vue'),          meta: { store: true } },
-        { path: 'settings/changelog',   component: () => import('@/views/settings/Changelog.vue'),         meta: { store: true } },
-        { path: 'settings/export',      component: () => import('@/views/settings/ShopExport.vue'),        meta: { store: true, minRole: 'OWNER' } },   // GET /api/core/shop-export/ = role_map OWNER (s167)
-        { path: 'settings/billing',     component: () => import('@/views/settings/Billing.vue'),           meta: { store: true, minRole: 'OWNER' } },
         { path: 'settings/billing/invoices/:id',   component: () => import('@/views/settings/Billing.vue'),           meta: { store: true, minRole: 'OWNER' } },
-        { path: 'settings/notifications',         component: () => import('@/views/settings/NotificationPrefs.vue'), meta: { store: true } },
-        { path: 'settings/pos',                    component: () => import('@/views/settings/PosSettings.vue'),       meta: { store: true } },
-        { path: 'settings/lockscreen',             component: () => import('@/views/settings/LockscreenSettings.vue'), meta: { store: true } },
-        // Legacy deep-links → redirect into the merged POS Settings page
-        { path: 'settings/pos/favorites',          redirect: '/settings/pos' },
-        { path: 'settings/pos/top-selling',        redirect: '/settings/pos' },
-        { path: 'settings/pos/ux',                 redirect: '/settings/pos' },
+        // The old one-screen addresses (bookmarks, links in notes) → the matching tab.
+        ...Object.entries(SETTINGS_OLD_PATHS)
+          .map(([old, tab]) => ({ path: `settings/${old}`, redirect: { path: '/settings', query: { tab } } })),
 
         // POS — uses DefaultLayout with sidebar auto-collapsed
         { path: 'pos',                  component: () => import('@/views/POS.vue'),                       meta: { store: true } },
@@ -198,11 +189,20 @@ router.beforeEach(async (to, from, next) => {
 // s167: may the signed-in user open this path? Reads the route's meta.minRole — the sidebar and the
 // header page-search use it so a menu never offers a page the guard above would bounce.
 export function canOpen(path) {
-  const meta = router.resolve(path).meta
+  const resolved = router.resolve(path)
+  // s176: a Settings tab (new ?tab= or an old one-screen address) opens for the roles that see a part of it.
+  const tab = settingsTabOf(resolved.path, resolved.query)
+  if (tab) return tab in SETTINGS_TAB_MIN_ROLE && (!SETTINGS_TAB_MIN_ROLE[tab] || useAuthStore().hasRole(SETTINGS_TAB_MIN_ROLE[tab]))
+  const meta = resolved.meta
   if (meta.treasury && !useFormatStore().treasuryEnabled) return false   // s169c: Treasury switch off → no menu entry
   if (meta.reservations && !useFormatStore().reservationsEnabled) return false   // s172
   if (meta.paymentDues && !useFormatStore().paymentDuesEnabled) return false     // s173
   if (meta.cheques && !useFormatStore().chequesEnabled) return false             // s174
+  // s176: the four switches every shop already used (on by default) — off = no menu entry
+  if (meta.services && !useFormatStore().servicesEnabled) return false
+  if (meta.supplierReturns && !useFormatStore().supplierReturnsEnabled) return false
+  if (meta.serials && !useFormatStore().serialsEnabled) return false
+  if (meta.transfers && !useFormatStore().transfersEnabled) return false
   if (meta.ownerLevel) {   // s170: the owner level — both switches on AND this login is the owner
     const f = useFormatStore()
     if (!(f.treasuryEnabled && f.treasuryOwnerLevel && f.treasuryIsOwner)) return false

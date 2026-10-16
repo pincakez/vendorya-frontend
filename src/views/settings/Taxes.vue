@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div class="page-header">
+    <div v-if="embedded && auth.hasRole('ADMIN')" class="embed-actions">
+      <BaseButton size="sm" @click="openNew"><Plus :size="14" /> {{ t('settings.taxes.new_title') }}</BaseButton>
+    </div>
+    <div v-if="!embedded" class="page-header">
       <div>
         <h1 class="page-title">{{ t('settings.taxes.title') }}</h1>
         <p class="page-sub">{{ t('settings.taxes.sub') }}</p>
@@ -60,12 +63,15 @@
 </template>
 
 <script setup>
+// s176: `embedded` = shown inside the one Settings page (its own title + side list), so no page header here.
+const props = defineProps({ embedded: { type: Boolean, default: false } })
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Percent, Pencil, Trash2, Plus } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 const auth = useAuthStore()
 import api from '@/api/axios'
+import BaseButton from '@/components/base/BaseButton.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 
 const { t } = useI18n()
@@ -117,6 +123,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.embed-actions { display:flex; justify-content:flex-end; margin-bottom:12px; }
 
 .table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .data-table { width:100%; border-collapse:collapse; font-size:13px; }
