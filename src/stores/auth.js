@@ -33,7 +33,6 @@ export const useAuthStore = defineStore('auth', {
     currencySymbol:  s => s.user?.store?.currency?.symbol || '',
     timezone:        s => s.user?.store?.timezone || 'Africa/Cairo',
     storeName:       s => s.user?.store?.name || 'Vendorya',
-    isPremium:       s => s.user?.store?.plan === 'PREMIUM',
     displayName:     s => s.user?.full_name || s.user?.username || '—',
     initials: s => {
       const name = s.user?.full_name || s.user?.username || '?'

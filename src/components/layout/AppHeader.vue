@@ -62,11 +62,10 @@
 
       <div class="nhdr-spacer" />
 
-      <!-- Store brand: client logo + PREMIUM badge -->
-      <div v-if="storeLogo || auth.isPremium" class="nhdr-brand">
+      <!-- Store brand: client logo (s177: the old PREMIUM plan badge is gone — Yakot 10-16) -->
+      <div v-if="storeLogo" class="nhdr-brand">
         <img v-if="storeLogo && !logoFailed" :src="storeLogo" :alt="auth.storeName" class="nhdr-store-logo" @error="logoFailed = true" />
         <span v-else-if="storeLogo" class="nhdr-store-name">{{ auth.storeName }}</span>
-        <span v-if="auth.isPremium" class="nhdr-premium-badge">PREMIUM</span>
       </div>
 
       <!-- Role badge + logout icon -->
@@ -551,10 +550,6 @@ onUnmounted(() => {
 .header-lang-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .nhdr-store-name { font-size: 14px; font-weight: 700; color: var(--text-primary); white-space: nowrap; }
 .nhdr-store-logo { height: 28px; width: auto; max-width: 160px; object-fit: contain; flex-shrink: 0; }
-.nhdr-premium-badge {
-  flex-shrink: 0; font-size: 8.5px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 5px;
-  border-radius: 5px; background: var(--sb-badge-bg); color: var(--sb-badge-text);
-}
 
 
 
