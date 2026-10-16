@@ -22,6 +22,7 @@
             <th class="dt-th">Monthly</th>
             <th class="dt-th">Annual</th>
             <th class="dt-th">Quotas</th>
+            <th class="dt-th">Modules</th>
             <th class="dt-th">Active subs</th>
             <th class="dt-th">Status</th>
             <th class="dt-th" style="width:80px;"></th>
@@ -29,7 +30,7 @@
         </thead>
         <tbody>
           <tr v-if="!plans.length">
-            <td colspan="7" class="dt-empty">
+            <td colspan="8" class="dt-empty">
               <PackageOpen :size="32" style="opacity:.3;margin-bottom:8px;" />
               <div>No plans yet</div>
             </td>
@@ -52,6 +53,7 @@
                 <span v-if="p.max_invoices_per_month != null">I/mo:{{ p.max_invoices_per_month }}</span>
               </span>
             </td>
+            <td style="font-size:12px;color:var(--text-secondary);white-space:nowrap;">{{ modulesSummary(p.modules) }}</td>
             <td style="font-variant-numeric:tabular-nums;">{{ p.active_subscriptions }}</td>
             <td>
               <span v-if="p.is_active" class="status-active">Active</span>
@@ -67,7 +69,7 @@
     </div><!-- /dt-card -->
 
 
-    <AppModal :open="modal.open" :title="modal.id ? 'Edit Plan' : 'New Plan'" @close="close">
+    <AppModal :open="modal.open" :title="modal.id ? 'Edit Plan' : 'New Plan'" width="560px" @close="close">
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
           <label class="form-label">Plan Name <span class="req">*</span></label>
@@ -111,6 +113,25 @@
           </div>
         </div>
 
+        <!-- s176 module control: which optional modules shops on this plan may switch on -->
+        <div class="mod-section">
+          <label class="form-label">Modules included</label>
+          <label class="check-row"><input v-model="modal.modules_mode" type="radio" value="all" class="check-input" /> <span>Every module <span class="hint">(also future ones)</span></span></label>
+          <label class="check-row"><input v-model="modal.modules_mode" type="radio" value="some" class="check-input" @change="onOnlyThese" /> <span>Only these</span></label>
+          <div v-if="modal.modules_mode === 'some'" class="mod-grid">
+            <label v-for="m in MODULES" :key="m.key" class="check-row mod-check">
+              <input v-model="modal.modules" type="checkbox" :value="m.key" class="check-input" />
+              <span>{{ m.name }}</span>
+            </label>
+          </div>
+          <p v-if="modal.modules_mode === 'some'" class="mod-hint">
+            {{ modal.modules.length }} of {{ MODULE_KEYS.length }} ticked. A shop on this plan that uses a module you untick gets it switched off — nothing is deleted.
+            <span v-if="modal.modules.includes('owner_level') && !modal.modules.includes('treasury')">The owner level only works with the Treasury.</span>
+          </p>
+        </div>
+
+        <div v-if="saveError" class="error-box">{{ saveError }}</div>
+
         <div style="display:flex;align-items:center;gap:10px;padding-top:4px;">
           <label class="form-label" style="margin:0;">Active</label>
           <button class="toggle-btn" :class="{ on: modal.is_active }" @click="modal.is_active = !modal.is_active">
@@ -135,10 +156,12 @@ import { Pencil, PackageOpen, Plus } from 'lucide-vue-next'
 import api from '@/api/axios'
 import AppModal from '@/components/ui/AppModal.vue'
 import { formatNumber } from '@/utils/format'
+import { MODULES, MODULE_KEYS, modulesSummary } from '@/utils/modules'
 
 const plans = ref([])
 const loading = ref(false)
 const saving = ref(false)
+const saveError = ref('')   // s176: e.g. a shop on this plan still has a Treasury drawer shift open
 
 async function fetchPlans() {
   loading.value = true
@@ -153,6 +176,7 @@ const modal = reactive({
   name: '', description: '',
   monthly_price: '0', annual_price: '0', currency: 'EGP',
   max_users: '', max_branches: '', max_products: '', max_invoices_per_month: '',
+  modules_mode: 'all', modules: [],
   is_active: true,
 })
 
@@ -162,8 +186,10 @@ function openNew() {
     name: '', description: '',
     monthly_price: '0', annual_price: '0', currency: 'EGP',
     max_users: '', max_branches: '', max_products: '', max_invoices_per_month: '',
+    modules_mode: 'all', modules: [],
     is_active: true,
   })
+  saveError.value = ''
 }
 
 function openEdit(p) {
@@ -178,8 +204,16 @@ function openEdit(p) {
     max_branches: p.max_branches ?? '',
     max_products: p.max_products ?? '',
     max_invoices_per_month: p.max_invoices_per_month ?? '',
+    modules_mode: p.modules == null ? 'all' : 'some',
+    modules: p.modules == null ? [] : [...p.modules],
     is_active: p.is_active,
   })
+  saveError.value = ''
+}
+
+// s176: "Only these" starts with every module ticked, so sudo unticks what the plan leaves out.
+function onOnlyThese() {
+  if (!modal.modules.length) modal.modules = [...MODULE_KEYS]
 }
 
 function close() { modal.open = false }
@@ -199,13 +233,18 @@ async function save() {
       max_branches: clean(modal.max_branches),
       max_products: clean(modal.max_products),
       max_invoices_per_month: clean(modal.max_invoices_per_month),
+      // s176: null = every module (also future ones); else the ticked keys, in the server's order
+      modules: modal.modules_mode === 'all' ? null : MODULE_KEYS.filter(k => modal.modules.includes(k)),
       is_active: modal.is_active,
     }
+    saveError.value = ''
     if (modal.id) await api.patch(`/api/admin/billing/plans/${modal.id}/`, payload)
     else          await api.post('/api/admin/billing/plans/', payload)
     close()
     fetchPlans()
   } catch (e) {
+    // s176: narrowing a plan can't take the Treasury from a shop with a drawer shift open — say so in the modal
+    if (e.response?.data?.code === 'shifts_open') { saveError.value = e.response.data.detail; return }
     alert(e.response?.data ? JSON.stringify(e.response.data) : 'Error saving plan')
   } finally { saving.value = false }
 }
@@ -236,6 +275,15 @@ onMounted(() => {
 .quota-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .req { color:var(--danger); font-weight:700; }
 .hint{ color:var(--text-muted); font-weight:400; font-size:11px; }
+
+/* s176 module control */
+.mod-section { border-top:1px solid var(--border); padding-top:12px; }
+.check-row   { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-primary); margin:6px 0; cursor:pointer; }
+.check-input { accent-color:var(--admin-accent, var(--danger)); width:16px; height:16px; flex-shrink:0; margin:0; }
+.mod-grid    { display:grid; grid-template-columns:1fr 1fr; gap:0 14px; margin:8px 0 0 24px; }
+.mod-check   { font-size:12.5px; margin:4px 0; }
+.mod-hint    { font-size:11.5px; color:var(--text-muted); margin:6px 0 0 24px; line-height:1.5; }
+.error-box   { padding:10px 12px; border:1px solid var(--danger); background:var(--danger-soft); border-radius:8px; color:var(--danger); font-size:12.5px; }
 
 .toggle-btn { width:40px; height:22px; border-radius:11px; border:none; background:var(--border); cursor:pointer; position:relative; transition:background 200ms; padding:0; flex-shrink:0; }
 .toggle-btn.on { background:var(--admin-accent); }
