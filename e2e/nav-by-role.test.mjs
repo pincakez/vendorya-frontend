@@ -29,7 +29,7 @@ const KNOWN_HARMLESS = {}
 const CASHIER_DEEP_LINKS = {
   '/inventory/purchases': 'This page is for managers',
   '/reports/sales':       'This page is for managers',
-  '/settings/billing':    'This page is for the shop owner',
+  '/settings/billing/invoices/0': 'This page is for the shop owner',   // s176: /settings/billing is a tab of the one Settings page now
 }
 
 let failed = 0

@@ -20,8 +20,176 @@
         <div class="type-hint">{{ t('settings.capabilities.store_type_hint') }}</div>
       </div>
 
+      <h3 class="cap-group">{{ t('settings.capabilities.group_selling') }}</h3>
+      <!-- s176: credit — off = no menu, no NEW record; what was written stays. -->
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('credit') }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><Wallet :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.credit_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='credit' }" @click="toggleInfo('credit')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.credit_desc') }}</div>
+          <div v-if="!isAllowed('credit')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
+          <div v-if="openInfo==='credit'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.credit_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.credit_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.enable_agel_selling ? 'status-on' : 'status-off'">
+              {{ form.enable_agel_selling ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.enable_agel_selling }" :disabled="!isAllowed('credit') && !form.enable_agel_selling" @click="requestToggle('enable_agel_selling', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+          <template v-if="form.enable_agel_selling">
+            <div class="sub-block">
+              <div class="sub-label">{{ t('settings.policies.credit_limit_title') }}</div>
+              <div class="mode-row">
+                <button v-for="opt in creditPolicyOptions" :key="opt.value" class="mode-btn" :class="{ active: form.credit_policy === opt.value }"
+                        @click="form.credit_policy = opt.value">{{ opt.label }}</button>
+              </div>
+              <div class="sub-muted">{{ t('settings.store.credit_policy_hint') }}</div>
+              <div v-if="form.credit_policy !== 'ALLOW'" class="days-row">
+                <span class="sub-muted">{{ t('settings.store.default_credit_limit') }}</span>
+                <input v-model.number="form.default_credit_limit" type="number" min="0" step="100" class="num-input" style="width:120px;" dir="ltr" />
+                <span class="sub-muted">{{ t('settings.store.no_limit_hint') }}</span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- Reservations with a deposit — s172 (RESERVATIONS.md). Off = no menu, no NEW reservation; open ones stay reachable. -->
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('reservations') }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><BookmarkCheck :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.reservations_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='reservations' }" @click="toggleInfo('reservations')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.reservations_desc') }}</div>
+          <div v-if="!isAllowed('reservations')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
+          <div v-if="openInfo==='reservations'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.reservations_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.reservations_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.reservations_enabled ? 'status-on' : 'status-off'">
+              {{ form.reservations_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.reservations_enabled }" :disabled="!isAllowed('reservations') && !form.reservations_enabled" @click="requestToggle('reservations_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment due dates — s173 (PAYMENT-DUES.md). Off = no menu, no NEW due date, no reminders; written ones are kept. -->
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('payment_dues') }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><CalendarClock :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.dues_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='dues' }" @click="toggleInfo('dues')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.dues_desc') }}</div>
+          <div v-if="!isAllowed('payment_dues')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
+          <div v-if="openInfo==='dues'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.dues_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.dues_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.payment_dues_enabled ? 'status-on' : 'status-off'">
+              {{ form.payment_dues_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.payment_dues_enabled }" :disabled="!isAllowed('payment_dues') && !form.payment_dues_enabled" @click="requestToggle('payment_dues_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cheques — s174 (Yakot: every optional module gets a switch). Off = no menu, no NEW cheque; written ones stay reachable. -->
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('cheques') }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><Landmark :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.cheques_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='cheques' }" @click="toggleInfo('cheques')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.cheques_desc') }}</div>
+          <div v-if="!isAllowed('cheques')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
+          <div v-if="openInfo==='cheques'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.cheques_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.cheques_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.cheques_enabled ? 'status-on' : 'status-off'">
+              {{ form.cheques_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.cheques_enabled }" :disabled="!isAllowed('cheques') && !form.cheques_enabled" @click="requestToggle('cheques_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Salesperson picker — s174 (Yakot): the till's "Sold by" list; the cashier (money) never changes. Off = the signed-in person. -->
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('salesperson_picker') }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><UserCheck :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.seller_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='seller' }" @click="toggleInfo('seller')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.seller_desc') }}</div>
+          <div v-if="!isAllowed('salesperson_picker')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
+          <div v-if="openInfo==='seller'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.seller_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.seller_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.salesperson_picker_enabled ? 'status-on' : 'status-off'">
+              {{ form.salesperson_picker_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.salesperson_picker_enabled }" :disabled="!isAllowed('salesperson_picker') && !form.salesperson_picker_enabled" @click="requestToggle('salesperson_picker_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- s176: tax — off = no menu, no NEW record; what was written stays. -->
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('tax') }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><Percent :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.tax_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='tax' }" @click="toggleInfo('tax')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.tax_desc') }}</div>
+          <div v-if="!isAllowed('tax')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
+          <div v-if="openInfo==='tax'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.tax_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.tax_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.tax_enabled ? 'status-on' : 'status-off'">
+              {{ form.tax_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.tax_enabled }" :disabled="!isAllowed('tax') && !form.tax_enabled" @click="requestToggle('tax_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+          <div v-if="form.tax_enabled" class="sub-block">
+            <div class="sub-muted">{{ t('settings.capabilities.tax_where') }}</div>
+          </div>
+        </div>
+      </div>
+      <h3 class="cap-group">{{ t('settings.capabilities.group_stock') }}</h3>
       <!-- Multi-Unit Selling -->
-      <div class="cap-card">
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('multi_unit') }">
         <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><ArrowDownUp :size="20" /></div>
         <div class="cap-body">
           <div class="cap-head">
@@ -30,12 +198,13 @@
             <span class="affect-flag"><AlertTriangle :size="12" /> {{ t('settings.capabilities.affects_data') }}</span>
           </div>
           <div class="cap-desc">{{ t('settings.capabilities.multi_unit_desc') }}</div>
+          <div v-if="!isAllowed('multi_unit')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
           <div v-if="openInfo==='multi_unit'" class="info-box">{{ t('settings.capabilities.multi_unit_info') }}</div>
           <div class="cap-footer">
             <span class="cap-status" :class="form.multi_unit_enabled ? 'status-on' : 'status-off'">
               {{ form.multi_unit_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
             </span>
-            <button class="toggle-btn" :class="{ on: form.multi_unit_enabled }" @click="requestToggle('multi_unit_enabled', true)">
+            <button class="toggle-btn" :class="{ on: form.multi_unit_enabled }" :disabled="!isAllowed('multi_unit') && !form.multi_unit_enabled" @click="requestToggle('multi_unit_enabled', true)">
               <span class="toggle-knob" />
             </button>
           </div>
@@ -90,7 +259,7 @@
       </div>
 
       <!-- Expiry / Batch Tracking -->
-      <div class="cap-card">
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('expiry') }">
         <div class="cap-icon" style="background:#fef3c7;color:#d97706;"><CalendarClock :size="20" /></div>
         <div class="cap-body">
           <div class="cap-head">
@@ -99,12 +268,13 @@
             <span class="affect-flag"><AlertTriangle :size="12" /> {{ t('settings.capabilities.affects_data') }}</span>
           </div>
           <div class="cap-desc">{{ t('settings.capabilities.expiry_desc') }}</div>
+          <div v-if="!isAllowed('expiry')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
           <div v-if="openInfo==='expiry'" class="info-box">{{ t('settings.capabilities.expiry_info') }}</div>
           <div class="cap-footer">
             <span class="cap-status" :class="form.expiry_tracking_enabled ? 'status-on' : 'status-off'">
               {{ form.expiry_tracking_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
             </span>
-            <button class="toggle-btn" :class="{ on: form.expiry_tracking_enabled }" @click="requestToggle('expiry_tracking_enabled', true)">
+            <button class="toggle-btn" :class="{ on: form.expiry_tracking_enabled }" :disabled="!isAllowed('expiry') && !form.expiry_tracking_enabled" @click="requestToggle('expiry_tracking_enabled', true)">
               <span class="toggle-knob" />
             </button>
           </div>
@@ -129,7 +299,7 @@
       </div>
 
       <!-- Weight-Based Selling -->
-      <div class="cap-card">
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('weight') }">
         <div class="cap-icon" style="background:#dcfce7;color:#16a34a;"><Scale :size="20" /></div>
         <div class="cap-body">
           <div class="cap-head">
@@ -137,12 +307,13 @@
             <button class="info-btn" :class="{ on: openInfo==='weight' }" @click="toggleInfo('weight')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
           </div>
           <div class="cap-desc">{{ t('settings.capabilities.weight_desc') }}</div>
+          <div v-if="!isAllowed('weight')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
           <div v-if="openInfo==='weight'" class="info-box">{{ t('settings.capabilities.weight_info') }}</div>
           <div class="cap-footer">
             <span class="cap-status" :class="form.weight_selling_enabled ? 'status-on' : 'status-off'">
               {{ form.weight_selling_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
             </span>
-            <button class="toggle-btn" :class="{ on: form.weight_selling_enabled }" @click="form.weight_selling_enabled = !form.weight_selling_enabled">
+            <button class="toggle-btn" :class="{ on: form.weight_selling_enabled }" :disabled="!isAllowed('weight') && !form.weight_selling_enabled" @click="form.weight_selling_enabled = !form.weight_selling_enabled">
               <span class="toggle-knob" />
             </button>
           </div>
@@ -162,8 +333,134 @@
         </div>
       </div>
 
+      <!-- s176: serials — off = no menu, no NEW record; what was written stays. -->
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('serials') }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><ScanBarcode :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.serials_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='serials' }" @click="toggleInfo('serials')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.serials_desc') }}</div>
+          <div v-if="!isAllowed('serials')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
+          <div v-if="openInfo==='serials'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.serials_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.serials_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.serials_enabled ? 'status-on' : 'status-off'">
+              {{ form.serials_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.serials_enabled }" :disabled="!isAllowed('serials') && !form.serials_enabled" @click="requestToggle('serials_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- s176: transfers — off = no menu, no NEW record; what was written stays. -->
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('transfers') }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><ArrowLeftRight :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.transfers_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='transfers' }" @click="toggleInfo('transfers')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.transfers_desc') }}</div>
+          <div v-if="!isAllowed('transfers')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
+          <div v-if="openInfo==='transfers'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.transfers_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.transfers_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.transfers_enabled ? 'status-on' : 'status-off'">
+              {{ form.transfers_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.transfers_enabled }" :disabled="!isAllowed('transfers') && !form.transfers_enabled" @click="requestToggle('transfers_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- s176: supplier_returns — off = no menu, no NEW record; what was written stays. -->
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('supplier_returns') }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><Undo2 :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.sret_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='supplier_returns' }" @click="toggleInfo('supplier_returns')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.sret_desc') }}</div>
+          <div v-if="!isAllowed('supplier_returns')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
+          <div v-if="openInfo==='supplier_returns'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.sret_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.sret_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.supplier_returns_enabled ? 'status-on' : 'status-off'">
+              {{ form.supplier_returns_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.supplier_returns_enabled }" :disabled="!isAllowed('supplier_returns') && !form.supplier_returns_enabled" @click="requestToggle('supplier_returns_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
+      <h3 class="cap-group">{{ t('settings.capabilities.group_services') }}</h3>
+      <!-- s176: services — off = no menu, no NEW record; what was written stays. -->
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('services') }">
+        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><Wrench :size="20" /></div>
+        <div class="cap-body">
+          <div class="cap-head">
+            <span class="cap-title">{{ t('settings.capabilities.services_title') }}</span>
+            <button class="info-btn" :class="{ on: openInfo==='services' }" @click="toggleInfo('services')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
+          </div>
+          <div class="cap-desc">{{ t('settings.capabilities.services_desc') }}</div>
+          <div v-if="!isAllowed('services')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
+          <div v-if="openInfo==='services'" class="info-box">
+            <p class="info-p">{{ t('settings.capabilities.services_info_on') }}</p>
+            <p class="info-p">{{ t('settings.capabilities.services_info_off') }}</p>
+          </div>
+          <div class="cap-footer">
+            <span class="cap-status" :class="form.services_enabled ? 'status-on' : 'status-off'">
+              {{ form.services_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
+            </span>
+            <button class="toggle-btn" :class="{ on: form.services_enabled }" :disabled="!isAllowed('services') && !form.services_enabled" @click="requestToggle('services_enabled', false)">
+              <span class="toggle-knob" />
+            </button>
+          </div>
+          <template v-if="form.services_enabled">
+            <div class="sub-block">
+              <div class="sub-label">{{ t('settings.store.service_types') }}</div>
+              <div class="sub-muted">{{ t('settings.store.service_types_hint') }}</div>
+              <div class="chip-row">
+                <span v-for="(type, i) in form.service_types" :key="type" class="type-chip">
+                  {{ type }}
+                  <button class="chip-x" :title="t('settings.store.remove')" :aria-label="t('settings.store.remove')" @click="form.service_types.splice(i, 1)"><X :size="12" /></button>
+                </span>
+                <span v-if="!form.service_types.length" class="sub-muted">{{ t('settings.store.no_service_types') }}</span>
+              </div>
+              <div class="days-row">
+                <input v-model="newServiceType" class="num-input" style="width:220px;text-align:start;" :placeholder="t('settings.store.service_type_ph')" @keyup.enter="addServiceType" />
+                <button class="mode-btn add-type-btn" :disabled="!newServiceType.trim()" @click="addServiceType"><Plus :size="13" /> {{ t('settings.store.add_type') }}</button>
+              </div>
+            </div>
+            <div class="sub-block">
+              <div class="days-row">
+                <span class="sub-muted">{{ t('settings.store.notify_before') }}</span>
+                <input v-model.number="form.service_notify_hours" type="number" min="0" max="168" class="num-input" style="width:90px;" dir="ltr" />
+              </div>
+              <div class="sub-muted">{{ t('settings.store.notify_before_hint') }}</div>
+              <div class="days-row">
+                <button class="mode-btn" :disabled="notifyRunning" @click="runNotifications">{{ notifyRunning ? t('settings.store.running') : t('settings.store.run_notif') }}</button>
+                <span v-if="notifyOk" class="sub-muted">{{ t('settings.store.notif_checked') }}</span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+      <h3 class="cap-group">{{ t('settings.capabilities.group_money') }}</h3>
       <!-- Treasury (money boxes) — s169c. Off = today's Vendorya exactly; on = the server makes one drawer box per branch. -->
-      <div class="cap-card">
+      <div class="cap-card" :class="{ 'cap-card--locked': !isAllowed('treasury') }">
         <div class="cap-icon" style="background:var(--info-soft);color:var(--info);"><Vault :size="20" /></div>
         <div class="cap-body">
           <div class="cap-head">
@@ -171,6 +468,7 @@
             <button class="info-btn" :class="{ on: openInfo==='treasury' }" @click="toggleInfo('treasury')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
           </div>
           <div class="cap-desc">{{ t('settings.capabilities.treasury_desc') }}</div>
+          <div v-if="!isAllowed('treasury')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
           <div v-if="openInfo==='treasury'" class="info-box">
             <p class="info-p">{{ t('settings.capabilities.treasury_info_on') }}</p>
             <p class="info-p">{{ t('settings.capabilities.treasury_info_off') }}</p>
@@ -180,7 +478,7 @@
             <span class="cap-status" :class="form.treasury_enabled ? 'status-on' : 'status-off'">
               {{ form.treasury_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
             </span>
-            <button class="toggle-btn" :class="{ on: form.treasury_enabled }" @click="requestToggle('treasury_enabled', true)">
+            <button class="toggle-btn" :class="{ on: form.treasury_enabled }" :disabled="!isAllowed('treasury') && !form.treasury_enabled" @click="requestToggle('treasury_enabled', true)">
               <span class="toggle-knob" />
             </button>
           </div>
@@ -200,6 +498,7 @@
             <button class="info-btn" :class="{ on: openInfo==='owner_level' }" @click="toggleInfo('owner_level')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
           </div>
           <div class="cap-desc">{{ t('settings.capabilities.owner_level_desc') }}</div>
+          <div v-if="!isAllowed('owner_level')" class="lock-note"><Lock :size="12" /> {{ t('settings.capabilities.not_in_plan') }}</div>
           <div v-if="openInfo==='owner_level'" class="info-box">
             <p class="info-p">{{ t('settings.capabilities.owner_level_info_on') }}</p>
             <p class="info-p">{{ t('settings.capabilities.owner_level_info_private') }}</p>
@@ -209,7 +508,7 @@
             <span class="cap-status" :class="form.treasury_enabled && form.treasury_owner_level ? 'status-on' : 'status-off'">
               {{ form.treasury_enabled && form.treasury_owner_level ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
             </span>
-            <button class="toggle-btn" :class="{ on: form.treasury_enabled && form.treasury_owner_level }" :disabled="!form.treasury_enabled"
+            <button class="toggle-btn" :class="{ on: form.treasury_enabled && form.treasury_owner_level }" :disabled="!form.treasury_enabled || (!isAllowed('owner_level') && !form.treasury_owner_level)"
                     :title="!form.treasury_enabled ? t('settings.capabilities.owner_level_needs_treasury') : ''"
                     @click="requestToggle('treasury_owner_level', true)">
               <span class="toggle-knob" />
@@ -240,102 +539,7 @@
         </div>
       </div>
 
-      <!-- Reservations with a deposit — s172 (RESERVATIONS.md). Off = no menu, no NEW reservation; open ones stay reachable. -->
-      <div class="cap-card">
-        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><BookmarkCheck :size="20" /></div>
-        <div class="cap-body">
-          <div class="cap-head">
-            <span class="cap-title">{{ t('settings.capabilities.reservations_title') }}</span>
-            <button class="info-btn" :class="{ on: openInfo==='reservations' }" @click="toggleInfo('reservations')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
-          </div>
-          <div class="cap-desc">{{ t('settings.capabilities.reservations_desc') }}</div>
-          <div v-if="openInfo==='reservations'" class="info-box">
-            <p class="info-p">{{ t('settings.capabilities.reservations_info_on') }}</p>
-            <p class="info-p">{{ t('settings.capabilities.reservations_info_off') }}</p>
-          </div>
-          <div class="cap-footer">
-            <span class="cap-status" :class="form.reservations_enabled ? 'status-on' : 'status-off'">
-              {{ form.reservations_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
-            </span>
-            <button class="toggle-btn" :class="{ on: form.reservations_enabled }" @click="requestToggle('reservations_enabled', false)">
-              <span class="toggle-knob" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Payment due dates — s173 (PAYMENT-DUES.md). Off = no menu, no NEW due date, no reminders; written ones are kept. -->
-      <div class="cap-card">
-        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><CalendarClock :size="20" /></div>
-        <div class="cap-body">
-          <div class="cap-head">
-            <span class="cap-title">{{ t('settings.capabilities.dues_title') }}</span>
-            <button class="info-btn" :class="{ on: openInfo==='dues' }" @click="toggleInfo('dues')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
-          </div>
-          <div class="cap-desc">{{ t('settings.capabilities.dues_desc') }}</div>
-          <div v-if="openInfo==='dues'" class="info-box">
-            <p class="info-p">{{ t('settings.capabilities.dues_info_on') }}</p>
-            <p class="info-p">{{ t('settings.capabilities.dues_info_off') }}</p>
-          </div>
-          <div class="cap-footer">
-            <span class="cap-status" :class="form.payment_dues_enabled ? 'status-on' : 'status-off'">
-              {{ form.payment_dues_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
-            </span>
-            <button class="toggle-btn" :class="{ on: form.payment_dues_enabled }" @click="requestToggle('payment_dues_enabled', false)">
-              <span class="toggle-knob" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cheques — s174 (Yakot: every optional module gets a switch). Off = no menu, no NEW cheque; written ones stay reachable. -->
-      <div class="cap-card">
-        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><Landmark :size="20" /></div>
-        <div class="cap-body">
-          <div class="cap-head">
-            <span class="cap-title">{{ t('settings.capabilities.cheques_title') }}</span>
-            <button class="info-btn" :class="{ on: openInfo==='cheques' }" @click="toggleInfo('cheques')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
-          </div>
-          <div class="cap-desc">{{ t('settings.capabilities.cheques_desc') }}</div>
-          <div v-if="openInfo==='cheques'" class="info-box">
-            <p class="info-p">{{ t('settings.capabilities.cheques_info_on') }}</p>
-            <p class="info-p">{{ t('settings.capabilities.cheques_info_off') }}</p>
-          </div>
-          <div class="cap-footer">
-            <span class="cap-status" :class="form.cheques_enabled ? 'status-on' : 'status-off'">
-              {{ form.cheques_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
-            </span>
-            <button class="toggle-btn" :class="{ on: form.cheques_enabled }" @click="requestToggle('cheques_enabled', false)">
-              <span class="toggle-knob" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Salesperson picker — s174 (Yakot): the till's "Sold by" list; the cashier (money) never changes. Off = the signed-in person. -->
-      <div class="cap-card">
-        <div class="cap-icon" style="background:var(--accent-soft);color:var(--accent);"><UserCheck :size="20" /></div>
-        <div class="cap-body">
-          <div class="cap-head">
-            <span class="cap-title">{{ t('settings.capabilities.seller_title') }}</span>
-            <button class="info-btn" :class="{ on: openInfo==='seller' }" @click="toggleInfo('seller')" :aria-label="t('common.help')"><HelpCircle :size="15" /></button>
-          </div>
-          <div class="cap-desc">{{ t('settings.capabilities.seller_desc') }}</div>
-          <div v-if="openInfo==='seller'" class="info-box">
-            <p class="info-p">{{ t('settings.capabilities.seller_info_on') }}</p>
-            <p class="info-p">{{ t('settings.capabilities.seller_info_off') }}</p>
-          </div>
-          <div class="cap-footer">
-            <span class="cap-status" :class="form.salesperson_picker_enabled ? 'status-on' : 'status-off'">
-              {{ form.salesperson_picker_enabled ? t('settings.policies.enabled') : t('settings.policies.disabled') }}
-            </span>
-            <button class="toggle-btn" :class="{ on: form.salesperson_picker_enabled }" @click="requestToggle('salesperson_picker_enabled', false)">
-              <span class="toggle-knob" />
-            </button>
-          </div>
-        </div>
-      </div>
-
+      <h3 class="cap-group">{{ t('settings.capabilities.group_search') }}</h3>
       <!-- Search & Autocomplete -->
       <div class="cap-card">
         <div class="cap-icon" style="background:#ede9fe;color:#7c3aed;"><Search :size="20" /></div>
@@ -402,7 +606,8 @@
 const props = defineProps({ embedded: { type: Boolean, default: false } })
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault, PiggyBank, BookmarkCheck, Landmark, UserCheck
+import { ArrowDownUp, CalendarClock, Scale, CheckCircle, HelpCircle, AlertTriangle, Building2, Search, Vault, PiggyBank, BookmarkCheck, Landmark, UserCheck,
+  Lock, Wallet, Percent, ScanBarcode, ArrowLeftRight, Undo2, Wrench, Plus, X,
 } from 'lucide-vue-next'
 import AppModal from '@/components/ui/AppModal.vue'
 import api from '@/api/axios'
@@ -442,7 +647,48 @@ const form = reactive({
   owner_lock_enabled:      false,
   owner_unlock_minutes:    15,
   salesperson_picker_enabled: false,
+  // s176: moved here from Store settings → Rules / Services, and the four new switches (ON by default on the server)
+  enable_agel_selling:     true,
+  credit_policy:           'ALLOW',
+  default_credit_limit:    null,
+  tax_enabled:             true,
+  services_enabled:        true,
+  supplier_returns_enabled: true,
+  serials_enabled:         true,
+  transfers_enabled:       true,
+  service_types:           [],
+  service_notify_hours:    24,
 })
+// s176 module control: what sudo lets this shop switch on (plan + per-shop exceptions). Unknown key = allowed.
+const modulesAllowed = ref({})
+const isAllowed = key => modulesAllowed.value?.[key] !== false
+
+const creditPolicyOptions = computed(() => [
+  { value: 'ALLOW', label: t('settings.policies.allow') },
+  { value: 'WARN',  label: t('settings.policies.warn') },
+  { value: 'BLOCK', label: t('settings.policies.block') },
+])
+
+// Service desk fold-out: service types (saved with the rest) + "run the reminders now"
+const newServiceType = ref('')
+function addServiceType() {
+  const type = newServiceType.value.trim()
+  if (type && !form.service_types.includes(type)) form.service_types.push(type)
+  newServiceType.value = ''
+}
+const notifyRunning = ref(false)
+const notifyOk = ref(false)
+async function runNotifications() {
+  notifyRunning.value = true
+  notifyOk.value = false
+  try {
+    await api.post('/api/services/run-notifications/')
+    notifyOk.value = true
+    setTimeout(() => { notifyOk.value = false }, 3000)
+  } catch (e) {
+    showErrorToast(e.response?.data?.detail || t('settings.store.err.run_notif'), 4000)
+  } finally { notifyRunning.value = false }
+}
 // What the server had when the page loaded — the "boxes are made when you save" note shows only on a fresh switch-on.
 const treasuryWasOn = ref(false)
 const ownerLevelWasOn = ref(false)
@@ -515,7 +761,18 @@ async function load() {
       salesperson_picker_enabled: !!settingsRes.data.salesperson_picker_enabled,
       owner_lock_enabled:      !!settingsRes.data.owner_lock_enabled,
       owner_unlock_minutes:    settingsRes.data.owner_unlock_minutes ?? 15,
+      enable_agel_selling:     settingsRes.data.enable_agel_selling ?? true,
+      credit_policy:           settingsRes.data.credit_policy || 'ALLOW',
+      default_credit_limit:    settingsRes.data.default_credit_limit ?? null,
+      tax_enabled:             settingsRes.data.tax_enabled ?? true,
+      services_enabled:        settingsRes.data.services_enabled !== false,
+      supplier_returns_enabled: settingsRes.data.supplier_returns_enabled !== false,
+      serials_enabled:         settingsRes.data.serials_enabled !== false,
+      transfers_enabled:       settingsRes.data.transfers_enabled !== false,
+      service_types:           [...(settingsRes.data.service_types || [])],
+      service_notify_hours:    settingsRes.data.service_notify_hours ?? 24,
     })
+    modulesAllowed.value = settingsRes.data.modules_allowed || {}
     treasuryWasOn.value = !!settingsRes.data.treasury_enabled
     ownerLevelWasOn.value = !!settingsRes.data.treasury_owner_level
     lockWas.value = { on: !!settingsRes.data.owner_lock_enabled, minutes: settingsRes.data.owner_unlock_minutes ?? 15 }
@@ -558,10 +815,23 @@ async function save() {
       salesperson_picker_enabled: form.salesperson_picker_enabled,
       owner_lock_enabled:      form.owner_lock_enabled,
       owner_unlock_minutes:    form.owner_unlock_minutes,
+      enable_agel_selling:     form.enable_agel_selling,
+      credit_policy:           form.credit_policy,
+      default_credit_limit:    (form.credit_policy !== 'ALLOW' && form.default_credit_limit) ? form.default_credit_limit : null,
+      tax_enabled:             form.tax_enabled,
+      services_enabled:        form.services_enabled,
+      supplier_returns_enabled: form.supplier_returns_enabled,
+      serials_enabled:         form.serials_enabled,
+      transfers_enabled:       form.transfers_enabled,
+      service_types:           form.service_types,
+      service_notify_hours:    form.service_notify_hours ?? 0,
     })
     fmt.apply({ default_weight_unit: form.default_weight_unit, treasury_enabled: form.treasury_enabled, treasury_owner_level: form.treasury_owner_level,
                 reservations_enabled: form.reservations_enabled, payment_dues_enabled: form.payment_dues_enabled,
-                cheques_enabled: form.cheques_enabled, salesperson_picker_enabled: form.salesperson_picker_enabled })
+                cheques_enabled: form.cheques_enabled, salesperson_picker_enabled: form.salesperson_picker_enabled,
+                services_enabled: form.services_enabled, supplier_returns_enabled: form.supplier_returns_enabled,
+                serials_enabled: form.serials_enabled, transfers_enabled: form.transfers_enabled })
+    if (res?.data?.modules_allowed) modulesAllowed.value = res.data.modules_allowed
     treasuryWasOn.value = form.treasury_enabled
     ownerLevelWasOn.value = form.treasury_owner_level
     lockWas.value = { on: form.owner_lock_enabled, minutes: form.owner_unlock_minutes }
@@ -577,7 +847,8 @@ async function save() {
     form.owner_lock_enabled = lockWas.value.on
     form.owner_unlock_minutes = lockWas.value.minutes
     const LOCK_ERR = { authenticator_needed: 'owner_lock_err_setup', owner_locked: 'owner_lock_err_locked', not_owner: 'owner_lock_err_owner' }
-    if (LOCK_ERR[data?.code]) showErrorToast(t('settings.capabilities.' + LOCK_ERR[data.code]), 5000)
+    if (data?.code === 'module_not_allowed') showErrorToast(t('settings.capabilities.not_in_plan'), 5000)
+    else if (LOCK_ERR[data?.code]) showErrorToast(t('settings.capabilities.' + LOCK_ERR[data.code]), 5000)
     else if (data?.owner_unlock_minutes) showErrorToast(t('settings.capabilities.owner_lock_minutes') + ': 1–240', 4000)
     else if (data?.code === 'treasury_off') showErrorToast(t('settings.capabilities.owner_level_needs_treasury'), 4000)
     else if (data?.code) showErrorToast(treasuryError(t, e, t('settings.policies.err_save')), 4000)
@@ -601,6 +872,16 @@ onMounted(load)
 @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
 
 .cap-grid { display:flex; flex-direction:column; gap:14px; }
+/* s176: groups + the "Not in your plan" lock (module control) + service-type chips */
+.cap-group { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); margin:14px 0 -2px; }
+.cap-card--locked { background:var(--bg-app); }
+.cap-card--locked .cap-icon { filter:grayscale(1); opacity:.6; }
+.lock-note { display:flex; align-items:center; gap:6px; margin-top:6px; font-size:12px; font-weight:700; color:var(--text-muted); }
+.add-type-btn { display:inline-flex; align-items:center; gap:4px; }
+.chip-row { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+.type-chip { display:inline-flex; align-items:center; gap:4px; border:1px solid var(--border); background:var(--bg-card); border-radius:999px; padding:2px 6px 2px 10px; font-size:12.5px; }
+.chip-x { display:inline-flex; border:0; background:none; color:var(--text-muted); cursor:pointer; padding:2px; border-radius:50%; }
+.chip-x:hover { color:var(--danger); background:var(--bg-app); }
 
 .type-banner { display:flex; align-items:center; gap:14px; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px 20px; }
 .type-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--accent-soft); color:var(--accent); flex-shrink:0; }

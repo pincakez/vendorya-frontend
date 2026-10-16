@@ -26,7 +26,7 @@
     <!-- ── Live widget grid ────────────────────────────────── -->
     <div v-else class="dash-grid">
       <div
-        v-for="(id, i) in data.widgets" :key="id"
+        v-for="(id, i) in shownWidgets" :key="id"
         class="dash-tile" :style="{ '--i': i }"
       >
         <DashboardWidget :id="id" :data="data" />
@@ -38,11 +38,15 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useFormatStore } from '@/stores/format'
 import { useI18n } from 'vue-i18n'
 import { RefreshCw } from 'lucide-vue-next'
 import api from '@/api/axios'
 import DashboardWidget from '@/components/dashboard/DashboardWidget.vue'
 
+// s176: the "Upcoming services" tile + ticker line follow the shop's Service desk switch.
+const fmtMods = useFormatStore()
+const shownWidgets = computed(() => (data.value.widgets || []).filter(id => id !== 'services' || fmtMods.servicesEnabled))
 const { t } = useI18n()
 const loading = ref(false)
 
@@ -74,7 +78,7 @@ const insights = computed(() => {
   if (d.today_items_sold > 0)     list.push(t('core.dash.ins_units', { n: d.today_items_sold }))
   if (d.open_shift)               list.push(t('core.dash.ins_shift', { t: fmtTime(d.open_shift.start_time), user: d.open_shift.user }))
   if (d.low_stock_count > 0)      list.push(t('core.dash.ins_restock', { n: d.low_stock_count }))
-  if (d.upcoming_services?.length)list.push(t('core.dash.ins_services', { n: d.upcoming_services.length }))
+  if (fmtMods.servicesEnabled && d.upcoming_services?.length) list.push(t('core.dash.ins_services', { n: d.upcoming_services.length }))
   if (list.length === 0)          list.push(t('core.dash.ins_caught_up'))
   return list
 })
