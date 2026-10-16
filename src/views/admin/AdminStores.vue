@@ -529,7 +529,8 @@ function openEdit(s) {
     timezone: s.timezone || 'Africa/Cairo',
     is_active: s.is_active,
     suspend_reason: '', suspend_grace_days: 0, originalActive: s.is_active,
-    module_access: Object.fromEntries(MODULE_KEYS.map(k => [k, s.module_access?.[k] || 'plan'])),
+    // surgeon s176: start from the shop's own map, so a module the server knows but this screen doesn't is kept
+    module_access: { ...(s.module_access || {}), ...Object.fromEntries(MODULE_KEYS.map(k => [k, s.module_access?.[k] || 'plan'])) },
     modules_allowed: { ...(s.modules_allowed || {}) },
   })
   loadEditPlan(s.id)

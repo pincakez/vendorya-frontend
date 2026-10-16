@@ -234,7 +234,9 @@ async function save() {
       max_products: clean(modal.max_products),
       max_invoices_per_month: clean(modal.max_invoices_per_month),
       // s176: null = every module (also future ones); else the ticked keys, in the server's order
-      modules: modal.modules_mode === 'all' ? null : MODULE_KEYS.filter(k => modal.modules.includes(k)),
+      // surgeon s176: keys this screen doesn't know (a newer server module) stay in the list instead of being dropped
+      modules: modal.modules_mode === 'all' ? null
+        : [...MODULE_KEYS.filter(k => modal.modules.includes(k)), ...modal.modules.filter(k => !MODULE_KEYS.includes(k))],
       is_active: modal.is_active,
     }
     saveError.value = ''
