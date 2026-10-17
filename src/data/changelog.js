@@ -12,6 +12,23 @@
 
 export const changelog = [
   {
+    version: '1.62.1',
+    date: '2026-10-17',
+    tag: 'Improved',
+    en: {
+      title: 'A cleaner top bar',
+      points: [
+        'The old "PREMIUM" badge next to your shop logo is gone. Your real plan is shown in Settings → Plan & data.',
+      ],
+    },
+    ar: {
+      title: 'شريط علوي أنضف',
+      points: [
+        'علامة "PREMIUM" القديمة اللي جنب لوجو محلك اتشالت. باقتك الحقيقية بتظهر في الإعدادات ← الاشتراك والبيانات.',
+      ],
+    },
+  },
+  {
     version: '1.62.0',
     date: '2026-10-16',
     tag: 'New',
